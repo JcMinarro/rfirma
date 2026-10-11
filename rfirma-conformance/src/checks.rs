@@ -61,12 +61,7 @@ impl Probe {
     /// Corre un grupo de comprobaciones que comparten trámite —el conductor arranca una sola vez y
     /// cada entrada lee de lo que viajó lo suyo— y dice cómo quedó cada una, sin escribir nada; si
     /// el trámite ya estaba observado, lo juzga sin lanzar el cliente.
-    pub(crate) fn run_group(
-        &self,
-        group: &[&Check],
-        opening: Option<Assistance>,
-        already: Option<&ObservedErrand>,
-    ) -> Settled {
+    pub(crate) fn run_group(&self, group: &[&Check], already: Option<&ObservedErrand>) -> Settled {
         let head = group[0];
         if let Some(motive) = head.unmeasurable() {
             return vec![self.settle(
@@ -85,15 +80,6 @@ impl Probe {
                 .judge_the_group(group, &observed.outcome, observed.duration())
                 .into();
         }
-        if let Some(tranche) = opening {
-            if !self.witness.stand_by(&head.id, tranche) {
-                return all_pending(
-                    group,
-                    "la cola se detuvo antes de llegar a las comprobaciones que te necesitan",
-                )
-                .into();
-            }
-        }
         if let Some(why) = self.the_unmet_precondition_of(head) {
             self.witness.harness(&format!("no se ejecuta: {why}"));
             return vec![Settlement::pending(head, why)].into();
@@ -104,12 +90,8 @@ impl Probe {
                 Ok(fixtures) => fixtures,
                 Err(why) => return vec![Settlement::pending(head, why)].into(),
             };
-            if !self
-                .witness
-                .brief(&head.id, &the_briefing_of(group, fixtures.as_deref()))
-            {
-                return vec![Settlement::pending(head, "se saltó antes de empezar")].into();
-            }
+            self.witness
+                .harness(&the_briefing_of(group, fixtures.as_deref()));
         } else {
             for warning in the_warnings_of(group) {
                 self.witness.harness(&warning);
@@ -813,8 +795,6 @@ expects.code = "SAF_03"
 
     const CLICKED: &str = "act.consent = \"Elige.\"";
 
-    const CANCELLED: &str = "act.cancel = \"Cancela.\"";
-
     fn resolved(settled: &Settled) -> Vec<(&str, Outcome)> {
         settled
             .settlements
@@ -838,57 +818,16 @@ expects.code = "SAF_03"
     }
 
     #[test]
-    fn a_group_that_opens_a_tranche_waits_for_the_person_before_driving() {
+    fn a_click_check_starts_without_asking_anything() {
         let witness = Arc::new(FakeWitness::default());
         let runner = a_runner(false);
         let catalogue = a_rejection(CLICKED);
         let group: Vec<&Check> = catalogue.iter().collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, Some(Assistance::Click), None);
-
-        assert_eq!(witness.said(), ["stand_by a_rejection clic"]);
-        assert_eq!(
-            resolved(&settled),
-            [
-                ("a_rejection", Outcome::Compliant),
-                ("its_twin", Outcome::Compliant)
-            ]
-        );
-    }
-
-    #[test]
-    fn a_group_inside_its_tranche_does_not_stop() {
-        let witness = Arc::new(FakeWitness::default());
-        let runner = a_runner(false);
-        let catalogue = a_rejection(CLICKED);
-        let group: Vec<&Check> = catalogue.iter().collect();
-
-        a_probe(&witness, &runner).run_group(&group, None, None);
+        a_probe(&witness, &runner).run_group(&group, None);
 
         assert!(witness.said().is_empty());
         assert_eq!(runner.runs().len(), 1);
-    }
-
-    #[test]
-    fn nobody_there_between_tranches_leaves_the_group_pending_without_driving_it() {
-        let witness = Arc::new(FakeWitness {
-            refuses_to_stand_by: true,
-            ..FakeWitness::default()
-        });
-        let runner = a_runner(false);
-        let catalogue = a_rejection(CANCELLED);
-        let group: Vec<&Check> = catalogue.iter().take(1).collect();
-
-        let settled = a_probe(&witness, &runner).run_group(&group, Some(Assistance::Person), None);
-
-        assert_eq!(runner.runs().len(), 0);
-        assert_eq!(
-            pending(&settled),
-            [(
-                "a_rejection",
-                "la cola se detuvo antes de llegar a las comprobaciones que te necesitan"
-            )]
-        );
     }
 
     #[test]
@@ -898,7 +837,7 @@ expects.code = "SAF_03"
         let catalogue = a_rejection("");
         let group: Vec<&Check> = catalogue.iter().collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(
             pending(&settled),
@@ -920,7 +859,7 @@ expects.code = "SAF_03"
         let catalogue = a_rejection(CLICKED);
         let group: Vec<&Check> = catalogue.iter().take(1).collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(
             resolved(&settled),
@@ -1016,7 +955,7 @@ expects.code = "SAF_03"
         let catalogue = a_dnie_check();
         let group: Vec<&Check> = catalogue.iter().collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(pending(&settled), [("a_dnie_one", THE_NO_DNIE_COMPLAINT)]);
         assert_eq!(runner.runs(), Vec::<String>::new());
@@ -1032,7 +971,7 @@ expects.code = "SAF_03"
         let catalogue = a_dnie_check();
         let group: Vec<&Check> = catalogue.iter().collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(resolved(&settled), [("a_dnie_one", Outcome::Compliant)]);
     }
@@ -1044,7 +983,7 @@ expects.code = "SAF_03"
         let catalogue = a_rejection(CLICKED);
         let group: Vec<&Check> = catalogue.iter().take(1).collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(resolved(&settled), [("a_rejection", Outcome::Compliant)]);
     }
@@ -1091,14 +1030,10 @@ expects.code = "SAF_03"
         let runner = a_runner(false);
         let catalogue = a_rejection(CLICKED);
         let group: Vec<&Check> = catalogue.iter().collect();
-        let first = a_probe(&witness, &runner).run_group(&group[..1], None, None);
+        let first = a_probe(&witness, &runner).run_group(&group[..1], None);
         let observed = first.observed.expect("un rechazo terminado se guarda");
 
-        let settled = a_probe(&witness, &runner).run_group(
-            &group[1..],
-            Some(Assistance::Click),
-            Some(&observed),
-        );
+        let settled = a_probe(&witness, &runner).run_group(&group[1..], Some(&observed));
 
         assert_eq!(runner.runs(), ["v4/signwithoutaformat"]);
         assert_eq!(resolved(&settled), [("its_twin", Outcome::Compliant)]);
@@ -1113,7 +1048,7 @@ expects.code = "SAF_03"
         let catalogue = a_rejection(CLICKED);
         let group: Vec<&Check> = catalogue.iter().take(1).collect();
 
-        let settled = a_probe(&witness, &runner).run_group(&group, None, None);
+        let settled = a_probe(&witness, &runner).run_group(&group, None);
 
         assert_eq!(settled.observed, None);
     }

@@ -437,7 +437,7 @@ expects.completes = {}
             witness: Arc::new(FakeWitness::default()) as Arc<dyn Witness>,
             runner: runner as Arc<dyn ErrandRunner>,
         };
-        let settled = probe.run_group(&[&catalogue[0]], None, None);
+        let settled = probe.run_group(&[&catalogue[0]], None);
         let key = ErrandKey::of(&catalogue[0]).unwrap();
         report.observe(key, settled.observed.unwrap()).unwrap();
         for settlement in settled.settlements {

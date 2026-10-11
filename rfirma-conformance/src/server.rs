@@ -381,10 +381,6 @@ fn attend(mut stream: TcpStream, gate: &Gate, build: &Build, console: &Console) 
             console.skip();
             answer(&mut stream, Ok::<(), String>(()));
         }
-        ("POST", "/api/answer") => answer(
-            &mut stream,
-            body_of::<Answer>(&request).and_then(|given| console.answer(given.answer)),
-        ),
         _ => respond(&mut stream, 404, &json!({ "error": "no hay tal ruta" })),
     }
 }
@@ -415,12 +411,6 @@ struct ReportChoice {
 #[ts(export)]
 struct Reset {
     check: String,
-}
-
-#[derive(Deserialize, TS)]
-#[ts(export)]
-struct Answer {
-    answer: Option<String>,
 }
 
 fn body_of<'a, T: Deserialize<'a>>(request: &'a HttpRequest) -> Result<T, String> {

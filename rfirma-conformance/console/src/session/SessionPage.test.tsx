@@ -69,7 +69,7 @@ describe("the session", () => {
     ]);
   });
 
-  it("stops between tranches until the person is there, and says so on the desktop", async () => {
+  it("starts a check that needs the person without asking, and says on the desktop what to do", async () => {
     const shown: string[] = [];
     vi.stubGlobal(
       "Notification",
@@ -80,20 +80,20 @@ describe("the session", () => {
         }
       },
     );
-    const prompt = "Las siguientes abren diálogos del cliente de firma.";
-    const { server, user } = renderConsoleAt(
+    const report = aReportView();
+    const running = report.sets[1]?.checks[2];
+    if (running) {
+      running.warning = "Fíjate en si el cliente pide confirmación.";
+      running.assistance = "person";
+    }
+    renderConsoleAt(
       "/",
-      aSnapshot({
-        running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 },
-        call: { check: "empty_uri_rejected", prompt, kind: "tranche" },
-      }),
+      aSnapshot({ report, running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 } }),
     );
 
-    await user.click(await screen.findByRole("button", { name: /Estoy/ }));
-
-    expect(screen.getByText("Te necesitamos delante")).toBeInTheDocument();
-    expect(shown).toEqual([prompt]);
-    expect(server.posted("/api/answer")).toEqual([{ answer: "s" }]);
+    expect(await screen.findByText("Lo que te toca")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Empezar|Estoy/ })).not.toBeInTheDocument();
+    expect(shown).toEqual(["Fíjate en si el cliente pide confirmación."]);
   });
 
   it("warns of a failure of the suite naming its check", async () => {
@@ -172,28 +172,6 @@ describe("the session", () => {
     );
   });
 
-  it("tells what to do before a check that needs the person, and starts it with s", async () => {
-    const { server, user } = renderConsoleAt(
-      "/",
-      aSnapshot({
-        running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 },
-        call: {
-          check: "empty_uri_rejected",
-          prompt: "Se va a pedir dónde guardar: cancela en vez de guardar.",
-          kind: "briefing",
-        },
-      }),
-    );
-    expect(
-      await screen.findByText("Se va a pedir dónde guardar: cancela en vez de guardar."),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^No/ })).not.toBeInTheDocument();
-
-    await user.keyboard("s");
-
-    expect(server.posted("/api/answer")).toEqual([{ answer: "s" }]);
-  });
-
   it("keeps the instructions of the running check in view once it has started", async () => {
     const report = aReportView();
     const running = report.sets[1]?.checks[2];
@@ -203,7 +181,7 @@ describe("the session", () => {
     }
     renderConsoleAt(
       "/",
-      aSnapshot({ report, running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 }, call: null }),
+      aSnapshot({ report, running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 } }),
     );
 
     const bar = await screen.findByRole("region", { name: "En curso" });

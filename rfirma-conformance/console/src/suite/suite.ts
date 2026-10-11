@@ -1,4 +1,3 @@
-import type { Answer } from "../contract/Answer";
 import type { ClientChoice } from "../contract/ClientChoice";
 import type { Comparison } from "../contract/Comparison";
 import type { DeducedCoordinates } from "../contract/DeducedCoordinates";
@@ -79,7 +78,6 @@ export function suiteOver(wire: Wire, token: string) {
     reset: (check: string) => post("/api/reset", { check } satisfies Reset),
     stop: () => post("/api/stop", {}),
     skip: () => post("/api/skip", {}),
-    answer: (answer: string | null) => post("/api/answer", { answer } satisfies Answer),
   };
 }
 
