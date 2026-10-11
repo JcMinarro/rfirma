@@ -4,9 +4,9 @@
     "src/sede/main.tsx",
     "i18next.config.ts",
     "design-sync.entry.ts",
-    "tools/storybook-a11y.mjs"
+    "tools/storybook-a11y.mjs",
+    "tools/build-design-system.mjs"
   ],
-  "ignore": ["src/design-system/bundle/**"],
   "ignoreDependencies": ["jscpd"],
   "rules": { "catalogReferences": "off" }
 }

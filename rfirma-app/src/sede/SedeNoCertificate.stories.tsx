@@ -8,9 +8,20 @@ import { SedeNoCertificate } from "./SedeNoCertificate";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Sin certificado",
+  title: "Pantallas/Ventana de sede/Sin certificado",
   ...sedeMomentMeta,
-  parameters: { ...sedeMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 5 de la ventana de sede: no hay certificado utilizable, porque no hay ninguno o porque la sede los excluyó todos.",
+          "Úsalo en lugar del consentimiento cuando no hay nada que elegir: es otra situación, no una variante.",
+          "No pongas «Firmar» en el botón principal ni enumeres lo que la sede descartó. No quites «Cerrar» del pie: es la salida etiquetada.",
+        ].join("\n\n"),
+      },
+    },
+  },
   component: SedeNoCertificate,
   args: {
     origin: "sede.ejemplo.gob.es",

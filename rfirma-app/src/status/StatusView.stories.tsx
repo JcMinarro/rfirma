@@ -27,12 +27,20 @@ import {
 } from "./testing/fixtures";
 
 const meta = {
-  title: "Flujos/Estado/StatusView",
+  title: "Pantallas/Estado/StatusView",
   component: StatusView,
   decorators: [inStatusWindow],
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "La vista del estado de rFirma: una fila por señal, con su detalle y sus acciones, y el botón «Volver a comprobar».",
+          "Úsala en el cuerpo de la ventana principal cuando la persona abre «Estado de rFirma».",
+          "No le conectes puertos: es una vista sin estado y las comprobaciones las hace quien la monta.",
+        ].join("\n\n"),
+      },
+    },
     layout: "centered",
-    designSync: { cardMode: "single", primaryStory: "EverythingCorrect", viewport: "1240x760" },
   },
   args: {
     onClose: fn(),

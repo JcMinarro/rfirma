@@ -7,9 +7,21 @@ import { placementStateOf } from "./testing/fixtures";
 const RECT = { x0: 100, y0: 100, x1: 300, y1: 180 };
 
 const meta = {
-  title: "Flujos/Firma/PlacementBlock",
+  title: "Dominio/Firma/PlacementBlock",
   component: PlacementBlock,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El bloque «Colocación» de la firma visible: el segmentado «Una página | Varias | Todas», la línea de la página, el campo de «Varias» con su error y el botón de la página.",
+          "Úsalo donde la persona decida en qué páginas va la firma visible; lo comparten el panel de firma de la ventana principal y el momento de marcar la firma de la sede.",
+          "No le pases píxeles ni gestos del visor, ni repitas sus validaciones fuera: el error del campo «Varias» llega ya en el estado.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "column" },
+  },
   decorators: [
     (Story) => (
       <section className="panel__placement" style={{ width: 332 }}>

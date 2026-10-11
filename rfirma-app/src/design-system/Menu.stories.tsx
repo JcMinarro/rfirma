@@ -49,6 +49,17 @@ function MenuDemo({ startsOpen }: { startsOpen: boolean }) {
 const meta = {
   title: "Primitivos/Menu",
   component: MenuDemo,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          'El menú desplegable sobre `Popover`, con `role="menu"`: lleva el foco a la primera entrada, se recorre con flechas, Inicio y Fin, y devuelve el foco al cerrarse.',
+          "Úsalo para una lista de acciones que cuelga de un botón. Para elegir un valor, `Select` o `Combobox`; para una acción principal con alternativas, `SplitButton`.",
+          "No metas en él controles que no sean `MenuItem`. No le pongas `role` ni `tabIndex`: los fija él.",
+        ].join("\n\n"),
+      },
+    },
+  },
   args: { startsOpen: true },
   argTypes: { startsOpen: { control: "boolean" } },
 } satisfies Meta<typeof MenuDemo>;

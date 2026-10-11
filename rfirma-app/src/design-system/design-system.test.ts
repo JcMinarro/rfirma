@@ -86,7 +86,7 @@ const withoutMediaQueries = (css: string) => css.replace(/@media[^{]*\{[\s\S]*?\
 
 /**
  * Todo lo que declaran los bloques `:root` sin tema, fundidos. El bundle los
- * reparte entre siete ficheros —espaciado, radio, sombra…— y aquí interesa el
+ * reparte entre varios ficheros —espaciado, radio, sombra…— y aquí interesa el
  * conjunto, que es lo que ve la cascada.
  */
 function themelessDeclarations(css: string): Map<string, string> {
@@ -169,34 +169,6 @@ describe("los tokens de color", () => {
     }
   });
 
-  it("conserva los literales de la paleta, que no cambian con el tema", () => {
-    // Son referencia, no consumo: lo que se usa son los roles. Estaban en el
-    // bundle y la reescritura a mano los perdió (ID-47).
-    const declared = themelessDeclarations(tokens);
-    const literals = [
-      "--rf-color-primary",
-      "--rf-color-on-primary",
-      "--rf-color-background",
-      "--rf-color-surface",
-      "--rf-color-border",
-      "--rf-color-text",
-      "--rf-color-text-muted",
-      "--rf-color-accent",
-    ];
-
-    for (const token of literals) {
-      expect(declared.has(token), `falta ${token}`).toBe(true);
-    }
-  });
-
-  it("mantiene `.rf-on-light` como alias del tema claro", () => {
-    // Sección 9. Es un alias de `data-theme="light"`, así que tiene que estar
-    // en el MISMO selector: uno que se quedara atrás sería un tema a medias.
-    const light = tokens.slice(tokens.indexOf('[data-theme="light"]'));
-
-    expect(light.slice(0, light.indexOf("{"))).toContain(".rf-on-light");
-  });
-
   it("repinta el fondo con especificidad 0, para no aplastar una superficie", () => {
     // Invariante 3 de la sección 1.
     expect(components).toContain(":where([data-theme]");
@@ -204,32 +176,24 @@ describe("los tokens de color", () => {
 });
 
 describe("los tokens sin tema", () => {
-  it("tiene los nueve escalones de espaciado de la ficha", () => {
-    const scale = ["8px", "16px", "24px", "40px", "48px", "64px", "72px", "80px", "144px"];
+  it("tiene una sola escala de espaciado, con nombre y en px", () => {
     const declared = themelessDeclarations(tokens);
-
-    scale.forEach((value, index) => {
-      expect(declared.get(`--rf-space-${index + 1}`)).toBe(value);
-    });
-  });
-
-  it("resuelve los alias semánticos sobre la escala, sin px sueltos", () => {
-    const declared = themelessDeclarations(tokens);
-    const aliases = {
-      "--rf-space-xs": "--rf-space-1",
-      "--rf-space-sm": "--rf-space-2",
-      "--rf-space-md": "--rf-space-3",
-      "--rf-space-lg": "--rf-space-5",
-      "--rf-space-xl": "--rf-space-8",
-      "--rf-space-2xl": "--rf-space-9",
+    const scale = {
+      "--rf-space-xs": "8px",
+      "--rf-space-sm": "16px",
+      "--rf-space-md": "24px",
+      "--rf-space-lg": "48px",
     };
 
-    for (const [alias, step] of Object.entries(aliases)) {
-      expect(declared.get(alias)).toBe(`var(${step})`);
+    expect([...declared.keys()].filter((name) => name.startsWith("--rf-space-"))).toEqual(
+      Object.keys(scale),
+    );
+    for (const [step, value] of Object.entries(scale)) {
+      expect(declared.get(step)).toBe(value);
     }
   });
 
-  it("declara los radios, las dos elevaciones y los puntos de ruptura", () => {
+  it("declara los radios, las dos elevaciones y las familias", () => {
     const declared = themelessDeclarations(tokens);
     const expected = [
       "--rf-radius-sm",
@@ -239,12 +203,6 @@ describe("los tokens sin tema", () => {
       "--rf-radius-pill",
       "--rf-shadow-card",
       "--rf-shadow-elevated",
-      "--rf-bp-xs",
-      "--rf-bp-sm",
-      "--rf-bp-md",
-      "--rf-bp-lg",
-      "--rf-bp-xl",
-      "--rf-bp-2xl",
       "--rf-font-display",
       "--rf-font-body",
     ];
@@ -254,16 +212,17 @@ describe("los tokens sin tema", () => {
     }
   });
 
-  it("da las dos sombras en cuatro capas", () => {
-    // Lo que la reescritura a mano aplanó a un `0 1px 2px` (ID-47). Las capas
-    // vacías del principio no son ruido: son las ranuras que el sistema deja
-    // para un anillo y un contorno, y quitarlas cambia el orden de pintado.
+  it("da las dos sombras sin capas transparentes", () => {
     const declared = themelessDeclarations(tokens);
 
     for (const shadow of ["--rf-shadow-card", "--rf-shadow-elevated"]) {
       const layers = (declared.get(shadow) ?? "").split(/,(?![^(]*\))/);
 
-      expect(layers, `capas de ${shadow}`).toHaveLength(4);
+      expect(layers, `capas de ${shadow}`).toHaveLength(2);
+      expect(
+        layers.filter((layer) => /rgba\(0,0,0,0\)/.test(layer)),
+        shadow,
+      ).toEqual([]);
     }
   });
 
@@ -278,13 +237,12 @@ describe("los tokens sin tema", () => {
     expect(components).toContain("var(--rf-focus-ring-offset)");
   });
 
-  it("tiene dos escalones de movimiento reales, no tres", () => {
-    // Sección 6 y nota final de la sección 12.
+  it("tiene dos escalones de movimiento, sin un tercero que repita el segundo", () => {
     const declared = themelessDeclarations(tokens);
 
     expect(declared.get("--rf-duration-fast")).toBe("150ms");
     expect(declared.get("--rf-duration-base")).toBe("300ms");
-    expect(declared.get("--rf-duration-slow")).toBe(declared.get("--rf-duration-base"));
+    expect(declared.has("--rf-duration-slow")).toBe(false);
   });
 
   it("apaga el movimiento desde la capa de tokens y no desde los componentes", () => {
@@ -294,7 +252,6 @@ describe("los tokens sin tema", () => {
 });
 
 const typographicRoles = [
-  "display",
   "heading",
   "headline",
   "title",
@@ -304,12 +261,15 @@ const typographicRoles = [
   "caption",
 ] as const;
 
+const sizedOverTitle = new Set<string>(["headline", "subtitle"]);
+
 describe("la tipografía", () => {
-  it("define los ocho roles, cada uno con tamaño, peso e interlínea", () => {
+  it("define cada rol con tamaño, peso e interlínea", () => {
     const declared = themelessDeclarations(tokens);
 
     for (const role of typographicRoles) {
-      for (const facet of ["size", "weight", "leading"]) {
+      const facets = sizedOverTitle.has(role) ? ["size", "leading"] : ["size", "weight", "leading"];
+      for (const facet of facets) {
         expect(declared.get(`--rf-${role}-${facet}`), `falta --rf-${role}-${facet}`).toBeDefined();
       }
     }
@@ -382,14 +342,8 @@ describe("el vocabulario de clases", () => {
    */
   const vocabulary = new Set([
     "rf-root",
-    "rf-on-light",
-    "rf-display",
     "rf-heading",
-    "rf-headline",
     "rf-title",
-    "rf-subtitle",
-    "rf-ui",
-    "rf-ui--strong",
     "rf-body",
     "rf-caption",
     "rf-prose",
@@ -397,13 +351,11 @@ describe("el vocabulario de clases", () => {
     "rf-text-primary",
     "rf-stack",
     "rf-row",
-    "rf-section",
     "rf-divider",
     "rf-gap-xs",
     "rf-gap-sm",
     "rf-gap-md",
     "rf-gap-lg",
-    "rf-surface",
     "rf-card",
     "rf-card--elevated",
     "rf-btn",
@@ -439,8 +391,8 @@ describe("el vocabulario de clases", () => {
     }
   });
 
-  it("da a cada rol tipográfico una clase que bebe de sus tokens", () => {
-    for (const role of typographicRoles) {
+  it("hace que cada clase de rol tipográfico beba de sus tokens", () => {
+    for (const role of ["heading", "title", "body", "caption"]) {
       const rule = new RegExp(`\\.rf-${role}\\s*\\{([^}]*)\\}`).exec(components)?.[1] ?? "";
 
       expect(rule, `.rf-${role}`).toContain(`font-size: var(--rf-${role}-size)`);

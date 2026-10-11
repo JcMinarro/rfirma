@@ -6,9 +6,20 @@ import { inDialogWindow } from "../../.storybook/decorators/dialogWindow";
 import { UnsealedPagesDialog } from "./UnsealedPagesDialog";
 
 const meta = {
-  title: "Flujos/Firma/UnsealedPagesDialog",
+  title: "Pantallas/Firma/UnsealedPagesDialog",
   component: UnsealedPagesDialog,
-  parameters: { layout: "centered", designSync: { cardMode: "single", viewport: "1340x780" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El diálogo que avisa de cuántas páginas del conjunto elegido se quedan sin firma visible.",
+          "Ábrelo justo antes de firmar y solo cuando alguna página se va a quedar sin sello: es el único aviso, porque el visor no deja marca por página.",
+          "No digas «recortadas»: la firma cubre el documento entero y lo que falta es la marca visible. No enumeres las páginas: basta el recuento.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+  },
   decorators: [inDialogWindow],
   args: { fallen: 3, onConfirm: fn(), onCancel: fn() },
 } satisfies Meta<typeof UnsealedPagesDialog>;

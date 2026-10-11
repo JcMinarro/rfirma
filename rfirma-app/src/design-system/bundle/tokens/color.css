@@ -4,11 +4,6 @@
  * y `data-theme="light|dark"` lo fuerza sobre cualquier elemento, no solo la
  * raiz - eso permite una zona clara dentro de una pantalla oscura y al reves.
  *
- * Los tokens `--rf-color-*` son los literales de la especificacion de partida
- * y NO cambian con el tema; estan aqui como referencia. Lo que consume el
- * sistema son los roles semanticos `--rf-bg`, `--rf-text`, `--rf-primary`...
- * que si cambian.
- *
  * CORRECCION DE ACCESIBILIDAD: la especificacion de partida daba por bueno
  * `on-primary` (#ffffff) sobre `primary` (#94a3b8) como WCAG AA a 5,8:1. El
  * valor real es 2,56:1 y falla AA. Cada par que se usa aqui esta calculado y
@@ -16,24 +11,11 @@
  * todos de la misma familia slate.
  */
 
-/* --------------------------------- Literales de la especificacion origen */
-:root {
-  --rf-color-primary: #94a3b8;
-  --rf-color-on-primary: #ffffff;
-  --rf-color-background: #18181b;
-  --rf-color-surface: #15171a;
-  --rf-color-border: #e5e5e5;
-  --rf-color-text: #000000;
-  --rf-color-text-muted: #ffffff;
-  --rf-color-accent: #64748b;
-}
-
 /* ------------------------------------------------------------ Tema claro */
 /* Es tambien el bloque base: define TODOS los roles, para que ningun rol
  * exista solo dentro de una media query. */
 :root,
-[data-theme="light"],
-.rf-on-light {
+[data-theme="light"] {
   color-scheme: light;
 
   --rf-bg: #ffffff;

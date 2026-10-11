@@ -6,6 +6,17 @@ import { Stack } from "./Stack";
 const meta = {
   title: "Primitivos/Stack",
   component: Stack,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La pila vertical `rf-stack`: coloca sus hijos uno debajo de otro con un hueco de la escala.",
+          "Úsala para apilar bloques: un título, su texto y sus acciones. Para ponerlos en fila, `Row`.",
+          "No separes los hijos con márgenes propios ni con `gap` literal: elige un hueco de la escala.",
+        ].join("\n\n"),
+      },
+    },
+  },
   argTypes: { gap: { control: "select", options: [undefined, "xs", "md"] } },
   render: (args) => (
     <Stack {...args}>

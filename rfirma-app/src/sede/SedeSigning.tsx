@@ -48,7 +48,6 @@ export function SedeSigning({ origin, certificate, phase, onCancel }: SedeSignin
       footer={
         returning ? null : (
           <>
-            <div className="sede-window__spacer" />
             <Button variant="ghost" onClick={onCancel}>
               {t("actions.cancel")}
             </Button>

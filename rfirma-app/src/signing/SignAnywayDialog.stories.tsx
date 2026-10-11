@@ -13,9 +13,20 @@ import {
 } from "./testing/storyReports";
 
 const meta = {
-  title: "Flujos/Firma/SignAnywayDialog",
+  title: "Pantallas/Firma/SignAnywayDialog",
   component: SignAnywayDialog,
-  parameters: { layout: "centered", designSync: { cardMode: "single", viewport: "1340x780" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El diálogo «¿Firmar de todos modos?», con una fila por cada problema del documento.",
+          "Ábrelo justo antes de firmar cuando el documento trae alguna firma caducada o no válida, o algún hallazgo.",
+          "No le añadas un recuento: la lista ya lo cuenta. No metas las firmas válidas: para verlas todas está «Ver firmas».",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+  },
   decorators: [inDialogWindow],
   args: {
     problems: signingProblems(MIXED_REPORT),

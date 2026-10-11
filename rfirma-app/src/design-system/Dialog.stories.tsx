@@ -12,6 +12,15 @@ const meta = {
   title: "Primitivos/Dialog",
   component: Dialog,
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "El diálogo modal `rf-dialog` sobre su velo: mantiene el foco dentro, Intro pulsa su botón principal y, si se puede cerrar, Escape lo cierra.",
+          'Úsalo para una decisión o un aviso que interrumpe la pantalla. `role="alertdialog"` cuando pide confirmar algo grave; `dialog`, en el resto de casos.',
+          "No le pongas `role`, `aria-modal` ni `tabIndex`: los fija él. No abras un diálogo para algo que cabe en la pantalla.",
+        ].join("\n\n"),
+      },
+    },
     layout: "centered",
     designSync: { cardMode: "single", primaryStory: "Closable", viewport: "1340x780" },
   },

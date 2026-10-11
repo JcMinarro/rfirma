@@ -45,7 +45,6 @@ export function SedeConfirm({ messageCode, onConfirm, onCancel }: SedeConfirmPro
       onEscape={onCancel}
       footer={
         <>
-          <div className="sede-window__spacer" />
           <Button variant="ghost" onClick={onCancel}>
             {t("actions.cancel")}
           </Button>

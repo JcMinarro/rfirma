@@ -6,9 +6,20 @@ import { SedeConfirm } from "./SedeConfirm";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Confirmar",
+  title: "Pantallas/Ventana de sede/Confirmar",
   ...sedeMomentMeta,
-  parameters: { ...sedeMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 2b de la ventana de sede: la pregunta que el validador del original obliga a hacer antes de consentir, con sus palabras y sus dos salidas.",
+          "Úsalo cuando el validador no da por buenas las firmas previas o el PDF está certificado: llega antes del consentimiento, no encima de él.",
+          "No resumas ni reinterpretes la pregunta: la decisión no es de rFirma. No lo pintes como un diálogo sobre el consentimiento.",
+        ].join("\n\n"),
+      },
+    },
+  },
   component: SedeConfirm,
   args: { onConfirm: sedeViewActions.onConfirmSignatures, onCancel: sedeViewActions.onCancel },
 } satisfies Meta<typeof SedeConfirm>;

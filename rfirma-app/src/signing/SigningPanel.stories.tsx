@@ -43,10 +43,21 @@ const entityChosen = {
 } as const;
 
 const meta = {
-  title: "Flujos/Firma/SigningPanel",
+  title: "Pantallas/Firma/SigningPanel",
   component: SigningPanel,
   decorators: [inPanelColumn],
-  parameters: { ...panelStoryParameters, designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La columna derecha antes de firmar: todo lo que hay que decidir, en una zona que se desliza, y el pie fijo con el botón de firmar.",
+          "Úsalo en la región del panel de `MainWindow` cuando hay un documento abierto para firmar.",
+          "No le añadas otro botón primario: es la única región de la aplicación que lo tiene, y va al final. No compongas aquí el texto del recuadro: llega resuelto.",
+        ].join("\n\n"),
+      },
+    },
+    ...panelStoryParameters,
+  },
   args: {
     document: { id: "doc-1", name: "contrato.pdf", sizeBytes: 2_400_000 },
     previousSignatures: aReport([]),

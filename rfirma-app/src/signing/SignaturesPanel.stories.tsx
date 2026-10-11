@@ -18,10 +18,21 @@ const OWN_SIGNATURE = aSignature({ name: "LOVELACE BYRON ADA", idNumber: "000000
 const SIGNED_AT = new Date(2026, 9, 3, 11, 4);
 
 const meta = {
-  title: "Flujos/Firma/SignaturesPanel",
+  title: "Pantallas/Firma/SignaturesPanel",
   component: SignaturesPanel,
   decorators: [inPanelColumn],
-  parameters: { ...panelStoryParameters, designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La columna derecha con todas las firmas del documento: el acuse después de firmarlo o la lectura de firmas al abrirlo solo para verlas.",
+          "Úsala en la región del panel de `MainWindow`, en lugar de `SigningPanel`, cuando el documento acaba de firmarse aquí o se abre para ver sus firmas.",
+          "No enseñes la ruta del fichero, solo su nombre. En la lectura de firmas no hay «Cambiar»: solo el acuse mueve el destino.",
+        ].join("\n\n"),
+      },
+    },
+    ...panelStoryParameters,
+  },
   args: {
     documentName: "contrato.pdf",
     destination: WRITABLE_DESTINATION,

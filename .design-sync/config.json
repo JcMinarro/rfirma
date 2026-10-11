@@ -12,44 +12,27 @@
     "Card": "Card",
     "CertificateCard": "CertificateCard",
     "CertificateSelect": "CertificateSelect",
-    "Clienteantiguo": "SedeOldWebClient",
     "Combobox": "Combobox",
-    "Confirmar": "SedeConfirm",
-    "Consentimiento": "SedeConsent",
-    "Desenlace": "SedeOutcome",
+    "DesignRoot": "DesignRoot",
     "Dialog": "Dialog",
     "DocumentTabs": "DocumentTabs",
-    "DocumentViewer": "DocumentViewer",
     "ErrorNotice": "ErrorNotice",
-    "Espera": "SedeWaiting",
     "Field": "Field",
-    "Firmando": "SedeSigning",
-    "Guardarycargar": "SedeTransfer",
-    "Header": "Header",
-    "MainWindow": "MainWindow",
-    "Marcarlafirma": "SedeMarking",
+    "Icon": "Icon",
     "Menu": "Menu",
+    "MenuItem": "MenuItem",
     "NewVersionStrip": "NewVersionStrip",
     "PlacementBlock": "PlacementBlock",
     "Popover": "Popover",
     "ProgressBar": "ProgressBar",
-    "RecentRows": "RecentsSection",
+    "RecentsSection": "RecentsSection",
     "Row": "Row",
+    "SedeBody": "SedeBody",
     "Select": "Select",
-    "SignAnywayDialog": "SignAnywayDialog",
-    "SignaturesDialog": "SignaturesDialog",
-    "SignaturesPanel": "SignaturesPanel",
-    "SigningPanel": "SigningPanel",
-    "SigningProgressDialog": "SigningProgressDialog",
-    "Sincertificado": "SedeNoCertificate",
     "SplitButton": "SplitButton",
     "Stack": "Stack",
-    "StatusView": "StatusView",
     "Switch": "Switch",
-    "Tabs": "Tabs",
-    "UnsealedPagesDialog": "UnsealedPagesDialog",
-    "VisibleSignatureFieldset": "VisibleSignatureFieldset",
-    "WithdrawCertificateView": "WithdrawCertificateView"
+    "Tabs": "Tabs"
   },
   "extraEntries": [
     "./design-sync.entry.ts"
@@ -65,20 +48,17 @@
     "src/design-system/bundle/fonts/fonts.css"
   ],
   "overrides": {
+    "CertificateSelect": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
     "Dialog": {
       "cardMode": "single",
       "primaryStory": "Closable",
       "viewport": "1340x780"
     },
-    "DocumentViewer": {
-      "cardMode": "column"
-    },
     "ErrorNotice": {
       "cardMode": "column"
-    },
-    "MainWindow": {
-      "cardMode": "column",
-      "viewport": "1160x620"
     },
     "PlacementBlock": {
       "cardMode": "column"
@@ -89,66 +69,6 @@
     },
     "RecentsSection": {
       "cardMode": "column"
-    },
-    "SedeConfirm": {
-      "cardMode": "column"
-    },
-    "SedeConsent": {
-      "cardMode": "single",
-      "primaryStory": "Consent"
-    },
-    "SedeMarking": {
-      "cardMode": "column"
-    },
-    "SedeNoCertificate": {
-      "cardMode": "column"
-    },
-    "SedeOutcome": {
-      "cardMode": "column"
-    },
-    "SedeSigning": {
-      "cardMode": "column"
-    },
-    "SedeTransfer": {
-      "cardMode": "column"
-    },
-    "SedeWaiting": {
-      "cardMode": "column"
-    },
-    "SignAnywayDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "SignaturesDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "SignaturesPanel": {
-      "cardMode": "column"
-    },
-    "SigningPanel": {
-      "cardMode": "column"
-    },
-    "SigningProgressDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "StatusView": {
-      "cardMode": "single",
-      "primaryStory": "EverythingCorrect",
-      "viewport": "1240x760"
-    },
-    "UnsealedPagesDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "VisibleSignatureFieldset": {
-      "cardMode": "column"
-    },
-    "WithdrawCertificateView": {
-      "cardMode": "single",
-      "primaryStory": "Question",
-      "viewport": "1240x760"
     }
   },
   "readmeHeader": ".design-sync/conventions.md"

@@ -25,7 +25,6 @@ export const inPanelColumn: Decorator = (Story) => (
 
 export const panelStoryParameters = {
   layout: "centered",
-  designSync: { cardMode: "column" },
 } as const;
 
 export const WRITABLE_DESTINATION: Destination = {

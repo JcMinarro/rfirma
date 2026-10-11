@@ -34,23 +34,36 @@ Clases a mano, solo las que no tienen primitivo:
 
 | Familia | Clases |
 | --- | --- |
-| Superficies | `rf-surface`, `rf-section`, `rf-divider` |
-| Texto | `rf-display`, `rf-heading`, `rf-headline`, `rf-title`, `rf-subtitle`, `rf-ui`, `rf-ui--strong`, `rf-body`, `rf-prose`, `rf-caption`, `rf-label`, `rf-hint`, `rf-text-muted`, `rf-text-primary` |
+| Superficies | `rf-divider` |
+| Texto | `rf-heading`, `rf-title`, `rf-body`, `rf-prose`, `rf-caption`, `rf-label`, `rf-hint`, `rf-text-muted`, `rf-text-primary` |
 | Formularios | `rf-input` |
 
 El texto elige rol, no números: cada clase de rol fija tamaño, peso e interlínea juntos. No escribas `font-size`, `font-weight` ni `line-height` literales.
 
 Las clases de los primitivos (`rf-btn`, `rf-card`, `rf-field`, `rf-badge`, `rf-dialog`, `rf-scrim`, `rf-stack`, `rf-row`, `rf-gap-*`) las pone el primitivo: no las escribas.
 
-Tokens: color `--rf-bg`, `--rf-surface`, `--rf-text`, `--rf-text-muted`, `--rf-primary`, `--rf-primary-hover`, `--rf-on-primary`, `--rf-accent`, `--rf-border-subtle`, `--rf-border-strong`; espacio `--rf-space-xs` … `--rf-space-2xl`; radio `--rf-radius-sm` / `-md` / `-lg` / `-xl` / `-pill`; sombra `--rf-shadow-card`, `--rf-shadow-elevated`; movimiento `--rf-duration-fast` / `-base` / `-slow`, `--rf-easing`; tipografía `--rf-<rol>-size` / `-weight` / `-leading` por rol, `--rf-ui-strong-weight` y `--rf-body-prose-leading`.
+Tokens: color `--rf-bg`, `--rf-surface`, `--rf-text`, `--rf-text-muted`, `--rf-primary`, `--rf-primary-hover`, `--rf-on-primary`, `--rf-accent`, `--rf-border-subtle`, `--rf-border-strong`; espacio `--rf-space-xs` … `--rf-space-lg`; radio `--rf-radius-sm` / `-md` / `-lg` / `-xl` / `-pill`; sombra `--rf-shadow-card`, `--rf-shadow-elevated`; movimiento `--rf-duration-fast` / `-base`, `--rf-easing`; tipografía `--rf-<rol>-size` / `-weight` / `-leading` por rol (sin `-weight` en `headline` y `subtitle`), `--rf-ui-strong-weight` y `--rf-body-prose-leading`.
 
 ### Iconos
 
-Componentes `*Icon` con prop `size` en px: `CheckCircleIcon`, `CrossCircleIcon`, `AlertIcon`, `InfoIcon`, `FileIcon`, `FolderIcon`, `PersonIcon`, `SearchIcon`, `CopyIcon`, `ExternalLinkIcon`, `CloseIcon`, `SpinnerIcon`, `ChevronDownIcon`, `ChevronRightIcon`, entre otros (todos en `window.RFirma`).
+Un solo componente, `Icon`, que se pide por papel y no por dibujo: `<Icon name="done" />`. `size` es el lado en px y, si no lo das, cada papel trae el suyo; `strokeWidth`, el grosor. Los papeles están en la historia `Primitivos/Icon`. El icono es decorativo y toma el color del texto: acompáñalo siempre de una palabra.
 
 ### Pantallas
 
-La ventana que abre una sede electrónica (520 × 420) se compone de momentos, cada uno un componente con props finas y sus órdenes como props, sin puertos: `SedeWaiting`, `SedeConsent`, `SedeMarking`, `SedeOutcome` y los demás `Sede*` del catálogo. Úsalos cuando el diseño sea uno de esos momentos; sus textos salen del catálogo. Las pantallas nuevas se componen con los primitivos de arriba, el texto con sus clases y los iconos.
+El kit no trae pantallas: se componen con los primitivos y las piezas de dominio, el texto con sus clases y los iconos.
+
+Un momento nuevo de la ventana que abre una sede electrónica se diseña dentro de `SedeBody`, su marco: el cuerpo que se desplaza y el pie con las acciones. Va sobre una superficie de 520 × 420 con la clase `sede-window`, como en la ventana real.
+
+```jsx
+const { DesignRoot, SedeBody, Button } = window.RFirma;
+<DesignRoot language="es" theme="light">
+  <div className="sede-window" style={{ width: 520, height: 420 }}>
+    <SedeBody footer={<><Button variant="ghost">Cancelar</Button><Button variant="primary">Continuar</Button></>}>
+      {/* el momento */}
+    </SedeBody>
+  </div>
+</DesignRoot>
+```
 
 ### Catálogo publicado
 
@@ -61,39 +74,22 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | --- | --- | --- |
 | Dominio | Actualizaciones / NewVersionStrip | `NewVersionStrip` |
 | Dominio | Documentos / DocumentTabs | `DocumentTabs` |
-| Dominio | Documentos / RecentRows | `RecentsSection` |
+| Dominio | Documentos / RecentsSection | `RecentsSection` |
 | Dominio | Errores / ErrorNotice | `ErrorNotice` |
 | Dominio | Firma / CertificateCard | `CertificateCard` |
 | Dominio | Firma / CertificateSelect | `CertificateSelect` |
-| Flujos | Documentos / DocumentViewer | `DocumentViewer` |
-| Flujos | Estado / StatusView | `StatusView` |
-| Flujos | Estado / WithdrawCertificateView | `WithdrawCertificateView` |
-| Flujos | Firma / PlacementBlock | `PlacementBlock` |
-| Flujos | Firma / SignAnywayDialog | `SignAnywayDialog` |
-| Flujos | Firma / SignaturesDialog | `SignaturesDialog` |
-| Flujos | Firma / SignaturesPanel | `SignaturesPanel` |
-| Flujos | Firma / SigningPanel | `SigningPanel` |
-| Flujos | Firma / SigningProgressDialog | `SigningProgressDialog` |
-| Flujos | Firma / UnsealedPagesDialog | `UnsealedPagesDialog` |
-| Flujos | Firma / VisibleSignatureFieldset | `VisibleSignatureFieldset` |
-| Flujos | Sede / Cliente antiguo | `SedeOldWebClient` |
-| Flujos | Sede / Confirmar | `SedeConfirm` |
-| Flujos | Sede / Consentimiento | `SedeConsent` |
-| Flujos | Sede / Desenlace | `SedeOutcome` |
-| Flujos | Sede / Espera | `SedeWaiting` |
-| Flujos | Sede / Firmando | `SedeSigning` |
-| Flujos | Sede / Guardar y cargar | `SedeTransfer` |
-| Flujos | Sede / Marcar la firma | `SedeMarking` |
-| Flujos | Sede / Sin certificado | `SedeNoCertificate` |
-| Flujos | Ventana principal / Header | `Header` |
-| Flujos | Ventana principal / MainWindow | `MainWindow` |
+| Dominio | Firma / PlacementBlock | `PlacementBlock` |
+| Dominio | Sede / SedeBody | `SedeBody` |
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |
 | Primitivos | Combobox | `Combobox` |
+| Primitivos | DesignRoot | `DesignRoot` |
 | Primitivos | Dialog | `Dialog` |
 | Primitivos | Field | `Field` |
+| Primitivos | Icon | `Icon` |
 | Primitivos | Menu | `Menu` |
+| Primitivos | MenuItem | `MenuItem` |
 | Primitivos | Popover | `Popover` |
 | Primitivos | ProgressBar | `ProgressBar` |
 | Primitivos | Row | `Row` |
@@ -107,17 +103,16 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 ### Dónde mirar
 
 - `styles.css` e `_ds_bundle.css`: todas las clases y tokens.
-- `components/sede/<Momento>/<Momento>.prompt.md`: los estados de cada momento de la ventana de sede.
 
 ### Ejemplo
 
 ```jsx
-const { DesignRoot, Card, Stack, Row, Button, CheckCircleIcon } = window.RFirma;
+const { DesignRoot, Card, Stack, Row, Button, Icon } = window.RFirma;
 <DesignRoot language="es" theme="light">
   <Card>
     <Stack gap="md" style={{ padding: "var(--rf-space-lg)" }}>
       <Row gap="xs">
-        <CheckCircleIcon size={24} />
+        <Icon name="done" size={24} />
         <p className="rf-title">Documento firmado</p>
       </Row>
       <p className="rf-prose">La firma se ha guardado junto al documento.</p>

@@ -32,9 +32,20 @@ const emptyViewer = (
 );
 
 const meta = {
-  title: "Flujos/Ventana principal/MainWindow",
+  title: "Pantallas/Ventana principal/MainWindow",
   component: MainWindow,
-  parameters: { layout: "centered", designSync: { cardMode: "column", viewport: "1160x620" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El marco de la ventana principal: la cabecera, el hueco de la franja de notificación y, debajo, el visor y el panel.",
+          "Úsalo para componer cualquier situación de la ventana principal: todas son combinaciones del contenido de sus regiones, no pantallas distintas.",
+          "No ocultes el panel con CSS: pásale `null`. No añadas navegación ni pantallas: el recorrido entero ocurre aquí.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+  },
   decorators: [
     (Story) => (
       <div

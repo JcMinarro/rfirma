@@ -18,6 +18,11 @@ se diseña un recorrido nuevo.
 - **La capa decide la publicación.** Primitivos, dominio y flujos se publican en Claude Design;
   las pantallas son referencia local. No se publican páginas: el kit es material para componer
   recorridos nuevos, no un archivo de pantalla ya decidida.
+- **Una página es pantalla aunque su ventana la elija entre otras.** Cada momento de la ventana de
+  sede llena el cuerpo de la ventana y la ventana muestra uno por etapa: es una pantalla, no un
+  flujo. Lo que se publica de esa ventana es su marco, en dominio, para diseñar un momento nuevo.
+  La capa de flujos queda para recorridos compuestos y reutilizables que más de una pantalla monta;
+  al fijarse esta frontera, se quedó vacía.
 - **La selección se deriva, no se copia.** Una receta regenera la entrada y el `titleMap` desde
   los títulos, y se corre antes de cada `/design-sync`; el CI no la verifica, porque solo
   `/design-sync` consume esos ficheros. Lo que una tarjeta

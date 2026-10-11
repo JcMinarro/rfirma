@@ -53,6 +53,17 @@ function ComboboxDemo({ defaultOpen }: { defaultOpen: boolean }) {
 const meta = {
   title: "Primitivos/Combobox",
   component: ComboboxDemo,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Una lista desplegable con buscador: caja cerrada, buscador al abrirla, filtrado que ignora tildes, grupos y teclado completo.",
+          "Úsala cuando hay que elegir una opción entre muchas y conviene buscar. Para pocas opciones de texto fijo, `Select`.",
+          "No escribas los textos en línea: llegan del catálogo de quien la usa. No metas acciones dentro de una opción: elegirla es la única acción.",
+        ].join("\n\n"),
+      },
+    },
+  },
   args: { defaultOpen: false },
   argTypes: { defaultOpen: { control: "boolean" } },
 } satisfies Meta<typeof ComboboxDemo>;

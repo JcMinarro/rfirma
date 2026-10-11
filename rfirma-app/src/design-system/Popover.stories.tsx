@@ -34,7 +34,18 @@ function PopoverDemo({ startsOpen, inPortal }: { startsOpen: boolean; inPortal: 
 const meta = {
   title: "Primitivos/Popover",
   component: PopoverDemo,
-  parameters: { designSync: { cardMode: "single", primaryStory: "Open" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El panel flotante de los desplegables: se cierra al pulsar fuera, con Escape o tabulando desde dentro, y mueve el foco al abrirse y al cerrarse.",
+          "Úsalo como base de un desplegable propio. Si lo que quieres es un menú o una lista de opciones, usa `Menu`, `Select` o `Combobox`, que ya lo llevan dentro.",
+          "No le pases `style`: la colocación es suya. No lo uses como diálogo: no es modal.",
+        ].join("\n\n"),
+      },
+    },
+    designSync: { cardMode: "single", primaryStory: "Open" },
+  },
   args: { startsOpen: true, inPortal: false },
   argTypes: { startsOpen: { control: "boolean" }, inPortal: { control: "boolean" } },
 } satisfies Meta<typeof PopoverDemo>;

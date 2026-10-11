@@ -62,7 +62,6 @@ export function SedeWaiting({ moment, onInstallLocalCa, onCancel }: SedeWaitingP
       footer={
         <>
           {unreachable && <p className="rf-hint sede-waiting__retry">{t("sede.repair.retry")}</p>}
-          <div className="sede-window__spacer" />
           <Button variant="ghost" onClick={onCancel}>
             {unreachable ? t("actions.close") : t("actions.cancel")}
           </Button>

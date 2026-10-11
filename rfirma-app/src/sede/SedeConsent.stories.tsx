@@ -9,7 +9,7 @@ import { momentProps, sedeErrand, sedeViewActions } from "./testing/fixtures/sed
 import { certificate, consentStage, signedDocument } from "./testing/fixtures/sedeWindow";
 
 const meta = {
-  title: "Flujos/Sede/Consentimiento",
+  title: "Pantallas/Ventana de sede/Consentimiento",
   ...sedeMomentMeta,
   component: SedeConsent,
   args: {
@@ -19,7 +19,15 @@ const meta = {
   },
   parameters: {
     ...sedeMomentMeta.parameters,
-    designSync: { cardMode: "single", primaryStory: "Consent" },
+    docs: {
+      description: {
+        component: [
+          "El momento 2 de la ventana de sede: la confirmación escrita del trámite, con el selector de certificado, lo que se pide firmar y sus firmas previas.",
+          "Úsalo cuando ya hay algo que consentir; aparece también con un solo certificado, salvo que la persona deje elegir a la sede.",
+          "No lo reduzcas a un selector de certificados: es una confirmación escrita que lo lleva dentro. No uses otro selector: es el mismo `CertificateSelect` de la ventana principal.",
+        ].join("\n\n"),
+      },
+    },
   },
 } satisfies Meta<typeof SedeConsent>;
 

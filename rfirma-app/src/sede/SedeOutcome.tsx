@@ -69,7 +69,6 @@ export function SedeOutcome({ origin, outcome, onClose, onOpenHelp }: SedeOutcom
               {t("sede.outcome.autoClose", { seconds: OUTCOME_CLOSE_MS / 1000 })}
             </p>
           )}
-          <div className="sede-window__spacer" />
           <Button ref={closeButton} variant="primary" onClick={onClose}>
             {t("actions.close")}
           </Button>

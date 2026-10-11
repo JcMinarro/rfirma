@@ -9,9 +9,20 @@ import { DocumentViewer } from "./DocumentViewer";
 import { storyPdf, storyStampedPdf } from "./testing/storyPdf";
 
 const meta = {
-  title: "Flujos/Documentos/DocumentViewer",
+  title: "Pantallas/Documentos/DocumentViewer",
   component: DocumentViewer,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El visor de PDF de la ventana principal: la hoja, el recuadro de la firma visible con sus tiradores y la barra de páginas y zoom.",
+          "Úsalo en la región del visor de `MainWindow`. Sin documento enseña la zona de soltar y, debajo, lo que le pases en `emptyExtra`, normalmente los recientes.",
+          "No le pases el recuadro en píxeles: va en espacio de usuario. No lleves el fallo de apertura al panel: sin documento no hay panel y el rechazo quedaría mudo.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 800, height: 560, display: "grid" }}>

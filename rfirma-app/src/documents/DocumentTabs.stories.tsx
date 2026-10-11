@@ -9,6 +9,15 @@ const meta = {
   title: "Dominio/Documentos/DocumentTabs",
   component: DocumentTabs,
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "La tira de pestañas de los documentos abiertos, con el menú «+N» de los que no caben y el botón partido de abrir.",
+          "Úsala en lo alto de la ventana principal, una sola vez: cada pestaña es un documento y la activa es el que se ve y se firma.",
+          "No la uses como pestañas genéricas: para eso está `Tabs`. No metas aquí el contenido del documento, que es del visor.",
+        ].join("\n\n"),
+      },
+    },
     layout: "fullscreen",
     // Cada pestaña lleva su botón de cerrar junto al `tab`, y axe no admite ese hermano dentro del `tablist`.
     a11y: { config: { rules: [{ id: "aria-required-children", enabled: false }] } },

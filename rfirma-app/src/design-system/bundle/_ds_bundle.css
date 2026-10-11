@@ -20,26 +20,11 @@
 }
 
 /* ---------------------------------------------------------- 2. Typography */
-.rf-display {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-display-size);
-  font-weight: var(--rf-display-weight);
-  line-height: var(--rf-display-leading);
-  letter-spacing: var(--rf-display-tracking);
-  margin: 0;
-}
 .rf-heading {
   font-family: var(--rf-font-display);
   font-size: var(--rf-heading-size);
   font-weight: var(--rf-heading-weight);
   line-height: var(--rf-heading-leading);
-  margin: 0;
-}
-.rf-headline {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-headline-size);
-  font-weight: var(--rf-headline-weight);
-  line-height: var(--rf-headline-leading);
   margin: 0;
 }
 .rf-title {
@@ -49,21 +34,6 @@
   line-height: var(--rf-title-leading);
   margin: 0;
 }
-.rf-subtitle {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-subtitle-size);
-  font-weight: var(--rf-subtitle-weight);
-  line-height: var(--rf-subtitle-leading);
-  margin: 0;
-}
-.rf-ui {
-  font-family: var(--rf-font-body);
-  font-size: var(--rf-ui-size);
-  font-weight: var(--rf-ui-weight);
-  line-height: var(--rf-ui-leading);
-  margin: 0;
-}
-.rf-ui--strong { font-weight: var(--rf-ui-strong-weight); }
 .rf-body {
   font-family: var(--rf-font-body);
   font-size: var(--rf-body-size);
@@ -91,21 +61,15 @@
 .rf-text-primary { color: var(--rf-primary); }
 
 /* ------------------------------------------------------------- 3. Layout */
-.rf-stack { display: flex; flex-direction: column; gap: var(--rf-space-2); }
-.rf-row { display: flex; flex-direction: row; align-items: center; gap: var(--rf-space-2); }
+.rf-stack { display: flex; flex-direction: column; gap: var(--rf-space-sm); }
+.rf-row { display: flex; flex-direction: row; align-items: center; gap: var(--rf-space-sm); }
 .rf-gap-xs { gap: var(--rf-space-xs); }
 .rf-gap-sm { gap: var(--rf-space-sm); }
 .rf-gap-md { gap: var(--rf-space-md); }
 .rf-gap-lg { gap: var(--rf-space-lg); }
-.rf-section { padding: var(--rf-space-lg) var(--rf-space-md); }
 .rf-divider { height: 1px; background: var(--rf-border-subtle); border: 0; margin: 0; }
 
 /* ------------------------------------------------------------ 4. Surfaces */
-.rf-surface {
-  background: var(--rf-surface);
-  border: 1px solid var(--rf-border-subtle);
-  border-radius: var(--rf-radius-md);
-}
 .rf-card {
   background: var(--rf-surface);
   border: 1px solid var(--rf-border-subtle);
@@ -114,7 +78,7 @@
   padding: var(--rf-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--rf-space-1);
+  gap: var(--rf-space-xs);
 }
 .rf-card--elevated { box-shadow: var(--rf-shadow-elevated); }
 
@@ -124,9 +88,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--rf-space-1);
+  gap: var(--rf-space-xs);
   min-height: 44px;
-  padding: 0 var(--rf-space-2);
+  padding: 0 var(--rf-space-sm);
   border-radius: var(--rf-radius-md);
   border: 1px solid transparent;
   font-family: var(--rf-font-body);
@@ -162,7 +126,7 @@
 .rf-btn[disabled], .rf-btn--disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* --------------------------------------------------------------- 6. Forms */
-.rf-field { display: flex; flex-direction: column; gap: var(--rf-space-1); }
+.rf-field { display: flex; flex-direction: column; gap: var(--rf-space-xs); }
 .rf-label {
   font-family: var(--rf-font-body);
   font-size: var(--rf-ui-size);
@@ -172,7 +136,7 @@
 }
 .rf-input {
   min-height: 44px;
-  padding: 0 var(--rf-space-2);
+  padding: 0 var(--rf-space-sm);
   background: var(--rf-surface);
   color: var(--rf-text);
   border: 1px solid var(--rf-border-strong);
@@ -202,7 +166,7 @@
 .rf-badge {
   display: inline-flex;
   align-items: center;
-  padding: var(--rf-space-1) calc(var(--rf-space-1) * 1.5);
+  padding: var(--rf-space-xs) calc(var(--rf-space-xs) * 1.5);
   border-radius: var(--rf-radius-pill);
   border: 1px solid var(--rf-border-strong);
   font-family: var(--rf-font-body);
@@ -224,20 +188,20 @@
   padding: var(--rf-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--rf-space-2);
+  gap: var(--rf-space-sm);
   max-width: 480px;
 }
 .rf-scrim { background: var(--rf-scrim); }
 
 /* ------------------------------------------------------ 7.5 Tema local */
-/* `data-theme` y su alias `.rf-on-light` redefinen los roles de color en
+/* `data-theme` redefine los roles de color en
  * tokens/color.css, asi que una subseccion clara dentro de una pantalla
  * oscura (o al reves) no necesita ninguna regla de componente: los tokens
  * heredan y todo lo de arriba se recolorea solo. Solo hace falta repintar el
  * fondo del contenedor, que por defecto es transparente. Va en :where() para
  * que tenga especificidad 0: asi un .rf-card que ademas lleve data-theme
  * conserva su --rf-surface en vez de recibir el --rf-bg del lienzo. */
-:where([data-theme], .rf-on-light) { background: var(--rf-bg); color: var(--rf-text); }
+:where([data-theme]) { background: var(--rf-bg); color: var(--rf-text); }
 
 /* ------------------------------------------------------------- 8. Focus */
 /* Applies to every focusable element. */

@@ -1,8 +1,10 @@
 # rFirma Design System
 
-Sistema **solo CSS**. **No hay componentes React que
-importar**: `window.RFirma` únicamente expone los nombres de los tokens. Se
-construye con elementos HTML normales y las clases `rf-*` de `_ds_bundle.css`.
+La capa CSS del sistema de diseño: tokens `--rf-*` y clases `rf-*`. Los
+componentes React que la usan viven en `design-system/`. Para usarlos fuera de
+la app, `just build-design-system` deja en `rfirma-app/dist-design-system/` sus
+tipos, un `bundle.js` que los pone en `window.RFirma`, este CSS compilado en
+`bundle.css` y un `react.js` con el React que esperan.
 
 Tipografía: **Inter** (OFL), una sola familia para todos los roles.
 
@@ -14,7 +16,7 @@ defecto del navegador y el sistema se ve roto.**
 
 ```html
 <body class="rf-root">
-  <section class="rf-section rf-stack rf-gap-md">
+  <section class="rf-stack rf-gap-md">
     <h1 class="rf-title">Certificados disponibles</h1>
     <div class="rf-card">
       <p class="rf-title">DNIe</p>
@@ -41,16 +43,13 @@ necesita ni una regla de componente:
 </body>
 ```
 
-`.rf-on-light` es un alias de `data-theme="light"`, conservado por compatibilidad.
-
 **Nunca fijes un color a mano.** Un `color: #fff` o un `background: #18181b`
 escritos directamente rompen el modo contrario, y es el error más fácil de
 cometer aquí.
 
 ## Roles de color
 
-Los tokens `--rf-color-*` son los literales de la paleta y **no cambian con el
-tema**; están como referencia. Lo que se consume son los roles:
+Lo que se consume son los roles:
 
 | Rol | Oscuro | Claro |
 | --- | --- | --- |
@@ -74,10 +73,10 @@ cumple el 3:1 de WCAG 1.4.11 en ambos temas: no lo cambies por el sutil.
 
 | Familia | Clases |
 | --- | --- |
-| Raíz y tema | `.rf-root`, `.rf-on-light`, `[data-theme]` |
-| Texto | `.rf-display`, `.rf-heading`, `.rf-headline`, `.rf-title`, `.rf-subtitle`, `.rf-ui`, `.rf-ui--strong`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
-| Disposición | `.rf-stack`, `.rf-row`, `.rf-section`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
-| Superficies | `.rf-surface`, `.rf-card`, `.rf-card--elevated` |
+| Raíz y tema | `.rf-root`, `[data-theme]` |
+| Texto | `.rf-heading`, `.rf-title`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
+| Disposición | `.rf-stack`, `.rf-row`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
+| Superficies | `.rf-card`, `.rf-card--elevated` |
 | Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill` |
 | Formularios | `.rf-field`, `.rf-field--error`, `.rf-label`, `.rf-input`, `.rf-hint` |
 | Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-dialog`, `.rf-scrim` |
@@ -112,21 +111,20 @@ sombra, duración ni tipografía.
   la exclamación abre con "¡".
 - Las duraciones caen a 1ms bajo `prefers-reduced-motion` desde
   `tokens/motion.css`; no repitas la media query.
-- Puntos de ruptura: 400, 640, 768, 1024, 1280, 1400px. Escríbelos literales en
-  `@media`; las custom properties no funcionan ahí.
+- Puntos de ruptura: 400, 640, 768, 1024, 1280, 1400px, literales en `@media`;
+  las custom properties no funcionan ahí.
 
 ## Dónde está la verdad
 
 `styles.css` y su cierre de imports: `tokens/color.css` (los dos temas),
 `typography.css`, `spacing.css`, `radius.css`, `shadow.css`, `motion.css`,
-`breakpoint.css`, `fonts/fonts.css` y `_ds_bundle.css`. Léelos antes de dar
+`fonts/fonts.css` y `_ds_bundle.css`. Léelos antes de dar
 estilo.
 
 ## Ficheros
 
 - `styles.css` — hoja raíz. Todo lo que recibe un diseño llega por su cierre de imports.
 - `tokens/color.css` — los dos temas (claro por defecto, oscuro bajo `prefers-color-scheme`, ambos forzables con `data-theme`).
-- `tokens/*.css` — tipografía, espaciado, radio, sombra, movimiento, breakpoints.
+- `tokens/*.css` — tipografía, espaciado, radio, sombra, movimiento.
 - `_ds_bundle.css` — capa de componentes y utilidades `rf-*`.
-- `_ds_bundle.js` — expone `window.RFirma` (solo nombres de tokens; **no hay componentes React**).
-- `fonts/fonts.css` — carga Inter (OFL) desde Google Fonts.
+- `fonts/fonts.css` — Inter (OFL), autoalojada en esta carpeta.

@@ -28,6 +28,17 @@ function SplitButtonDemo({ withItems }: { withItems: boolean }) {
 const meta = {
   title: "Primitivos/SplitButton",
   component: SplitButtonDemo,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El botón partido: una acción principal y, a su lado, una flecha que abre un menú con las alternativas.",
+          "Úsalo cuando una acción tiene una forma habitual y otras menos frecuentes. Si todas pesan igual, un `Menu` colgado de un `Button`.",
+          "No metas en `items` la misma acción que el botón principal. No lo montes a mano con dos `Button`: la semántica del menú ya está resuelta aquí.",
+        ].join("\n\n"),
+      },
+    },
+  },
   args: { withItems: true },
   argTypes: { withItems: { control: "boolean" } },
 } satisfies Meta<typeof SplitButtonDemo>;

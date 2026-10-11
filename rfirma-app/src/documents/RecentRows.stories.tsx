@@ -6,9 +6,21 @@ import { RecentRows, RecentsSection } from "./RecentRows";
 import { storyRecents } from "./testing/fixtures";
 
 const meta = {
-  title: "Dominio/Documentos/RecentRows",
+  title: "Dominio/Documentos/RecentsSection",
   component: RecentsSection,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La sección de documentos recientes del estado vacío del visor, con su cabecera y el botón de vaciarla.",
+          "Úsala cuando no hay ningún documento abierto, para que la persona vuelva a uno de los últimos con un clic.",
+          "No la uses para la lista del menú de abrir, que ya la trae `DocumentTabs`, ni para enseñar documentos abiertos.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "column" },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 420 }}>

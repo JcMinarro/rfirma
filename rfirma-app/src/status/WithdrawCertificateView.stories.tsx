@@ -26,7 +26,7 @@ const behindTheVeil = (
 );
 
 const meta = {
-  title: "Flujos/Estado/WithdrawCertificateView",
+  title: "Pantallas/Estado/WithdrawCertificateView",
   component: WithdrawCertificateView,
   decorators: [
     (Story) => (
@@ -38,8 +38,16 @@ const meta = {
     inStatusWindow,
   ],
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "El velo de la retirada del certificado de rFirma en sus tres momentos: la pregunta, el trabajo y el resultado.",
+          "Úsalo sobre la vista de estado cuando la persona pide retirar el certificado. Empieza bajo la cabecera para dejarla alcanzable.",
+          "No le des estado ni puertos: el momento lo decide quien lo monta. `report` solo se pinta en el momento `result`.",
+        ].join("\n\n"),
+      },
+    },
     layout: "centered",
-    designSync: { cardMode: "single", primaryStory: "Question", viewport: "1240x760" },
   },
   args: {
     stores: withdrawalStores,

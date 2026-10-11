@@ -6,8 +6,20 @@ import { SedeOldWebClient } from "./SedeOldWebClient";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Cliente antiguo",
+  title: "Pantallas/Ventana de sede/Cliente antiguo",
   ...sedeMomentMeta,
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El aviso de que la página usa un cliente web antiguo.",
+          "Úsalo cuando la sede llega con un cliente web antiguo: la persona lo descarta y el trámite sigue.",
+          "No lo presentes como un error ni detengas el trámite con él.",
+        ].join("\n\n"),
+      },
+    },
+  },
   component: SedeOldWebClient,
   args: { onDismiss: sedeViewActions.onDismissWarning },
 } satisfies Meta<typeof SedeOldWebClient>;

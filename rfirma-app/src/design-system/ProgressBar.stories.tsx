@@ -6,6 +6,17 @@ import { ProgressBar } from "./ProgressBar";
 const meta = {
   title: "Primitivos/ProgressBar",
   component: ProgressBar,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          'La barra de progreso `rf-progress`, con `role="progressbar"`.',
+          "Úsala cuando sepas cuánto falta. Si no lo sabes, un indicador de espera con su texto.",
+          "No la dejes sin nombre accesible: lo pone quien la usa. No le metas texto dentro.",
+        ].join("\n\n"),
+      },
+    },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 320 }}>

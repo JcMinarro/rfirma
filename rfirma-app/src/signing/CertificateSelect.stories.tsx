@@ -12,7 +12,19 @@ import {
 const meta = {
   title: "Dominio/Firma/CertificateSelect",
   component: CertificateSelect,
-  parameters: { layout: "centered", designSync: { cardMode: "single", primaryStory: "Open" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El selector del certificado con que se firma: una caja de dos líneas que, al abrirse, es un buscador con una `CertificateCard` por opción.",
+          "Úsalo como primer bloque del panel de firma y en el consentimiento de la sede, que comparten el mismo componente.",
+          "No lo sustituyas por un `Select` o un `Combobox` a mano: busca sin tildes y pinta cada opción como su tarjeta. No lo abras tú, salvo en una historia con `defaultOpen`.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "single", primaryStory: "Open" },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 332, minHeight: 360 }}>
