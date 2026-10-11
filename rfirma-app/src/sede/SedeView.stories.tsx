@@ -8,7 +8,7 @@ import { sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 import { consentStage, signedDocument } from "./testing/fixtures/sedeWindow";
 
 const meta = {
-  title: "Pantallas/Ventana de sede",
+  title: "Pantallas/Ventana de sede/Ventana",
   parameters: sedeWindowMeta.parameters,
   component: SedeView,
   args: { ...sedeViewActions, consentCountdown: false },
