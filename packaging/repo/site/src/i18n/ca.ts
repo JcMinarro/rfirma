@@ -109,6 +109,11 @@ export const ca: Dictionary = {
   "comparison.stores.label": "Cerca de certificats",
   "comparison.stores.autofirma": "Per magatzems, d'un en un",
   "comparison.stores.rfirma": "Tots alhora, amb cercador",
+  "comparison.browsers.label": "Navegadors a Linux",
+  "comparison.browsers.autofirma":
+    "Un magatzem: el primer que existeixi. Sense Flatpak ni LibreWolf",
+  "comparison.browsers.rfirma":
+    "Els de les famílies Firefox i Chromium, natius, Snap i Flatpak, alhora",
   "comparison.stamp.label": "Signatura visible",
   "comparison.stamp.autofirma": "Amb coordenades",
   "comparison.stamp.rfirma": "L'arrossegues sobre la pàgina",

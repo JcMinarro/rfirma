@@ -76,7 +76,7 @@ aplicación que pide acceso a carpetas concretas de tu equipo, y no distingue pa
 rFirma pide esos accesos porque los necesita para firmar:
 
 * **Certificados de tus navegadores.** Para ofrecerte los que ya tienes instalados en
-  Firefox (también si es Snap o Flatpak), LibreWolf, Chrome y Chromium.
+  Firefox y LibreWolf, y Chrome, Chromium, Brave, Edge y Vivaldi, sean nativos, Snap o Flatpak.
 * **Lector de tarjetas.** Para hablar con él cuando firmas con el DNIe.
 * **Tu navegador.** Para que pueda llegar a rFirma en tu equipo cuando una web te pide
   firmar.
