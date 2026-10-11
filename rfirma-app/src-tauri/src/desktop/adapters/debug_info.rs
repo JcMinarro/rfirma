@@ -23,7 +23,6 @@ use crate::identity::adapters::pkcs11::stores::{
     has_certificate_database, ignored_nss_stores, modules_from_environment,
     nss_stores as nss_stores_under, NssStore,
 };
-use crate::identity::domain::browsers::{BrowserChannel, NssOwner};
 use crate::signing::adapters::ffi::{locate, NativeBridge};
 use crate::signing::domain::bridge::{BridgeError, LIBRARY_DIRECTORY_VARIABLE};
 use crate::site::adapters::local_ca_trusted_in_each;
@@ -351,34 +350,10 @@ fn local_ca_expiry(store: &LocalCaStore) -> Option<String> {
 
 fn nss_profile(store: NssStore, state: NssProfileState) -> NssProfile {
     NssProfile {
-        browser: browser_of(store.owner),
+        owner: store.owner,
         directory: store.directory,
         state,
     }
-}
-
-fn browser_of(owner: NssOwner) -> String {
-    let family = if owner.is_firefox_family() {
-        "Firefox"
-    } else {
-        "Chrome"
-    };
-    let channel = match owner {
-        NssOwner::Browser {
-            channel: BrowserChannel::Snap,
-            ..
-        } => " snap",
-        NssOwner::Browser {
-            channel: BrowserChannel::Flatpak,
-            ..
-        } => " flatpak",
-        NssOwner::Browser {
-            channel: BrowserChannel::Native,
-            ..
-        }
-        | NssOwner::SharedChromium => "",
-    };
-    format!("{family}{channel}")
 }
 
 #[cfg(test)]

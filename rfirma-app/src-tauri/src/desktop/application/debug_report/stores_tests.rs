@@ -2,10 +2,18 @@ use std::path::PathBuf;
 
 use super::tests::{a_flatpak_report, ana};
 use super::*;
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 
-fn a_profile(browser: &str, directory: &str, state: NssProfileState) -> NssProfile {
+fn owned_by(name: &str, channel: BrowserChannel) -> NssOwner {
+    NssOwner::Browser {
+        browser: browser_named(name).expect("el navegador esta en la tabla"),
+        channel,
+    }
+}
+
+fn a_profile(owner: NssOwner, directory: &str, state: NssProfileState) -> NssProfile {
     NssProfile {
-        browser: browser.to_owned(),
+        owner,
         directory: PathBuf::from(directory),
         state,
     }
@@ -28,7 +36,7 @@ fn report_with_nss(profiles: Vec<NssProfile>, rfirma_store_installed: bool) -> S
 fn a_profile_that_trusts_the_local_channel_says_until_when() {
     let section = report_with_nss(
         vec![a_profile(
-            "Firefox",
+            owned_by("Firefox", BrowserChannel::Native),
             "/home/ana/.mozilla/firefox/abcd1234.default",
             NssProfileState::TrustsLocalChannel {
                 until: Some("2027-03-14".to_owned()),
@@ -40,7 +48,7 @@ fn a_profile_that_trusts_the_local_channel_says_until_when() {
     assert_eq!(
         section,
         "  Firefox: confía en el canal local · hasta 2027-03-14\n    \
-           perfil: ~/.mozilla/firefox/<perfil>\n  \
+           ruta: ~/.mozilla/firefox/abcd1234.default\n  \
          Almacén de rFirma: no instalado"
     );
 }
@@ -49,7 +57,7 @@ fn a_profile_that_trusts_the_local_channel_says_until_when() {
 fn a_profile_that_does_not_trust_the_local_channel_says_so() {
     let section = report_with_nss(
         vec![a_profile(
-            "Firefox snap",
+            owned_by("Firefox", BrowserChannel::Snap),
             "/home/ana/snap/firefox/common/.mozilla/firefox/xyz.default",
             NssProfileState::DoesNotTrustLocalChannel,
         )],
@@ -58,8 +66,8 @@ fn a_profile_that_does_not_trust_the_local_channel_says_so() {
 
     assert_eq!(
         section,
-        "  Firefox snap: no confía en el canal local\n    \
-           perfil: ~/snap/firefox/common/.mozilla/firefox/<perfil>\n  \
+        "  Firefox · Snap: no confía en el canal local\n    \
+           ruta: ~/snap/firefox/common/.mozilla/firefox/xyz.default\n  \
          Almacén de rFirma: instalado"
     );
 }
@@ -68,7 +76,7 @@ fn a_profile_that_does_not_trust_the_local_channel_says_so() {
 fn a_profile_without_cert9_db_is_ignored() {
     let section = report_with_nss(
         vec![a_profile(
-            "Firefox",
+            owned_by("Firefox", BrowserChannel::Native),
             "/home/ana/.mozilla/firefox/old.default",
             NssProfileState::IgnoredWithoutCertificateDatabase,
         )],
@@ -78,7 +86,7 @@ fn a_profile_without_cert9_db_is_ignored() {
     assert_eq!(
         section,
         "  Firefox: ignorado · sin cert9.db\n    \
-           perfil: ~/.mozilla/firefox/<perfil>\n  \
+           ruta: ~/.mozilla/firefox/old.default\n  \
          Almacén de rFirma: no instalado"
     );
 }
@@ -133,5 +141,62 @@ fn windows_without_registered_minidrivers_says_none() {
     assert!(
         text.ends_with("Minidrivers\n  tarjetas: ninguno registrado"),
         "{text}"
+    );
+}
+
+#[test]
+fn a_flatpak_store_says_its_browser_and_channel_and_its_full_path() {
+    let section = report_with_nss(
+        vec![a_profile(
+            owned_by("Brave", BrowserChannel::Flatpak),
+            "/home/ana/.var/app/com.brave.Browser/data/pki/nssdb",
+            NssProfileState::DoesNotTrustLocalChannel,
+        )],
+        false,
+    );
+
+    assert_eq!(
+        section,
+        "  Brave · Flatpak: no confía en el canal local\n    \
+           ruta: ~/.var/app/com.brave.Browser/data/pki/nssdb\n  \
+         Almacén de rFirma: no instalado"
+    );
+}
+
+#[test]
+fn the_shared_chromium_store_has_its_own_name() {
+    let section = report_with_nss(
+        vec![a_profile(
+            NssOwner::SharedChromium,
+            "/home/ana/.pki/nssdb",
+            NssProfileState::DoesNotTrustLocalChannel,
+        )],
+        false,
+    );
+
+    assert_eq!(
+        section,
+        "  Chrome y derivados: no confía en el canal local\n    \
+           ruta: ~/.pki/nssdb\n  \
+         Almacén de rFirma: no instalado"
+    );
+}
+
+#[test]
+fn a_discarded_candidate_keeps_its_owner() {
+    let section = report_with_nss(
+        vec![a_profile(
+            owned_by("Chromium", BrowserChannel::Snap),
+            "/home/ana/snap/chromium/current/.local/share/pki/nssdb",
+            NssProfileState::IgnoredWithoutCertificateDatabase,
+        )],
+        false,
+    );
+
+    assert_eq!(
+        section,
+        "  Chromium · Snap: ignorado · sin cert9.db\n    \
+           ruta: ~/snap/chromium/current/.local/share/pki/nssdb\n  \
+         Almacén de rFirma: no instalado"
     );
 }

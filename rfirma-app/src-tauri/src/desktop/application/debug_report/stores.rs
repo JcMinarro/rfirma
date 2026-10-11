@@ -1,6 +1,6 @@
 //! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers.
 
-use std::path::Path;
+use crate::identity::domain::browsers::NssOwner;
 
 use super::{section, NssProfileState, NssStores, ReportOwner, WindowsStores};
 
@@ -35,11 +35,12 @@ pub(super) fn nss_lines(stores: &NssStores, owner: &ReportOwner) -> Vec<String> 
         .iter()
         .flat_map(|profile| {
             [
-                format!("{}: {}", profile.browser, profile_state(&profile.state)),
                 format!(
-                    "  perfil: {}",
-                    anonymized_profile(&profile.directory, owner)
+                    "{}: {}",
+                    owner_name(profile.owner),
+                    profile_state(&profile.state)
                 ),
+                format!("  ruta: {}", owner.anonymized(&profile.directory)),
             ]
         })
         .chain(std::iter::once(format!(
@@ -61,9 +62,10 @@ fn profile_state(state: &NssProfileState) -> String {
     }
 }
 
-fn anonymized_profile(directory: &Path, owner: &ReportOwner) -> String {
-    match directory.parent() {
-        Some(parent) => format!("{}/<perfil>", owner.anonymized(parent)),
-        None => "<perfil>".to_owned(),
+fn owner_name(owner: NssOwner) -> String {
+    match (owner.browser_name(), owner.channel_name()) {
+        (Some(browser), Some(channel)) => format!("{browser} · {channel}"),
+        (Some(browser), None) => browser.to_owned(),
+        (None, _) => "Chrome y derivados".to_owned(),
     }
 }
