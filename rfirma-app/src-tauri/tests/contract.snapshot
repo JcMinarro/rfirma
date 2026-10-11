@@ -238,6 +238,15 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       TypedOnScreen
       TypedOnTheReaderKeypad
 
+  pub enum StoreMarkView
+      Card
+      Dnie
+      Installed
+      Nssdb
+      Windows
+      SharedChromium
+      Browser { name: String, channel: Option<String> }
+
   pub struct CertificateView
       id: String
       label: String
@@ -250,7 +259,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       entityName: Option<String>
       issuer: String
       certificateSerialNumber: String
-      stores: Vec<String>
+      stores: Vec<StoreMarkView>
       status: StatusView
       remembered: bool
 
@@ -486,8 +495,8 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       UserCertificates
 
   pub enum StoreBrand   [desktop/domain/status.rs]
-      Firefox
-      Chrome
+      Browser { name: String, channel: Option<String> }
+      SharedChromium
       Nssdb
       Card
       Installed
