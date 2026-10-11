@@ -77,7 +77,7 @@ export function WithdrawCertificateView({
         <Stack as="ul" gap="xs" className="withdraw-certificate-dialog__list">
           {stores.map((store) => (
             <StoreLine
-              key={store.brand}
+              key={storeBrandLabel(t, store.brand)}
               brand={store.brand}
               icon={<Icon name="checking" size={14} />}
             >
@@ -92,7 +92,7 @@ export function WithdrawCertificateView({
           <Stack as="ul" gap="xs" className="withdraw-certificate-dialog__list">
             {report.stores.map((store) => (
               <StoreLine
-                key={store.brand}
+                key={storeBrandLabel(t, store.brand)}
                 brand={store.brand}
                 icon={
                   failed(store.outcome) ? (

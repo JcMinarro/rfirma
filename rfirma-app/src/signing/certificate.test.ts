@@ -9,6 +9,7 @@ import {
   installedCertificates,
   sitePreselection,
 } from "./certificate";
+import { browserStore } from "./testing/storeMarks";
 
 const { t } = createI18n("es");
 
@@ -184,22 +185,30 @@ describe("groupCertificates", () => {
    * tilde: decide entonces el desempate por almacén, no el nombre. Con el
    * `sensitivity` por defecto ("variant") el resultado sería otro. */
   it("treats holders that differ only by an accent as equal, deciding by store", () => {
-    const angel = aCertificate({ id: "chrome", holderName: "Ángel Ruiz", stores: ["chrome"] });
+    const angel = aCertificate({
+      id: "chrome",
+      holderName: "Ángel Ruiz",
+      stores: [browserStore("Chrome")],
+    });
     const angelPlain = aCertificate({ id: "card", holderName: "Angel Ruiz", stores: ["card"] });
 
     const groups = groupCertificates([angel, angelPlain]);
 
-    expect(groups.available.map((c) => c.stores[0])).toEqual(["card", "chrome"]);
+    expect(groups.available.map((c) => c.stores[0])).toEqual(["card", browserStore("Chrome")]);
   });
 
   it("breaks a tie between same-holder certificates by store", () => {
-    const chrome = aCertificate({ id: "chrome", stores: ["chrome"] });
+    const chrome = aCertificate({ id: "chrome", stores: [browserStore("Chrome")] });
     const card = aCertificate({ id: "card", stores: ["card"] });
-    const firefox = aCertificate({ id: "firefox", stores: ["firefox"] });
+    const firefox = aCertificate({ id: "firefox", stores: [browserStore("Firefox")] });
 
     const groups = groupCertificates([chrome, firefox, card]);
 
-    expect(groups.available.map((c) => c.stores[0])).toEqual(["card", "chrome", "firefox"]);
+    expect(groups.available.map((c) => c.stores[0])).toEqual([
+      "card",
+      browserStore("Chrome"),
+      browserStore("Firefox"),
+    ]);
   });
 
   it("returns two empty groups for an empty list", () => {
@@ -228,7 +237,7 @@ describe("installedCertificates", () => {
    */
   it("keeps only the ones installed in rFirma", () => {
     const installed = aCertificate({ id: "installed", stores: ["installed"] });
-    const profile = aCertificate({ id: "firefox", stores: ["firefox"] });
+    const profile = aCertificate({ id: "firefox", stores: [browserStore("Firefox")] });
     const shared = aCertificate({ id: "nssdb", stores: ["nssdb"] });
 
     expect(installedCertificates([profile, installed, shared])).toEqual([installed]);

@@ -93,7 +93,7 @@ const table: Record<keyof typeof stories, Expected> = {
     buttons: ["Retirar…", "Ver navegadores"],
   },
   CertificateDetailExpanded: {
-    texts: ["Firefox", "Chrome y Chromium", "Instalado", "No instalado"],
+    texts: ["Firefox · Snap", "Brave · Flatpak", "Instalado", "No instalado"],
     buttons: ["Instalar", "Ver navegadores"],
   },
   NoUserCertificates: {
@@ -119,7 +119,13 @@ const table: Record<keyof typeof stories, Expected> = {
     absent: ["No aplica"],
   },
   UserCertificatesDetailExpanded: {
-    texts: ["Almacén de Windows", "Firefox", "Tarjeta", "Fichero instalado"],
+    texts: [
+      "Almacén de Windows",
+      "Firefox · Snap",
+      "Chrome y derivados",
+      "Tarjeta",
+      "Fichero instalado",
+    ],
     buttons: ["Ver dónde"],
     absent: ["Instalado", "No instalado"],
   },
@@ -166,7 +172,7 @@ describe("StatusView stories", () => {
     await user.click(toggle);
 
     expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Chrome y Chromium")).toBeInTheDocument();
+    expect(screen.getByText("Chrome y derivados")).toBeInTheDocument();
   });
 
   it("keeps the site signature diagnosis behind a toggle that reports its state", async () => {

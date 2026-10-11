@@ -555,10 +555,6 @@ msgstr "Norberaren izenean · {{idNumber}}"
 msgid "panel.certificate.personalKeyword"
 msgstr "pertsonal"
 
-#. Nombre propio del navegador: no se traduce.
-msgid "panel.certificate.stores.chrome"
-msgstr "Chrome"
-
 #. Chip de la fila de un certificado del DNIe. Nombre propio: no se traduce.
 msgid "panel.certificate.stores.dnie"
 msgstr "DNIe"
@@ -1036,12 +1032,9 @@ msgstr "Instalatuta"
 msgid "status.detail.notInstalled"
 msgstr "Ez dago instalatuta"
 
-#. Nombre propio del navegador: no se traduce.
-msgid "status.storeBrands.firefox"
-msgstr "Firefox"
-
-msgid "status.storeBrands.chrome"
-msgstr "Chrome eta Chromium"
+#. El almacén NSS que comparten los navegadores Chromium nativos: dice que es compartido.
+msgid "status.storeBrands.sharedChromium"
+msgstr "Chrome eta deribatuak"
 
 msgid "status.storeBrands.nssdb"
 msgstr "Beste nabigatzaileak"
