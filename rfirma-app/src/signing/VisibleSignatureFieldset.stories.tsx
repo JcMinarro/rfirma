@@ -17,7 +17,7 @@ const singlePage = {
 };
 
 const meta = {
-  title: "Flujos/Firma/VisibleSignatureFieldset",
+  title: "Pantallas/Firma/VisibleSignatureFieldset",
   component: VisibleSignatureFieldset,
   parameters: {
     docs: {
@@ -31,7 +31,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "column" },
   },
   decorators: [
     (Story) => (

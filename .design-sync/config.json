@@ -20,15 +20,12 @@
     "DesignRoot": "DesignRoot",
     "Dialog": "Dialog",
     "DocumentTabs": "DocumentTabs",
-    "DocumentViewer": "DocumentViewer",
     "ErrorNotice": "ErrorNotice",
     "Espera": "SedeWaiting",
     "Field": "Field",
     "Firmando": "SedeSigning",
     "Guardarycargar": "SedeTransfer",
-    "Header": "Header",
     "Icon": "Icon",
-    "MainWindow": "MainWindow",
     "Marcarlafirma": "SedeMarking",
     "Menu": "Menu",
     "MenuItem": "MenuItem",
@@ -39,20 +36,11 @@
     "RecentsSection": "RecentsSection",
     "Row": "Row",
     "Select": "Select",
-    "SignAnywayDialog": "SignAnywayDialog",
-    "SignaturesDialog": "SignaturesDialog",
-    "SignaturesPanel": "SignaturesPanel",
-    "SigningPanel": "SigningPanel",
-    "SigningProgressDialog": "SigningProgressDialog",
     "Sincertificado": "SedeNoCertificate",
     "SplitButton": "SplitButton",
     "Stack": "Stack",
-    "StatusView": "StatusView",
     "Switch": "Switch",
-    "Tabs": "Tabs",
-    "UnsealedPagesDialog": "UnsealedPagesDialog",
-    "VisibleSignatureFieldset": "VisibleSignatureFieldset",
-    "WithdrawCertificateView": "WithdrawCertificateView"
+    "Tabs": "Tabs"
   },
   "extraEntries": [
     "./design-sync.entry.ts"
@@ -77,15 +65,8 @@
       "primaryStory": "Closable",
       "viewport": "1340x780"
     },
-    "DocumentViewer": {
-      "cardMode": "column"
-    },
     "ErrorNotice": {
       "cardMode": "column"
-    },
-    "MainWindow": {
-      "cardMode": "column",
-      "viewport": "1160x620"
     },
     "PlacementBlock": {
       "cardMode": "column"
@@ -121,41 +102,6 @@
     },
     "SedeWaiting": {
       "cardMode": "column"
-    },
-    "SignAnywayDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "SignaturesDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "SignaturesPanel": {
-      "cardMode": "column"
-    },
-    "SigningPanel": {
-      "cardMode": "column"
-    },
-    "SigningProgressDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "StatusView": {
-      "cardMode": "single",
-      "primaryStory": "EverythingCorrect",
-      "viewport": "1240x760"
-    },
-    "UnsealedPagesDialog": {
-      "cardMode": "single",
-      "viewport": "1340x780"
-    },
-    "VisibleSignatureFieldset": {
-      "cardMode": "column"
-    },
-    "WithdrawCertificateView": {
-      "cardMode": "single",
-      "primaryStory": "Question",
-      "viewport": "1240x760"
     }
   },
   "readmeHeader": ".design-sync/conventions.md"

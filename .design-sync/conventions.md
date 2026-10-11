@@ -66,16 +66,6 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Dominio | Firma / CertificateCard | `CertificateCard` |
 | Dominio | Firma / CertificateSelect | `CertificateSelect` |
 | Dominio | Firma / PlacementBlock | `PlacementBlock` |
-| Flujos | Documentos / DocumentViewer | `DocumentViewer` |
-| Flujos | Estado / StatusView | `StatusView` |
-| Flujos | Estado / WithdrawCertificateView | `WithdrawCertificateView` |
-| Flujos | Firma / SignAnywayDialog | `SignAnywayDialog` |
-| Flujos | Firma / SignaturesDialog | `SignaturesDialog` |
-| Flujos | Firma / SignaturesPanel | `SignaturesPanel` |
-| Flujos | Firma / SigningPanel | `SigningPanel` |
-| Flujos | Firma / SigningProgressDialog | `SigningProgressDialog` |
-| Flujos | Firma / UnsealedPagesDialog | `UnsealedPagesDialog` |
-| Flujos | Firma / VisibleSignatureFieldset | `VisibleSignatureFieldset` |
 | Flujos | Sede / Cliente antiguo | `SedeOldWebClient` |
 | Flujos | Sede / Confirmar | `SedeConfirm` |
 | Flujos | Sede / Consentimiento | `SedeConsent` |
@@ -85,8 +75,6 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Flujos | Sede / Guardar y cargar | `SedeTransfer` |
 | Flujos | Sede / Marcar la firma | `SedeMarking` |
 | Flujos | Sede / Sin certificado | `SedeNoCertificate` |
-| Flujos | Ventana principal / Header | `Header` |
-| Flujos | Ventana principal / MainWindow | `MainWindow` |
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |

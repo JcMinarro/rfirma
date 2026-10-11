@@ -13,7 +13,7 @@ import {
 } from "./testing/storyReports";
 
 const meta = {
-  title: "Flujos/Firma/SignAnywayDialog",
+  title: "Pantallas/Firma/SignAnywayDialog",
   component: SignAnywayDialog,
   parameters: {
     docs: {
@@ -27,7 +27,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", viewport: "1340x780" },
   },
   decorators: [inDialogWindow],
   args: {

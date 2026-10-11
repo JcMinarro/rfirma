@@ -6,7 +6,7 @@ import { inDialogWindow } from "../../.storybook/decorators/dialogWindow";
 import { UnsealedPagesDialog } from "./UnsealedPagesDialog";
 
 const meta = {
-  title: "Flujos/Firma/UnsealedPagesDialog",
+  title: "Pantallas/Firma/UnsealedPagesDialog",
   component: UnsealedPagesDialog,
   parameters: {
     docs: {
@@ -20,7 +20,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", viewport: "1340x780" },
   },
   decorators: [inDialogWindow],
   args: { fallen: 3, onConfirm: fn(), onCancel: fn() },

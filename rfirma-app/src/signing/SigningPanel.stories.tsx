@@ -43,7 +43,7 @@ const entityChosen = {
 } as const;
 
 const meta = {
-  title: "Flujos/Firma/SigningPanel",
+  title: "Pantallas/Firma/SigningPanel",
   component: SigningPanel,
   decorators: [inPanelColumn],
   parameters: {
@@ -58,7 +58,6 @@ const meta = {
       },
     },
     ...panelStoryParameters,
-    designSync: { cardMode: "column" },
   },
   args: {
     document: { id: "doc-1", name: "contrato.pdf", sizeBytes: 2_400_000 },

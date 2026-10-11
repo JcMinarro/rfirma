@@ -27,7 +27,7 @@ import {
 } from "./testing/fixtures";
 
 const meta = {
-  title: "Flujos/Estado/StatusView",
+  title: "Pantallas/Estado/StatusView",
   component: StatusView,
   decorators: [inStatusWindow],
   parameters: {
@@ -42,7 +42,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", primaryStory: "EverythingCorrect", viewport: "1240x760" },
   },
   args: {
     onClose: fn(),

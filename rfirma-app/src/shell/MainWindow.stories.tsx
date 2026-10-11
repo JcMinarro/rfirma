@@ -32,7 +32,7 @@ const emptyViewer = (
 );
 
 const meta = {
-  title: "Flujos/Ventana principal/MainWindow",
+  title: "Pantallas/Ventana principal/MainWindow",
   component: MainWindow,
   parameters: {
     docs: {
@@ -46,7 +46,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "column", viewport: "1160x620" },
   },
   decorators: [
     (Story) => (

@@ -20,7 +20,7 @@ const tabs = (
 );
 
 const meta = {
-  title: "Flujos/Ventana principal/Header",
+  title: "Pantallas/Ventana principal/Header",
   component: Header,
   parameters: {
     docs: {

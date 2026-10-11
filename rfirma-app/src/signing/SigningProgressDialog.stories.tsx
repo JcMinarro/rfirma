@@ -5,7 +5,7 @@ import { inDialogWindow } from "../../.storybook/decorators/dialogWindow";
 import { SigningProgressDialog } from "./SigningProgressDialog";
 
 const meta = {
-  title: "Flujos/Firma/SigningProgressDialog",
+  title: "Pantallas/Firma/SigningProgressDialog",
   component: SigningProgressDialog,
   parameters: {
     docs: {
@@ -19,7 +19,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", viewport: "1340x780" },
   },
   decorators: [inDialogWindow],
   args: { stage: "presign" },

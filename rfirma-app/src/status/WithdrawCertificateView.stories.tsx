@@ -26,7 +26,7 @@ const behindTheVeil = (
 );
 
 const meta = {
-  title: "Flujos/Estado/WithdrawCertificateView",
+  title: "Pantallas/Estado/WithdrawCertificateView",
   component: WithdrawCertificateView,
   decorators: [
     (Story) => (
@@ -49,7 +49,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", primaryStory: "Question", viewport: "1240x760" },
   },
   args: {
     stores: withdrawalStores,

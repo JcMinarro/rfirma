@@ -12,7 +12,7 @@ import {
 } from "./testing/storyReports";
 
 const meta = {
-  title: "Flujos/Firma/SignaturesDialog",
+  title: "Pantallas/Firma/SignaturesDialog",
   component: SignaturesDialog,
   parameters: {
     docs: {
@@ -26,7 +26,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "single", viewport: "1340x780" },
   },
   decorators: [inDialogWindow],
   args: { report: MIXED_REPORT, onClose: fn() },

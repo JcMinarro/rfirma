@@ -9,7 +9,7 @@ import { DocumentViewer } from "./DocumentViewer";
 import { storyPdf, storyStampedPdf } from "./testing/storyPdf";
 
 const meta = {
-  title: "Flujos/Documentos/DocumentViewer",
+  title: "Pantallas/Documentos/DocumentViewer",
   component: DocumentViewer,
   parameters: {
     docs: {
@@ -23,7 +23,6 @@ const meta = {
       },
     },
     layout: "centered",
-    designSync: { cardMode: "column" },
   },
   decorators: [
     (Story) => (
