@@ -20,6 +20,7 @@ use crate::checks::{
 use crate::client::{resolve, the_deduced_coordinates, Client, ClientKind, DeducedCoordinates};
 use crate::comparison::{compare, Comparison};
 use crate::errand::{ErrandKey, ErrandRunner, NodeRunner, ObservedErrand};
+use crate::hand::the_assistance_of;
 use crate::livelog::{CheckLog, LiveLogSink};
 use crate::outcome::CheckState;
 use crate::report::{HeaderCoordinates, Report, THE_REPORT_FILE};
@@ -299,6 +300,7 @@ impl Console {
             .as_ref()
             .ok_or("elige o crea un informe antes de ejecutar nada")?;
         let client = session.client.as_ref().ok_or(NO_CLIENT)?;
+        let kind = client.kind;
         if let Some(complaint) = open
             .report
             .refuses_to_continue_with(&client.binary.display().to_string(), client.kind)
@@ -331,7 +333,7 @@ impl Console {
                     .catalogue
                     .iter()
                     .filter(is_pending)
-                    .filter(|check| tranches.take(check.assistance()))
+                    .filter(|check| tranches.take(the_assistance_of(check, kind)))
                     .collect(),
                 true,
             ),
@@ -353,8 +355,29 @@ impl Console {
             });
         }
         session.queue.extend(fresh);
-        sort_in_tranches(&mut session.queue, &self.shared.catalogue);
+        sort_in_tranches(&mut session.queue, &self.shared.catalogue, kind);
         self.shared.wake.notify_one();
+        self.shared.publish(&session);
+        Ok(())
+    }
+
+    /// Deja `id` pendiente en el informe abierto y olvida el trámite que observó.
+    pub(crate) fn reset(&self, id: &str) -> Result<(), String> {
+        let mut session = self.shared.lock();
+        if session.is_queued_or_running(id) {
+            return Err(format!("«{id}» está en la cola o en curso"));
+        }
+        let check = self
+            .shared
+            .catalogue
+            .iter()
+            .find(|check| check.id == id)
+            .ok_or_else(|| format!("no conozco la comprobación «{id}»"))?;
+        let open = session
+            .report
+            .as_mut()
+            .ok_or("elige o abre un informe antes de resetear nada")?;
+        open.report.forget(id, ErrandKey::of(check).as_ref())?;
         self.shared.publish(&session);
         Ok(())
     }
@@ -707,12 +730,12 @@ fn the_call_to_the_person(tranche: Assistance) -> &'static str {
 }
 
 /// Ordena la cola en tramos —ninguna, clic, persona— con los saludos delante de cada uno.
-fn sort_in_tranches(queue: &mut VecDeque<Queued>, catalogue: &[Check]) {
+fn sort_in_tranches(queue: &mut VecDeque<Queued>, catalogue: &[Check], kind: ClientKind) {
     let key = |queued: &Queued| {
         catalogue
             .iter()
             .find(|check| check.id == queued.id)
-            .map(|check| (check.assistance(), !check.greeting()))
+            .map(|check| (the_assistance_of(check, kind), !check.greeting()))
             .unwrap_or_default()
     };
     queue.make_contiguous().sort_by_key(key);
@@ -793,8 +816,9 @@ fn take_the_next_group(shared: &Arc<Shared>, session: &mut Session) -> Option<Ne
             .filter(|_| !queued.rerun)
             .and_then(|key| open.report.observed(&key).cloned());
         let opening = if already.is_none() {
-            let opening = the_opening(session.tranche, head.assistance());
-            session.tranche = Some(head.assistance());
+            let assistance = the_assistance_of(head, client.kind);
+            let opening = the_opening(session.tranche, assistance);
+            session.tranche = Some(assistance);
             opening
         } else {
             None
@@ -802,6 +826,7 @@ fn take_the_next_group(shared: &Arc<Shared>, session: &mut Session) -> Option<Ne
         let profile = client.profile(head.store());
         let probe = Probe {
             client: profile.launcher.clone(),
+            kind: client.kind,
             trust_root: profile.trust_root.clone(),
             report: dir.clone(),
             patience: shared.patience,
@@ -1043,7 +1068,7 @@ greeting = true
             })
             .collect();
 
-        sort_in_tranches(&mut queue, &catalogue);
+        sort_in_tranches(&mut queue, &catalogue, ClientKind::Autofirma);
 
         assert_eq!(
             queue
@@ -1489,5 +1514,26 @@ expects.code = "SAF_03"
         run_the_queue(&console);
 
         assert_eq!(runner.runs().len(), 1);
+    }
+
+    #[test]
+    fn a_reset_check_is_pending_again_and_runs_its_errand_anew() {
+        let runner = a_rejecting_runner();
+        let (console, _dir) = a_console_replaying(&runner);
+        let check = || Request::Check {
+            check: "a_rejection".to_owned(),
+        };
+        console.enqueue(check()).unwrap();
+        run_the_queue(&console);
+
+        console.reset("a_rejection").unwrap();
+
+        assert_eq!(
+            the_state_of(&console, "a_rejection"),
+            Some(CheckState::Pending)
+        );
+        console.enqueue(check()).unwrap();
+        run_the_queue(&console);
+        assert_eq!(runner.runs().len(), 2);
     }
 }

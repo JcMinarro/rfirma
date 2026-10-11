@@ -112,6 +112,14 @@ export function PlayIcon() {
   );
 }
 
+export function ResetIcon() {
+  return (
+    <svg className="glyph stroke" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M2.2 6a3.8 3.8 0 1 0 1.1-2.7M2.2 1.6v2h2" />
+    </svg>
+  );
+}
+
 export function CopyIcon() {
   return (
     <svg className="glyph stroke" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">

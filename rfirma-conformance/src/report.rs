@@ -234,6 +234,17 @@ impl Report {
         self.save()
     }
 
+    /// Deja `id` pendiente y olvida el trámite de `key`, para que la próxima vez se lance de nuevo.
+    pub fn forget(&mut self, id: &str, key: Option<&ErrandKey>) -> Result<(), String> {
+        if let Some(record) = self.contents.checks.get_mut(id) {
+            *record = CheckRecord::pending();
+        }
+        if let Some(key) = key {
+            self.contents.errands.remove(key);
+        }
+        self.save()
+    }
+
     fn save(&self) -> Result<(), String> {
         let json = serde_json::to_string_pretty(&self.contents)
             .map_err(|error| format!("el informe no se pudo serializar: {error}"))?;

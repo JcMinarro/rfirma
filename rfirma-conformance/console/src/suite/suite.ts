@@ -6,6 +6,7 @@ import type { NewReport } from "../contract/NewReport";
 import type { ReportChoice } from "../contract/ReportChoice";
 import type { ReportView } from "../contract/ReportView";
 import type { Request } from "../contract/Request";
+import type { Reset } from "../contract/Reset";
 import type { Validation } from "../contract/Validation";
 
 export interface EventStream {
@@ -75,6 +76,7 @@ export function suiteOver(wire: Wire, token: string) {
     createReport: (report: NewReport) => post("/api/reports", report),
     openReport: (name: string) => post("/api/report", { name } satisfies ReportChoice),
     run: (request: Request) => post("/api/run", request),
+    reset: (check: string) => post("/api/reset", { check } satisfies Reset),
     stop: () => post("/api/stop", {}),
     skip: () => post("/api/skip", {}),
     answer: (answer: string | null) => post("/api/answer", { answer } satisfies Answer),

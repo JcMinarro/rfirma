@@ -39,6 +39,17 @@ describe("the session", () => {
     expect(server.posted("/api/run")).toEqual([{ check: "empty_uri_rejected" }]);
   });
 
+  it("resets a settled check from its own button, and not one that is still pending", async () => {
+    const { server, user } = renderConsoleAt("/");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Resetear unsupported_protocol_uri_rejected" }),
+    );
+
+    expect(server.posted("/api/reset")).toEqual([{ check: "unsupported_protocol_uri_rejected" }]);
+    expect(screen.getByRole("button", { name: "Resetear empty_uri_rejected" })).toBeDisabled();
+  });
+
   it("runs each tranche of the pending checks from its own button, and all of them with p", async () => {
     const report = aReportView();
     const attended = report.sets[1]?.checks[2];
@@ -181,6 +192,22 @@ describe("the session", () => {
     await user.keyboard("s");
 
     expect(server.posted("/api/answer")).toEqual([{ answer: "s" }]);
+  });
+
+  it("keeps the instructions of the running check in view once it has started", async () => {
+    const report = aReportView();
+    const running = report.sets[1]?.checks[2];
+    if (running) {
+      running.warning = "Cancela el diálogo de guardar.";
+      running.assistance = "click";
+    }
+    renderConsoleAt(
+      "/",
+      aSnapshot({ report, running: { ids: ["empty_uri_rejected"], elapsed_ms: 0 }, call: null }),
+    );
+
+    const bar = await screen.findByRole("region", { name: "En curso" });
+    expect(within(bar).getByText("Cancela el diálogo de guardar.")).toBeInTheDocument();
   });
 
   it("keeps the report and run steps disabled until the client is resolved", async () => {

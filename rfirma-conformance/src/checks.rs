@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 use crate::catalogue::{Assistance, Check, Provocation};
 use crate::client::Store;
 use crate::errand::{ErrandKey, ErrandOutcome, ObservedErrand, THE_DRIVER_CRASH};
+use crate::hand::{the_assistance_of, the_plan_for, Hand};
 use crate::harness::THE_HARNESSES;
 use crate::judge::{judge, Verdict};
 use crate::outcome::outcome_name;
@@ -97,7 +98,8 @@ impl Probe {
             self.witness.harness(&format!("no se ejecuta: {why}"));
             return vec![Settlement::pending(head, why)].into();
         }
-        if head.needs_a_person() {
+        let plan = the_plan_for(self.kind, head);
+        if head.needs_a_person() && plan.is_none() {
             let fixtures = match self.prepare_the_fixtures_of(head) {
                 Ok(fixtures) => fixtures,
                 Err(why) => return vec![Settlement::pending(head, why)].into(),
@@ -114,13 +116,21 @@ impl Probe {
             }
         }
 
+        let hand = match plan.map(|plan| self.the_hand_with(plan)) {
+            Some(Err(why)) => return vec![Settlement::pending(head, &why)].into(),
+            Some(Ok(hand)) => Some(hand),
+            None => None,
+        };
         let start = Instant::now();
         let outcome = self.measure(head);
         let duration = start.elapsed();
+        drop(hand);
         if self.witness.aborted() {
             return all_pending(group, "se interrumpió mientras se ejecutaba").into();
         }
-        if head.assistance() == Assistance::None && outcome.exhausted_its_patience() {
+        if the_assistance_of(head, self.kind) == Assistance::None
+            && outcome.exhausted_its_patience()
+        {
             for check in group {
                 self.witness.suite_failure(&check.id, AN_UNATTENDED_TIMEOUT);
             }
@@ -135,6 +145,19 @@ impl Probe {
             settlements: self.judge_the_group(group, &outcome, duration),
             observed,
         }
+    }
+
+    fn the_hand_with(&self, plan: &str) -> Result<Hand, String> {
+        self.witness.harness(&format!(
+            "la mano de la suite lleva el diálogo con el plan «{plan}»"
+        ));
+        Hand::spawn(
+            plan,
+            the_isolated_home_of(&self.client),
+            self.witness.log_sink(),
+            self.witness.started_at(),
+        )
+        .map_err(|error| format!("la mano de la suite no arrancó: {error}"))
     }
 
     /// Juzga cada entrada del grupo con lo observado.
@@ -385,6 +408,7 @@ mod tests {
 
     use super::*;
     use crate::catalogue::{read_the_catalogue, the_catalogue_in};
+    use crate::client::ClientKind;
     use crate::errand::fake::RecordedRunner;
     use crate::errand::{the_recorded, ErrandRunner};
     use crate::manifest::Family;
@@ -745,6 +769,7 @@ expects.completes.conditions = ["a-candidate-port-bound"]
     fn a_probe(witness: &Arc<FakeWitness>, runner: &Arc<RecordedRunner>) -> Probe {
         Probe {
             client: PathBuf::from("/nowhere/launch-subject"),
+            kind: ClientKind::Autofirma,
             trust_root: PathBuf::from("/nowhere/root.pem"),
             report: tempfile::tempdir().unwrap().keep(),
             patience: Duration::from_secs(1),

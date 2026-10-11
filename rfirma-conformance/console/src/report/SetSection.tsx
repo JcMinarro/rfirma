@@ -14,6 +14,7 @@ export interface Progress {
 
 export interface Controls {
   runCheck: (id: string) => void;
+  resetCheck: (id: string) => void;
   runSet: (set: string, pendingOnly: boolean) => void;
 }
 

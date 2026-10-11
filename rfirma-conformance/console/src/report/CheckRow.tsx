@@ -7,6 +7,7 @@ import {
   CheckMark,
   CopyIcon,
   PlayIcon,
+  ResetIcon,
   ResultIcon,
 } from "../ui/icons";
 import { assistanceName, calendarDate, duration, isExplained, resultTone } from "../words";
@@ -84,6 +85,18 @@ export const CheckRow = memo(function CheckRow({
           </span>
         </div>
         <CopyId id={check.id} />
+        {controls && (
+          <button
+            type="button"
+            className="run-one"
+            disabled={activity !== null || check.state === "PENDIENTE"}
+            onClick={() => controls.resetCheck(check.id)}
+            aria-label={`Resetear ${check.id}`}
+            title="Dejarla pendiente"
+          >
+            <ResetIcon />
+          </button>
+        )}
         {controls && (
           <button
             type="button"

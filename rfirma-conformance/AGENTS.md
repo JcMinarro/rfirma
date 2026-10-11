@@ -29,6 +29,8 @@ consola. Sus pruebas se corren con `cargo test` dentro de este directorio; las d
 | `src/matrix.rs` | La lectura de la matriz de happy paths y lo que no casa con el catálogo: celdas sin estado, repetidas o fuera de todo plano, y comprobaciones que no miden la celda que cubren. |
 | `src/card.rs` | Si hay un DNIe en el lector, mirado desde el sistema con el OpenSC instalado; la guarda del almacén `dnie` en `checks.rs` la consulta por el testigo. |
 | `src/checks.rs` | El cuerpo ejecutable: cómo se conduce un grupo o se juzga con un trámite ya observado, la parada entre tramos, la guarda de las comprobaciones sin persona, las condiciones previas (puertos libres, DNIe en el lector) y los saludos por familia, sin escribir el informe. |
+| `src/hand.rs` | La mano: con rFirma, qué plan sigue cada comprobación que la persona ya no tiene que hacer, y el proceso que lo pulsa durante el trámite. |
+| `hand/rfirma.py` | El script de la mano: pulsa por AT-SPI, solo en el rFirma del perfil aislado, lo que dice su plan. |
 | `src/harness.rs` | El registro de arneses que el catálogo liga por nombre: lo que una comprobación monta alrededor del trámite —puertos ocupados, ficheros preparados—; no juzga. |
 | `src/judge.rs` | El juez: lo observado frente a la expectativa declarada, a un resultado; con el vocabulario cerrado de expectativas, y sin lanzar trámites ni preguntar a nadie. |
 | `src/known_bug.rs` | La lectura del registro de bugs conocidos, con el que se resuelve la etiqueta `autofirma:bug:1.9.2`. |

@@ -369,6 +369,10 @@ fn attend(mut stream: TcpStream, gate: &Gate, build: &Build, console: &Console) 
             &mut stream,
             body_of::<Request>(&request).and_then(|wanted| console.enqueue(wanted)),
         ),
+        ("POST", "/api/reset") => answer(
+            &mut stream,
+            body_of::<Reset>(&request).and_then(|reset| console.reset(&reset.check)),
+        ),
         ("POST", "/api/stop") => {
             console.stop();
             answer(&mut stream, Ok::<(), String>(()));
@@ -405,6 +409,12 @@ struct ClientChoice {
 #[ts(export)]
 struct ReportChoice {
     name: String,
+}
+
+#[derive(Deserialize, TS)]
+#[ts(export)]
+struct Reset {
+    check: String,
 }
 
 #[derive(Deserialize, TS)]

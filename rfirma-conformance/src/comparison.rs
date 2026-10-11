@@ -430,6 +430,7 @@ expects.completes = {}
         let runner = RecordedRunner::replaying(&[(script, the_recorded(recorded))]);
         let probe = Probe {
             client: PathBuf::from("/nowhere/launch-subject"),
+            kind: ClientKind::Autofirma,
             trust_root: PathBuf::from("/nowhere/root.pem"),
             report: tempfile::tempdir().unwrap().keep(),
             patience: Duration::from_secs(1),

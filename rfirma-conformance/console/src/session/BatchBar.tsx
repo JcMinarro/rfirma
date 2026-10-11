@@ -8,7 +8,15 @@ import { useShortcuts } from "../ui/shortcuts";
 import type { Batch } from "./progress";
 
 /** La tanda en curso, única dueña de saltar, detener y dar paso. */
-export function BatchBar({ batch, call }: { batch: Batch; call: CallView | null }) {
+export function BatchBar({
+  batch,
+  call,
+  instructions,
+}: {
+  batch: Batch;
+  call: CallView | null;
+  instructions: string | null;
+}) {
   const { suite, complain } = useLive();
   const skip = () => void suite.skip().catch(complain("No se pudo saltar"));
   const stop = () => void suite.stop().catch(complain("No se pudo detener"));
@@ -68,6 +76,14 @@ export function BatchBar({ batch, call }: { batch: Batch; call: CallView | null 
           </button>
         </div>
       </div>
+      {!call && instructions && (
+        <div className="call">
+          <div className="call-text">
+            <span className="call-kind">Lo que te toca</span>
+            <p className="call-prompt">{instructions}</p>
+          </div>
+        </div>
+      )}
       {call && (
         <div className="call" role="alertdialog" aria-labelledby="call-title">
           <div className="call-text">
