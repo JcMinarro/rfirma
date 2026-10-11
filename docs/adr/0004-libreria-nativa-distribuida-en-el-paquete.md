@@ -135,10 +135,14 @@ construida en un anfitrión `aarch64`, y arreglar la ruta multiarch clavada a
   `release 21`: lo que cambia es el JDK que construye, no el lenguaje de destino.
 - **La glibc es la diferencia real entre los canales, y la promesa la sostiene una puerta.**
   Bajo flatpak la aplicación corre contra la del runtime (2.42) y la distribución del
-  usuario no interviene. En el `.deb` y el `.rpm` sí interviene: se promete `GLIBC_2.34` y
-  lo comprueba `just check-glibc` sobre lo que se va a publicar, no el entorno donde se
-  construyó. Una puerta que no puedes reproducir en tu equipo es una puerta que un día se
-  salta con `continue-on-error`.
+  usuario no interviene. En el `.deb` y el `.rpm` sí interviene, y la pone el ejecutable de
+  Tauri, que exige la glibc del runner donde se compila: los jobs que compilan para Linux
+  están fijados en `ubuntu-24.04`, así que los canales nativos cubren **glibc 2.39** en
+  adelante y las distribuciones anteriores —Ubuntu 22.04, Debian 12, RHEL 9— van por
+  flatpak ([#1878](https://github.com/sgomez/rfirma/issues/1878)). La librería se queda por
+  debajo: `just check-glibc` le exige `GLIBC_2.34` sobre lo que se va a publicar. Una puerta
+  que no puedes reproducir en tu equipo es una puerta que un día se salta con
+  `continue-on-error`.
 - **El sandbox es del flatpak, no de rfirma.** Todo lo que no expone hay que declararlo, y
   eso alcanza a cosas que fuera son gratis: los documentos entran y salen por portales, y
   la aplicación no conoce la ruta original. En el `.deb` y el `.rpm` el diálogo devuelve

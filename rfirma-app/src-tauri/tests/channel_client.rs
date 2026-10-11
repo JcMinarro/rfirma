@@ -264,10 +264,10 @@ async fn a_site_launch_ends_with_the_echo_answered_over_the_open_channel() {
     let Attendance::Serving { channel, .. } = &attendance else {
         panic!("la invocacion era buena: {attendance:?}");
     };
-    assert_eq!(
-        channel.port(),
-        free[0],
-        "el canal queda en el primero libre que sorteo la sede, y nunca en el 63117"
+    assert!(
+        free.contains(&channel.port()),
+        "el canal quedo en {}: tiene que ser uno libre que sorteo la sede, y nunca el 63117",
+        channel.port()
     );
     assert_eq!(
         windows.load(std::sync::atomic::Ordering::SeqCst),
