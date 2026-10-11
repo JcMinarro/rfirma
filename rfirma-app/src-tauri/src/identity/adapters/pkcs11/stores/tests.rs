@@ -29,7 +29,9 @@ fn a_store_under_the_installed_directory_is_its_own_class() {
         StoreClass::Installed
     );
     assert_eq!(
-        Store::nss("/usr/lib/libsoftokn3.so", &elsewhere).class_under(&installed),
+        Store::nss("/usr/lib/libsoftokn3.so", &elsewhere)
+            .owned_by(NssOwner::SharedChromium)
+            .class_under(&installed),
         StoreClass::Chrome
     );
 }
@@ -106,70 +108,43 @@ fn the_stores_are_preferred_card_windows_installed_system_nss_firefox_chrome() {
 }
 
 #[test]
-fn an_nss_store_is_classified_by_whose_profile_it_opens() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.mozilla/firefox/aaaaaaaa.default-release"),
-    );
-    let librewolf_legacy = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.librewolf/aaaaaaaa.default-release"),
-    );
-    let librewolf_xdg = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.config/librewolf/librewolf/aaaaaaaa.default-release"),
-    );
-    let chrome = Store::nss("/usr/lib/libsoftokn3.so", Path::new("/casa/ada/.pki/nssdb"));
+fn a_browser_store_is_classified_by_the_family_of_its_owner() {
+    let softoken = "/usr/lib/libsoftokn3.so";
+    let anywhere = Path::new("/casa/ada/perfil");
 
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(librewolf_legacy.class(), StoreClass::Firefox);
-    assert_eq!(librewolf_xdg.class(), StoreClass::Firefox);
-    assert_eq!(chrome.class(), StoreClass::Chrome);
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(owned_by("LibreWolf", BrowserChannel::Flatpak))
+            .class(),
+        StoreClass::Firefox
+    );
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(owned_by("Brave", BrowserChannel::Snap))
+            .class(),
+        StoreClass::Chrome
+    );
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(NssOwner::SharedChromium)
+            .class(),
+        StoreClass::Chrome
+    );
 }
 
 #[test]
-fn an_nss_store_is_classified_the_same_under_the_xdg_paths() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.local/share/mozilla/firefox/cccccccc.default-release"),
-    );
-    let chrome = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.local/share/pki/nssdb"),
-    );
-
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(chrome.class(), StoreClass::Chrome);
-}
-
-#[test]
-fn an_nss_store_is_classified_the_same_under_the_snap_paths() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/firefox/common/.mozilla/firefox/dddddddd.default"),
-    );
-    let chromium_xdg = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/chromium/current/.local/share/pki/nssdb"),
-    );
-    let chromium_legacy = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/chromium/current/.pki/nssdb"),
-    );
-
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(chromium_xdg.class(), StoreClass::Chrome);
-    assert_eq!(chromium_legacy.class(), StoreClass::Chrome);
-}
-
-#[test]
-fn an_nss_store_somewhere_else_claims_no_owner() {
-    let store = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/tmp/perfil-de-pruebas"),
-    );
-
-    assert_eq!(store.class(), StoreClass::Nssdb);
+fn an_nss_store_without_an_owner_is_the_systems_whatever_its_path() {
+    for path in [
+        "/casa/ada/.mozilla/firefox/aaaaaaaa.default-release",
+        "/casa/ada/.pki/nssdb",
+        "/tmp/perfil-de-pruebas",
+    ] {
+        assert_eq!(
+            Store::nss("/usr/lib/libsoftokn3.so", Path::new(path)).class(),
+            StoreClass::Nssdb,
+            "{path}"
+        );
+    }
 }
 
 #[test]

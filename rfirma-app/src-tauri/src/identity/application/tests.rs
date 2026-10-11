@@ -5,6 +5,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::identity::application::certificates::ListedCertificates;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::secret::StoreSecret;
@@ -96,6 +97,15 @@ impl Token for NoToken {
             "este token no quita nada",
         ))
     }
+}
+
+/// Un perfil del Firefox nativo en `profile`, con el dueño que le daría el descubrimiento.
+pub(crate) fn a_firefox_profile_store(softoken: &str, profile: &str) -> Store {
+    let firefox = browser_named("Firefox").expect("Firefox esta en la tabla");
+    Store::nss(softoken, Path::new(profile)).owned_by(NssOwner::Browser {
+        browser: firefox,
+        channel: BrowserChannel::Native,
+    })
 }
 
 /// Construye un certificado de prueba con la etiqueta y DER proporcionados.

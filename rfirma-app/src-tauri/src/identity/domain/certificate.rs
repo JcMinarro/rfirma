@@ -11,6 +11,7 @@ use x509_cert::ext::pkix::{BasicConstraints, KeyUsage};
 use x509_cert::Certificate;
 
 use crate::identity::domain::algorithm::KeyKind;
+use crate::identity::domain::browsers::{owner_if_still_known, NssOwner};
 use crate::identity::domain::store::{is_a_card_key_provider, Store, StoreClass};
 
 const RSA_ENCRYPTION: &str = "1.2.840.113549.1.1.1";
@@ -35,6 +36,13 @@ pub struct CertificateRef {
     /// El proveedor que guarda la clave, en el Almacén de Windows.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     key_provider: Option<String>,
+    /// El dueño de su almacén NSS, según el descubrimiento.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "owner_if_still_known"
+    )]
+    owner: Option<NssOwner>,
 }
 
 impl CertificateRef {
@@ -53,6 +61,7 @@ impl CertificateRef {
             cka_id: cka_id.into(),
             init_args: store.init_args().map(str::to_owned),
             key_provider: None,
+            owner: store.owner(),
         }
     }
 
@@ -77,9 +86,14 @@ impl CertificateRef {
         }
     }
 
+    /// El dueño de su almacén NSS, si el descubrimiento lo conocía.
+    pub fn owner(&self) -> Option<NssOwner> {
+        self.owner
+    }
+
     /// Almacén PKCS#11 de procedencia.
     pub fn store(&self) -> Store {
-        Store::with_init_args(&self.module, self.init_args.clone())
+        Store::with_init_args(&self.module, self.init_args.clone()).owned_by(self.owner)
     }
 
     /// Ruta del módulo PKCS#11 que lo sirve.

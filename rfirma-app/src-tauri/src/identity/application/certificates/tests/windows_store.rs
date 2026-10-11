@@ -1,11 +1,11 @@
-use std::path::Path;
-
 use super::super::{
     certificate_behind, certificates_with_their_chains, listed_rows, ListedCertificates,
 };
 use super::StoresWith;
 use crate::identity::application::readers::LastListing;
-use crate::identity::application::tests::{a_dnie_der, NoMemory, TestAuthority};
+use crate::identity::application::tests::{
+    a_dnie_der, a_firefox_profile_store, NoMemory, TestAuthority,
+};
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
 use crate::identity::domain::store::{Store, StoreClass};
 
@@ -33,9 +33,9 @@ fn in_windows_with_its_key_in(provider: &str, label: &str, der: &[u8]) -> TokenC
 fn in_firefox(der: &[u8]) -> TokenCertificate {
     TokenCertificate::new(
         CertificateRef::new(
-            Store::nss(
+            a_firefox_profile_store(
                 "/usr/lib/libsoftokn3.so",
-                Path::new("/home/ada/.mozilla/firefox/perfil"),
+                "/home/ada/.mozilla/firefox/perfil",
             ),
             "NSS Certificate DB",
             "COPIA-FIREFOX",
@@ -117,9 +117,9 @@ fn a_windows_certificate_whose_key_provider_is_unknown_stays_in_windows() {
 #[test]
 fn of_two_copies_the_one_with_its_key_on_the_card_signs() {
     let der = a_dnie_der("DNIE FIRMA", true);
-    let firefox = Store::nss(
+    let firefox = a_firefox_profile_store(
         "/usr/lib/libsoftokn3.so",
-        Path::new("/home/ada/.mozilla/firefox/perfil"),
+        "/home/ada/.mozilla/firefox/perfil",
     );
     let found = [
         in_firefox(&der),

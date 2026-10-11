@@ -8,6 +8,32 @@ fn the_nss_classes_keep_their_browser_brand() {
 }
 
 #[test]
+fn a_trust_profile_takes_its_brand_from_its_discovered_owner_and_not_from_its_path() {
+    use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
+
+    let librewolf = NssOwner::Browser {
+        browser: browser_named("LibreWolf").expect("LibreWolf esta en la tabla"),
+        channel: BrowserChannel::Flatpak,
+    };
+    let anywhere = std::path::Path::new("/casa/ada/perfil");
+    let firefox_like = std::path::Path::new("/casa/ada/.mozilla/firefox/perfil");
+
+    assert_eq!(brand_of(anywhere, Some(librewolf)), StoreBrand::Firefox);
+    assert_eq!(
+        brand_of(anywhere, Some(NssOwner::SharedChromium)),
+        StoreBrand::Chrome
+    );
+    assert_eq!(brand_of(firefox_like, None), StoreBrand::Nssdb);
+    assert_eq!(
+        brand_of(
+            std::path::Path::new(crate::site::adapters::SYSTEM_ROOT_STORE),
+            None
+        ),
+        StoreBrand::Windows
+    );
+}
+
+#[test]
 fn a_card_and_an_installed_p12_are_each_their_own_brand() {
     assert_eq!(brand_of_class(StoreClass::Card), StoreBrand::Card);
     assert_eq!(brand_of_class(StoreClass::Installed), StoreBrand::Installed);

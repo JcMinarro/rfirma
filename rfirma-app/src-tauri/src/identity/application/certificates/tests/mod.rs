@@ -7,7 +7,7 @@ use super::{
 };
 use crate::identity::application::readers::LastListing;
 use crate::identity::application::tests::{
-    a_certificate, a_certificate_with_id, a_representative_certificate,
+    a_certificate, a_certificate_with_id, a_firefox_profile_store, a_representative_certificate,
     a_representative_certificate_of_a_natural_person, a_usable_certificate, listed_from, NoToken,
     TestAuthority,
 };
@@ -462,10 +462,7 @@ fn a_store_without_certificates_adds_nothing() {
 
 #[test]
 fn each_class_of_store_brings_its_own_count() {
-    let firefox = Store::nss(
-        SOFTOKEN,
-        Path::new("/casa/ada/.mozilla/firefox/ada.default"),
-    );
+    let firefox = a_firefox_profile_store(SOFTOKEN, "/casa/ada/.mozilla/firefox/ada.default");
     let signable = vec![
         a_certificate_in(CARD, "FIRMA", &[]),
         a_certificate_in(CARD, "AUTENTICACION", &[]),
@@ -482,11 +479,8 @@ fn each_class_of_store_brings_its_own_count() {
 
 #[test]
 fn two_profiles_of_the_same_class_are_one_line() {
-    let one = Store::nss(
-        SOFTOKEN,
-        Path::new("/casa/ada/.mozilla/firefox/ada.default"),
-    );
-    let another = Store::nss(SOFTOKEN, Path::new("/casa/ada/.mozilla/firefox/ada.work"));
+    let one = a_firefox_profile_store(SOFTOKEN, "/casa/ada/.mozilla/firefox/ada.default");
+    let another = a_firefox_profile_store(SOFTOKEN, "/casa/ada/.mozilla/firefox/ada.work");
     let signable = vec![
         a_certificate_of(&one, "FIRMA"),
         a_certificate_of(&another, "FIRMA"),
