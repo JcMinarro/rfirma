@@ -200,9 +200,43 @@ pub fn documents_folder_of(
     environment: &dyn Fn(&str) -> Option<OsString>,
 ) -> Result<PathBuf, HomeUnknown> {
     match platform {
-        Platform::Linux => xdg_directory(environment, "XDG_DOCUMENTS_DIR", DOCUMENTS_DIRECTORY),
+        Platform::Linux => linux_documents_folder(environment),
         Platform::Windows => Ok(home(environment, "USERPROFILE")?.join(DOCUMENTS_DIRECTORY)),
         Platform::MacOs => Ok(home(environment, "HOME")?.join(DOCUMENTS_DIRECTORY)),
+    }
+}
+
+const DOCUMENTS_VARIABLE: &str = "XDG_DOCUMENTS_DIR";
+
+fn linux_documents_folder(
+    environment: &dyn Fn(&str) -> Option<OsString>,
+) -> Result<PathBuf, HomeUnknown> {
+    let home = home(environment, "HOME")?;
+    if let Some(exported) = environment(DOCUMENTS_VARIABLE)
+        .map(PathBuf::from)
+        .filter(|path| path.is_absolute())
+    {
+        return Ok(exported);
+    }
+    let user_dirs = xdg_config_home(environment)?.join("user-dirs.dirs");
+    Ok(std::fs::read_to_string(user_dirs)
+        .ok()
+        .and_then(|contents| documents_folder_in_user_dirs(&contents, &home))
+        .unwrap_or_else(|| home.join(DOCUMENTS_DIRECTORY)))
+}
+
+fn documents_folder_in_user_dirs(contents: &str, home: &Path) -> Option<PathBuf> {
+    let value = contents.lines().find_map(|line| {
+        line.trim()
+            .strip_prefix(DOCUMENTS_VARIABLE)?
+            .strip_prefix('=')?
+            .strip_prefix('"')?
+            .strip_suffix('"')
+    })?;
+    match value.strip_prefix("$HOME/") {
+        Some(relative) if !relative.is_empty() => Some(home.join(relative)),
+        Some(_) => None,
+        None => Some(PathBuf::from(value)).filter(|path| path.is_absolute()),
     }
 }
 
