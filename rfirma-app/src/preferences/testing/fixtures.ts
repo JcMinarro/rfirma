@@ -13,6 +13,7 @@ export const defaults: Preferences = {
   notifyNewVersion: true,
   setupWizardSeen: false,
   consentCountdown: true,
+  showWelcome: true,
   honourAutomaticSelection: false,
   allowSha1: false,
 };

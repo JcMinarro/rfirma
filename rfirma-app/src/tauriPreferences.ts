@@ -33,6 +33,7 @@ interface ConfigurationView {
    */
   setupWizardSeen: boolean;
   consentCountdown: boolean;
+  showWelcome: boolean;
   honourAutomaticSelection: boolean;
   allowSha1: boolean;
 }
@@ -75,6 +76,7 @@ export function tauriPreferences(): PreferencesStore {
         notifyNewVersion: configuration.notifyNewVersion,
         setupWizardSeen: configuration.setupWizardSeen,
         consentCountdown: configuration.consentCountdown,
+        showWelcome: configuration.showWelcome,
         honourAutomaticSelection: configuration.honourAutomaticSelection,
         allowSha1: configuration.allowSha1,
       };
@@ -90,6 +92,7 @@ export function tauriPreferences(): PreferencesStore {
         notifyNewVersion: preferences.notifyNewVersion,
         setupWizardSeen: preferences.setupWizardSeen,
         consentCountdown: preferences.consentCountdown,
+        showWelcome: preferences.showWelcome,
         honourAutomaticSelection: preferences.honourAutomaticSelection,
         allowSha1: preferences.allowSha1,
       });

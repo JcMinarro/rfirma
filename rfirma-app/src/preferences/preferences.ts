@@ -60,6 +60,8 @@ export interface Preferences {
   setupWizardSeen: boolean;
   /** Si «Firmar» espera tres segundos desactivado en la ventana de sede. */
   consentCountdown: boolean;
+  /** Si se muestra la bienvenida al abrir sin documento. */
+  showWelcome: boolean;
   /** Si la sede puede elegir sola el único certificado que acepta (ADR-0032). */
   honourAutomaticSelection: boolean;
   allowSha1: boolean;

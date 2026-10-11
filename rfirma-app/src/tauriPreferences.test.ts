@@ -16,6 +16,7 @@ const aConfiguration = {
   offersTheOriginalFolder: false,
   setupWizardSeen: false,
   consentCountdown: true,
+  showWelcome: true,
   honourAutomaticSelection: false,
   allowSha1: false,
 };
@@ -46,6 +47,7 @@ describe("los puertos de la configuración sobre Tauri", () => {
       notifyNewVersion: true,
       setupWizardSeen: false,
       consentCountdown: true,
+      showWelcome: true,
       honourAutomaticSelection: false,
       allowSha1: false,
     });
@@ -64,6 +66,22 @@ describe("los puertos de la configuración sobre Tauri", () => {
     expect(read.honourAutomaticSelection).toBe(true);
     expect(invoke).toHaveBeenLastCalledWith("write_configuration", {
       configuration: { ...aConfiguration, honourAutomaticSelection: false },
+    });
+  });
+
+  it("carries whether the welcome is shown both ways", async () => {
+    invoke.mockImplementation((command: string) =>
+      command === "read_configuration"
+        ? Promise.resolve({ ...aConfiguration, showWelcome: false })
+        : Promise.resolve(undefined),
+    );
+
+    const read = await tauriPreferences().read();
+    await tauriPreferences().save({ ...read, showWelcome: true });
+
+    expect(read.showWelcome).toBe(false);
+    expect(invoke).toHaveBeenLastCalledWith("write_configuration", {
+      configuration: { ...aConfiguration, showWelcome: true },
     });
   });
 
@@ -101,6 +119,7 @@ describe("los puertos de la configuración sobre Tauri", () => {
       notifyNewVersion: true,
       setupWizardSeen: false,
       consentCountdown: false,
+      showWelcome: true,
       honourAutomaticSelection: false,
       allowSha1: false,
     });
@@ -137,6 +156,7 @@ describe("los puertos de la configuración sobre Tauri", () => {
       notifyNewVersion: true,
       setupWizardSeen: false,
       consentCountdown: true,
+      showWelcome: true,
       honourAutomaticSelection: false,
       allowSha1: false,
     });
@@ -170,6 +190,7 @@ describe("los puertos de la configuración sobre Tauri", () => {
       notifyNewVersion: true,
       setupWizardSeen: true,
       consentCountdown: true,
+      showWelcome: true,
       honourAutomaticSelection: false,
       allowSha1: false,
     });
