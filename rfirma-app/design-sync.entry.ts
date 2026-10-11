@@ -10,7 +10,7 @@ export { Combobox } from "./src/design-system/Combobox";
 export { DesignRoot } from "./src/design-system/DesignRoot";
 export { Dialog } from "./src/design-system/Dialog";
 export { Field } from "./src/design-system/Field";
-export * from "./src/design-system/icons";
+export { Icon } from "./src/design-system/icons";
 export { Menu, MenuItem } from "./src/design-system/Menu";
 export { Popover } from "./src/design-system/Popover";
 export { ProgressBar } from "./src/design-system/ProgressBar";

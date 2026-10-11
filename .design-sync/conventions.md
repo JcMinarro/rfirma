@@ -46,7 +46,7 @@ Tokens: color `--rf-bg`, `--rf-surface`, `--rf-text`, `--rf-text-muted`, `--rf-p
 
 ### Iconos
 
-Componentes `*Icon` con prop `size` en px: `CheckCircleIcon`, `CrossCircleIcon`, `AlertIcon`, `InfoIcon`, `FileIcon`, `FolderIcon`, `PersonIcon`, `SearchIcon`, `CopyIcon`, `ExternalLinkIcon`, `CloseIcon`, `SpinnerIcon`, `ChevronDownIcon`, `ChevronRightIcon`, entre otros (todos en `window.RFirma`).
+Un solo componente, `Icon`, que se pide por papel y no por dibujo: `<Icon name="done" />`. `size` es el lado en px y, si no lo das, cada papel trae el suyo; `strokeWidth`, el grosor. Los papeles están en la historia `Primitivos/Icon`. El icono es decorativo y toma el color del texto: acompáñalo siempre de una palabra.
 
 ### Pantallas
 
@@ -91,9 +91,12 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |
 | Primitivos | Combobox | `Combobox` |
+| Primitivos | DesignRoot | `DesignRoot` |
 | Primitivos | Dialog | `Dialog` |
 | Primitivos | Field | `Field` |
+| Primitivos | Icon | `Icon` |
 | Primitivos | Menu | `Menu` |
+| Primitivos | MenuItem | `MenuItem` |
 | Primitivos | Popover | `Popover` |
 | Primitivos | ProgressBar | `ProgressBar` |
 | Primitivos | Row | `Row` |
@@ -112,12 +115,12 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 ### Ejemplo
 
 ```jsx
-const { DesignRoot, Card, Stack, Row, Button, CheckCircleIcon } = window.RFirma;
+const { DesignRoot, Card, Stack, Row, Button, Icon } = window.RFirma;
 <DesignRoot language="es" theme="light">
   <Card>
     <Stack gap="md" style={{ padding: "var(--rf-space-lg)" }}>
       <Row gap="xs">
-        <CheckCircleIcon size={24} />
+        <Icon name="done" size={24} />
         <p className="rf-title">Documento firmado</p>
       </Row>
       <p className="rf-prose">La firma se ha guardado junto al documento.</p>
