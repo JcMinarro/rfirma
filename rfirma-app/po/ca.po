@@ -342,11 +342,8 @@ msgstr "Signatura electrònica de documents"
 msgid "welcome.start"
 msgstr "Començar"
 
-msgid "welcome.noRecents.title"
+msgid "recents.empty"
 msgstr "Encara no has obert cap document"
-
-msgid "welcome.noRecents.hint"
-msgstr "Els últims que obris apareixeran aquí per tornar-hi amb un clic."
 
 msgid "welcome.showOnStartup"
 msgstr "Mostrar la benvinguda en obrir"

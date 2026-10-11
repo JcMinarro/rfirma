@@ -37,6 +37,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Section: Story = {};
 
+export const Empty: Story = { args: { recents: [], keepWhenEmpty: true } };
+
 export const SingleRecent: Story = { args: { recents: storyRecents.slice(0, 1) } };
 
 export const Rows: Story = {

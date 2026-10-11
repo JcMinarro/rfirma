@@ -342,13 +342,8 @@ msgstr "Electronic document signing"
 msgid "welcome.start"
 msgstr "Get started"
 
-msgid "welcome.noRecents.title"
+msgid "recents.empty"
 msgstr "You haven't opened any documents yet"
-
-msgid "welcome.noRecents.hint"
-msgstr ""
-"The latest ones you open will appear here so you can get back to them in one "
-"click."
 
 msgid "welcome.showOnStartup"
 msgstr "Show the welcome screen at startup"

@@ -61,21 +61,35 @@ interface RecentsSectionProps {
   recents: readonly RecentDocument[];
   onSelect: (row: RecentDocument) => void;
   onClear: () => void;
+  /** Sin recientes, conserva el rótulo y dice que aún no hay ninguno en vez de desaparecer. */
+  keepWhenEmpty?: boolean;
 }
 
 /** Los recientes del estado vacío del visor, con su rótulo y «Vaciar la lista». */
-export function RecentsSection({ recents, onSelect, onClear }: RecentsSectionProps) {
+export function RecentsSection({
+  recents,
+  onSelect,
+  onClear,
+  keepWhenEmpty = false,
+}: RecentsSectionProps) {
   const { t } = useTranslation();
-  if (recents.length === 0) return null;
+  const empty = recents.length === 0;
+  if (empty && !keepWhenEmpty) return null;
   return (
     <section className="recents-section" aria-label={t("recents.heading")}>
       <div className="recents-heading">
         <span className="rf-label recents-heading__label">{t("recents.heading")}</span>
-        <Button variant="ghost" className="recents-heading__clear" onClick={onClear}>
-          {t("recents.clear")}
-        </Button>
+        {!empty && (
+          <Button variant="ghost" className="recents-heading__clear" onClick={onClear}>
+            {t("recents.clear")}
+          </Button>
+        )}
       </div>
-      <RecentRows recents={recents} openIds={NOTHING_OPEN} onSelect={onSelect} />
+      {empty ? (
+        <p className="recent-row recents-section__empty">{t("recents.empty")}</p>
+      ) : (
+        <RecentRows recents={recents} openIds={NOTHING_OPEN} onSelect={onSelect} />
+      )}
     </section>
   );
 }

@@ -63,19 +63,13 @@ export function Welcome({
           </section>
 
           <div className="welcome__recents">
-            {rememberActivity && recents.length > 0 && (
+            {rememberActivity && (
               <RecentsSection
                 recents={recents}
                 onSelect={onSelectRecent}
                 onClear={onClearRecents}
+                keepWhenEmpty
               />
-            )}
-            {rememberActivity && recents.length === 0 && (
-              <div className="welcome__no-recents">
-                <Icon name="document" />
-                <p className="rf-title welcome__text">{t("welcome.noRecents.title")}</p>
-                <p className="rf-body rf-text-muted welcome__text">{t("welcome.noRecents.hint")}</p>
-              </div>
             )}
           </div>
         </div>
@@ -83,7 +77,7 @@ export function Welcome({
         <footer className="welcome__footer">
           <Checkbox
             label={t("welcome.showOnStartup")}
-            textRole="caption"
+            textRole="body"
             className="rf-text-muted"
             checked={showWelcome}
             onChange={onShowWelcomeChange}

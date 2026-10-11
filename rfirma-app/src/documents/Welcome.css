@@ -68,16 +68,6 @@
   min-width: 0;
 }
 
-.welcome__no-recents {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--rf-space-xs);
-  padding: var(--rf-space-lg);
-  border-radius: var(--rf-radius-lg);
-  background: var(--rf-surface);
-}
-
 .welcome__footer {
   display: flex;
   justify-content: center;

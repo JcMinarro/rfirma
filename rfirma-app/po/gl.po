@@ -340,11 +340,8 @@ msgstr "Sinatura electrónica de documentos"
 msgid "welcome.start"
 msgstr "Comezar"
 
-msgid "welcome.noRecents.title"
+msgid "recents.empty"
 msgstr "Aínda non abriches ningún documento"
-
-msgid "welcome.noRecents.hint"
-msgstr "Os últimos que abras aparecerán aquí para volver a eles cun clic."
 
 msgid "welcome.showOnStartup"
 msgstr "Amosar a benvida ao abrir"

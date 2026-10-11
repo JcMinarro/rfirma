@@ -337,6 +337,12 @@
   flex: 1;
 }
 
+.recents-section__empty {
+  margin: 0;
+  font-size: var(--rf-body-size);
+  cursor: default;
+}
+
 .recents-heading__clear {
   min-height: 24px;
   padding: 0 8px;

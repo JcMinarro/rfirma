@@ -343,13 +343,8 @@ msgstr "Dokumentuen sinadura elektronikoa"
 msgid "welcome.start"
 msgstr "Hasi"
 
-msgid "welcome.noRecents.title"
+msgid "recents.empty"
 msgstr "Oraindik ez duzu dokumenturik ireki"
-
-msgid "welcome.noRecents.hint"
-msgstr ""
-"Irekitzen dituzun azkenak hemen agertuko dira, klik batekin haietara "
-"itzultzeko."
 
 msgid "welcome.showOnStartup"
 msgstr "Erakutsi ongietorria irekitzean"

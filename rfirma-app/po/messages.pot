@@ -332,10 +332,7 @@ msgstr ""
 msgid "welcome.start"
 msgstr ""
 
-msgid "welcome.noRecents.title"
-msgstr ""
-
-msgid "welcome.noRecents.hint"
+msgid "recents.empty"
 msgstr ""
 
 msgid "welcome.showOnStartup"

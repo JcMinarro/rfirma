@@ -55,8 +55,9 @@ La sección de recientes ocupa la columna. Historia: `WithRecents`.
 
 ### Sin recientes
 
-La lista está vacía y «recordar actividad» está activado: un bloque dice que los
-documentos que se abran aparecerán ahí. Historia: `WithoutRecents`.
+La lista está vacía y «recordar actividad» está activado: la misma sección, con
+su rótulo, dice que aún no hay ninguno, sin «Vaciar la lista». Historia:
+`WithoutRecents`.
 
 ### Sin actividad recordada
 
@@ -75,7 +76,7 @@ Historia: `NarrowWindow`.
 
 ## Componentes y tokens
 
-`Button` (`ghost`, con icono), `Checkbox` en el rol `caption`, `DropZone` y
+`Button` (`ghost`, con icono), `Checkbox` en el rol `body`, `DropZone` y
 `RecentsSection`; maquetación propia en `Welcome.css`, con `var(--rf-*)`.
 
 ## Decisiones
