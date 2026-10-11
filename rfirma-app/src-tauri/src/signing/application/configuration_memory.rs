@@ -44,6 +44,8 @@ pub struct Configuration {
     pub setup_wizard_version_seen: u32,
     /// Indica si el botón de consentir de la ventana de sede espera una cuenta atrás.
     pub consent_countdown: bool,
+    /// Indica si se muestra la bienvenida al abrir sin documento.
+    pub show_welcome: bool,
     /// Indica si la sede puede elegir sola el único certificado candidato (ADR-0032).
     pub honour_automatic_selection: bool,
     /// Indica si se permite firmar con SHA-1 fuera de XML.
@@ -62,6 +64,7 @@ impl Default for Configuration {
             theme: Theme::System,
             setup_wizard_version_seen: 0,
             consent_countdown: true,
+            show_welcome: true,
             honour_automatic_selection: false,
             allow_sha1: false,
         }

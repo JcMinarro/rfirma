@@ -71,6 +71,8 @@ crossing! {
         pub setup_wizard_seen: bool,
         /// Si el botón de consentir de la ventana de sede espera una cuenta atrás.
         pub consent_countdown: bool,
+        /// Si se muestra la bienvenida al abrir sin documento.
+        pub show_welcome: bool,
         /// Si la sede puede elegir sola el único certificado candidato (ADR-0032).
         pub honour_automatic_selection: bool,
         /// Si se permite firmar con SHA-1 fuera de XML.
@@ -91,6 +93,7 @@ impl From<Preferences> for ConfigurationView {
             offers_the_original_folder: preferences.offers_the_original_folder,
             setup_wizard_seen: preferences.setup_wizard_seen,
             consent_countdown: preferences.consent_countdown,
+            show_welcome: preferences.show_welcome,
             honour_automatic_selection: preferences.honour_automatic_selection,
             allow_sha1: preferences.allow_sha1,
         }
@@ -110,6 +113,7 @@ impl From<ConfigurationView> for Preferences {
             offers_the_original_folder: view.offers_the_original_folder,
             setup_wizard_seen: view.setup_wizard_seen,
             consent_countdown: view.consent_countdown,
+            show_welcome: view.show_welcome,
             honour_automatic_selection: view.honour_automatic_selection,
             allow_sha1: view.allow_sha1,
         }

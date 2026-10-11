@@ -315,6 +315,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       offersTheOriginalFolder: bool
       setupWizardSeen: bool
       consentCountdown: bool
+      showWelcome: bool
       honourAutomaticSelection: bool
       allowSha1: bool
 
