@@ -10,7 +10,20 @@ import { signedDocument } from "./testing/fixtures/sedeWindow";
 const meta = {
   title: "Flujos/Sede/Desenlace",
   ...sedeMomentMeta,
-  parameters: { ...sedeMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 4 de la ventana de sede: el desenlace (firmado, lote entregado, cancelado, guardado, cargado o rechazado), con el documento recién firmado y el detalle copiable del rechazo.",
+          "Úsalo cuando la sede ya ha recibido su respuesta; se cierra sola a los quince segundos.",
+          "Aportas `origin`, `outcome`, `onClose` y `onOpenHelp`.",
+          "No acortes el cierre automático: con cinco segundos no da tiempo a leer el rechazo. No calles el rechazo: un rFirma que aparece y desaparece en silencio parece roto.",
+        ].join("\n\n"),
+      },
+    },
+    designSync: { cardMode: "column" },
+  },
   component: SedeOutcome,
   args: { onClose: sedeViewActions.onClose, onOpenHelp: sedeViewActions.onOpenHelp },
 } satisfies Meta<typeof SedeOutcome>;

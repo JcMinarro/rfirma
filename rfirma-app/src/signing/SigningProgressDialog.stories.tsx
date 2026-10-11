@@ -7,7 +7,20 @@ import { SigningProgressDialog } from "./SigningProgressDialog";
 const meta = {
   title: "Flujos/Firma/SigningProgressDialog",
   component: SigningProgressDialog,
-  parameters: { layout: "centered", designSync: { cardMode: "single", viewport: "1340x780" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El diálogo de progreso de la firma, con sus tres etapas y la que está en curso.",
+          "Ábrelo mientras la firma corre: bloquea la ventana entera.",
+          "Aportas solo `stage`, la etapa en la que va la firma ahora mismo.",
+          "No le pongas «Cancelar» ni cruz de cerrar: una firma empezada en la tarjeta no tiene marcha atrás. No escondas las etapas: una espera larga sin desglose parece un cuelgue.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "single", viewport: "1340x780" },
+  },
   decorators: [inDialogWindow],
   args: { stage: "presign" },
 } satisfies Meta<typeof SigningProgressDialog>;

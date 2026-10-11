@@ -9,7 +9,20 @@ const RECT = { x0: 100, y0: 100, x1: 300, y1: 180 };
 const meta = {
   title: "Dominio/Firma/PlacementBlock",
   component: PlacementBlock,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El bloque «Colocación» de la firma visible: el segmentado «Una página | Varias | Todas», la línea de la página, el campo de «Varias» con su error y el botón de la página.",
+          "Úsalo donde la persona decida en qué páginas va la firma visible; lo comparten el panel de firma de la ventana principal y el momento de marcar la firma de la sede.",
+          "Le das el estado de la colocación, con sus valores y sus órdenes, y el bloque se pinta de él sin estado propio. La posición del recuadro no es suya: se la pasa cada ventana a ese estado.",
+          "No le pases píxeles ni gestos del visor, ni repitas sus validaciones fuera: el error del campo «Varias» llega ya en el estado.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "column" },
+  },
   decorators: [
     (Story) => (
       <section className="panel__placement" style={{ width: 332 }}>

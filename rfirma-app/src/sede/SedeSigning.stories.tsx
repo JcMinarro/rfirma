@@ -9,7 +9,20 @@ import { certificate } from "./testing/fixtures/sedeWindow";
 const meta = {
   title: "Flujos/Sede/Firmando",
   ...sedeMomentMeta,
-  parameters: { ...sedeMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 3 de la ventana de sede: los dos tramos de la firma, firmar y devolver a la sede.",
+          "Úsalo entre que la persona acepta y que la firma vuelve a la sede.",
+          "Aportas `origin`, `certificate`, el elegido; `phase`, el tramo en curso, y `onCancel`, que solo se ofrece mientras la sede no ha recibido nada.",
+          "No nombres fases del motor como «prefirma»: no es el diálogo de progreso de la ventana principal. No añadas una acción principal.",
+        ].join("\n\n"),
+      },
+    },
+    designSync: { cardMode: "column" },
+  },
   component: SedeSigning,
   args: { origin: "sede.ejemplo.gob.es", onCancel: sedeViewActions.onCancel },
 } satisfies Meta<typeof SedeSigning>;

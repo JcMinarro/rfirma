@@ -14,7 +14,20 @@ import {
 const meta = {
   title: "Flujos/Firma/SignaturesDialog",
   component: SignaturesDialog,
-  parameters: { layout: "centered", designSync: { cardMode: "single", viewport: "1340x780" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El diálogo «Ver firmas»: las firmas que ya trae el documento, con su validez.",
+          "Ábrelo cuando la persona pide ver las firmas previas del documento; se mira y se cierra.",
+          "Aportas `report`, el informe de firmas previas, y `onClose`, su única salida.",
+          "No le añadas acciones. No señales la validez solo con color: cada firma lleva su icono y su palabra.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "single", viewport: "1340x780" },
+  },
   decorators: [inDialogWindow],
   args: { report: MIXED_REPORT, onClose: fn() },
 } satisfies Meta<typeof SignaturesDialog>;

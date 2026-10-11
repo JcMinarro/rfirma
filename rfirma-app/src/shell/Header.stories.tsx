@@ -23,6 +23,16 @@ const meta = {
   title: "Flujos/Ventana principal/Header",
   component: Header,
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "La cabecera única de la ventana principal: el hueco de las pestañas, el aviso de estado y, cuando se ancla en ella, el único menú de la aplicación.",
+          "Úsala dentro de `MainWindow`, que ya la monta; sola, para diseñar sus estados.",
+          "Aportas `menuAnchor`, dónde va el menú; `hasAttention`, si lleva el botón de aviso; `documents`, lo que se pinta antes del menú, normalmente `DocumentTabs`, y las órdenes `onOpenStatus`, `onOpenPreferences`, `onOpenHelp` y `onOpenAbout`.",
+          "No le añadas una barra de menús ni entradas de *Archivo* o *Ver*, ni el certificado o una insignia del documento: eso lo dicen el panel y la pestaña. El menú arranca cerrado.",
+        ].join("\n\n"),
+      },
+    },
     layout: "fullscreen",
     // Las pestañas de la cabecera son las mismas de `DocumentTabs`, con el mismo hermano dentro del `tablist`.
     a11y: { config: { rules: [{ id: "aria-required-children", enabled: false }] } },

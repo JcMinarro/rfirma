@@ -19,6 +19,16 @@ const meta = {
   },
   parameters: {
     ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 2 de la ventana de sede: la confirmación escrita del trámite, con el selector de certificado, lo que se pide firmar y sus firmas previas.",
+          "Úsalo cuando ya hay algo que consentir; aparece también con un solo certificado, salvo que la persona deje elegir a la sede.",
+          "Aportas `origin`, la sede; `operation` y `stage`, lo que se pide; `terminalOrder` y `countdown`; `reader`, `platform` y `liveCertificates` para el selector, y `onConsent`, que recibe el certificado elegido, y `onCancel`.",
+          "No lo reduzcas a un selector de certificados: es una confirmación escrita que lo lleva dentro. No uses otro selector: es el mismo `CertificateSelect` de la ventana principal.",
+        ].join("\n\n"),
+      },
+    },
     designSync: { cardMode: "single", primaryStory: "Consent" },
   },
 } satisfies Meta<typeof SedeConsent>;

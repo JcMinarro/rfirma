@@ -7,7 +7,19 @@ import { NewVersionStrip } from "./NewVersionStrip";
 const meta = {
   title: "Dominio/Actualizaciones/NewVersionStrip",
   component: NewVersionStrip,
-  parameters: { layout: "fullscreen" },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La franja que anuncia una versión nueva de rFirma sobre la ventana principal.",
+          "Úsala cuando haya una versión que anunciar: si se puede instalar desde aquí, su acción es «Actualizar ahora»; si no, lleva a Acerca de, que explica cómo actualizar.",
+          "Le das la versión que anunciar (o nada, y entonces no se pinta), qué hacer al abrir el diálogo al que lleva su acción y qué hacer al descartarla.",
+          "No la uses para otros avisos ni le pongas una acción que descargue por su cuenta: la instalación es del diálogo, no de la franja.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "fullscreen",
+  },
   args: { onOpen: fn(), onDismiss: fn() },
 } satisfies Meta<typeof NewVersionStrip>;
 

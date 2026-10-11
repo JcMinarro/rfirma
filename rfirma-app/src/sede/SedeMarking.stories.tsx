@@ -9,7 +9,20 @@ import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sed
 const meta = {
   title: "Flujos/Sede/Marcar la firma",
   ...sedeAreaMomentMeta,
-  parameters: { ...sedeAreaMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeAreaMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 1c de la ventana de sede: el área de la firma visible trazada sobre el PDF, y sus páginas.",
+          "Úsalo cuando la sede pide firma visible, antes del consentimiento.",
+          "Aportas `pdf` (o `null`), `onMark`, que recibe el área marcada, y `onCancel`.",
+          "No pidas aquí el certificado: se elige después, en el consentimiento. No dibujes otro visor ni otro segmentado: son los de la ventana principal.",
+        ].join("\n\n"),
+      },
+    },
+    designSync: { cardMode: "column" },
+  },
   component: SedeMarking,
   args: { onMark: sedeViewActions.onMarkArea, onCancel: sedeViewActions.onCancel },
 } satisfies Meta<typeof SedeMarking>;

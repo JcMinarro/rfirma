@@ -31,6 +31,16 @@ const meta = {
   component: StatusView,
   decorators: [inStatusWindow],
   parameters: {
+    docs: {
+      description: {
+        component: [
+          "La vista del estado de rFirma: una fila por señal, con su detalle y sus acciones, y el botón «Volver a comprobar».",
+          "Úsala en el cuerpo de la ventana principal cuando la persona abre «Estado de rFirma».",
+          "Aportas `rows`, una por señal; `failure` si la comprobación falló; `isRechecking` mientras se repite; `initiallyExpanded`, las señales que arrancan desplegadas, y las órdenes `onClose`, `onRecheck`, `onAction`, `onChooseSiteSignatureHandler` y `onWithdraw`.",
+          "No le conectes puertos: es una vista sin estado y las comprobaciones las hace quien la monta.",
+        ].join("\n\n"),
+      },
+    },
     layout: "centered",
     designSync: { cardMode: "single", primaryStory: "EverythingCorrect", viewport: "1240x760" },
   },

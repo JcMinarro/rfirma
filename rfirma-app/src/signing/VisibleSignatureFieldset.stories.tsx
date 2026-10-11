@@ -19,7 +19,20 @@ const singlePage = {
 const meta = {
   title: "Flujos/Firma/VisibleSignatureFieldset",
   component: VisibleSignatureFieldset,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La sección de la firma visible del panel de firma: el interruptor, la ayuda si falta certificado y la colocación en el documento.",
+          "Úsala dentro de `SigningPanel`. La colocación en sí es `PlacementBlock`, que comparte con la ventana de sede.",
+          "Aportas `signature`, con su valor y su cambio; `certificate`, el estado del selector; `placementState`, y `signing`, que la atenúa mientras se firma.",
+          "No la uses en la ventana de sede: allí el área la marca `SedeMarking`. No dibujes aquí el recuadro: se traza en el visor.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "column" },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 332 }}>

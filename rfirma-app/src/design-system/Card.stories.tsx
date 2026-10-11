@@ -6,6 +6,18 @@ import { Card } from "./Card";
 const meta = {
   title: "Primitivos/Card",
   component: Card,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "La tarjeta `rf-card`: una superficie con borde y relleno que agrupa un bloque de contenido.",
+          "Úsala para separar una unidad (un certificado, un aviso, un resumen) del fondo. Para apilar contenido sin superficie, `Stack`.",
+          "Aportas `children`; `elevated`, para la sombra flotante en lugar de la de reposo; y `as`, para pintarla con otro elemento (`section`, `li`…). Además, lo de un `<div>`.",
+          "No le añadas relleno ni sombra propios: ya los trae de los tokens. No anides tarjetas.",
+        ].join("\n\n"),
+      },
+    },
+  },
   args: { children: "Contenido de la tarjeta" },
   argTypes: { elevated: { control: "boolean" } },
 } satisfies Meta<typeof Card>;

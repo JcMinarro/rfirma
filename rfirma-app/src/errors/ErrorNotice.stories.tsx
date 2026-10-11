@@ -7,7 +7,20 @@ import { ErrorNotice } from "./ErrorNotice";
 const meta = {
   title: "Dominio/Errores/ErrorNotice",
   component: ErrorNotice,
-  parameters: { layout: "centered", designSync: { cardMode: "column" } },
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "El aviso de un fallo: la situación traducida a una frase que se entiende y, plegado aparte, el texto original para copiarlo.",
+          "Úsalo siempre que un fallo llegue a la persona, ya sea en el panel, en una ventana o como último recurso de una ventana que se rompe.",
+          "Le das la situación, de la que salen título y cuerpo del catálogo, y, si los hay, el detalle técnico crudo, la ayuda, recargar la ventana o vaciar el almacén. Con `documentUnchanged` dice además que el documento no se ha tocado; con `title`, un título propio en lugar del de la situación.",
+          "No escribas tú el mensaje ni traduzcas o recortes el detalle técnico: el detalle va tal como llegó, y el mensaje sale de la situación.",
+        ].join("\n\n"),
+      },
+    },
+    layout: "centered",
+    designSync: { cardMode: "column" },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: 380 }}>

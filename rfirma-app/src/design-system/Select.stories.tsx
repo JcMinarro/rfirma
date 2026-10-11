@@ -31,6 +31,18 @@ function SelectDemo({ hideLabel, opens }: { hideLabel: boolean; opens: "down" | 
 const meta = {
   title: "Primitivos/Select",
   component: SelectDemo,
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Un desplegable de la aplicación en lugar del `<select>` nativo, cuya lista pinta el sistema y no se puede vestir con los tokens.",
+          "Úsalo para elegir un valor entre pocas opciones de texto, como el idioma o el tema. Para muchas opciones o con búsqueda, `Combobox`.",
+          "Aportas `label`, `value`, `options` (cada una con `value` y `label`) y `onChange`; `hideLabel`, si la etiqueta ya se ve en otro sitio (sigue siendo el nombre accesible); y `opens`, para que la lista se abra hacia arriba.",
+          "No lo sustituyas por un `<select>` nativo ni por un `<div>` con `onClick`: perderías el teclado y la accesibilidad que trae.",
+        ].join("\n\n"),
+      },
+    },
+  },
   args: { hideLabel: false, opens: "down" },
   argTypes: {
     hideLabel: { control: "boolean" },

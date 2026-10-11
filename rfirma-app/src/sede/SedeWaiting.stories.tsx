@@ -8,7 +8,20 @@ import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sed
 const meta = {
   title: "Flujos/Sede/Espera",
   ...sedeMomentMeta,
-  parameters: { ...sedeMomentMeta.parameters, designSync: { cardMode: "column" } },
+  parameters: {
+    ...sedeMomentMeta.parameters,
+    docs: {
+      description: {
+        component: [
+          "El momento 1 de la ventana de sede: la espera del canal y, cuando ya no va a abrirse, la instalación de la CA local y las dos recetas de navegador.",
+          "Úsalo mientras el canal con la sede no se abre (`connecting`) y cuando ya no va a abrirse (`unreachable`).",
+          "Aportas `moment`, `onInstallLocalCa` y `onCancel`, que abandona el trámite.",
+          "No lo cierres solo ni le añadas «Reintentar»: abandonar lo decide la persona y reintentar es cosa de la sede. No diagnostiques la causa: rFirma no puede saber si se denegó el permiso.",
+        ].join("\n\n"),
+      },
+    },
+    designSync: { cardMode: "column" },
+  },
   component: SedeWaiting,
   args: { onInstallLocalCa: sedeViewActions.onInstallLocalCa, onCancel: sedeViewActions.onCancel },
 } satisfies Meta<typeof SedeWaiting>;
