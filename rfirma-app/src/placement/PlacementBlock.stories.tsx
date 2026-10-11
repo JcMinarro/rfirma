@@ -7,7 +7,7 @@ import { placementStateOf } from "./testing/fixtures";
 const RECT = { x0: 100, y0: 100, x1: 300, y1: 180 };
 
 const meta = {
-  title: "Flujos/Firma/PlacementBlock",
+  title: "Dominio/Firma/PlacementBlock",
   component: PlacementBlock,
   parameters: { layout: "centered", designSync: { cardMode: "column" } },
   decorators: [

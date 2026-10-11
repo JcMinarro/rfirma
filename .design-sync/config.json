@@ -33,7 +33,7 @@
     "PlacementBlock": "PlacementBlock",
     "Popover": "Popover",
     "ProgressBar": "ProgressBar",
-    "RecentRows": "RecentsSection",
+    "RecentsSection": "RecentsSection",
     "Row": "Row",
     "Select": "Select",
     "SignAnywayDialog": "SignAnywayDialog",
@@ -65,6 +65,10 @@
     "src/design-system/bundle/fonts/fonts.css"
   ],
   "overrides": {
+    "CertificateSelect": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
     "Dialog": {
       "cardMode": "single",
       "primaryStory": "Closable",

@@ -6,7 +6,7 @@ import { RecentRows, RecentsSection } from "./RecentRows";
 import { storyRecents } from "./testing/fixtures";
 
 const meta = {
-  title: "Dominio/Documentos/RecentRows",
+  title: "Dominio/Documentos/RecentsSection",
   component: RecentsSection,
   parameters: { layout: "centered", designSync: { cardMode: "column" } },
   decorators: [

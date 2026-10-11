@@ -7,7 +7,7 @@ firma**, y es el único sitio donde se abre, se cambia o se cierra uno.
 
 **La verdad del dibujo es el código y sus historias:**
 `documents/DocumentTabs.stories.tsx` («Dominio/Documentos/DocumentTabs») y
-`documents/RecentRows.stories.tsx` («Dominio/Documentos/RecentRows»). Esta
+`documents/RecentRows.stories.tsx` («Dominio/Documentos/RecentsSection»). Esta
 ficha cuenta el flujo y el porqué; los textos salen del catálogo (`tabs.*` y
 `recents.*` en `po/messages.pot`) y no se copian aquí.
 

@@ -61,14 +61,14 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | --- | --- | --- |
 | Dominio | Actualizaciones / NewVersionStrip | `NewVersionStrip` |
 | Dominio | Documentos / DocumentTabs | `DocumentTabs` |
-| Dominio | Documentos / RecentRows | `RecentsSection` |
+| Dominio | Documentos / RecentsSection | `RecentsSection` |
 | Dominio | Errores / ErrorNotice | `ErrorNotice` |
 | Dominio | Firma / CertificateCard | `CertificateCard` |
 | Dominio | Firma / CertificateSelect | `CertificateSelect` |
+| Dominio | Firma / PlacementBlock | `PlacementBlock` |
 | Flujos | Documentos / DocumentViewer | `DocumentViewer` |
 | Flujos | Estado / StatusView | `StatusView` |
 | Flujos | Estado / WithdrawCertificateView | `WithdrawCertificateView` |
-| Flujos | Firma / PlacementBlock | `PlacementBlock` |
 | Flujos | Firma / SignAnywayDialog | `SignAnywayDialog` |
 | Flujos | Firma / SignaturesDialog | `SignaturesDialog` |
 | Flujos | Firma / SignaturesPanel | `SignaturesPanel` |
