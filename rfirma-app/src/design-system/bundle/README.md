@@ -1,8 +1,10 @@
 # rFirma Design System
 
 La capa CSS del sistema de diseño: tokens `--rf-*` y clases `rf-*`. Los
-componentes React que la usan viven en `design-system/`, y sus tipos los emite
-`just build-design-system`.
+componentes React que la usan viven en `design-system/`. Para usarlos fuera de
+la app, `just build-design-system` deja en `rfirma-app/dist-design-system/` sus
+tipos, un `bundle.js` que los pone en `window.RFirma`, este CSS compilado en
+`bundle.css` y un `react.js` con el React que esperan.
 
 Tipografía: **Inter** (OFL), una sola familia para todos los roles.
 

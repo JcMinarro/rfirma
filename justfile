@@ -603,10 +603,11 @@ flatpak-sources:
 design-sync-selection:
     {{ root }}/scripts/design_sync_selection.py
 
-# Emite en rfirma-app/dist-design-system los .d.ts de lo que exporta la entrada del sistema de diseño, con las props reales de cada componente.
+# Deja en rfirma-app/dist-design-system el sistema de diseño para fuera de la app: los .d.ts con las props reales, bundle.js y bundle.css, y react.js.
 [group('dev')]
 build-design-system: po-import
     cd {{ app }} && pnpm exec tsc -p tsconfig.design-system.json
+    cd {{ app }} && node tools/build-design-system.mjs
 
 # Mutation testing incremental, a mano antes de publicar una version: no bloquea (ADR-0014).
 [group('release')]
