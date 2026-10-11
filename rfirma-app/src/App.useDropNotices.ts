@@ -5,6 +5,9 @@ import type { DocumentInHand } from "./documents/document";
 import type { DocumentDrops, Drop } from "./documents/drops";
 import type { DocumentFailure } from "./viewer/source";
 
+/** Si la invocación externa ya contestó y si trajo algo. */
+export type Invocation = "asking" | "none" | "arrived";
+
 /**
  * Un aviso del arrastre, atado al documento del que habla.
  *
@@ -12,9 +15,6 @@ import type { DocumentFailure } from "./viewer/source";
  * que el aviso siga significando algo: el que se acaba de abrir cuando se
  * soltaron varios, o el que ya estaba cuando lo soltado no se pudo abrir.
  */
-/** Si la invocación externa ya contestó y si trajo algo. */
-export type Invocation = "asking" | "none" | "arrived";
-
 export interface DropNotice {
   about: string | null;
   failure: DocumentFailure;

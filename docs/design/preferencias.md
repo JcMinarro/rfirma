@@ -20,7 +20,7 @@ con los ajustes y los certificados de ejemplo de `preferences/testing/fixtures.t
 
 Una por sección y por variante de lo que enseña:
 
-- `General` y `GeneralWithActivityOff`: Privacidad con los dos interruptores
+- `General` y `GeneralWithActivityOff`: Privacidad con sus interruptores
   encendidos y apagados.
 - `SigningWithoutOriginalFolder`: solo la carpeta de destino, que es lo que ve
   quien corre bajo el sandbox.
@@ -83,6 +83,9 @@ Un solo grupo, **Privacidad** (`preferences.sections.privacy`):
 - **Avisar de versiones nuevas** (`preferences.notifyNewVersion.label`), sin
   ayuda. Vive bajo Privacidad porque la comprobación de versión es la única
   conexión saliente de rFirma.
+- **Mostrar la bienvenida al abrir** (`welcome.showOnStartup`), sin ayuda. Es
+  la misma preferencia que la casilla de la [bienvenida](bienvenida.md): las
+  dos leen y escriben el mismo ajuste.
 
 ### Firma
 
@@ -188,7 +191,7 @@ barato porque no hay nada sin aplicar.
 *Firma en sedes* del [panel de estado](panel-de-estado.md), único sitio donde se
 elige el programa que atiende las sedes, y «Preguntarme al arrancar» se borró
 porque gobernaba un aviso que ya no existe. *Privacidad* pasó a ser el único
-grupo de *General*, para que sus dos interruptores se vean al abrir.
+grupo de *General*, para que todos sus interruptores se vean al abrir.
 
 **No es un diálogo ni una ruta de un router.** Con guardado automático y `Cerrar`
 como única salida no hay estado al que navegar, así que `Escape` sigue valiendo
