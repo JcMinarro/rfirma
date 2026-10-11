@@ -6,7 +6,7 @@ import { SedeOldWebClient } from "./SedeOldWebClient";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Cliente antiguo",
+  title: "Pantallas/Ventana de sede/Cliente antiguo",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,

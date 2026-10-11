@@ -8,7 +8,7 @@ import { SedeNoCertificate } from "./SedeNoCertificate";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Sin certificado",
+  title: "Pantallas/Ventana de sede/Sin certificado",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -22,7 +22,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeNoCertificate,
   args: {

@@ -6,7 +6,7 @@ import { SedeWaiting } from "./SedeWaiting";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Espera",
+  title: "Pantallas/Ventana de sede/Espera",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -20,7 +20,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeWaiting,
   args: { onInstallLocalCa: sedeViewActions.onInstallLocalCa, onCancel: sedeViewActions.onCancel },

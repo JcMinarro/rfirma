@@ -6,7 +6,7 @@ import { SedeConfirm } from "./SedeConfirm";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Confirmar",
+  title: "Pantallas/Ventana de sede/Confirmar",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -20,7 +20,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeConfirm,
   args: { onConfirm: sedeViewActions.onConfirmSignatures, onCancel: sedeViewActions.onCancel },

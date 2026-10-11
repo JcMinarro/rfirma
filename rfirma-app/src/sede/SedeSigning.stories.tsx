@@ -7,7 +7,7 @@ import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sed
 import { certificate } from "./testing/fixtures/sedeWindow";
 
 const meta = {
-  title: "Flujos/Sede/Firmando",
+  title: "Pantallas/Ventana de sede/Firmando",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -21,7 +21,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeSigning,
   args: { origin: "sede.ejemplo.gob.es", onCancel: sedeViewActions.onCancel },

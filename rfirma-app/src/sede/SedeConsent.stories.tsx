@@ -9,7 +9,7 @@ import { momentProps, sedeErrand, sedeViewActions } from "./testing/fixtures/sed
 import { certificate, consentStage, signedDocument } from "./testing/fixtures/sedeWindow";
 
 const meta = {
-  title: "Flujos/Sede/Consentimiento",
+  title: "Pantallas/Ventana de sede/Consentimiento",
   ...sedeMomentMeta,
   component: SedeConsent,
   args: {
@@ -29,7 +29,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "single", primaryStory: "Consent" },
   },
 } satisfies Meta<typeof SedeConsent>;
 

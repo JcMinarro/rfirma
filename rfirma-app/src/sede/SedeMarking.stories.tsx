@@ -7,7 +7,7 @@ import { blankPdf } from "./testing/fixtures/previousSignatures";
 import { momentStory, sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Marcar la firma",
+  title: "Pantallas/Ventana de sede/Marcar la firma",
   ...sedeAreaMomentMeta,
   parameters: {
     ...sedeAreaMomentMeta.parameters,
@@ -21,7 +21,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeMarking,
   args: { onMark: sedeViewActions.onMarkArea, onCancel: sedeViewActions.onCancel },

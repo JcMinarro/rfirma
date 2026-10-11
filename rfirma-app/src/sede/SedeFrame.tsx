@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { type PrimaryButton, useActionKeys } from "../design-system/actionKeys";
 import { Row } from "../design-system/Row";
 import { CONSENT_COUNTDOWN_SECONDS, OUTCOME_CLOSE_MS } from "./errand";
+import "./SedeFrame.css";
 
 /**
  * El cuerpo y el pie, que son iguales en los cinco momentos.

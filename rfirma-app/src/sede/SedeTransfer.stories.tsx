@@ -6,7 +6,7 @@ import { SedeTransfer } from "./SedeTransfer";
 import { momentStory, sedeErrand } from "./testing/fixtures/sedeView";
 
 const meta = {
-  title: "Flujos/Sede/Guardar y cargar",
+  title: "Pantallas/Ventana de sede/Guardar y cargar",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -20,7 +20,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeTransfer,
 } satisfies Meta<typeof SedeTransfer>;

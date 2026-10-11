@@ -8,7 +8,7 @@ import { sedeViewActions } from "./testing/fixtures/sedeView";
 import { signedDocument } from "./testing/fixtures/sedeWindow";
 
 const meta = {
-  title: "Flujos/Sede/Desenlace",
+  title: "Pantallas/Ventana de sede/Desenlace",
   ...sedeMomentMeta,
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -22,7 +22,6 @@ const meta = {
         ].join("\n\n"),
       },
     },
-    designSync: { cardMode: "column" },
   },
   component: SedeOutcome,
   args: { onClose: sedeViewActions.onClose, onOpenHelp: sedeViewActions.onOpenHelp },

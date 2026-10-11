@@ -12,21 +12,13 @@
     "Card": "Card",
     "CertificateCard": "CertificateCard",
     "CertificateSelect": "CertificateSelect",
-    "Clienteantiguo": "SedeOldWebClient",
     "Combobox": "Combobox",
-    "Confirmar": "SedeConfirm",
-    "Consentimiento": "SedeConsent",
-    "Desenlace": "SedeOutcome",
     "DesignRoot": "DesignRoot",
     "Dialog": "Dialog",
     "DocumentTabs": "DocumentTabs",
     "ErrorNotice": "ErrorNotice",
-    "Espera": "SedeWaiting",
     "Field": "Field",
-    "Firmando": "SedeSigning",
-    "Guardarycargar": "SedeTransfer",
     "Icon": "Icon",
-    "Marcarlafirma": "SedeMarking",
     "Menu": "Menu",
     "MenuItem": "MenuItem",
     "NewVersionStrip": "NewVersionStrip",
@@ -35,8 +27,8 @@
     "ProgressBar": "ProgressBar",
     "RecentsSection": "RecentsSection",
     "Row": "Row",
+    "SedeBody": "SedeBody",
     "Select": "Select",
-    "Sincertificado": "SedeNoCertificate",
     "SplitButton": "SplitButton",
     "Stack": "Stack",
     "Switch": "Switch",
@@ -76,31 +68,6 @@
       "primaryStory": "Open"
     },
     "RecentsSection": {
-      "cardMode": "column"
-    },
-    "SedeConfirm": {
-      "cardMode": "column"
-    },
-    "SedeConsent": {
-      "cardMode": "single",
-      "primaryStory": "Consent"
-    },
-    "SedeMarking": {
-      "cardMode": "column"
-    },
-    "SedeNoCertificate": {
-      "cardMode": "column"
-    },
-    "SedeOutcome": {
-      "cardMode": "column"
-    },
-    "SedeSigning": {
-      "cardMode": "column"
-    },
-    "SedeTransfer": {
-      "cardMode": "column"
-    },
-    "SedeWaiting": {
       "cardMode": "column"
     }
   },
