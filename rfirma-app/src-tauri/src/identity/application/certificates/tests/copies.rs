@@ -6,6 +6,7 @@ use super::super::{
 use super::removal::{FixedPinKeyring, RemovalOutcome};
 use super::{CARD, INSTALLED, SOFTOKEN};
 use crate::identity::application::tests::{a_certificate_with_id, TestAuthority};
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::store::{Store, StoreClass};
 use crate::signing::application::tests::a_memory;
@@ -53,12 +54,75 @@ fn copies_of(der: &[u8], stores: &[&Store]) -> Vec<TokenCertificate> {
         .collect()
 }
 
+fn owned_by(name: &str, channel: BrowserChannel) -> NssOwner {
+    NssOwner::Browser {
+        browser: browser_named(name).expect("el navegador esta en la tabla"),
+        channel,
+    }
+}
+
+fn a_store_of(owner: NssOwner) -> Store {
+    Store::nss(SOFTOKEN, Path::new("/home/ada/perfil")).owned_by(owner)
+}
+
 fn a_firefox_profile() -> Store {
     Store::nss(SOFTOKEN, Path::new("/home/ada/.mozilla/firefox/perfil"))
+        .owned_by(owned_by("Firefox", BrowserChannel::Native))
 }
 
 fn a_chrome_database() -> Store {
-    Store::nss(SOFTOKEN, Path::new("/home/ada/.pki/nssdb"))
+    Store::nss(SOFTOKEN, Path::new("/home/ada/.pki/nssdb")).owned_by(NssOwner::SharedChromium)
+}
+
+/// La copia con la que firma la fila del certificado repartido por esos almacenes.
+fn the_copy_signed_with(stores: &[&Store]) -> usize {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let der = TestAuthority::root("EIDAS CERTIFICADO PRUEBAS - 99999999R").der();
+    let copies = copies_of(&der, stores);
+    let listed = ListedCertificates::new();
+    let rows = rows_of(
+        copies.clone(),
+        &home.path().join("certificates"),
+        &listed,
+        &ListedCertificates::new(),
+        &a_memory(home.path()),
+    );
+    let chosen = certificate_behind(&copies, &rows[0].id, &listed).expect("la copia");
+    copies
+        .iter()
+        .position(|copy| copy.reference() == chosen.reference())
+        .expect("la copia elegida es una de ellas")
+}
+
+#[test]
+fn within_the_firefox_family_the_copy_follows_the_table_and_then_the_channel() {
+    assert_eq!(
+        the_copy_signed_with(&[
+            &a_store_of(owned_by("LibreWolf", BrowserChannel::Native)),
+            &a_store_of(owned_by("Firefox", BrowserChannel::Flatpak)),
+            &a_store_of(owned_by("Firefox", BrowserChannel::Snap)),
+        ]),
+        2
+    );
+}
+
+#[test]
+fn within_the_chromium_family_the_shared_store_comes_first_then_the_table_and_the_channel() {
+    assert_eq!(
+        the_copy_signed_with(&[
+            &a_store_of(owned_by("Brave", BrowserChannel::Snap)),
+            &a_store_of(owned_by("Chromium", BrowserChannel::Flatpak)),
+            &a_store_of(owned_by("Chromium", BrowserChannel::Snap)),
+        ]),
+        2
+    );
+    assert_eq!(
+        the_copy_signed_with(&[
+            &a_store_of(owned_by("Chrome", BrowserChannel::Flatpak)),
+            &a_store_of(NssOwner::SharedChromium),
+        ]),
+        1
+    );
 }
 
 /// El Almacén de rFirma en `directory`, con su base ya creada.

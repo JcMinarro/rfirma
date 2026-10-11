@@ -1,7 +1,8 @@
 //! Reparación e instalación manual de la CA local desde la interfaz de sede (ADR-0005).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+use crate::identity::domain::browsers::NssOwner;
 use crate::site::domain::local_ca::ChannelMark;
 use crate::site::domain::trust::Moment as TrustMoment;
 use crate::site::ports::{LocalCaSlots, TrustStores};
@@ -20,6 +21,18 @@ pub struct LocalCaTrust {
     pub stores: Box<dyn TrustStores + Send + Sync>,
     /// La marca del canal de esta instalación.
     pub mark: ChannelMark,
+    /// El dueño de cada perfil NSS, tal como lo dio el descubrimiento.
+    pub owners: Vec<(PathBuf, NssOwner)>,
+}
+
+impl LocalCaTrust {
+    /// El dueño que el descubrimiento dio a ese perfil, si es un Almacén NSS de navegador.
+    pub fn owner_of(&self, profile: &Path) -> Option<NssOwner> {
+        self.owners
+            .iter()
+            .find(|(owned, _)| owned == profile)
+            .map(|(_, owner)| *owner)
+    }
 }
 
 /// Instala la CA local a petición de la persona y actualiza el estado de la ventana (ADR-0005).

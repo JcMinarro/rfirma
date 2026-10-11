@@ -217,10 +217,11 @@ fn the_stores_come_firefox_family_first_then_chromium_in_table_and_channel_order
             owned_by("Vivaldi", BrowserChannel::Flatpak),
         ]
     );
-    assert_eq!(
-        nss_profiles(home.path())[..3],
-        [snap_firefox, flatpak_firefox, librewolf]
-    );
+    let directories: Vec<PathBuf> = nss_stores(home.path())
+        .into_iter()
+        .map(|store| store.directory)
+        .collect();
+    assert_eq!(directories[..3], [snap_firefox, flatpak_firefox, librewolf]);
 }
 
 #[test]
@@ -245,6 +246,43 @@ fn the_firefox_snap_reads_only_its_common_root() {
     );
 
     assert!(nss_stores(home.path()).is_empty());
+}
+
+#[test]
+fn each_nss_store_opened_carries_the_owner_it_was_discovered_with() {
+    let home = a_home_with(
+        &[
+            (".var/app/com.google.Chrome/data/pki/nssdb", true),
+            (".pki/nssdb", true),
+        ],
+        None,
+    );
+    a_firefox_profile_at(
+        home.path(),
+        "snap/firefox/common/.mozilla/firefox",
+        "snap/firefox/common/.mozilla/firefox/aaaaaaaa.default",
+    );
+
+    let opened: Vec<(Option<NssOwner>, StoreClass)> =
+        nss_stores_opened_by(Path::new("/usr/lib/libsoftokn3.so"), home.path())
+            .iter()
+            .map(|store| (store.owner(), store.class()))
+            .collect();
+
+    assert_eq!(
+        opened,
+        vec![
+            (
+                Some(owned_by("Firefox", BrowserChannel::Snap)),
+                StoreClass::Firefox
+            ),
+            (Some(NssOwner::SharedChromium), StoreClass::Chrome),
+            (
+                Some(owned_by("Chrome", BrowserChannel::Flatpak)),
+                StoreClass::Chrome
+            ),
+        ]
+    );
 }
 
 #[test]

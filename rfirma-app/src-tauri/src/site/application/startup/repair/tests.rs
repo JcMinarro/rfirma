@@ -90,6 +90,7 @@ mod while_a_channel_serves {
                 profiles,
                 stores: Box::new(stores),
                 mark: ChannelMark::Flatpak,
+                owners: Vec::new(),
             },
             der_of(&unmarked),
         )

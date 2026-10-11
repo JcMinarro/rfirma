@@ -173,14 +173,18 @@ pub fn from_environment() -> Vec<Store> {
     .collect();
 
     if let (Some(home), Some(softoken)) = (home, softoken()) {
-        stores.extend(
-            nss_profiles(&home)
-                .into_iter()
-                .map(|profile| Store::nss(&softoken, &profile)),
-        );
+        stores.extend(nss_stores_opened_by(&softoken, &home));
     }
 
     stores
+}
+
+/// Los almacenes NSS de `home` que abre `softoken`, cada uno con el dueño de su descubrimiento.
+pub fn nss_stores_opened_by(softoken: &Path, home: &Path) -> Vec<Store> {
+    nss_stores(home)
+        .into_iter()
+        .map(|store| Store::nss(softoken, &store.directory).owned_by(store.owner))
+        .collect()
 }
 
 /// Lo que el descubrimiento de este proceso usa y descarta, salvo que `RFIRMA_PKCS11_MODULE` lo anule.
@@ -252,20 +256,6 @@ pub fn ignored_nss_stores(home: &Path) -> Vec<NssStore> {
         }
     }
     ignored
-}
-
-/// Descubre las rutas de perfiles NSS existentes bajo el directorio personal.
-pub fn nss_profiles(home: &Path) -> Vec<PathBuf> {
-    directories_of(nss_stores(home))
-}
-
-/// Los directorios de perfil NSS que existen pero el descubrimiento descarta por no tener `cert9.db`.
-pub fn ignored_nss_profiles(home: &Path) -> Vec<PathBuf> {
-    directories_of(ignored_nss_stores(home))
-}
-
-fn directories_of(stores: Vec<NssStore>) -> Vec<PathBuf> {
-    stores.into_iter().map(|store| store.directory).collect()
 }
 
 fn add_unless_already_there(found: &mut Vec<NssStore>, store: NssStore) {

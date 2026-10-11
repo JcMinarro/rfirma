@@ -2,8 +2,10 @@
 
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 /// El canal de distribución del navegador: cómo llegó a la máquina el dueño de un Almacén NSS.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BrowserChannel {
     Native,
     Snap,
@@ -223,7 +225,12 @@ pub static BROWSERS: [Browser; 7] = [
     },
 ];
 
-/// De quién es un Almacén NSS: un navegador por un canal, o el almacén nativo que comparte la familia Chromium.
+/// La fila de la tabla con ese nombre propio.
+pub fn browser_named(name: &str) -> Option<&'static Browser> {
+    BROWSERS.iter().find(|browser| browser.name == name)
+}
+
+/// De quién es un Almacén NSS:un navegador por un canal, o el almacén nativo que comparte la familia Chromium.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum NssOwner {
     Browser {
@@ -231,6 +238,70 @@ pub enum NssOwner {
         channel: BrowserChannel,
     },
     SharedChromium,
+}
+
+#[derive(Serialize, Deserialize)]
+enum OwnerRecord {
+    Browser {
+        browser: String,
+        channel: BrowserChannel,
+    },
+    SharedChromium,
+}
+
+impl Serialize for NssOwner {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match *self {
+            Self::Browser { browser, channel } => OwnerRecord::Browser {
+                browser: browser.name.to_owned(),
+                channel,
+            },
+            Self::SharedChromium => OwnerRecord::SharedChromium,
+        }
+        .serialize(serializer)
+    }
+}
+
+/// El dueño escrito en el fichero de estado, o ninguno si nombra un navegador que ya no está en la tabla.
+pub fn owner_if_still_known<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<NssOwner>, D::Error> {
+    Ok(
+        Option::<OwnerRecord>::deserialize(deserializer)?.and_then(|record| match record {
+            OwnerRecord::Browser { browser, channel } => {
+                browser_named(&browser).map(|browser| NssOwner::Browser { browser, channel })
+            }
+            OwnerRecord::SharedChromium => Some(NssOwner::SharedChromium),
+        }),
+    )
+}
+
+impl NssOwner {
+    /// Qué copia se prefiere dentro de una familia: el almacén compartido, y luego el orden de la tabla y nativo, snap y flatpak.
+    pub fn preference(self) -> usize {
+        match self {
+            Self::SharedChromium => 0,
+            Self::Browser { browser, channel } => {
+                let row = BROWSERS
+                    .iter()
+                    .position(|listed| listed == browser)
+                    .unwrap_or(BROWSERS.len());
+                let channel = CHANNELS
+                    .iter()
+                    .position(|listed| *listed == channel)
+                    .unwrap_or(CHANNELS.len());
+                1 + row * CHANNELS.len() + channel
+            }
+        }
+    }
+
+    /// Si el dueño es de la familia Firefox.
+    pub fn is_firefox_family(self) -> bool {
+        match self {
+            Self::Browser { browser, .. } => browser.family.is_firefox(),
+            Self::SharedChromium => false,
+        }
+    }
 }
 
 /// Una disposición ya resuelta en rutas del disco.

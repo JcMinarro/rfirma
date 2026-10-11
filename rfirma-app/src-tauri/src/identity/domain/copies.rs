@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use crate::identity::domain::browsers::NssOwner;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::store::StoreClass;
 
@@ -36,7 +37,7 @@ pub struct ChosenCopy {
 }
 
 impl ChosenCopy {
-    /// La recordada si está entre las copias; si no, la primera por preferencia de almacén.
+    /// La recordada si está entre las copias; si no, la primera por preferencia de almacén y, dentro, de dueño.
     pub fn among(
         mut copies: Vec<TokenCertificate>,
         class_of: impl Fn(&CertificateRef) -> StoreClass,
@@ -58,7 +59,12 @@ impl ChosenCopy {
         });
         let chosen = remembered_copy.unwrap_or_else(|| {
             (0..classes.len())
-                .min_by_key(|&copy| classes[copy].preference())
+                .min_by_key(|&copy| {
+                    (
+                        classes[copy].preference(),
+                        copies[copy].reference().owner().map(NssOwner::preference),
+                    )
+                })
                 .unwrap_or_default()
         });
         let store = classes[chosen];
