@@ -125,12 +125,9 @@ ventana sigue sin poder pedir un recurso de fuera.
 
 ## 4. Espaciado
 
-Base de 8px, nueve escalones: `--rf-space-1` … `--rf-space-9` =
-8, 16, 24, 40, 48, 64, 72, 80, 144px.
+Una sola escala, con nombre:
 
-Alias semánticos:
-
-| Alias | Valor | Uso previsto |
+| Token | Valor | Uso previsto |
 | --- | --- | --- |
 | `--rf-space-xs` | 8px | relleno interno de botón, separación de iconos |
 | `--rf-space-sm` | 16px | relleno de bloques de texto, separación en línea |
@@ -157,7 +154,7 @@ de diálogo 20**. `.rf-scrim` no trae
 `z-index`: quien lo coloca lo pone.
 
 Dos elevaciones: `--rf-shadow-card` (reposo) y `--rf-shadow-elevated`
-(flotante). Ambas son sombras de cuatro capas y **su valor es el del bundle
+(flotante). Ambas son sombras de dos capas y **su valor es el del bundle
 versionado**, que es el único del repositorio. En el tema oscuro las sombras apenas se leen; **la profundidad la
 aporta el contraste entre `--rf-bg` y `--rf-surface` más el borde**. Empieza
 siempre por una superficie plana y sube solo si el elemento flota de verdad.
@@ -169,20 +166,16 @@ siempre por una superficie plana y sube solo si el elemento flota de verdad.
 `--rf-duration-fast` 150ms · `--rf-duration-base` 300ms · `--rf-easing`
 `cubic-bezier(0.4, 0, 0.2, 1)`.
 
-Existe `--rf-duration-slow`, pero vale 300ms igual que `base`: **hay dos
-escalones reales, no tres**.
-
 Anima solo `opacity`, `transform`, `color`, `background-color` y `border-color`.
-Las tres duraciones caen a 1ms bajo `prefers-reduced-motion` desde la propia
+Las dos duraciones caen a 1ms bajo `prefers-reduced-motion` desde la propia
 capa de tokens; no repitas esa media query en los componentes.
 
 ---
 
 ## 7. Puntos de ruptura
 
-400, 640, 768, 1024, 1280, 1400px. Existen como
-`--rf-bp-xs|sm|md|lg|xl|2xl` para lectura desde JS, pero **las custom
-properties no funcionan dentro de `@media`**: escribe el valor literal.
+400, 640, 768, 1024, 1280, 1400px. No son tokens: las custom properties no
+funcionan dentro de `@media`, así que se escribe el valor literal.
 
 ---
 
@@ -310,7 +303,7 @@ color del texto de un botón primario**. Como máximo un `--primary` por vista.
 </div>
 ```
 
-`.rf-card` ya es flex en columna con `gap: --rf-space-1` y
+`.rf-card` ya es flex en columna con `gap: --rf-space-xs` y
 `padding: --rf-space-md`; no le añadas relleno propio. Para un contenedor sin sombra ni relleno,
 `.rf-surface`.
 
@@ -531,6 +524,3 @@ alguien los "arreglará" de vuelta.
    intermedios. No sustituyas un rol por un tamaño inventado sobre la marcha:
    elige el rol más cercano.
 
-Nota menor: `--rf-duration-slow` vale lo mismo que `--rf-duration-base`. El
-token se conserva por compatibilidad, pero **hay dos escalones de movimiento,
-no tres**.

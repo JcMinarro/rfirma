@@ -91,8 +91,8 @@
 .rf-text-primary { color: var(--rf-primary); }
 
 /* ------------------------------------------------------------- 3. Layout */
-.rf-stack { display: flex; flex-direction: column; gap: var(--rf-space-2); }
-.rf-row { display: flex; flex-direction: row; align-items: center; gap: var(--rf-space-2); }
+.rf-stack { display: flex; flex-direction: column; gap: var(--rf-space-sm); }
+.rf-row { display: flex; flex-direction: row; align-items: center; gap: var(--rf-space-sm); }
 .rf-gap-xs { gap: var(--rf-space-xs); }
 .rf-gap-sm { gap: var(--rf-space-sm); }
 .rf-gap-md { gap: var(--rf-space-md); }
@@ -114,7 +114,7 @@
   padding: var(--rf-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--rf-space-1);
+  gap: var(--rf-space-xs);
 }
 .rf-card--elevated { box-shadow: var(--rf-shadow-elevated); }
 
@@ -124,9 +124,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--rf-space-1);
+  gap: var(--rf-space-xs);
   min-height: 44px;
-  padding: 0 var(--rf-space-2);
+  padding: 0 var(--rf-space-sm);
   border-radius: var(--rf-radius-md);
   border: 1px solid transparent;
   font-family: var(--rf-font-body);
@@ -162,7 +162,7 @@
 .rf-btn[disabled], .rf-btn--disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* --------------------------------------------------------------- 6. Forms */
-.rf-field { display: flex; flex-direction: column; gap: var(--rf-space-1); }
+.rf-field { display: flex; flex-direction: column; gap: var(--rf-space-xs); }
 .rf-label {
   font-family: var(--rf-font-body);
   font-size: var(--rf-ui-size);
@@ -172,7 +172,7 @@
 }
 .rf-input {
   min-height: 44px;
-  padding: 0 var(--rf-space-2);
+  padding: 0 var(--rf-space-sm);
   background: var(--rf-surface);
   color: var(--rf-text);
   border: 1px solid var(--rf-border-strong);
@@ -202,7 +202,7 @@
 .rf-badge {
   display: inline-flex;
   align-items: center;
-  padding: var(--rf-space-1) calc(var(--rf-space-1) * 1.5);
+  padding: var(--rf-space-xs) calc(var(--rf-space-xs) * 1.5);
   border-radius: var(--rf-radius-pill);
   border: 1px solid var(--rf-border-strong);
   font-family: var(--rf-font-body);
@@ -224,7 +224,7 @@
   padding: var(--rf-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--rf-space-2);
+  gap: var(--rf-space-sm);
   max-width: 480px;
 }
 .rf-scrim { background: var(--rf-scrim); }
