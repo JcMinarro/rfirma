@@ -4,6 +4,7 @@ use openssl::nid::Nid;
 use openssl::x509::extension::{BasicConstraints, KeyUsage};
 use openssl::x509::{X509Name, X509};
 
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::site::domain::local_ca::{generate_key, random_serial};
 
 fn a_certificate_with_extensions(
@@ -154,6 +155,55 @@ fn a_reference_round_trips_through_the_state_file_with_its_cka_id() {
 
     assert_eq!(read, reference);
     assert_eq!(read.cka_id(), Some([0x05].as_slice()));
+}
+
+fn a_brave_flatpak_store() -> Store {
+    let brave = browser_named("Brave").expect("Brave esta en la tabla");
+    Store::nss("/usr/lib/libsoftokn3.so", Path::new("/casa/ada/perfil")).owned_by(
+        NssOwner::Browser {
+            browser: brave,
+            channel: BrowserChannel::Flatpak,
+        },
+    )
+}
+
+#[test]
+fn a_reference_keeps_the_owner_of_its_nss_store() {
+    let store = a_brave_flatpak_store();
+
+    let reference = CertificateRef::new(store.clone(), "NSS", "ETIQUETA", vec![0x05]);
+
+    assert_eq!(reference.store().owner(), store.owner());
+    assert_eq!(
+        reference.class_under(Path::new("/nowhere")),
+        StoreClass::Browser(store.owner().expect("la tabla le da dueño"))
+    );
+}
+
+#[test]
+fn a_reference_round_trips_through_the_state_file_with_its_owner() {
+    let reference = CertificateRef::new(a_brave_flatpak_store(), "NSS", "ETIQUETA", vec![0x05]);
+
+    let written = serde_json::to_string(&reference).expect("deberia serializarse");
+    let read: CertificateRef = serde_json::from_str(&written).expect("deberia leerse");
+
+    assert_eq!(read, reference);
+    assert_eq!(read.store().owner(), a_brave_flatpak_store().owner());
+}
+
+#[test]
+fn a_reference_owned_by_a_browser_no_longer_in_the_table_reads_without_owner() {
+    let written = r#"{
+        "module": "/usr/lib/libsoftokn3.so",
+        "token_label": "NSS",
+        "label": "ETIQUETA",
+        "owner": { "Browser": { "browser": "Mosaic", "channel": "Flatpak" } }
+    }"#;
+
+    let reference: CertificateRef =
+        serde_json::from_str(written).expect("una referencia con un navegador retirado se lee");
+
+    assert_eq!(reference.store().owner(), None);
 }
 
 #[test]

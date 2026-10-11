@@ -6,6 +6,7 @@ import { Badge } from "../design-system/Badge";
 import { Icon } from "../design-system/icons";
 import type { Certificate } from "./certificate";
 import { certificateHeadline, certificateSubtitle, expiryMonthYear, isUsable } from "./certificate";
+import { browserStoreLabel, isBrowserStoreMark } from "./storeMark";
 import "./CertificateCard.css";
 
 type Store = Certificate["stores"][number];
@@ -24,7 +25,7 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
       <span className="rf-body certificate-card__line">{certificateSubtitle(certificate, t)}</span>
       <span className="certificate-card__meta">
         {certificate.stores.map((store) => (
-          <Badge key={store} className="certificate-card__store">
+          <Badge key={storeLabel(store, t)} className="certificate-card__store">
             {storeLabel(store, t)}
           </Badge>
         ))}
@@ -50,15 +51,16 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
 
 /** El rótulo de un almacén, del catálogo. */
 export function storeLabel(store: Store, t: TFunction): string {
+  if (isBrowserStoreMark(store)) {
+    return browserStoreLabel(store);
+  }
   switch (store) {
     case "dnie":
       return t("panel.certificate.stores.dnie");
     case "card":
       return t("status.storeBrands.card");
-    case "firefox":
-      return t("status.storeBrands.firefox");
-    case "chrome":
-      return t("panel.certificate.stores.chrome");
+    case "sharedChromium":
+      return t("status.storeBrands.sharedChromium");
     case "nssdb":
       return t("panel.certificate.stores.nssdb");
     case "installed":

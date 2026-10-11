@@ -2,6 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::identity::domain::browsers::NssOwner;
 use crate::identity::domain::readers::Reader;
 
 use pkcs11::module_lines;
@@ -57,9 +58,9 @@ pub enum NssProfileState {
 /// Un perfil NSS que el descubrimiento ve, con el navegador al que pertenece.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NssProfile {
-    /// Navegador, como se lee en el informe.
-    pub browser: String,
-    /// Directorio del perfil.
+    /// De quién es el almacén.
+    pub owner: NssOwner,
+    /// Directorio del almacén o del perfil.
     pub directory: PathBuf,
     /// Qué se sabe de él.
     pub state: NssProfileState,

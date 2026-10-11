@@ -2,6 +2,7 @@ use super::super::certtui::store_of;
 use super::*;
 use crate::desktop::domain::platform::Platform;
 use crate::identity::application::tests::{a_usable_certificate, an_expired_certificate};
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::identity::domain::store::StoreClass;
 
 struct StoresHolding {
@@ -352,8 +353,18 @@ fn each_store_class_is_named_in_the_list() {
     for (class, name) in [
         (StoreClass::Card, "tarjeta «token»"),
         (StoreClass::Installed, "Almacén de rFirma"),
-        (StoreClass::Firefox, "Firefox"),
-        (StoreClass::Chrome, "Chrome"),
+        (
+            a_browser_class("Firefox", BrowserChannel::Native),
+            "Firefox",
+        ),
+        (
+            a_browser_class("Brave", BrowserChannel::Flatpak),
+            "Brave · Flatpak",
+        ),
+        (
+            StoreClass::Browser(NssOwner::SharedChromium),
+            "Chrome y derivados",
+        ),
         (StoreClass::Nssdb, "NSS del sistema"),
         (StoreClass::Windows, "Windows"),
     ] {
@@ -431,4 +442,11 @@ fn certtui_says_a_personal_certificate_signs_in_a_personal_capacity() {
         terminal.shown.borrow()[0].0[0].capacity,
         "A título personal"
     );
+}
+
+fn a_browser_class(name: &str, channel: BrowserChannel) -> StoreClass {
+    StoreClass::Browser(NssOwner::Browser {
+        browser: browser_named(name).expect("el navegador esta en la tabla"),
+        channel,
+    })
 }

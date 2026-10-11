@@ -110,7 +110,6 @@ function BrowserTab({
   chosen: Browser;
   onChoose: (browser: Browser) => void;
 }) {
-  const { t } = useTranslation();
   return (
     <Button
       type="button"
@@ -118,7 +117,7 @@ function BrowserTab({
       className={`sede-waiting__tab${id === chosen ? " sede-waiting__tab--chosen" : ""}`}
       onClick={() => onChoose(id)}
     >
-      {id === "chrome" ? t("panel.certificate.stores.chrome") : t("status.storeBrands.firefox")}
+      {id === "chrome" ? "Chrome" : "Firefox"}
     </Button>
   );
 }

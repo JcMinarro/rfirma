@@ -9,10 +9,11 @@ use crate::desktop::domain::channel::Channel;
 use crate::desktop::domain::destination::{CERTIFICATE_ISSUANCE, RELEASES, REPOSITORY, WINDOWS};
 use crate::desktop::domain::handlers::{UrlHandlers, FLATPAK_DESKTOP_FILE};
 use crate::desktop::domain::status::{
-    ActionKind, Signal, SignalDetail, SignalRow, SiteSignatureCandidate, StatusAction,
+    ActionKind, Signal, SignalDetail, SignalRow, SiteSignatureCandidate, StatusAction, StoreBrand,
     StoreCertificates, StoreDetail, Verdict,
 };
 use crate::desktop::ports::VersionMemory;
+use crate::identity::domain::store::StoreClass;
 
 /// Nombre visible de rFirma como candidata a firmar en sedes.
 const OUR_NAME: &str = "rFirma";
@@ -175,6 +176,23 @@ pub fn evaluate_site_signature_signal(handlers: UrlHandlers, channel: Channel) -
         detail: None,
         candidates,
         restart_firefox_notice: false,
+    }
+}
+
+/// La marca con la que cruza un sitio de certificados: el navegador y su canal salen del dueño del almacén.
+pub fn brand_of_class(class: StoreClass) -> StoreBrand {
+    match class {
+        StoreClass::Card => StoreBrand::Card,
+        StoreClass::Installed => StoreBrand::Installed,
+        StoreClass::Windows => StoreBrand::Windows,
+        StoreClass::Nssdb => StoreBrand::Nssdb,
+        StoreClass::Browser(owner) => match owner.browser_name() {
+            Some(name) => StoreBrand::Browser {
+                name: name.to_owned(),
+                channel: owner.channel_name().map(str::to_owned),
+            },
+            None => StoreBrand::SharedChromium,
+        },
     }
 }
 

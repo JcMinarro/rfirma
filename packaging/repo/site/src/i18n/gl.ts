@@ -109,6 +109,10 @@ export const gl: Dictionary = {
   "comparison.stores.label": "Busca de certificados",
   "comparison.stores.autofirma": "Por almacéns, só un activo de cada vez",
   "comparison.stores.rfirma": "Todos á vez, con buscador",
+  "comparison.browsers.label": "Navegadores no Linux",
+  "comparison.browsers.autofirma": "Un almacén: o primeiro que exista. Sen Flatpak nin LibreWolf",
+  "comparison.browsers.rfirma":
+    "Os das familias Firefox e Chromium, nativos, Snap e Flatpak, á vez",
   "comparison.stamp.label": "Sinatura visible",
   "comparison.stamp.autofirma": "Con coordenadas",
   "comparison.stamp.rfirma": "Arrastrándoa sobre a páxina",

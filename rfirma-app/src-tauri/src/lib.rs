@@ -67,6 +67,7 @@ fn local_ca_trust(
         profiles: site::adapters::trust_profiles(),
         stores: site::adapters::desktop_trust_stores(),
         mark: site::application::trust::mark_of(desktop::adapters::channel::Channel::detected()),
+        owners: site::adapters::trust_profile_owners(),
     }
 }
 

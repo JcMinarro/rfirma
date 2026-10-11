@@ -7,6 +7,7 @@ use crate::desktop::domain::status::{
     ActionKind, Signal, SignalDetail, StoreBrand, StoreCertificates, Verdict,
 };
 use crate::desktop::domain::version_check::VersionCheck;
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::signing::application::tests::a_memory;
 
 fn at(seconds: u64) -> SystemTime {
@@ -195,7 +196,7 @@ fn one_certificate_found_is_correct_without_action() {
 #[test]
 fn the_value_adds_up_what_every_place_holds() {
     let stores = vec![
-        a_place(StoreBrand::Firefox, 2),
+        a_place(a_firefox(), 2),
         a_place(StoreBrand::Card, 1),
         a_place(StoreBrand::Installed, 1),
     ];
@@ -234,8 +235,8 @@ fn a_place(brand: StoreBrand, certificates: usize) -> StoreCertificates {
 #[test]
 fn no_store_trusted_is_incorrect_and_offers_to_install() {
     let detail = vec![
-        a_store(StoreBrand::Firefox, false),
-        a_store(StoreBrand::Chrome, false),
+        a_store(a_firefox(), false),
+        a_store(StoreBrand::SharedChromium, false),
         a_store(StoreBrand::Nssdb, false),
     ];
 
@@ -257,8 +258,8 @@ fn no_store_trusted_is_incorrect_and_offers_to_install() {
 #[test]
 fn some_stores_trusted_is_attention_and_offers_to_install() {
     let detail = vec![
-        a_store(StoreBrand::Firefox, true),
-        a_store(StoreBrand::Chrome, false),
+        a_store(a_firefox(), true),
+        a_store(StoreBrand::SharedChromium, false),
         a_store(StoreBrand::Nssdb, false),
     ];
 
@@ -278,8 +279,8 @@ fn some_stores_trusted_is_attention_and_offers_to_install() {
 #[test]
 fn every_store_trusted_is_correct_without_action() {
     let detail = vec![
-        a_store(StoreBrand::Firefox, true),
-        a_store(StoreBrand::Chrome, true),
+        a_store(a_firefox(), true),
+        a_store(StoreBrand::SharedChromium, true),
     ];
 
     let row = evaluate_local_ca_certificate_signal(detail, false);
@@ -299,7 +300,7 @@ fn no_store_detected_at_all_is_incorrect() {
 
 #[test]
 fn restart_firefox_notice_carries_through_when_asked() {
-    let detail = vec![a_store(StoreBrand::Firefox, true)];
+    let detail = vec![a_store(a_firefox(), true)];
 
     let with_firefox_alive = evaluate_local_ca_certificate_signal(detail.clone(), true);
     let without_firefox_alive = evaluate_local_ca_certificate_signal(detail, false);
@@ -513,4 +514,74 @@ fn site_signature_lists_every_registered_handler_as_a_candidate_marking_the_curr
             },
         ])
     );
+}
+
+fn a_firefox() -> StoreBrand {
+    StoreBrand::Browser {
+        name: "Firefox".to_owned(),
+        channel: None,
+    }
+}
+
+fn a_browser_store(name: &str, channel: BrowserChannel) -> StoreClass {
+    StoreClass::Browser(NssOwner::Browser {
+        browser: browser_named(name).expect("el navegador esta en la tabla"),
+        channel,
+    })
+}
+
+#[test]
+fn a_browser_store_is_branded_with_its_proper_name_and_its_optional_channel() {
+    assert_eq!(
+        brand_of_class(a_browser_store("Brave", BrowserChannel::Flatpak)),
+        StoreBrand::Browser {
+            name: "Brave".to_owned(),
+            channel: Some("Flatpak".to_owned())
+        }
+    );
+    assert_eq!(
+        brand_of_class(a_browser_store("Firefox", BrowserChannel::Snap)),
+        StoreBrand::Browser {
+            name: "Firefox".to_owned(),
+            channel: Some("Snap".to_owned())
+        }
+    );
+    assert_eq!(
+        brand_of_class(a_browser_store("Brave", BrowserChannel::Native)),
+        StoreBrand::Browser {
+            name: "Brave".to_owned(),
+            channel: None
+        }
+    );
+}
+
+#[test]
+fn the_chromium_store_shared_by_the_native_browsers_is_a_brand_of_its_own() {
+    assert_eq!(
+        brand_of_class(StoreClass::Browser(NssOwner::SharedChromium)),
+        StoreBrand::SharedChromium
+    );
+}
+
+#[test]
+fn the_brands_that_are_not_a_browser_are_kept() {
+    assert_eq!(brand_of_class(StoreClass::Card), StoreBrand::Card);
+    assert_eq!(brand_of_class(StoreClass::Installed), StoreBrand::Installed);
+    assert_eq!(brand_of_class(StoreClass::Windows), StoreBrand::Windows);
+    assert_eq!(brand_of_class(StoreClass::Nssdb), StoreBrand::Nssdb);
+}
+
+#[test]
+fn a_browser_brand_crosses_with_its_name_and_channel_and_the_others_as_before() {
+    let json = |brand: &StoreBrand| serde_json::to_string(brand).expect("serializa");
+
+    assert_eq!(
+        json(&StoreBrand::Browser {
+            name: "Brave".to_owned(),
+            channel: Some("Flatpak".to_owned())
+        }),
+        r#"{"browser":{"name":"Brave","channel":"Flatpak"}}"#
+    );
+    assert_eq!(json(&StoreBrand::SharedChromium), r#""sharedChromium""#);
+    assert_eq!(json(&StoreBrand::Nssdb), r#""nssdb""#);
 }

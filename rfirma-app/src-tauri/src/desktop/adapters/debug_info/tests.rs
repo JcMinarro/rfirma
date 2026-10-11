@@ -71,32 +71,3 @@ fn the_expiry_of_the_serving_local_ca_is_the_day_its_certificate_ends() {
     let not_after = ca.certificate().not_after();
     assert!(&*first_second <= not_after && not_after <= &*last_second);
 }
-
-#[test]
-fn a_firefox_profile_is_named_after_its_browser_and_packaging() {
-    assert_eq!(
-        browser_of(Path::new("/home/u/.mozilla/firefox/abc.default")),
-        "Firefox"
-    );
-    assert_eq!(
-        browser_of(Path::new(
-            "/home/u/snap/firefox/common/.mozilla/firefox/abc.default"
-        )),
-        "Firefox snap"
-    );
-    assert_eq!(
-        browser_of(Path::new(
-            "/home/u/.var/app/org.mozilla.firefox/.mozilla/firefox/abc.default"
-        )),
-        "Firefox flatpak"
-    );
-}
-
-#[test]
-fn the_shared_nss_database_is_chrome_and_any_other_is_the_systems() {
-    assert_eq!(browser_of(Path::new("/home/u/.pki/nssdb")), "Chrome");
-    assert_eq!(
-        browser_of(Path::new("/etc/pki/nssdb-other")),
-        "NSS del sistema"
-    );
-}

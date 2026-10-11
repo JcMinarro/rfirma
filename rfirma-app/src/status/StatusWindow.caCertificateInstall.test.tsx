@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { browserStore } from "../signing/testing/storeMarks";
 import { renderWithCatalog } from "../testing/render";
 import { StatusWindow } from "./StatusWindow";
 import { memoryStatus, type SignalRow, type StatusPort } from "./status";
@@ -100,8 +101,8 @@ describe("StatusWindow", () => {
         detail: {
           kind: "trust",
           stores: [
-            { brand: "firefox", trusted: true },
-            { brand: "chrome", trusted: true },
+            { brand: browserStore("Firefox"), trusted: true },
+            { brand: "sharedChromium", trusted: true },
           ],
         },
         candidates: null,

@@ -87,29 +87,33 @@ finish-args:
   # nada lo use es el pasivo que el ADR-0005 rechaza. Un perfil ausente se salta
   # (Situation::StoreUnreachable) y no deja sin CA a los demas.
   #
-  # Firefox 147 se mudo a XDG y Chrome M146 tambien: las dos rutas de arriba
-  # ya no cubren solas lo que lee pkcs11::stores. Firefox separa configuracion
-  # y datos -~/.config/mozilla/firefox lleva profiles.ini, ~/.local/share/mozilla/firefox
-  # lleva los perfiles con sus certificados-, asi que entran EMPAREJADAS: solo
-  # una de las dos vuelve a dar cero certificados y sin error (ID-199). Chrome
-  # entra entero en su ruta XDG, ~/.local/share/pki/nssdb, junto a la antigua.
-  # Enumerarlas aqui y en el codigo es justo lo que se desincronizo; la lista
-  # canonica es la de pkcs11::stores. El permiso de abajo, ~/.config/mozilla,
-  # se deja ancho a proposito: cubre el subdirectorio firefox sin listarlo.
-  - --filesystem=~/.mozilla/firefox
-  - --filesystem=~/.pki/nssdb
-  - --filesystem=~/.config/mozilla
+  # Un permiso por cada ruta de almacen que exige la tabla de navegadores
+  # (identity::domain::browsers), en los tres canales; la guarda
+  # tests/flatpak_manifest_matches_browser_table.rs lo comprueba en los dos
+  # sentidos y dice la linea que falta o sobra.
+  - --filesystem=~/.config/librewolf/librewolf
+  - --filesystem=~/.config/mozilla/firefox
+  - --filesystem=~/.librewolf
   - --filesystem=~/.local/share/mozilla/firefox
   - --filesystem=~/.local/share/pki/nssdb
-  - --filesystem=~/snap/firefox/common/.mozilla/firefox
-  - --filesystem=~/snap/chromium/current
-  - --filesystem=~/.librewolf
-  - --filesystem=~/.config/librewolf
-  # El perfil del Firefox de Flatpak vive bajo ~/.var/app, que --filesystem=home
-  # no concede (#1732). Se declara solo su almacen, no el directorio de la app.
+  - --filesystem=~/.mozilla/firefox
+  - --filesystem=~/.pki/nssdb
+  - --filesystem=~/.var/app/com.brave.Browser/data/pki/nssdb
+  - --filesystem=~/.var/app/com.google.Chrome/data/pki/nssdb
+  - --filesystem=~/.var/app/com.microsoft.Edge/data/pki/nssdb
+  - --filesystem=~/.var/app/com.vivaldi.Vivaldi/data/pki/nssdb
+  - --filesystem=~/.var/app/io.gitlab.librewolf-community/config/librewolf/librewolf
+  - --filesystem=~/.var/app/org.chromium.Chromium/data/pki/nssdb
   - --filesystem=~/.var/app/org.mozilla.firefox/.mozilla/firefox
   - --filesystem=~/.var/app/org.mozilla.firefox/config/mozilla/firefox
   - --filesystem=~/.var/app/org.mozilla.firefox/data/mozilla/firefox
+  - --filesystem=~/snap/brave/current/.local/share/pki/nssdb
+  - --filesystem=~/snap/brave/current/.pki/nssdb
+  - --filesystem=~/snap/chromium/current/.local/share/pki/nssdb
+  - --filesystem=~/snap/chromium/current/.pki/nssdb
+  - --filesystem=~/snap/firefox/common/.mozilla/firefox
+  - --filesystem=~/snap/vivaldi/current/.local/share/pki/nssdb
+  - --filesystem=~/snap/vivaldi/current/.pki/nssdb
 
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin

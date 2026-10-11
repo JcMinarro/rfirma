@@ -1,5 +1,6 @@
 //! Las filas y los informes de ejemplo de las historias del panel de estado y de la retirada.
 
+import { browserStore } from "../../signing/testing/storeMarks";
 import { cardReaderRow, type SignalRow, type StoreDetail, type WithdrawalReport } from "../status";
 
 const base = { action: null, detail: null, candidates: null, restartFirefoxNotice: false };
@@ -84,8 +85,8 @@ export const caMissing: SignalRow = {
   detail: {
     kind: "trust",
     stores: [
-      { brand: "firefox", trusted: false },
-      { brand: "chrome", trusted: false },
+      { brand: browserStore("Firefox"), trusted: false },
+      { brand: "sharedChromium", trusted: false },
     ],
   },
 };
@@ -97,8 +98,8 @@ export const caHalfInstalled: SignalRow = {
   detail: {
     kind: "trust",
     stores: [
-      { brand: "firefox", trusted: true },
-      { brand: "chrome", trusted: false },
+      { brand: browserStore("Firefox", "Snap"), trusted: true },
+      { brand: browserStore("Brave", "Flatpak"), trusted: false },
     ],
   },
 };
@@ -111,8 +112,8 @@ export const caInstalledEverywhere: SignalRow = {
   detail: {
     kind: "trust",
     stores: [
-      { brand: "firefox", trusted: true },
-      { brand: "chrome", trusted: true },
+      { brand: browserStore("Firefox"), trusted: true },
+      { brand: "sharedChromium", trusted: true },
     ],
   },
 };
@@ -139,7 +140,8 @@ export const someUserCertificates: SignalRow = {
     kind: "certificates",
     stores: [
       { brand: "windows", certificates: 1 },
-      { brand: "firefox", certificates: 2 },
+      { brand: browserStore("Firefox", "Snap"), certificates: 1 },
+      { brand: "sharedChromium", certificates: 1 },
       { brand: "card", certificates: 1 },
       { brand: "installed", certificates: 1 },
     ],
@@ -153,30 +155,30 @@ export const cardReaderMissing = cardReaderRow({ kind: "noReader" });
 export const cardReaderNotSupported = cardReaderRow({ kind: "unavailable" });
 
 export const withdrawalStores: StoreDetail[] = [
-  { brand: "firefox", trusted: true },
-  { brand: "chrome", trusted: true },
+  { brand: browserStore("Firefox"), trusted: true },
+  { brand: "sharedChromium", trusted: true },
 ];
 
 export const withdrawalDone: WithdrawalReport = {
   handler: { kind: "withdrawn" },
   stores: [
-    { brand: "firefox", outcome: { kind: "withdrawn" } },
-    { brand: "chrome", outcome: { kind: "wasNotThere" } },
+    { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+    { brand: "sharedChromium", outcome: { kind: "wasNotThere" } },
   ],
 };
 
 export const withdrawalPartial: WithdrawalReport = {
   handler: { kind: "withdrawn" },
   stores: [
-    { brand: "firefox", outcome: { kind: "withdrawn" } },
-    { brand: "chrome", outcome: { kind: "failed", reason: "perfil en uso" } },
+    { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+    { brand: "sharedChromium", outcome: { kind: "failed", reason: "perfil en uso" } },
   ],
 };
 
 export const withdrawalHandlerFailed: WithdrawalReport = {
   handler: { kind: "failed", reason: "no se pudo escribir la asociación" },
   stores: [
-    { brand: "firefox", outcome: { kind: "withdrawn" } },
-    { brand: "chrome", outcome: { kind: "withdrawn" } },
+    { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+    { brand: "sharedChromium", outcome: { kind: "withdrawn" } },
   ],
 };

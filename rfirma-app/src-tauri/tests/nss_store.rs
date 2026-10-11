@@ -6,6 +6,7 @@ use std::process::Command;
 use rfirma_lib::identity::adapters::pkcs11;
 use rfirma_lib::identity::application::certificates::ListedCertificates;
 use rfirma_lib::identity::domain::algorithm::SignatureAlgorithm;
+use rfirma_lib::identity::domain::browsers::NssOwner;
 use rfirma_lib::identity::domain::certificate::{CertificateStatus, TokenCertificate};
 use rfirma_lib::identity::domain::error::Situation;
 use rfirma_lib::identity::domain::protected_secret::ProtectedSecret;
@@ -266,22 +267,24 @@ fn the_handle_carries_nothing_of_the_profile_it_came_from() {
 
 #[test]
 fn an_nss_store_says_its_class_and_never_its_configdir() {
-    let (profile, store) = a_disposable_profile();
+    let (_profile, store) = a_disposable_profile();
 
     let class = the_valid_one(&store).reference().store().class();
 
     assert_eq!(class, StoreClass::Nssdb);
+}
+
+#[test]
+fn a_certificate_listed_from_a_browser_store_keeps_its_owner() {
+    let (_profile, store) = a_disposable_profile();
+    let owned = store.owned_by(NssOwner::SharedChromium);
+
+    let listed = the_valid_one(&owned).reference().store();
+
+    assert_eq!(listed.owner(), Some(NssOwner::SharedChromium));
     assert_eq!(
-        Store::nss(
-            softoken(),
-            &profile.path().join(".mozilla/firefox/x.default")
-        )
-        .class(),
-        StoreClass::Firefox
-    );
-    assert_eq!(
-        Store::nss(softoken(), &profile.path().join(".pki/nssdb")).class(),
-        StoreClass::Chrome
+        listed.class(),
+        StoreClass::Browser(NssOwner::SharedChromium)
     );
 }
 

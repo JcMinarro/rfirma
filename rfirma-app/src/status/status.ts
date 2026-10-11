@@ -2,6 +2,7 @@
 
 import type { TFunction } from "i18next";
 import { hasAReader, type ReaderStatus } from "../signing/certificate";
+import { type BrowserStoreMark, browserStoreLabel, isBrowserStoreMark } from "../signing/storeMark";
 
 export type Signal =
   | "version"
@@ -14,7 +15,13 @@ export type Verdict = "correct" | "attention" | "incorrect" | "notApplicable" | 
 
 type ActionKind = "repair" | "choice" | "link";
 
-export type StoreBrand = "firefox" | "chrome" | "nssdb" | "card" | "installed" | "windows";
+export type StoreBrand =
+  | BrowserStoreMark
+  | "sharedChromium"
+  | "nssdb"
+  | "card"
+  | "installed"
+  | "windows";
 
 export interface StoreDetail {
   brand: StoreBrand;
@@ -23,11 +30,12 @@ export interface StoreDetail {
 
 /** El nombre del sitio en pantalla: uno solo, y lo comparten la tabla, el asistente y la retirada. */
 export function storeBrandLabel(t: TFunction, brand: StoreBrand): string {
+  if (isBrowserStoreMark(brand)) {
+    return browserStoreLabel(brand);
+  }
   switch (brand) {
-    case "firefox":
-      return t("status.storeBrands.firefox");
-    case "chrome":
-      return t("status.storeBrands.chrome");
+    case "sharedChromium":
+      return t("status.storeBrands.sharedChromium");
     case "nssdb":
       return t("status.storeBrands.nssdb");
     case "card":

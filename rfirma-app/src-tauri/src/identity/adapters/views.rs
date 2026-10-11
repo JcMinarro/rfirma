@@ -69,15 +69,42 @@ impl From<StoreSecret> for SecretView {
     }
 }
 
-/// Nombre en inglés de una clase de almacén para su traducción en la ventana.
-pub fn store_name(class: StoreClass) -> &'static str {
-    match class {
-        StoreClass::Card => "card",
-        StoreClass::Firefox => "firefox",
-        StoreClass::Chrome => "chrome",
-        StoreClass::Nssdb => "nssdb",
-        StoreClass::Installed => "installed",
-        StoreClass::Windows => "windows",
+crossing! {
+    /// De qué almacén es una copia del certificado: una clase, o el navegador y el canal de un almacén NSS.
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub enum StoreMarkView {
+        Card,
+        Dnie,
+        Installed,
+        Nssdb,
+        Windows,
+        /// El almacén NSS que comparten los navegadores Chromium nativos.
+        SharedChromium,
+        /// El almacén NSS de un navegador, con el canal por el que llegó si no es nativo.
+        Browser {
+            name: String,
+            channel: Option<String>,
+        },
+    }
+}
+
+impl StoreMarkView {
+    fn of(class: StoreClass, from_a_dnie: bool) -> Self {
+        match class {
+            StoreClass::Card if from_a_dnie => Self::Dnie,
+            StoreClass::Card => Self::Card,
+            StoreClass::Installed => Self::Installed,
+            StoreClass::Nssdb => Self::Nssdb,
+            StoreClass::Windows => Self::Windows,
+            StoreClass::Browser(owner) => match owner.browser_name() {
+                Some(name) => Self::Browser {
+                    name: name.to_owned(),
+                    channel: owner.channel_name().map(str::to_owned),
+                },
+                None => Self::SharedChromium,
+            },
+        }
     }
 }
 
@@ -105,7 +132,7 @@ crossing! {
         /// Número de serie del certificado, en base diez.
         pub certificate_serial_number: String,
         /// Las clases de almacén donde está, por orden de preferencia.
-        pub stores: Vec<String>,
+        pub stores: Vec<StoreMarkView>,
         pub status: StatusView,
         /// Si alguna de sus copias fue la usada en la última firma.
         pub remembered: bool,
@@ -129,10 +156,7 @@ impl From<ListedCertificate> for CertificateView {
             stores: certificate
                 .stores
                 .into_iter()
-                .map(|class| match class {
-                    StoreClass::Card if certificate.from_a_dnie => "dnie".to_owned(),
-                    _ => store_name(class).to_owned(),
-                })
+                .map(|class| StoreMarkView::of(class, certificate.from_a_dnie))
                 .collect(),
             status: certificate.status.into(),
             remembered: certificate.remembered,

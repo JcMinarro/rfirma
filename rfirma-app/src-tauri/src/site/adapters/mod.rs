@@ -30,6 +30,7 @@ pub mod windows_root;
 
 use std::path::Path;
 
+use crate::identity::domain::browsers::NssOwner;
 #[cfg(target_os = "macos")]
 use crate::site::domain::trust_error::{Situation, TrustError};
 use crate::site::ports::TrustStores;
@@ -78,10 +79,34 @@ pub fn desktop_trust_stores() -> Box<dyn TrustStores + Send + Sync> {
 /// Los perfiles NSS de esta persona, o ninguno si no se sabe cuál es su `HOME`.
 #[cfg(target_os = "linux")]
 pub fn trust_profiles() -> Vec<std::path::PathBuf> {
+    trust_profile_owners()
+        .into_iter()
+        .map(|(profile, _)| profile)
+        .collect()
+}
+
+/// Los perfiles NSS de esta persona con el dueño que les dio el descubrimiento.
+#[cfg(target_os = "linux")]
+pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
     std::env::var_os("HOME")
         .map(std::path::PathBuf::from)
-        .map(|home| crate::identity::adapters::pkcs11::stores::nss_profiles(&home))
+        .map(|home| crate::identity::adapters::pkcs11::stores::nss_stores(&home))
         .unwrap_or_default()
+        .into_iter()
+        .map(|store| (store.directory, store.owner))
+        .collect()
+}
+
+/// Ningún perfil NSS de navegador: en Windows, la confianza vive en el almacén del sistema.
+#[cfg(windows)]
+pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
+    Vec::new()
+}
+
+/// Ningún perfil NSS de navegador: en macOS, la confianza vivirá en el llavero.
+#[cfg(target_os = "macos")]
+pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
+    Vec::new()
 }
 
 /// Los almacenes de confianza de esta persona.

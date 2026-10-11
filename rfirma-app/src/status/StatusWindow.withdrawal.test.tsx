@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { browserStore } from "../signing/testing/storeMarks";
 import { renderWithCatalog } from "../testing/render";
 import { StatusWindow } from "./StatusWindow";
 import { memoryStatus, type SignalRow, type StatusPort } from "./status";
@@ -36,8 +37,8 @@ describe("StatusWindow", () => {
         detail: {
           kind: "trust",
           stores: [
-            { brand: "firefox", trusted: true },
-            { brand: "chrome", trusted: true },
+            { brand: browserStore("Firefox"), trusted: true },
+            { brand: "sharedChromium", trusted: true },
           ],
         },
         candidates: null,
@@ -68,8 +69,8 @@ describe("StatusWindow", () => {
         detail: {
           kind: "trust",
           stores: [
-            { brand: "firefox", trusted: false },
-            { brand: "chrome", trusted: false },
+            { brand: browserStore("Firefox"), trusted: false },
+            { brand: "sharedChromium", trusted: false },
           ],
         },
         candidates: null,
@@ -86,8 +87,8 @@ describe("StatusWindow", () => {
       withdrawRfirma: vi.fn().mockResolvedValue({
         handler: { kind: "withdrawn" },
         stores: [
-          { brand: "firefox", outcome: { kind: "withdrawn" } },
-          { brand: "chrome", outcome: { kind: "withdrawn" } },
+          { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+          { brand: "sharedChromium", outcome: { kind: "withdrawn" } },
         ],
       }),
     };
@@ -121,7 +122,7 @@ describe("StatusWindow", () => {
         value: "2/2",
         verdict: "correct",
         action: null,
-        detail: { kind: "trust", stores: [{ brand: "firefox", trusted: true }] },
+        detail: { kind: "trust", stores: [{ brand: browserStore("Firefox"), trusted: true }] },
         candidates: null,
         restartFirefoxNotice: false,
       },

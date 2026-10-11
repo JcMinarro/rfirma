@@ -1,10 +1,35 @@
 use super::*;
 
 #[test]
-fn the_nss_classes_keep_their_browser_brand() {
-    assert_eq!(brand_of_class(StoreClass::Firefox), StoreBrand::Firefox);
-    assert_eq!(brand_of_class(StoreClass::Chrome), StoreBrand::Chrome);
-    assert_eq!(brand_of_class(StoreClass::Nssdb), StoreBrand::Nssdb);
+fn a_trust_profile_takes_its_brand_from_its_discovered_owner_and_not_from_its_path() {
+    use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
+
+    let librewolf = NssOwner::Browser {
+        browser: browser_named("LibreWolf").expect("LibreWolf esta en la tabla"),
+        channel: BrowserChannel::Flatpak,
+    };
+    let anywhere = std::path::Path::new("/casa/ada/perfil");
+    let firefox_like = std::path::Path::new("/casa/ada/.mozilla/firefox/perfil");
+
+    assert_eq!(
+        brand_of(anywhere, Some(librewolf)),
+        StoreBrand::Browser {
+            name: "LibreWolf".to_owned(),
+            channel: Some("Flatpak".to_owned())
+        }
+    );
+    assert_eq!(
+        brand_of(anywhere, Some(NssOwner::SharedChromium)),
+        StoreBrand::SharedChromium
+    );
+    assert_eq!(brand_of(firefox_like, None), StoreBrand::Nssdb);
+    assert_eq!(
+        brand_of(
+            std::path::Path::new(crate::site::adapters::SYSTEM_ROOT_STORE),
+            None
+        ),
+        StoreBrand::Windows
+    );
 }
 
 #[test]

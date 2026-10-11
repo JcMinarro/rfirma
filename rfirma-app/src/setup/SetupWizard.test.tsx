@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { inMemoryPreferences } from "../preferences/preferences";
 import { defaults } from "../preferences/testing/fixtures";
+import { browserStore } from "../signing/testing/storeMarks";
 import { memoryStatus, type SignalRow } from "../status/status";
 import { renderWithCatalog } from "../testing/render";
 import { SetupWizard } from "./SetupWizard";
@@ -215,7 +216,7 @@ describe("SetupWizard", () => {
       detail: {
         kind: "trust",
         stores: [
-          { brand: "firefox", trusted: true },
+          { brand: browserStore("Firefox"), trusted: true },
           { brand: "nssdb", trusted: false },
         ],
       },
@@ -362,7 +363,7 @@ describe("SetupWizard", () => {
     const failedRow: SignalRow = {
       ...certificateNotInstalled,
       verdict: "incorrect",
-      detail: { kind: "trust", stores: [{ brand: "firefox", trusted: false }] },
+      detail: { kind: "trust", stores: [{ brand: browserStore("Firefox"), trusted: false }] },
     };
     const base = memoryStatus([aVersionRow, certificateNotInstalled, handlerNotOurs]);
     const port = { ...base, installLocalCaCertificate: async () => failedRow };

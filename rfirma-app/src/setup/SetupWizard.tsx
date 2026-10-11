@@ -382,8 +382,9 @@ function CertificateStep({ t, status, onInstall, onDecline }: CertificateStepPro
                 {t("setup.certificate.failedTitle")}
               </p>
               <Stack as="ul" className="setup-wizard__stores">
-                {status.detail.map((store) => (
-                  <Row as="li" gap="xs" key={store.brand} className="rf-hint">
+                {status.detail.map((store, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: dos perfiles del mismo navegador y canal comparten marca, y la vista no trae la ruta.
+                  <Row as="li" gap="xs" key={index} className="rf-hint">
                     <span className="setup-wizard__store-mark">{store.trusted ? "✓" : "✗"}</span>
                     {storeBrandLabel(t, store.brand)}
                   </Row>

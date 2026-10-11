@@ -108,6 +108,10 @@ export const es = {
   "comparison.stores.label": "Búsqueda de certificados",
   "comparison.stores.autofirma": "Por almacenes, solo uno activo a la vez",
   "comparison.stores.rfirma": "Todos a la vez, con buscador",
+  "comparison.browsers.label": "Navegadores en Linux",
+  "comparison.browsers.autofirma": "Un almacén: el primero que exista. Sin Flatpak ni LibreWolf",
+  "comparison.browsers.rfirma":
+    "Los de las familias Firefox y Chromium, nativos, Snap y Flatpak, a la vez",
   "comparison.stamp.label": "Firma visible",
   "comparison.stamp.autofirma": "Por coordenadas",
   "comparison.stamp.rfirma": "Arrastrándola sobre la página",

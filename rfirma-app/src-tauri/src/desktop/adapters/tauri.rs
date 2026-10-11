@@ -12,10 +12,11 @@ use super::views::{
     WithdrawalReportView,
 };
 use crate::crossing::Failure;
+use crate::desktop::application::status::brand_of_class;
 use crate::desktop::domain::command_line::WindowIntent;
 use crate::desktop::domain::status::{StoreBrand, StoreCertificates, StoreDetail};
 use crate::documents::adapters::views::DroppedDocumentView;
-use crate::identity::domain::store::{Store, StoreClass};
+use crate::identity::domain::store::StoreClass;
 
 /// Documento con el que se invocó la aplicación si lo hubo.
 #[tauri::command]
@@ -114,29 +115,21 @@ pub fn open_external_destination(
 }
 
 /// Marca del almacén de confianza de un perfil, para el detalle de la señal del certificado de rFirma.
-fn brand_of(profile: &std::path::Path) -> StoreBrand {
+fn brand_of(
+    profile: &std::path::Path,
+    owner: Option<crate::identity::domain::browsers::NssOwner>,
+) -> StoreBrand {
     if crate::site::adapters::is_the_system_root_store(profile) {
         return StoreBrand::Windows;
     }
-    match Store::nss(std::path::PathBuf::new(), profile).class() {
-        StoreClass::Firefox => StoreBrand::Firefox,
-        StoreClass::Chrome => StoreBrand::Chrome,
-        StoreClass::Nssdb | StoreClass::Card | StoreClass::Installed | StoreClass::Windows => {
-            StoreBrand::Nssdb
-        }
-    }
+    brand_of_class(StoreClass::of_nss_owner(owner))
 }
 
-/// Marca del sitio donde hay certificados propios, que puede ser una tarjeta o un `.p12`.
-fn brand_of_class(class: StoreClass) -> StoreBrand {
-    match class {
-        StoreClass::Firefox => StoreBrand::Firefox,
-        StoreClass::Chrome => StoreBrand::Chrome,
-        StoreClass::Nssdb => StoreBrand::Nssdb,
-        StoreClass::Card => StoreBrand::Card,
-        StoreClass::Installed => StoreBrand::Installed,
-        StoreClass::Windows => StoreBrand::Windows,
-    }
+/// Si el perfil es de un navegador de la familia Firefox.
+fn is_a_firefox_profile(site: &SiteRoot, profile: &std::path::Path) -> bool {
+    site.trust
+        .owner_of(profile)
+        .is_some_and(|owner| owner.is_firefox_family())
 }
 
 /// Mide la señal del certificado de rFirma, o la deja en «Comprobando» si no se pide remedir.
@@ -160,7 +153,7 @@ fn measured_local_ca_certificate_signal(
         .unwrap_or_default()
         .into_iter()
         .map(|reading| StoreDetail {
-            brand: brand_of(&reading.profile),
+            brand: brand_of(&reading.profile, site.trust.owner_of(&reading.profile)),
             trusted: reading.trusted,
         })
         .collect();
@@ -175,7 +168,7 @@ fn firefox_is_running(site: &SiteRoot) -> bool {
     site.trust
         .profiles
         .iter()
-        .filter(|profile| brand_of(profile) == StoreBrand::Firefox)
+        .filter(|profile| is_a_firefox_profile(site, profile))
         .any(|profile| crate::desktop::adapters::firefox_lock::firefox_is_running(profile))
 }
 
@@ -184,7 +177,7 @@ fn firefox_local_ca_trust(site: &SiteRoot) -> Vec<bool> {
     site.measure_local_ca_trust()
         .unwrap_or_default()
         .into_iter()
-        .filter(|reading| brand_of(&reading.profile) == StoreBrand::Firefox)
+        .filter(|reading| is_a_firefox_profile(site, &reading.profile))
         .map(|reading| reading.trusted)
         .collect()
 }
@@ -297,7 +290,12 @@ pub fn withdraw_rfirma(
     let profiles: Vec<(std::path::PathBuf, StoreBrand)> = site
         .nss_profiles()
         .iter()
-        .map(|profile| (profile.clone(), brand_of(profile)))
+        .map(|profile| {
+            (
+                profile.clone(),
+                brand_of(profile, site.trust.owner_of(profile)),
+            )
+        })
         .collect();
 
     let handler = if handler_needs_retry(previous.as_ref()) {

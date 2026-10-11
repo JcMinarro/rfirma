@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::identity::domain::browsers::NssOwner;
+
 /// Prefijo con el que se nombran los almacenes de Windows: ningún módulo PKCS#11 se llama así.
 pub const WINDOWS_STORE_PREFIX: &str = "cng:";
 
@@ -23,10 +25,8 @@ pub fn is_a_card_key_provider(provider: &str) -> bool {
 pub enum StoreClass {
     /// Tarjeta o token físico: un módulo PKCS#11, o una clave del Almacén de Windows en un proveedor de tarjeta.
     Card,
-    /// Perfil de usuario del navegador Firefox.
-    Firefox,
-    /// Almacén NSS compartido de la familia Chromium.
-    Chrome,
+    /// Almacén NSS de un navegador por un canal, o el compartido de la familia Chromium.
+    Browser(NssOwner),
     /// Base de datos NSS genérica.
     Nssdb,
     /// Almacén correspondiente a un fichero PKCS#12 instalado.
@@ -36,15 +36,23 @@ pub enum StoreClass {
 }
 
 impl StoreClass {
+    /// La clase de un almacén NSS según su dueño: la familia del navegador o, sin dueño, el NSS del sistema.
+    pub fn of_nss_owner(owner: Option<NssOwner>) -> Self {
+        match owner {
+            Some(owner) => Self::Browser(owner),
+            None => Self::Nssdb,
+        }
+    }
+
     /// Qué copia de un mismo certificado se prefiere: tarjeta, Windows, Almacén de rFirma, NSS del sistema, Firefox, Chrome.
     pub fn preference(self) -> u8 {
         match self {
+            Self::Browser(owner) if owner.is_firefox_family() => 4,
+            Self::Browser(_) => 5,
             Self::Card => 0,
             Self::Windows => 1,
             Self::Installed => 2,
             Self::Nssdb => 3,
-            Self::Firefox => 4,
-            Self::Chrome => 5,
         }
     }
 }
@@ -55,6 +63,7 @@ pub struct Store {
     module: PathBuf,
     init_args: Option<String>,
     installed: bool,
+    owner: Option<NssOwner>,
 }
 
 impl Store {
@@ -64,6 +73,7 @@ impl Store {
             module: module.into(),
             init_args: None,
             installed: false,
+            owner: None,
         }
     }
 
@@ -73,6 +83,7 @@ impl Store {
             module: module.into(),
             init_args,
             installed: false,
+            owner: None,
         }
     }
 
@@ -85,6 +96,7 @@ impl Store {
                 profile.display()
             )),
             installed: false,
+            owner: None,
         }
     }
 
@@ -94,6 +106,19 @@ impl Store {
             installed: true,
             ..Self::nss(softoken, directory)
         }
+    }
+
+    /// El mismo almacén NSS, con el dueño que le dio el descubrimiento.
+    pub fn owned_by(self, owner: impl Into<Option<NssOwner>>) -> Self {
+        Self {
+            owner: owner.into(),
+            ..self
+        }
+    }
+
+    /// El navegador o la familia dueña del almacén NSS, si el descubrimiento la conoce.
+    pub fn owner(&self) -> Option<NssOwner> {
+        self.owner
     }
 
     /// Ruta del módulo PKCS#11 que lo sirve.
@@ -123,20 +148,10 @@ impl Store {
         if self.is_windows() {
             return StoreClass::Windows;
         }
-        let Some(profile) = self.profile() else {
+        if self.profile().is_none() {
             return StoreClass::Card;
-        };
-        if profile.contains("/.mozilla/firefox/")
-            || profile.contains("/mozilla/firefox/")
-            || profile.contains("/.librewolf/")
-            || profile.contains("/librewolf/")
-        {
-            StoreClass::Firefox
-        } else if profile.ends_with("/.pki/nssdb") || profile.ends_with("/pki/nssdb") {
-            StoreClass::Chrome
-        } else {
-            StoreClass::Nssdb
         }
+        StoreClass::of_nss_owner(self.owner)
     }
 
     /// Si es un almacén de Windows y no un módulo PKCS#11.

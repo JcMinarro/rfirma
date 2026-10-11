@@ -20,9 +20,9 @@ use crate::identity::adapters as identity_adapters;
 use crate::identity::adapters::pkcs11::p11kit;
 use crate::identity::adapters::pkcs11::probe::{probe, ModuleProbe};
 use crate::identity::adapters::pkcs11::stores::{
-    has_certificate_database, ignored_nss_profiles, modules_from_environment, nss_profiles,
+    has_certificate_database, ignored_nss_stores, modules_from_environment,
+    nss_stores as nss_stores_under, NssStore,
 };
-use crate::identity::domain::store::{Store, StoreClass};
 use crate::signing::adapters::ffi::{locate, NativeBridge};
 use crate::signing::domain::bridge::{BridgeError, LIBRARY_DIRECTORY_VARIABLE};
 use crate::site::adapters::local_ca_trusted_in_each;
@@ -307,13 +307,14 @@ fn nss_stores() -> Option<NssStores> {
     let home = PathBuf::from(std::env::var_os("HOME")?);
     let paths = Paths::from_environment().ok();
     let local_ca = paths.as_ref().map(LocalCaStore::of);
-    let found = nss_profiles(&home);
+    let found = nss_stores_under(&home);
+    let directories: Vec<PathBuf> = found.iter().map(|store| store.directory.clone()).collect();
     let trust = local_ca.as_ref().map_or_else(
         || vec![false; found.len()],
-        |store| local_ca_trusted_in_each(store, &found),
+        |store| local_ca_trusted_in_each(store, &directories),
     );
     let until = local_ca.as_ref().and_then(local_ca_expiry);
-    let trusting = found.into_iter().zip(trust).map(|(directory, trusted)| {
+    let trusting = found.into_iter().zip(trust).map(|(store, trusted)| {
         let state = if trusted {
             NssProfileState::TrustsLocalChannel {
                 until: until.clone(),
@@ -321,14 +322,11 @@ fn nss_stores() -> Option<NssStores> {
         } else {
             NssProfileState::DoesNotTrustLocalChannel
         };
-        nss_profile(directory, state)
+        nss_profile(store, state)
     });
-    let ignored = ignored_nss_profiles(&home).into_iter().map(|directory| {
-        nss_profile(
-            directory,
-            NssProfileState::IgnoredWithoutCertificateDatabase,
-        )
-    });
+    let ignored = ignored_nss_stores(&home)
+        .into_iter()
+        .map(|store| nss_profile(store, NssProfileState::IgnoredWithoutCertificateDatabase));
     Some(NssStores {
         profiles: trusting.chain(ignored).collect(),
         rfirma_store_installed: paths
@@ -350,36 +348,12 @@ fn local_ca_expiry(store: &LocalCaStore) -> Option<String> {
     ))
 }
 
-fn nss_profile(directory: PathBuf, state: NssProfileState) -> NssProfile {
+fn nss_profile(store: NssStore, state: NssProfileState) -> NssProfile {
     NssProfile {
-        browser: browser_of(&directory),
-        directory,
+        owner: store.owner,
+        directory: store.directory,
         state,
     }
-}
-
-fn browser_of(directory: &Path) -> String {
-    let name = match Store::nss(PathBuf::new(), directory).class() {
-        StoreClass::Firefox => "Firefox",
-        StoreClass::Chrome => "Chrome",
-        StoreClass::Nssdb | StoreClass::Card | StoreClass::Installed | StoreClass::Windows => {
-            "NSS del sistema"
-        }
-    };
-    let packaging = if directory
-        .components()
-        .any(|part| part.as_os_str() == "snap")
-    {
-        " snap"
-    } else if directory
-        .components()
-        .any(|part| part.as_os_str() == "org.mozilla.firefox")
-    {
-        " flatpak"
-    } else {
-        ""
-    };
-    format!("{name}{packaging}")
 }
 
 #[cfg(test)]

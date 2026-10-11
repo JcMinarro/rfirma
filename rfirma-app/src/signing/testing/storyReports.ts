@@ -8,6 +8,7 @@ import type {
   ValidityReason,
 } from "../previousSignatures";
 import type { Rubric } from "../rubric";
+import { browserStore } from "./storeMarks";
 
 export function aSignature(overrides: Partial<PreviousSignature>): PreviousSignature {
   return {
@@ -157,7 +158,7 @@ export const ENTITY_CERTIFICATE = aCertificate({
   idNumber: "IDCES-00000001R",
   entityName: "Analytical Engines S.L.",
   organizationIdentifier: "VATES-B00000000",
-  stores: ["firefox", "chrome"],
+  stores: [browserStore("Firefox"), "sharedChromium"],
 });
 
 const EXPIRED_CERTIFICATE = aCertificate({

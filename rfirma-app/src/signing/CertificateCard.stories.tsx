@@ -3,6 +3,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CertificateCard } from "./CertificateCard";
 import type { Certificate } from "./certificate";
+import { browserStore } from "./testing/storeMarks";
 
 const IN_2020 = 1_579_046_400;
 const IN_2030 = 1_893_456_000;
@@ -69,5 +70,14 @@ export const CannotSign: StoryObj<typeof meta> = {
 };
 
 export const SeveralStores: StoryObj<typeof meta> = {
-  args: { certificate: aCertificate({ stores: ["firefox", "nssdb", "installed"] }) },
+  args: {
+    certificate: aCertificate({
+      stores: [
+        browserStore("Firefox", "Snap"),
+        browserStore("Brave", "Flatpak"),
+        "sharedChromium",
+        "installed",
+      ],
+    }),
+  },
 };

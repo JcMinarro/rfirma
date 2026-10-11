@@ -75,9 +75,10 @@ export function WithdrawCertificateView({
 
       {moment === "working" && (
         <Stack as="ul" gap="xs" className="withdraw-certificate-dialog__list">
-          {stores.map((store) => (
+          {stores.map((store, index) => (
             <StoreLine
-              key={store.brand}
+              // biome-ignore lint/suspicious/noArrayIndexKey: dos perfiles del mismo navegador y canal comparten marca, y la vista no trae la ruta.
+              key={index}
               brand={store.brand}
               icon={<Icon name="checking" size={14} />}
             >
@@ -90,9 +91,10 @@ export function WithdrawCertificateView({
       {moment === "result" && report && (
         <>
           <Stack as="ul" gap="xs" className="withdraw-certificate-dialog__list">
-            {report.stores.map((store) => (
+            {report.stores.map((store, index) => (
               <StoreLine
-                key={store.brand}
+                // biome-ignore lint/suspicious/noArrayIndexKey: dos perfiles del mismo navegador y canal comparten marca, y la vista no trae la ruta.
+                key={index}
                 brand={store.brand}
                 icon={
                   failed(store.outcome) ? (

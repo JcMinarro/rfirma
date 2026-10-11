@@ -1,4 +1,5 @@
 use super::*;
+use crate::identity::domain::browsers::{BrowserChannel, BROWSERS};
 use crate::identity::domain::store::StoreClass;
 
 #[test]
@@ -28,8 +29,10 @@ fn a_store_under_the_installed_directory_is_its_own_class() {
         StoreClass::Installed
     );
     assert_eq!(
-        Store::nss("/usr/lib/libsoftokn3.so", &elsewhere).class_under(&installed),
-        StoreClass::Chrome
+        Store::nss("/usr/lib/libsoftokn3.so", &elsewhere)
+            .owned_by(NssOwner::SharedChromium)
+            .class_under(&installed),
+        StoreClass::Browser(NssOwner::SharedChromium)
     );
 }
 
@@ -81,8 +84,8 @@ fn a_cng_store_is_the_windows_store_and_not_a_card() {
 #[test]
 fn the_stores_are_preferred_card_windows_installed_system_nss_firefox_chrome() {
     let mut classes = [
-        StoreClass::Chrome,
-        StoreClass::Firefox,
+        StoreClass::Browser(NssOwner::SharedChromium),
+        a_firefox_class(),
         StoreClass::Nssdb,
         StoreClass::Installed,
         StoreClass::Windows,
@@ -98,77 +101,50 @@ fn the_stores_are_preferred_card_windows_installed_system_nss_firefox_chrome() {
             StoreClass::Windows,
             StoreClass::Installed,
             StoreClass::Nssdb,
-            StoreClass::Firefox,
-            StoreClass::Chrome,
+            a_firefox_class(),
+            StoreClass::Browser(NssOwner::SharedChromium),
         ]
     );
 }
 
 #[test]
-fn an_nss_store_is_classified_by_whose_profile_it_opens() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.mozilla/firefox/aaaaaaaa.default-release"),
-    );
-    let librewolf_legacy = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.librewolf/aaaaaaaa.default-release"),
-    );
-    let librewolf_xdg = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.config/librewolf/librewolf/aaaaaaaa.default-release"),
-    );
-    let chrome = Store::nss("/usr/lib/libsoftokn3.so", Path::new("/casa/ada/.pki/nssdb"));
+fn a_browser_store_is_classified_by_the_family_of_its_owner() {
+    let softoken = "/usr/lib/libsoftokn3.so";
+    let anywhere = Path::new("/casa/ada/perfil");
 
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(librewolf_legacy.class(), StoreClass::Firefox);
-    assert_eq!(librewolf_xdg.class(), StoreClass::Firefox);
-    assert_eq!(chrome.class(), StoreClass::Chrome);
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(owned_by("LibreWolf", BrowserChannel::Flatpak))
+            .class(),
+        StoreClass::Browser(owned_by("LibreWolf", BrowserChannel::Flatpak))
+    );
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(owned_by("Brave", BrowserChannel::Snap))
+            .class(),
+        StoreClass::Browser(owned_by("Brave", BrowserChannel::Snap))
+    );
+    assert_eq!(
+        Store::nss(softoken, anywhere)
+            .owned_by(NssOwner::SharedChromium)
+            .class(),
+        StoreClass::Browser(NssOwner::SharedChromium)
+    );
 }
 
 #[test]
-fn an_nss_store_is_classified_the_same_under_the_xdg_paths() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.local/share/mozilla/firefox/cccccccc.default-release"),
-    );
-    let chrome = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/.local/share/pki/nssdb"),
-    );
-
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(chrome.class(), StoreClass::Chrome);
-}
-
-#[test]
-fn an_nss_store_is_classified_the_same_under_the_snap_paths() {
-    let firefox = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/firefox/common/.mozilla/firefox/dddddddd.default"),
-    );
-    let chromium_xdg = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/chromium/current/.local/share/pki/nssdb"),
-    );
-    let chromium_legacy = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/casa/ada/snap/chromium/current/.pki/nssdb"),
-    );
-
-    assert_eq!(firefox.class(), StoreClass::Firefox);
-    assert_eq!(chromium_xdg.class(), StoreClass::Chrome);
-    assert_eq!(chromium_legacy.class(), StoreClass::Chrome);
-}
-
-#[test]
-fn an_nss_store_somewhere_else_claims_no_owner() {
-    let store = Store::nss(
-        "/usr/lib/libsoftokn3.so",
-        Path::new("/tmp/perfil-de-pruebas"),
-    );
-
-    assert_eq!(store.class(), StoreClass::Nssdb);
+fn an_nss_store_without_an_owner_is_the_systems_whatever_its_path() {
+    for path in [
+        "/casa/ada/.mozilla/firefox/aaaaaaaa.default-release",
+        "/casa/ada/.pki/nssdb",
+        "/tmp/perfil-de-pruebas",
+    ] {
+        assert_eq!(
+            Store::nss("/usr/lib/libsoftokn3.so", Path::new(path)).class(),
+            StoreClass::Nssdb,
+            "{path}"
+        );
+    }
 }
 
 #[test]
@@ -197,233 +173,20 @@ fn a_home_with(profiles: &[(&str, bool)], ini: Option<&str>) -> tempfile::TempDi
     home
 }
 
-#[test]
-fn reads_every_firefox_profile_declared_in_profiles_ini() {
-    let home = a_home_with(
-        &[
-            (".mozilla/firefox/aaaaaaaa.default-release", true),
-            (".mozilla/firefox/bbbbbbbb.trabajo", true),
-        ],
-        Some(
-            "[Install4F96D1932A9F858E]\n\
-             Default=aaaaaaaa.default-release\n\
-             \n\
-             [Profile0]\n\
-             Name=default-release\n\
-             IsRelative=1\n\
-             Path=aaaaaaaa.default-release\n\
-             \n\
-             [Profile1]\n\
-             Name=trabajo\n\
-             IsRelative=1\n\
-             Path=bbbbbbbb.trabajo\n",
-        ),
-    );
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![
-            home.path()
-                .join(".mozilla/firefox/aaaaaaaa.default-release"),
-            home.path().join(".mozilla/firefox/bbbbbbbb.trabajo"),
-        ]
-    );
+fn owned_by(name: &str, channel: BrowserChannel) -> NssOwner {
+    let browser = BROWSERS
+        .iter()
+        .find(|browser| browser.name == name)
+        .expect("el navegador deberia estar en la tabla");
+    NssOwner::Browser { browser, channel }
 }
 
-#[test]
-fn skips_a_declared_profile_without_a_certificate_database() {
-    let home = a_home_with(
-        &[
-            (".mozilla/firefox/aaaaaaaa.vacio", false),
-            (".mozilla/firefox/bbbbbbbb.lleno", true),
-        ],
-        Some("[Profile0]\nPath=aaaaaaaa.vacio\n\n[Profile1]\nPath=bbbbbbbb.lleno\n"),
-    );
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![home.path().join(".mozilla/firefox/bbbbbbbb.lleno")]
-    );
+fn store_at(directory: PathBuf, owner: NssOwner) -> NssStore {
+    NssStore { directory, owner }
 }
 
-#[test]
-fn reports_a_declared_profile_without_a_certificate_database_as_ignored() {
-    let home = a_home_with(
-        &[
-            (".mozilla/firefox/aaaaaaaa.vacio", false),
-            (".mozilla/firefox/bbbbbbbb.lleno", true),
-        ],
-        Some("[Profile0]\nPath=aaaaaaaa.vacio\n\n[Profile1]\nPath=bbbbbbbb.lleno\n"),
-    );
-
-    assert_eq!(
-        ignored_nss_profiles(home.path()),
-        vec![home.path().join(".mozilla/firefox/aaaaaaaa.vacio")]
-    );
-}
-
-#[test]
-fn reads_the_shared_nssdb_too() {
-    let home = a_home_with(&[(".pki/nssdb", true)], None);
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![home.path().join(".pki/nssdb")]
-    );
-}
-
-#[test]
-fn has_no_profiles_when_firefox_is_not_installed() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-
-    assert!(nss_profiles(home.path()).is_empty());
-}
-
-#[test]
-fn reads_a_firefox_profile_from_the_paired_xdg_config_and_data_dirs() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let config = home.path().join(".config/mozilla/firefox");
-    let data = home.path().join(".local/share/mozilla/firefox");
-    let profile = data.join("cccccccc.default-release");
-    std::fs::create_dir_all(&config).expect("deberia poder crearse .config/mozilla/firefox");
-    std::fs::create_dir_all(&profile).expect("deberia poder crearse el perfil");
-    std::fs::write(profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        config.join("profiles.ini"),
-        "[Profile0]\nPath=cccccccc.default-release\n",
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
-#[test]
-fn reads_the_xdg_shared_nssdb_too() {
-    let home = a_home_with(&[(".local/share/pki/nssdb", true)], None);
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![home.path().join(".local/share/pki/nssdb")]
-    );
-}
-
-#[test]
-fn resolves_an_absolute_profile_path_as_it_comes() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let firefox = home.path().join(".mozilla/firefox");
-    let elsewhere = home.path().join("otro-sitio");
-    std::fs::create_dir_all(&firefox).expect("deberia poder crearse .mozilla/firefox");
-    std::fs::create_dir_all(&elsewhere).expect("deberia poder crearse el otro sitio");
-    std::fs::write(elsewhere.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        firefox.join("profiles.ini"),
-        format!("[Profile0]\nIsRelative=0\nPath={}\n", elsewhere.display()),
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(nss_profiles(home.path()), vec![elsewhere]);
-}
-
-#[test]
-fn reads_a_firefox_profile_from_the_snap_layout() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let firefox = home.path().join("snap/firefox/common/.mozilla/firefox");
-    let profile = firefox.join("dddddddd.default");
-    std::fs::create_dir_all(&profile).expect("deberia poder crearse el perfil");
-    std::fs::write(profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        firefox.join("profiles.ini"),
-        "[Profile0]\nPath=dddddddd.default\n",
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
-#[test]
-fn reads_firefox_profiles_from_both_snap_and_classic_layouts_simultaneously() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let classic_firefox = home.path().join(".mozilla/firefox");
-    let classic_profile = classic_firefox.join("aaaaaaaa.classic");
-    std::fs::create_dir_all(&classic_profile).expect("deberia poder crearse el perfil clasico");
-    std::fs::write(classic_profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        classic_firefox.join("profiles.ini"),
-        "[Profile0]\nPath=aaaaaaaa.classic\n",
-    )
-    .expect("deberia poder escribirse");
-
-    let snap_firefox = home.path().join("snap/firefox/common/.mozilla/firefox");
-    let snap_profile = snap_firefox.join("bbbbbbbb.snap");
-    std::fs::create_dir_all(&snap_profile).expect("deberia poder crearse el perfil snap");
-    std::fs::write(snap_profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        snap_firefox.join("profiles.ini"),
-        "[Profile0]\nPath=bbbbbbbb.snap\n",
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![classic_profile, snap_profile]
-    );
-}
-
-#[test]
-fn reads_the_snap_chromium_xdg_nssdb() {
-    let home = a_home_with(
-        &[("snap/chromium/current/.local/share/pki/nssdb", true)],
-        None,
-    );
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![home
-            .path()
-            .join("snap/chromium/current/.local/share/pki/nssdb")]
-    );
-}
-
-#[test]
-fn reads_the_snap_chromium_legacy_nssdb() {
-    let home = a_home_with(&[("snap/chromium/current/.pki/nssdb", true)], None);
-
-    assert_eq!(
-        nss_profiles(home.path()),
-        vec![home.path().join("snap/chromium/current/.pki/nssdb")]
-    );
-}
-
-#[test]
-fn reads_a_librewolf_profile_from_its_legacy_layout() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let librewolf = home.path().join(".librewolf");
-    let profile = librewolf.join("eeeeeeee.default-release");
-    std::fs::create_dir_all(&profile).expect("deberia poder crearse el perfil");
-    std::fs::write(profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        librewolf.join("profiles.ini"),
-        "[Profile0]\nPath=eeeeeeee.default-release\n",
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
-#[test]
-fn reads_a_librewolf_profile_from_its_xdg_layout() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let librewolf = home.path().join(".config/librewolf/librewolf");
-    let profile = librewolf.join("ffffffff.default-release");
-    std::fs::create_dir_all(&profile).expect("deberia poder crearse el perfil");
-    std::fs::write(profile.join("cert9.db"), b"").expect("deberia poder escribirse");
-    std::fs::write(
-        librewolf.join("profiles.ini"),
-        "[Profile0]\nPath=ffffffff.default-release\n",
-    )
-    .expect("deberia poder escribirse");
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
+fn native_firefox() -> NssOwner {
+    owned_by("Firefox", BrowserChannel::Native)
 }
 
 #[test]
@@ -611,40 +374,10 @@ fn a_firefox_profile_at(home: &Path, profiles_ini_dir: &str, profile_dir: &str) 
     profile
 }
 
-#[test]
-fn reads_an_xdg_firefox_profile_kept_beside_its_profiles_ini() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let profile = a_firefox_profile_at(
-        home.path(),
-        ".config/mozilla/firefox",
-        ".config/mozilla/firefox/eeeeeeee.default-release",
-    );
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
-#[test]
-fn reads_a_firefox_profile_from_the_flatpak_xdg_layout() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let profile = a_firefox_profile_at(
-        home.path(),
-        ".var/app/org.mozilla.firefox/config/mozilla/firefox",
-        ".var/app/org.mozilla.firefox/config/mozilla/firefox/ffffffff.default-release",
-    );
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
-#[test]
-fn reads_a_firefox_profile_from_the_flatpak_legacy_layout() {
-    let home = tempfile::tempdir().expect("deberia poder crearse un HOME de mentira");
-    let profile = a_firefox_profile_at(
-        home.path(),
-        ".var/app/org.mozilla.firefox/.mozilla/firefox",
-        ".var/app/org.mozilla.firefox/.mozilla/firefox/gggggggg.default-release",
-    );
-
-    assert_eq!(nss_profiles(home.path()), vec![profile]);
-}
-
+mod browser_stores;
 mod modules_report;
+mod profile_discovery;
+
+fn a_firefox_class() -> StoreClass {
+    StoreClass::Browser(owned_by("Firefox", BrowserChannel::Native))
+}

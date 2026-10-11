@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use super::p11kit;
 use crate::desktop::adapters::channel::Channel;
+use crate::identity::domain::browsers::{nss_candidates, NssCandidate, NssOwner, ResolvedLayout};
 use crate::identity::domain::store::{Store, StoreClass};
 
 /// Rutas candidatas fijas para módulos PKCS#11 estándar.
@@ -172,14 +173,18 @@ pub fn from_environment() -> Vec<Store> {
     .collect();
 
     if let (Some(home), Some(softoken)) = (home, softoken()) {
-        stores.extend(
-            nss_profiles(&home)
-                .into_iter()
-                .map(|profile| Store::nss(&softoken, &profile)),
-        );
+        stores.extend(nss_stores_opened_by(&softoken, &home));
     }
 
     stores
+}
+
+/// Los almacenes NSS de `home` que abre `softoken`, cada uno con el dueño de su descubrimiento.
+pub fn nss_stores_opened_by(softoken: &Path, home: &Path) -> Vec<Store> {
+    nss_stores(home)
+        .into_iter()
+        .map(|store| Store::nss(softoken, &store.directory).owned_by(store.owner))
+        .collect()
 }
 
 /// Lo que el descubrimiento de este proceso usa y descarta, salvo que `RFIRMA_PKCS11_MODULE` lo anule.
@@ -224,81 +229,69 @@ pub fn has_certificate_database(directory: &Path) -> bool {
     directory.join("cert9.db").is_file()
 }
 
-/// Pares de directorios de configuración y datos de Firefox en el sistema.
-fn firefox_layouts(home: &Path) -> [(PathBuf, PathBuf); 7] {
-    let flatpak = home.join(".var/app/org.mozilla.firefox");
-    [
-        (home.join(".mozilla/firefox"), home.join(".mozilla/firefox")),
-        (
-            home.join(".config/mozilla/firefox"),
-            home.join(".local/share/mozilla/firefox"),
-        ),
-        (
-            flatpak.join(".mozilla/firefox"),
-            flatpak.join(".mozilla/firefox"),
-        ),
-        (
-            flatpak.join("config/mozilla/firefox"),
-            flatpak.join("data/mozilla/firefox"),
-        ),
-        (
-            home.join("snap/firefox/common/.mozilla/firefox"),
-            home.join("snap/firefox/common/.mozilla/firefox"),
-        ),
-        (home.join(".librewolf"), home.join(".librewolf")),
-        (
-            home.join(".config/librewolf/librewolf"),
-            home.join(".config/librewolf/librewolf"),
-        ),
-    ]
+/// Un Almacén NSS que el descubrimiento ha visto: su directorio y su dueño.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NssStore {
+    pub directory: PathBuf,
+    pub owner: NssOwner,
 }
 
-/// Descubre las rutas de perfiles NSS existentes bajo el directorio personal.
-pub fn nss_profiles(home: &Path) -> Vec<PathBuf> {
-    let mut found: Vec<PathBuf> = Vec::new();
-    for profile in nss_profile_candidates(home) {
-        if !has_certificate_database(&profile) {
-            continue;
+/// Los almacenes NSS con `cert9.db` bajo el directorio personal, cada uno con su dueño.
+pub fn nss_stores(home: &Path) -> Vec<NssStore> {
+    let mut found: Vec<NssStore> = Vec::new();
+    for store in nss_store_candidates(home) {
+        if has_certificate_database(&store.directory) {
+            add_unless_already_there(&mut found, store);
         }
-        add_unless_already_there(&mut found, profile);
     }
     found
 }
 
-/// Los directorios de perfil NSS que existen pero el descubrimiento descarta por no tener `cert9.db`.
-pub fn ignored_nss_profiles(home: &Path) -> Vec<PathBuf> {
-    let mut ignored: Vec<PathBuf> = Vec::new();
-    for profile in nss_profile_candidates(home) {
-        if profile.is_dir() && !has_certificate_database(&profile) {
-            add_unless_already_there(&mut ignored, profile);
+/// Los directorios de almacén NSS que existen pero se descartan por no tener `cert9.db`, cada uno con su dueño.
+pub fn ignored_nss_stores(home: &Path) -> Vec<NssStore> {
+    let mut ignored: Vec<NssStore> = Vec::new();
+    for store in nss_store_candidates(home) {
+        if store.directory.is_dir() && !has_certificate_database(&store.directory) {
+            add_unless_already_there(&mut ignored, store);
         }
     }
     ignored
 }
 
-fn add_unless_already_there(found: &mut Vec<PathBuf>, profile: PathBuf) {
-    let resolved = profile.canonicalize().unwrap_or_else(|_| profile.clone());
+fn add_unless_already_there(found: &mut Vec<NssStore>, store: NssStore) {
+    let resolved = canonical(&store.directory);
     if !found
         .iter()
-        .any(|already| already.canonicalize().unwrap_or_else(|_| already.clone()) == resolved)
+        .any(|already| canonical(&already.directory) == resolved)
     {
-        found.push(profile);
+        found.push(store);
     }
 }
 
-fn nss_profile_candidates(home: &Path) -> Vec<PathBuf> {
-    let mut profiles: Vec<PathBuf> = Vec::new();
-    for (config, data) in firefox_layouts(home) {
-        for relative_or_absolute in profiles_declared_in(&config.join("profiles.ini")) {
-            profiles.push(resolve_under(&data, &relative_or_absolute));
-            profiles.push(resolve_under(&config, &relative_or_absolute));
+fn canonical(directory: &Path) -> PathBuf {
+    directory
+        .canonicalize()
+        .unwrap_or_else(|_| directory.to_path_buf())
+}
+
+fn nss_store_candidates(home: &Path) -> Vec<NssStore> {
+    let mut stores: Vec<NssStore> = Vec::new();
+    for NssCandidate { layout, owner } in nss_candidates(home) {
+        match layout {
+            ResolvedLayout::Database(directory) => stores.push(NssStore { directory, owner }),
+            ResolvedLayout::Profiles { ini, profiles } => {
+                for relative_or_absolute in profiles_declared_in(&ini.join("profiles.ini")) {
+                    for root in [&profiles, &ini] {
+                        stores.push(NssStore {
+                            directory: resolve_under(root, &relative_or_absolute),
+                            owner,
+                        });
+                    }
+                }
+            }
         }
     }
-    profiles.push(home.join(".pki/nssdb"));
-    profiles.push(home.join(".local/share/pki/nssdb"));
-    profiles.push(home.join("snap/chromium/current/.local/share/pki/nssdb"));
-    profiles.push(home.join("snap/chromium/current/.pki/nssdb"));
-    profiles
+    stores
 }
 
 /// Rutas de perfiles declaradas en un fichero profiles.ini.
