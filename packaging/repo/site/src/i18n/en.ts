@@ -110,6 +110,10 @@ export const en: Dictionary = {
   "comparison.stores.label": "Finding certificates",
   "comparison.stores.autofirma": "One store at a time",
   "comparison.stores.rfirma": "All at once, with a search box",
+  "comparison.browsers.label": "Browsers on Linux",
+  "comparison.browsers.autofirma": "One store: the first one found. No Flatpak or LibreWolf",
+  "comparison.browsers.rfirma":
+    "Those of the Firefox and Chromium families, native, Snap and Flatpak, at once",
   "comparison.stamp.label": "Visible signature",
   "comparison.stamp.autofirma": "By coordinates",
   "comparison.stamp.rfirma": "Drag it onto the page",
