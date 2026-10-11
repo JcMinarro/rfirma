@@ -205,7 +205,8 @@ y se abren por separado, así que uno que no cargue no deja sin certificados a
 los demás. El mismo certificado —mismo emisor y número de serie— en varios
 almacenes se muestra una vez, con la lista de almacenes donde está; se firma con
 la copia recordada o, si no la hay, con la del primer almacén por este orden:
-tarjeta, Almacén de Windows, Almacén de rFirma, NSS del sistema, Firefox, Chrome.
+tarjeta, Almacén de Windows, Almacén de rFirma, NSS del sistema, familia Firefox,
+familia Chromium; dentro de cada familia, nativo, snap y flatpak.
 No hay **almacén activo**: la persona elige un certificado, nunca un almacén.
 _Avoid_: keystore, repositorio de certificados, llavero, «el conjunto de
 certificados de la máquina», almacén activo
@@ -223,6 +224,14 @@ registra la CA local** para que ese navegador confíe en el servidor local. No e
 el único almacén en el que rfirma escribe: el Almacén de rFirma también es una
 base NSS, pero propia de la aplicación, no de un navegador.
 _Avoid_: nssdb, base de datos de certificados, almacén del navegador
+
+**Canal de distribución del navegador**:
+La forma en que el navegador dueño de un **Almacén NSS** llegó a la máquina:
+nativo, snap o flatpak. Decide dónde guarda su almacén. En nativo, los
+navegadores de la familia Chromium comparten uno solo; en snap y
+flatpak, cada navegador tiene el suyo. No es el **canal de distribución** de
+rFirma: rFirma en flatpak puede leer el almacén de un Chrome en snap.
+_Avoid_: prefijo, empaquetado, canal a secas
 
 **Almacén de rFirma** (Rust `StoreClass::Installed`):
 El almacén propio de rFirma en Linux: una única base NSS cifrada con un PIN
