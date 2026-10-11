@@ -7,6 +7,7 @@ import {
   CheckMark,
   CopyIcon,
   PlayIcon,
+  ResetIcon,
   ResultIcon,
 } from "../ui/icons";
 import { assistanceName, calendarDate, duration, isExplained, resultTone } from "../words";
@@ -88,6 +89,18 @@ export const CheckRow = memo(function CheckRow({
           <button
             type="button"
             className="run-one"
+            disabled={activity !== null || check.state === "PENDIENTE"}
+            onClick={() => controls.resetCheck(check.id)}
+            aria-label={`Resetear ${check.id}`}
+            title="Dejarla pendiente"
+          >
+            <ResetIcon />
+          </button>
+        )}
+        {controls && (
+          <button
+            type="button"
+            className="run-one"
             disabled={activity !== null}
             onClick={() => controls.runCheck(check.id)}
             aria-label={`Ejecutar ${check.id}`}
@@ -143,8 +156,6 @@ function Status({
   runningSince,
 }: Pick<CheckRowProps, "check" | "activity" | "runningSince">) {
   if (activity === "queued") return <span className="tag">en cola</span>;
-  if (activity === "waiting")
-    return <span className="tag tag-accent">esperando a que des paso</span>;
   if (activity === "running") {
     return (
       <span className="tag tag-accent">
@@ -173,13 +184,7 @@ function CheckDetail({
   onTranscript: (id: string) => void;
 }) {
   const shownResult =
-    activity === "running"
-      ? "en curso"
-      : activity === "waiting"
-        ? "esperando a que des paso"
-        : activity === "queued"
-          ? "en cola"
-          : null;
+    activity === "running" ? "en curso" : activity === "queued" ? "en cola" : null;
   return (
     <div className="check-detail" id={id}>
       <dl className="fields">

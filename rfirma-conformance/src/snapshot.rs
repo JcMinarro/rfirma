@@ -1,5 +1,5 @@
 //! El estado de la sesión activa para la página: la vista de su informe más lo que es solo de la
-//! sesión —cliente, cola, comprobación en curso y la llamada a la persona—.
+//! sesión —cliente, cola y comprobación en curso—.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -22,7 +22,6 @@ pub(crate) struct Activity<'a> {
     pub(crate) running: &'a [String],
     pub(crate) running_for: Duration,
     pub(crate) queued: Vec<&'a str>,
-    pub(crate) call: Option<(&'a str, &'a str, &'static str)>,
     pub(crate) reasons: Option<&'a BTreeMap<String, String>>,
 }
 
@@ -50,7 +49,6 @@ pub(crate) struct Snapshot<'a> {
     reports: &'a [ReportEntry],
     running: Option<RunningView<'a>>,
     queued: &'a [&'a str],
-    call: Option<CallView<'a>>,
     why_pending: BTreeMap<&'a str, &'a str>,
 }
 
@@ -60,15 +58,6 @@ struct RunningView<'a> {
     ids: &'a [String],
     #[ts(type = "number")]
     elapsed_ms: u128,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[ts(export)]
-struct CallView<'a> {
-    check: &'a str,
-    prompt: &'a str,
-    #[ts(type = "\"briefing\" | \"tranche\"")]
-    kind: &'static str,
 }
 
 /// El estado de la sesión, con `open` como el informe abierto y su nombre.
@@ -91,11 +80,6 @@ pub(crate) fn snapshot_of<'a>(
             elapsed_ms: activity.running_for.as_millis(),
         }),
         queued: &activity.queued,
-        call: activity.call.map(|(check, prompt, kind)| CallView {
-            check,
-            prompt,
-            kind,
-        }),
         why_pending: the_reasons_still_pending(report, activity),
     }
 }
@@ -199,7 +183,7 @@ expects.completes = {}
     }
 
     #[test]
-    fn the_running_check_the_queue_and_the_call_travel_apart_from_the_report() {
+    fn the_running_check_and_the_queue_travel_apart_from_the_report() {
         let catalogue = the_catalogue_in(TWO_CHECKS).unwrap();
         let (_dir, report) = a_report(&catalogue);
         let running = ["a_signature".to_owned()];
@@ -207,11 +191,6 @@ expects.completes = {}
             running: &running,
             running_for: Duration::from_millis(12_000),
             queued: vec!["a_save"],
-            call: Some((
-                "a_signature",
-                "Va a aparecer el diálogo del PIN.",
-                "briefing",
-            )),
             ..Activity::default()
         };
 
@@ -227,10 +206,6 @@ expects.completes = {}
             json!({"ids": ["a_signature"], "elapsed_ms": 12_000})
         );
         assert_eq!(json["queued"], json!(["a_save"]));
-        assert_eq!(
-            json["call"],
-            json!({"check": "a_signature", "prompt": "Va a aparecer el diálogo del PIN.", "kind": "briefing"})
-        );
     }
 
     #[test]

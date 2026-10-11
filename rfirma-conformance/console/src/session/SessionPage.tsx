@@ -45,6 +45,7 @@ export function SessionPage() {
   const controls = useMemo<Controls>(
     () => ({
       runCheck: (check) => void suite.run({ check }).catch(complain("No se pudo poner en cola")),
+      resetCheck: (check) => void suite.reset(check).catch(complain("No se pudo resetear")),
       runSet: (set, pendingOnly) =>
         void suite
           .run(pendingOnly ? { set, pending: true } : { set })
@@ -127,7 +128,7 @@ export function SessionPage() {
           }
         />
       </div>
-      {batch && <BatchBar batch={batch} call={snapshot.call} />}
+      {batch && <BatchBar batch={batch} instructions={warningOf(view, head)} />}
       {view ? (
         <ReportBody
           view={view}
@@ -169,4 +170,9 @@ function pendingIn(view: ReportView, takes: (assistance: Assistance) => boolean)
   return view.sets
     .flatMap((set) => set.checks)
     .filter((check) => check.state === "PENDIENTE" && takes(check.assistance ?? "none")).length;
+}
+
+function warningOf(view: ReportView | null, id: string | null): string | null {
+  const check = view?.sets.flatMap((set) => set.checks).find((check) => check.id === id);
+  return check && check.assistance !== "none" ? check.warning : null;
 }

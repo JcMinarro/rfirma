@@ -8,6 +8,7 @@ mod client;
 mod comparison;
 pub mod console;
 mod errand;
+mod hand;
 mod harness;
 mod judge;
 pub mod known_bug;
@@ -33,6 +34,7 @@ use std::time::Duration;
 /// donde se transcribe y quien corre los trámites.
 struct Probe {
     client: PathBuf,
+    kind: client::ClientKind,
     trust_root: PathBuf,
     report: PathBuf,
     patience: Duration,

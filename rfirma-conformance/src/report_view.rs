@@ -6,6 +6,7 @@ use ts_rs::TS;
 
 use crate::catalogue::{Assistance, Check};
 use crate::client::{ClientKind, Store};
+use crate::hand::the_assistance_of;
 use crate::label::Label;
 use crate::outcome::{result_name, ResultName};
 use crate::outcome::{CheckState, Outcome};
@@ -110,7 +111,7 @@ pub(crate) fn report_view<'a>(report: &'a Report, catalogue: &'a [Check]) -> Rep
         let record = report.record_of(&check.id);
         let state = record.map(|record| record.state);
         summary.count(check, state);
-        let view = check_view(check, record);
+        let view = check_view(check, record, report.kind());
         match sets.last_mut() {
             Some(set) if set.name == check.requirement.set => {
                 set.summary.count(check, state);
@@ -143,14 +144,18 @@ pub(crate) fn report_view<'a>(report: &'a Report, catalogue: &'a [Check]) -> Rep
     }
 }
 
-fn check_view<'a>(check: &'a Check, record: Option<&'a CheckRecord>) -> CheckView<'a> {
+fn check_view<'a>(
+    check: &'a Check,
+    record: Option<&'a CheckRecord>,
+    kind: ClientKind,
+) -> CheckView<'a> {
     CheckView {
         id: &check.id,
         chapter: &check.requirement.chapter,
         statement: &check.requirement.statement,
         citation: &check.requirement.citation,
         warning: check.instruction(),
-        assistance: check.trial().map(|trial| trial.act.assistance()),
+        assistance: check.trial().map(|_| the_assistance_of(check, kind)),
         store: check.store(),
         labels: check.labels.iter().map(LabelView::from).collect(),
         state: result_name(record.map(|record| record.state)),

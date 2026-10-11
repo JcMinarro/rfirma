@@ -20,6 +20,7 @@ use crate::checks::{
 use crate::client::{resolve, the_deduced_coordinates, Client, ClientKind, DeducedCoordinates};
 use crate::comparison::{compare, Comparison};
 use crate::errand::{ErrandKey, ErrandRunner, NodeRunner, ObservedErrand};
+use crate::hand::the_assistance_of;
 use crate::livelog::{CheckLog, LiveLogSink};
 use crate::outcome::CheckState;
 use crate::report::{HeaderCoordinates, Report, THE_REPORT_FILE};
@@ -102,7 +103,7 @@ pub struct Console {
     shared: Arc<Shared>,
 }
 
-/// El testigo de verdad: avisa a la persona y la espera a través de la página.
+/// El testigo de verdad: cuenta en la página y en el registro lo que pasa.
 struct ConsoleWitness {
     shared: Arc<Shared>,
 }
@@ -127,11 +128,9 @@ struct Session {
     running: Vec<String>,
     started: Option<Instant>,
     log: Option<CheckLog>,
-    call: Option<Call>,
     driver: Option<u32>,
     aborting: bool,
     reasons: BTreeMap<String, String>,
-    tranche: Option<Assistance>,
 }
 
 struct OpenReport {
@@ -144,13 +143,6 @@ struct Queued {
     id: String,
     in_batch: bool,
     rerun: bool,
-}
-
-struct Call {
-    check: String,
-    prompt: String,
-    kind: &'static str,
-    reply: Sender<Option<String>>,
 }
 
 impl Session {
@@ -299,6 +291,7 @@ impl Console {
             .as_ref()
             .ok_or("elige o crea un informe antes de ejecutar nada")?;
         let client = session.client.as_ref().ok_or(NO_CLIENT)?;
+        let kind = client.kind;
         if let Some(complaint) = open
             .report
             .refuses_to_continue_with(&client.binary.display().to_string(), client.kind)
@@ -331,7 +324,7 @@ impl Console {
                     .catalogue
                     .iter()
                     .filter(is_pending)
-                    .filter(|check| tranches.take(check.assistance()))
+                    .filter(|check| tranches.take(the_assistance_of(check, kind)))
                     .collect(),
                 true,
             ),
@@ -353,8 +346,29 @@ impl Console {
             });
         }
         session.queue.extend(fresh);
-        sort_in_tranches(&mut session.queue, &self.shared.catalogue);
+        sort_in_tranches(&mut session.queue, &self.shared.catalogue, kind);
         self.shared.wake.notify_one();
+        self.shared.publish(&session);
+        Ok(())
+    }
+
+    /// Deja `id` pendiente en el informe abierto y olvida el trámite que observó.
+    pub(crate) fn reset(&self, id: &str) -> Result<(), String> {
+        let mut session = self.shared.lock();
+        if session.is_queued_or_running(id) {
+            return Err(format!("«{id}» está en la cola o en curso"));
+        }
+        let check = self
+            .shared
+            .catalogue
+            .iter()
+            .find(|check| check.id == id)
+            .ok_or_else(|| format!("no conozco la comprobación «{id}»"))?;
+        let open = session
+            .report
+            .as_mut()
+            .ok_or("elige o abre un informe antes de resetear nada")?;
+        open.report.forget(id, ErrandKey::of(check).as_ref())?;
         self.shared.publish(&session);
         Ok(())
     }
@@ -372,18 +386,6 @@ impl Console {
         let mut session = self.shared.lock();
         cut_the_running_check(&mut session);
         self.shared.publish(&session);
-    }
-
-    /// La respuesta de la persona a la llamada en curso; `None` la descarta.
-    pub(crate) fn answer(&self, answer: Option<String>) -> Result<(), String> {
-        let mut session = self.shared.lock();
-        let call = session
-            .call
-            .take()
-            .ok_or("no hay ninguna llamada en curso")?;
-        let _ = call.reply.send(answer);
-        self.shared.publish(&session);
-        Ok(())
     }
 
     /// El registro de `check` en el informe `report`, o en el abierto si no se nombra ninguno.
@@ -498,10 +500,6 @@ impl Shared {
                 .iter()
                 .map(|queued| queued.id.as_str())
                 .collect(),
-            call: session
-                .call
-                .as_ref()
-                .map(|call| (call.check.as_str(), call.prompt.as_str(), call.kind)),
             reasons: Some(&session.reasons),
         };
         let snapshot = snapshot_of(
@@ -528,37 +526,6 @@ impl Shared {
     }
 }
 
-impl ConsoleWitness {
-    fn put_to_the_person(&self, check: &str, prompt: &str, kind: &'static str) -> Option<String> {
-        let (reply, answer) = channel();
-        {
-            let mut session = self.shared.lock();
-            if session.aborting {
-                return None;
-            }
-            session.call = Some(Call {
-                check: check.to_owned(),
-                prompt: prompt.to_owned(),
-                kind,
-                reply,
-            });
-            self.shared.publish(&session);
-        }
-        let label = if kind == "briefing" {
-            "aviso"
-        } else {
-            "espera"
-        };
-        self.harness(&format!("{label}: {prompt}"));
-        let answer = answer.recv().ok().flatten();
-        self.harness(&format!(
-            "respuesta: {}",
-            answer.as_deref().unwrap_or("(descartada)")
-        ));
-        answer
-    }
-}
-
 impl Witness for ConsoleWitness {
     fn started_at(&self) -> Instant {
         self.shared.lock().started.unwrap_or_else(Instant::now)
@@ -581,24 +548,6 @@ impl Witness for ConsoleWitness {
             .expect("la línea se serializa");
             shared.broadcast(&event_frame("log", &payload));
         })
-    }
-
-    fn brief(&self, check: &str, briefing: &str) -> bool {
-        self.put_to_the_person(check, briefing, "briefing")
-            .is_some()
-    }
-
-    /// Si la persona no está, la cola se vacía: lo que quedaba sigue pendiente.
-    fn stand_by(&self, check: &str, tranche: Assistance) -> bool {
-        let present = self
-            .put_to_the_person(check, the_call_to_the_person(tranche), "tranche")
-            .is_some();
-        if !present {
-            let mut session = self.shared.lock();
-            session.queue.clear();
-            self.shared.publish(&session);
-        }
-        present
     }
 
     fn suite_failure(&self, check: &str, why: &str) {
@@ -637,7 +586,6 @@ fn run_the_next_group(shared: &Arc<Shared>) {
     let Next {
         group,
         probe,
-        opening,
         already,
     } = {
         let mut session = shared.lock();
@@ -658,7 +606,7 @@ fn run_the_next_group(shared: &Arc<Shared>) {
         .filter_map(|id| shared.catalogue.iter().find(|check| &check.id == id))
         .collect();
     let settled = catch_unwind(AssertUnwindSafe(|| {
-        probe.run_group(&checks, opening, already.as_ref())
+        probe.run_group(&checks, already.as_ref())
     }))
     .unwrap_or_else(|panic| {
         let why = panic
@@ -684,43 +632,19 @@ fn run_the_next_group(shared: &Arc<Shared>) {
     session.log = None;
     session.driver = None;
     session.aborting = false;
-    if session.queue.is_empty() {
-        session.tranche = None;
-    }
     shared.publish(&session);
 }
 
-fn the_call_to_the_person(tranche: Assistance) -> &'static str {
-    match tranche {
-        Assistance::None => "Vienen comprobaciones automáticas. Pulsa «Estoy aquí» para seguir.",
-        Assistance::Click => {
-            "Ya han terminado las comprobaciones automáticas. Las siguientes abren diálogos \
-             del cliente de firma en los que tendrás que elegir un certificado o pulsar un botón. \
-             Pulsa «Estoy aquí» cuando estés delante del ordenador."
-        }
-        Assistance::Person => {
-            "Ahora vienen comprobaciones en las que tendrás que fijarte en lo que hace el cliente \
-             de firma y contestar qué ha pasado. Pulsa «Estoy aquí» cuando estés delante del \
-             ordenador."
-        }
-    }
-}
-
 /// Ordena la cola en tramos —ninguna, clic, persona— con los saludos delante de cada uno.
-fn sort_in_tranches(queue: &mut VecDeque<Queued>, catalogue: &[Check]) {
+fn sort_in_tranches(queue: &mut VecDeque<Queued>, catalogue: &[Check], kind: ClientKind) {
     let key = |queued: &Queued| {
         catalogue
             .iter()
             .find(|check| check.id == queued.id)
-            .map(|check| (check.assistance(), !check.greeting()))
+            .map(|check| (the_assistance_of(check, kind), !check.greeting()))
             .unwrap_or_default()
     };
     queue.make_contiguous().sort_by_key(key);
-}
-
-/// El tramo que abre el siguiente grupo, si la tanda ya corrió uno anterior.
-fn the_opening(previous: Option<Assistance>, next: Assistance) -> Option<Assistance> {
-    previous.filter(|previous| *previous < next).map(|_| next)
 }
 
 /// Deja pendientes, sin correrlas, las de una tanda que detiene un saludo fallido de su familia.
@@ -750,16 +674,14 @@ fn stop_what_failed_greetings_stop(shared: &Shared, session: &mut Session) {
     session.reasons.extend(stopped);
 }
 
-/// Lo siguiente que corre: el grupo, con qué, si abre tramo y el trámite ya observado que lo juzga.
+/// Lo siguiente que corre: el grupo, con qué y el trámite ya observado que lo juzga.
 struct Next {
     group: Vec<String>,
     probe: Probe,
-    opening: Option<Assistance>,
     already: Option<ObservedErrand>,
 }
 
-/// Saca de la cola lo siguiente que hay que correr, lo marca en curso y dice si abre tramo; lo que
-/// se juzga con un trámite ya observado no abre ninguno, porque no lanza el cliente.
+/// Saca de la cola lo siguiente que hay que correr y lo marca en curso.
 fn take_the_next_group(shared: &Arc<Shared>, session: &mut Session) -> Option<Next> {
     stop_what_failed_greetings_stop(shared, session);
     while let Some(queued) = session.queue.pop_front() {
@@ -792,16 +714,10 @@ fn take_the_next_group(shared: &Arc<Shared>, session: &mut Session) -> Option<Ne
         let already = ErrandKey::of(head)
             .filter(|_| !queued.rerun)
             .and_then(|key| open.report.observed(&key).cloned());
-        let opening = if already.is_none() {
-            let opening = the_opening(session.tranche, head.assistance());
-            session.tranche = Some(head.assistance());
-            opening
-        } else {
-            None
-        };
         let profile = client.profile(head.store());
         let probe = Probe {
             client: profile.launcher.clone(),
+            kind: client.kind,
             trust_root: profile.trust_root.clone(),
             report: dir.clone(),
             patience: shared.patience,
@@ -820,7 +736,6 @@ fn take_the_next_group(shared: &Arc<Shared>, session: &mut Session) -> Option<Ne
         return Some(Next {
             group,
             probe,
-            opening,
             already,
         });
     }
@@ -932,9 +847,6 @@ fn cut_the_running_check(session: &mut Session) {
     if let Some(pid) = session.driver {
         kill(pid);
     }
-    if let Some(call) = session.call.take() {
-        let _ = call.reply.send(None);
-    }
 }
 
 fn kill(pid: u32) {
@@ -1043,7 +955,7 @@ greeting = true
             })
             .collect();
 
-        sort_in_tranches(&mut queue, &catalogue);
+        sort_in_tranches(&mut queue, &catalogue, ClientKind::Autofirma);
 
         assert_eq!(
             queue
@@ -1056,27 +968,6 @@ greeting = true
                 "a_click_one",
                 "a_person_one"
             ]
-        );
-    }
-
-    #[test]
-    fn only_a_later_tranche_after_another_one_ran_stops_the_queue() {
-        assert_eq!(the_opening(None, Assistance::Click), None);
-        assert_eq!(
-            the_opening(Some(Assistance::None), Assistance::Click),
-            Some(Assistance::Click)
-        );
-        assert_eq!(
-            the_opening(Some(Assistance::Click), Assistance::Person),
-            Some(Assistance::Person)
-        );
-        assert_eq!(
-            the_opening(Some(Assistance::Click), Assistance::Click),
-            None
-        );
-        assert_eq!(
-            the_opening(Some(Assistance::Person), Assistance::None),
-            None
         );
     }
 
@@ -1489,5 +1380,26 @@ expects.code = "SAF_03"
         run_the_queue(&console);
 
         assert_eq!(runner.runs().len(), 1);
+    }
+
+    #[test]
+    fn a_reset_check_is_pending_again_and_runs_its_errand_anew() {
+        let runner = a_rejecting_runner();
+        let (console, _dir) = a_console_replaying(&runner);
+        let check = || Request::Check {
+            check: "a_rejection".to_owned(),
+        };
+        console.enqueue(check()).unwrap();
+        run_the_queue(&console);
+
+        console.reset("a_rejection").unwrap();
+
+        assert_eq!(
+            the_state_of(&console, "a_rejection"),
+            Some(CheckState::Pending)
+        );
+        console.enqueue(check()).unwrap();
+        run_the_queue(&console);
+        assert_eq!(runner.runs().len(), 2);
     }
 }

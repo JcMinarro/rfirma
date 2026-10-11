@@ -1,11 +1,10 @@
 import type { ResultName } from "../contract/ResultName";
 import { resultTone } from "../words";
 
-export type Activity = "running" | "waiting" | "queued";
+export type Activity = "running" | "queued";
 
 const ACTIVITY_LABEL: Record<Activity, string> = {
   running: "en curso",
-  waiting: "esperando a que des paso",
   queued: "en cola",
 };
 
@@ -79,12 +78,6 @@ export function ActivityIcon({ activity, size = 16 }: { activity: Activity; size
           <path d="M8 2a6 6 0 0 1 6 6" className="arc" />
         </>
       )}
-      {activity === "waiting" && (
-        <>
-          <circle cx="8" cy="8" r="6.5" className="halo" />
-          <circle cx="8" cy="8" r="4" className="fill" />
-        </>
-      )}
       {activity === "queued" && <circle cx="8" cy="8" r="5.5" className="dashed" />}
     </svg>
   );
@@ -108,6 +101,14 @@ export function PlayIcon() {
   return (
     <svg className="glyph" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
       <path d="M2.2 1.3v7.4L8.6 5z" />
+    </svg>
+  );
+}
+
+export function ResetIcon() {
+  return (
+    <svg className="glyph stroke" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M2.2 6a3.8 3.8 0 1 0 1.1-2.7M2.2 1.6v2h2" />
     </svg>
   );
 }

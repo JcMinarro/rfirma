@@ -430,13 +430,14 @@ expects.completes = {}
         let runner = RecordedRunner::replaying(&[(script, the_recorded(recorded))]);
         let probe = Probe {
             client: PathBuf::from("/nowhere/launch-subject"),
+            kind: ClientKind::Autofirma,
             trust_root: PathBuf::from("/nowhere/root.pem"),
             report: tempfile::tempdir().unwrap().keep(),
             patience: Duration::from_secs(1),
             witness: Arc::new(FakeWitness::default()) as Arc<dyn Witness>,
             runner: runner as Arc<dyn ErrandRunner>,
         };
-        let settled = probe.run_group(&[&catalogue[0]], None, None);
+        let settled = probe.run_group(&[&catalogue[0]], None);
         let key = ErrandKey::of(&catalogue[0]).unwrap();
         report.observe(key, settled.observed.unwrap()).unwrap();
         for settlement in settled.settlements {

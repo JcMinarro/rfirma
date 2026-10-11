@@ -316,12 +316,6 @@ kbd {
   transform-origin: 8px 8px;
 }
 
-.activity .halo {
-  fill: currentColor;
-  opacity: 0.22;
-  transform-origin: 8px 8px;
-}
-
 .activity .dashed {
   fill: none;
   stroke: currentColor;
@@ -1266,12 +1260,6 @@ select.input {
   text-wrap: pretty;
 }
 
-.call-actions {
-  display: flex;
-  gap: var(--s2);
-  flex: none;
-}
-
 /* ─── Cabecera del informe ──────────────────────────────────────────────── */
 
 .report-head {
@@ -1634,8 +1622,7 @@ select.input {
   background: var(--accent-soft);
 }
 
-.check[data-activity="running"] > .check-line,
-.check[data-activity="waiting"] > .check-line {
+.check[data-activity="running"] > .check-line {
   background: var(--accent-soft);
 }
 
@@ -2278,10 +2265,6 @@ select.input {
     align-items: stretch;
   }
 
-  .call-actions {
-    justify-content: flex-end;
-  }
-
   .log-bar .switch span {
     display: none;
   }
@@ -2321,10 +2304,6 @@ select.input {
 
   .activity .arc {
     animation: spin 0.9s linear infinite;
-  }
-
-  .activity .halo {
-    animation: breathe 1.6s var(--ease) infinite;
   }
 
   .activity .dashed {
@@ -2369,13 +2348,6 @@ select.input {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes breathe {
-  50% {
-    transform: scale(0.72);
-    opacity: 0.45;
   }
 }
 
