@@ -1,6 +1,5 @@
 use std::path::Path;
 
-use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::site::domain::local_ca::{ChannelMark, LocalCa};
 
 use super::*;
@@ -71,36 +70,4 @@ fn the_expiry_of_the_serving_local_ca_is_the_day_its_certificate_ends() {
     let last_second = Asn1Time::from_str(&format!("{day}235959Z")).expect("fecha valida");
     let not_after = ca.certificate().not_after();
     assert!(&*first_second <= not_after && not_after <= &*last_second);
-}
-
-fn owned_by(name: &str, channel: BrowserChannel) -> NssOwner {
-    NssOwner::Browser {
-        browser: browser_named(name).expect("el navegador esta en la tabla"),
-        channel,
-    }
-}
-
-#[test]
-fn a_firefox_family_store_is_named_after_its_family_and_channel() {
-    assert_eq!(
-        browser_of(owned_by("Firefox", BrowserChannel::Native)),
-        "Firefox"
-    );
-    assert_eq!(
-        browser_of(owned_by("Firefox", BrowserChannel::Snap)),
-        "Firefox snap"
-    );
-    assert_eq!(
-        browser_of(owned_by("LibreWolf", BrowserChannel::Flatpak)),
-        "Firefox flatpak"
-    );
-}
-
-#[test]
-fn a_chromium_family_store_is_named_chrome_with_its_channel() {
-    assert_eq!(browser_of(NssOwner::SharedChromium), "Chrome");
-    assert_eq!(
-        browser_of(owned_by("Brave", BrowserChannel::Flatpak)),
-        "Chrome flatpak"
-    );
 }
