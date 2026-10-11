@@ -337,8 +337,22 @@ msgstr "atzo"
 msgid "viewer.dropZone"
 msgstr "Arrastatu PDF bat edo sakatu irekitzeko"
 
-msgid "viewer.dropZoneHint"
-msgstr "Ez da zure ordenagailutik ateratzen"
+msgid "welcome.subtitle"
+msgstr "Dokumentuen sinadura elektronikoa"
+
+msgid "welcome.start"
+msgstr "Hasi"
+
+msgid "welcome.noRecents.title"
+msgstr "Oraindik ez duzu dokumenturik ireki"
+
+msgid "welcome.noRecents.hint"
+msgstr ""
+"Irekitzen dituzun azkenak hemen agertuko dira, klik batekin haietara "
+"itzultzeko."
+
+msgid "welcome.showOnStartup"
+msgstr "Erakutsi ongietorria irekitzean"
 
 msgid "viewer.noPreview"
 msgstr "Aurrebistarik ez"
@@ -524,7 +538,9 @@ msgid "panel.certificate.reader.unreadable"
 msgstr "rFirmak ezin du irakurgailuko txartela irakurri"
 
 msgid "panel.certificate.reader.unreadableHelp.windows"
-msgstr "Windowsek ez badu ezagutzen, txartelaren softwarea Windows Update bidez iristen da txartela sartzean, edo DGPren orritik deskarga daiteke."
+msgstr ""
+"Windowsek ez badu ezagutzen, txartelaren softwarea Windows Update bidez "
+"iristen da txartela sartzean, edo DGPren orritik deskarga daiteke."
 
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instalatu OpenSC rFirmak txartela irakur dezan."

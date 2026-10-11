@@ -18,8 +18,8 @@
 
 /* Las filas vuelven a `auto` a propósito. `.viewer` las fija en `1fr`, y una
    pista de `1fr` se come todo el espacio libre: con ella `place-content` no
-   tiene hueco que repartir y queda inerte —la caja pegada arriba y la línea de
-   privacidad descolgada al fondo—. Con las dos filas a su tamaño, el hueco
+   tiene hueco que repartir y queda inerte —la caja pegada arriba y los
+   recientes descolgados al fondo—. Con las dos filas a su tamaño, el hueco
    sobrante existe y `place-content: center` lo reparte, que es la pila
    centrada del diseño. */
 .viewer--empty {
@@ -36,32 +36,10 @@
   gap: var(--rf-space-sm);
 }
 
-/* docs/design/visor-de-documento.md, «Zona de soltar del estado vacío». */
-.viewer__drop-zone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--rf-space-sm);
-  width: 520px;
-  max-width: 100%;
-  height: 170px;
-  border: 2px dashed var(--rf-border-strong);
-  border-radius: var(--rf-radius-lg);
-  background: var(--rf-surface);
-  color: var(--rf-text);
-  font-family: var(--rf-font-body);
-  cursor: pointer;
-}
-
-.viewer__drop-icon {
-  display: flex;
-  color: var(--rf-text-muted);
-}
-
-.viewer__drop-title {
-  font-size: var(--rf-subtitle-size);
-  text-align: center;
+/* La columna llega al ancho máximo de la zona de soltar: en una pista `auto`
+   su `width: 100%` se quedaría en el ancho de su texto. */
+.viewer--drop {
+  grid-template-columns: minmax(0, 520px);
 }
 
 /* El desplazamiento del documento es de la barra de scroll y de la rueda: no

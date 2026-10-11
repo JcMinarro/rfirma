@@ -74,6 +74,7 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | --- | --- | --- |
 | Dominio | Actualizaciones / NewVersionStrip | `NewVersionStrip` |
 | Dominio | Documentos / DocumentTabs | `DocumentTabs` |
+| Dominio | Documentos / DropZone | `DropZone` |
 | Dominio | Documentos / RecentsSection | `RecentsSection` |
 | Dominio | Errores / ErrorNotice | `ErrorNotice` |
 | Dominio | Firma / CertificateCard | `CertificateCard` |
@@ -83,6 +84,7 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |
+| Primitivos | Checkbox | `Checkbox` |
 | Primitivos | Combobox | `Combobox` |
 | Primitivos | DesignRoot | `DesignRoot` |
 | Primitivos | Dialog | `Dialog` |

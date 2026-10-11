@@ -113,6 +113,7 @@ conformidad.
 `ventana-de-sede` (la ventana que abre una sede por `afirma://`, entera: espera,
 consentimiento, firma, desenlace y sin certificado utilizable) ·
 `primer-arranque` (el asistente que configura el equipo la primera vez) ·
+`bienvenida` (el punto de partida al arrancar sin documento: abrir, estado y recientes) ·
 `panel-de-estado` (la tabla de señales de la instalación, con sus reparaciones) ·
 `retirar-certificado` (el velo que confirma y ejecuta la retirada del
 certificado de rFirma de los almacenes) ·

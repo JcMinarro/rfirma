@@ -336,8 +336,22 @@ msgstr "yesterday"
 msgid "viewer.dropZone"
 msgstr "Drag a PDF here, or click to open one"
 
-msgid "viewer.dropZoneHint"
-msgstr "It never leaves your computer"
+msgid "welcome.subtitle"
+msgstr "Electronic document signing"
+
+msgid "welcome.start"
+msgstr "Get started"
+
+msgid "welcome.noRecents.title"
+msgstr "You haven't opened any documents yet"
+
+msgid "welcome.noRecents.hint"
+msgstr ""
+"The latest ones you open will appear here so you can get back to them in one "
+"click."
+
+msgid "welcome.showOnStartup"
+msgstr "Show the welcome screen at startup"
 
 msgid "viewer.noPreview"
 msgstr "No preview"
@@ -523,7 +537,9 @@ msgid "panel.certificate.reader.unreadable"
 msgstr "rFirma cannot read the card in the reader"
 
 msgid "panel.certificate.reader.unreadableHelp.windows"
-msgstr "If Windows does not recognise it, the card software arrives through Windows Update when you insert the card, or can be downloaded from the DGP page."
+msgstr ""
+"If Windows does not recognise it, the card software arrives through Windows "
+"Update when you insert the card, or can be downloaded from the DGP page."
 
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Install OpenSC so that rFirma can read it."

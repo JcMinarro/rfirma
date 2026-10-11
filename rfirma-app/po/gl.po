@@ -334,8 +334,20 @@ msgstr "onte"
 msgid "viewer.dropZone"
 msgstr "Arrastra un PDF ou preme para abrilo"
 
-msgid "viewer.dropZoneHint"
-msgstr "Non sae do teu ordenador"
+msgid "welcome.subtitle"
+msgstr "Sinatura electrónica de documentos"
+
+msgid "welcome.start"
+msgstr "Comezar"
+
+msgid "welcome.noRecents.title"
+msgstr "Aínda non abriches ningún documento"
+
+msgid "welcome.noRecents.hint"
+msgstr "Os últimos que abras aparecerán aquí para volver a eles cun clic."
+
+msgid "welcome.showOnStartup"
+msgstr "Amosar a benvida ao abrir"
 
 msgid "viewer.noPreview"
 msgstr "Sen vista previa"
@@ -521,7 +533,9 @@ msgid "panel.certificate.reader.unreadable"
 msgstr "rFirma non pode ler a tarxeta do lector"
 
 msgid "panel.certificate.reader.unreadableHelp.windows"
-msgstr "Se Windows non a recoñece, o software da tarxeta chega por Windows Update ao inserila ou descárgase da páxina da DGP."
+msgstr ""
+"Se Windows non a recoñece, o software da tarxeta chega por Windows Update ao "
+"inserila ou descárgase da páxina da DGP."
 
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instala OpenSC para que rFirma poida lela."
