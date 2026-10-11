@@ -12,6 +12,9 @@ import type { DocumentFailure } from "./viewer/source";
  * que el aviso siga significando algo: el que se acaba de abrir cuando se
  * soltaron varios, o el que ya estaba cuando lo soltado no se pudo abrir.
  */
+/** Si la invocación externa ya contestó y si trajo algo. */
+export type Invocation = "asking" | "none" | "arrived";
+
 export interface DropNotice {
   about: string | null;
   failure: DocumentFailure;
@@ -35,6 +38,7 @@ export function useDropNotices(
   seeSignaturesOf: (documentId: string) => void,
 ) {
   const [dropNotice, setDropNotice] = useState<DropNotice | null>(null);
+  const [invocation, setInvocation] = useState<Invocation>("asking");
   const activeIdRef = useRef(activeId);
   activeIdRef.current = activeId;
 
@@ -92,11 +96,12 @@ export function useDropNotices(
     if (!invocationAsked.current) {
       invocationAsked.current = true;
       void drops.pending().then((invoked) => {
+        setInvocation(invoked === null ? "none" : "arrived");
         if (invoked !== null) arrivedRef.current(invoked);
       });
     }
     return stop;
   }, [drops, acceptDocument, enterDocument, seeSignaturesOf]);
 
-  return { dropNotice, setDropNotice };
+  return { dropNotice, setDropNotice, invocation };
 }

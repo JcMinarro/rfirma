@@ -173,7 +173,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
         row("ayer.pdf", { lastUsed: now() - DAY, badge: "Signed" }),
       ]),
     });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
 
@@ -192,7 +191,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
       documents: [],
       pdfs: pdfsOf({ "a.pdf": 3 }),
     });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
     await user.click(within(menu).getByRole("menuitem", { name: /^a\.pdf/ }));
@@ -225,7 +223,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
   it("shows the folder under the name when it is known, and as its title", async () => {
     const user = userEvent.setup();
     renderApp({ recents: inMemoryRecents([row("hoy.pdf", { folder: "Documentos" })]) });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
 
@@ -237,7 +234,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
   it("shows only the name and no title when the folder is unknown, under the portal", async () => {
     const user = userEvent.setup();
     renderApp({ recents: inMemoryRecents([row("hoy.pdf", { folder: null, lastUsed: now() })]) });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
 
@@ -250,7 +246,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
   it("dims a recent that is no longer where it was, and does not open it", async () => {
     const user = userEvent.setup();
     renderApp({ recents: inMemoryRecents([row("usb.pdf", { available: false })]) });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
 
@@ -265,7 +260,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
     renderApp({
       recents: inMemoryRecents([row("usb.pdf", { available: false, folder: "Documentos" })]),
     });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     const menu = await openRecentlyOpenedMenu(user);
 
@@ -278,7 +272,6 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
     const user = userEvent.setup();
     const recents = inMemoryRecents([row("a.pdf")]);
     renderApp({ recents });
-    await screen.findByRole("region", { name: "Abiertos recientemente" });
 
     await user.click(
       within(await openRecentlyOpenedMenu(user)).getByRole("menuitem", { name: "Vaciar la lista" }),
@@ -303,32 +296,16 @@ describe("App, la flecha de «Abiertos recientemente»", () => {
 });
 
 describe("App, sin documentos abiertos", () => {
-  it("shows the drop zone and the recents in the middle of the viewer", async () => {
+  it("keeps the recents out of the drop zone, in the arrow of the open button only", async () => {
     renderApp({ recents: inMemoryRecents([row("a.pdf", { lastUsed: now() })]) });
 
+    await screen.findByRole("button", { name: "Abiertos recientemente" });
     const viewer = screen.getByRole("region", { name: "Visor del documento" });
     expect(
       within(viewer).getByRole("button", { name: /Arrastra un PDF o pulsa para abrirlo/ }),
     ).toBeInTheDocument();
-    const recents = await within(viewer).findByRole("region", { name: "Abiertos recientemente" });
-    expect(within(recents).getByRole("button", { name: /^a\.pdf/ })).toHaveTextContent("hoy");
-    expect(within(recents).getByRole("button", { name: "Vaciar la lista" })).toBeInTheDocument();
-  });
-
-  it("opens a recent from the empty viewer in a tab", async () => {
-    const user = userEvent.setup();
-    renderApp({
-      recents: inMemoryRecents([row("a.pdf")]),
-      documents: [],
-      pdfs: pdfsOf({ "a.pdf": 3 }),
-    });
-    const recents = await screen.findByRole("region", { name: "Abiertos recientemente" });
-
-    await user.click(within(recents).getByRole("button", { name: /^a\.pdf/ }));
-
-    expect(await screen.findByRole("tab", { name: "a.pdf", selected: true })).toBeInTheDocument();
     expect(
-      screen.queryByRole("region", { name: "Abiertos recientemente" }),
+      within(viewer).queryByRole("region", { name: "Abiertos recientemente" }),
     ).not.toBeInTheDocument();
   });
 

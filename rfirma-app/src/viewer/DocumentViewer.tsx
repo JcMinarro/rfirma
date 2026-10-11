@@ -1,6 +1,6 @@
 //! El JSX del visor de PDF: la hoja con su lienzo, el recuadro de la firma visible con sus tiradores y la barra de páginas y zoom; la lógica vive en `useViewerPage` y `useViewerBox`.
 
-import { type ReactNode, useEffect } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
@@ -49,8 +49,6 @@ interface DocumentViewerProps {
   onPageChange?: (page: number) => void;
   /** Abrir un documento, que va por el portal igual que desde el botón partido de abrir. */
   onOpen: () => void;
-  /** Lo que va debajo de la zona de soltar en el estado vacío: los recientes. */
-  emptyExtra?: ReactNode;
   /**
    * Por qué no se ha podido pintar el documento que se eligió, si es que no se
    * ha podido.
@@ -147,7 +145,6 @@ export function DocumentViewer({
   onMove,
   onTrace,
   onOpen,
-  emptyExtra = null,
   onPageChange,
   canPlace = true,
   failure = null,
@@ -226,7 +223,6 @@ export function DocumentViewer({
           />
         )}
         <DropZone onOpen={onOpen} />
-        {emptyExtra}
       </div>
     );
   }
