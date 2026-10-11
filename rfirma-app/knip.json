@@ -6,7 +6,6 @@
     "design-sync.entry.ts",
     "tools/storybook-a11y.mjs"
   ],
-  "ignore": ["src/design-system/bundle/**"],
   "ignoreDependencies": ["jscpd"],
   "rules": { "catalogReferences": "off" }
 }

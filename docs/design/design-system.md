@@ -30,7 +30,7 @@ oscura sin escribir ni una regla de componente:
 La estructura CSS que lo sostiene es la de tres estados:
 
 ```css
-:root, [data-theme="light"], .rf-on-light { /* claro: define TODOS los roles */ }
+:root, [data-theme="light"] { /* claro: define TODOS los roles */ }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { /* oscuro */ }
 }
@@ -88,22 +88,23 @@ matiz (ver sección 8).
 ## 3. Tipografía
 
 Familia única: **Inter**, licencia OFL. Los roles se distinguen por tamaño,
-peso, interlínea y tracking, nunca por familia. El texto elige **rol**, no
-números: cada rol cierra tamaño, peso e interlínea juntos en
-`tokens/typography.css` (`--rf-<rol>-size`, `-weight`, `-leading`), y su clase
-`.rf-<rol>` los aplica.
+peso e interlínea, nunca por familia. El texto elige **rol**, no números: cada
+rol cierra tamaño, peso e interlínea juntos en `tokens/typography.css`
+(`--rf-<rol>-size`, `-weight`, `-leading`). Los roles con clase `.rf-<rol>` la
+usan para aplicarlos; los que no la tienen se aplican desde el CSS de su
+componente con esos tokens. `headline` y `subtitle` no traen peso: cambian el
+tamaño de un título (`.rf-title`, `.rf-heading`), que pone el suyo.
 
-| Clase | Tamaño / interlineado | Peso | Tracking | Uso |
+| Rol | Clase | Tamaño / interlineado | Peso | Uso |
 | --- | --- | --- | --- | --- |
-| `.rf-display` | 96 / 1.0 | 700 | −2.4px | portada, héroe |
-| `.rf-heading` | 48 / 1.15 | 700 | 0 | título de sección mayor |
-| `.rf-headline` | 32 / 1.2 | 700 | 0 | titular de pantalla |
-| `.rf-title` | 20 / 1.3 | 700 | 0 | título de tarjeta, diálogo, panel |
-| `.rf-subtitle` | 16 / 1.35 | 600 | 0 | subtítulo, cabecera de bloque |
-| `.rf-ui` | 14 / 1.4 | 400 (600 con `.rf-ui--strong`) | 0 | controles: botón, campo, etiqueta |
-| `.rf-body` | 13 / 1.4 | 400 | 0 | cuerpo base, el de `.rf-root` |
-| `.rf-prose` | 13 / 1.6 | 400 | 0 | texto corrido: `body` con interlínea de lectura |
-| `.rf-caption` | 12 / 1.3 | 400 | 0 | ayuda, metadatos, insignia |
+| `heading` | `.rf-heading` | 48 / 1.15 | 700 | título de sección mayor |
+| `headline` | — | 32 / 1.2 | el del título | titular de pantalla |
+| `title` | `.rf-title` | 20 / 1.3 | 700 | título de tarjeta, diálogo, panel |
+| `subtitle` | — | 16 / 1.35 | el del título | subtítulo, cabecera de bloque |
+| `ui` | — | 14 / 1.4 | 400 (600 con `--rf-ui-strong-weight`) | controles: botón, campo, etiqueta |
+| `body` | `.rf-body` | 13 / 1.4 | 400 | cuerpo base, el de `.rf-root` |
+| `body` de lectura | `.rf-prose` | 13 / 1.6 | 400 | texto corrido: `body` con interlínea de lectura |
+| `caption` | `.rf-caption` | 12 / 1.3 | 400 | ayuda, metadatos, insignia |
 
 `--rf-font-display` y `--rf-font-body` existen como puntos de extensión pero
 hoy resuelven a la misma pila. Ambas declaran fallbacks del sistema, de modo
@@ -133,8 +134,6 @@ Una sola escala, con nombre:
 | `--rf-space-sm` | 16px | relleno de bloques de texto, separación en línea |
 | `--rf-space-md` | 24px | separación entre campos y entre tarjetas |
 | `--rf-space-lg` | 48px | separación entre secciones |
-| `--rf-space-xl` | 80px | héroes y contenido destacado |
-| `--rf-space-2xl` | 144px | márgenes a sangre, cabecera de página |
 
 Todo `padding`, `margin` y `gap` sale de la escala. **Nunca un px suelto.**
 
@@ -263,10 +262,10 @@ CSS con `var(--rf-*)`.
 
 | Familia | Clases |
 | --- | --- |
-| Raíz y tema | `.rf-root`, `.rf-on-light`, `[data-theme]` |
-| Texto | `.rf-display`, `.rf-heading`, `.rf-headline`, `.rf-title`, `.rf-subtitle`, `.rf-ui`, `.rf-ui--strong`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
-| Disposición | `.rf-stack`, `.rf-row`, `.rf-section`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
-| Superficies | `.rf-surface`, `.rf-card`, `.rf-card--elevated` |
+| Raíz y tema | `.rf-root`, `[data-theme]` |
+| Texto | `.rf-heading`, `.rf-title`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
+| Disposición | `.rf-stack`, `.rf-row`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
+| Superficies | `.rf-card`, `.rf-card--elevated` |
 | Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill\|--disabled` |
 | Formularios | `.rf-field`, `.rf-field--error`, `.rf-label`, `.rf-input`, `.rf-hint` |
 | Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-progress`, `.rf-progress--framed`, `.rf-dialog`, `.rf-scrim` |
@@ -274,9 +273,7 @@ CSS con `var(--rf-*)`.
 `.rf-root` es obligatoria en la raíz de toda pantalla: establece lienzo, familia
 tipográfica y color heredado.
 
-`.rf-on-light` es un alias de `data-theme="light"`, conservado por
-compatibilidad: hace exactamente lo mismo y no hay motivo para preferirlo en
-código nuevo. `.rf-btn--disabled` es el equivalente en clase del atributo
+`.rf-btn--disabled` es el equivalente en clase del atributo
 `[disabled]`, para un elemento que no lo admite.
 
 ---
@@ -304,8 +301,7 @@ color del texto de un botón primario**. Como máximo un `--primary` por vista.
 ```
 
 `.rf-card` ya es flex en columna con `gap: --rf-space-xs` y
-`padding: --rf-space-md`; no le añadas relleno propio. Para un contenedor sin sombra ni relleno,
-`.rf-surface`.
+`padding: --rf-space-md`; no le añadas relleno propio.
 
 ### Campo
 

@@ -34,15 +34,15 @@ Clases a mano, solo las que no tienen primitivo:
 
 | Familia | Clases |
 | --- | --- |
-| Superficies | `rf-surface`, `rf-section`, `rf-divider` |
-| Texto | `rf-display`, `rf-heading`, `rf-headline`, `rf-title`, `rf-subtitle`, `rf-ui`, `rf-ui--strong`, `rf-body`, `rf-prose`, `rf-caption`, `rf-label`, `rf-hint`, `rf-text-muted`, `rf-text-primary` |
+| Superficies | `rf-divider` |
+| Texto | `rf-heading`, `rf-title`, `rf-body`, `rf-prose`, `rf-caption`, `rf-label`, `rf-hint`, `rf-text-muted`, `rf-text-primary` |
 | Formularios | `rf-input` |
 
 El texto elige rol, no números: cada clase de rol fija tamaño, peso e interlínea juntos. No escribas `font-size`, `font-weight` ni `line-height` literales.
 
 Las clases de los primitivos (`rf-btn`, `rf-card`, `rf-field`, `rf-badge`, `rf-dialog`, `rf-scrim`, `rf-stack`, `rf-row`, `rf-gap-*`) las pone el primitivo: no las escribas.
 
-Tokens: color `--rf-bg`, `--rf-surface`, `--rf-text`, `--rf-text-muted`, `--rf-primary`, `--rf-primary-hover`, `--rf-on-primary`, `--rf-accent`, `--rf-border-subtle`, `--rf-border-strong`; espacio `--rf-space-xs` … `--rf-space-2xl`; radio `--rf-radius-sm` / `-md` / `-lg` / `-xl` / `-pill`; sombra `--rf-shadow-card`, `--rf-shadow-elevated`; movimiento `--rf-duration-fast` / `-base`, `--rf-easing`; tipografía `--rf-<rol>-size` / `-weight` / `-leading` por rol, `--rf-ui-strong-weight` y `--rf-body-prose-leading`.
+Tokens: color `--rf-bg`, `--rf-surface`, `--rf-text`, `--rf-text-muted`, `--rf-primary`, `--rf-primary-hover`, `--rf-on-primary`, `--rf-accent`, `--rf-border-subtle`, `--rf-border-strong`; espacio `--rf-space-xs` … `--rf-space-lg`; radio `--rf-radius-sm` / `-md` / `-lg` / `-xl` / `-pill`; sombra `--rf-shadow-card`, `--rf-shadow-elevated`; movimiento `--rf-duration-fast` / `-base`, `--rf-easing`; tipografía `--rf-<rol>-size` / `-weight` / `-leading` por rol (sin `-weight` en `headline` y `subtitle`), `--rf-ui-strong-weight` y `--rf-body-prose-leading`.
 
 ### Iconos
 

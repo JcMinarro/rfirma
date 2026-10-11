@@ -14,7 +14,7 @@ defecto del navegador y el sistema se ve roto.**
 
 ```html
 <body class="rf-root">
-  <section class="rf-section rf-stack rf-gap-md">
+  <section class="rf-stack rf-gap-md">
     <h1 class="rf-title">Certificados disponibles</h1>
     <div class="rf-card">
       <p class="rf-title">DNIe</p>
@@ -40,8 +40,6 @@ necesita ni una regla de componente:
   <article data-theme="light">…</article> <!-- siempre claro -->
 </body>
 ```
-
-`.rf-on-light` es un alias de `data-theme="light"`, conservado por compatibilidad.
 
 **Nunca fijes un color a mano.** Un `color: #fff` o un `background: #18181b`
 escritos directamente rompen el modo contrario, y es el error más fácil de
@@ -73,10 +71,10 @@ cumple el 3:1 de WCAG 1.4.11 en ambos temas: no lo cambies por el sutil.
 
 | Familia | Clases |
 | --- | --- |
-| Raíz y tema | `.rf-root`, `.rf-on-light`, `[data-theme]` |
-| Texto | `.rf-display`, `.rf-heading`, `.rf-headline`, `.rf-title`, `.rf-subtitle`, `.rf-ui`, `.rf-ui--strong`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
-| Disposición | `.rf-stack`, `.rf-row`, `.rf-section`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
-| Superficies | `.rf-surface`, `.rf-card`, `.rf-card--elevated` |
+| Raíz y tema | `.rf-root`, `[data-theme]` |
+| Texto | `.rf-heading`, `.rf-title`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
+| Disposición | `.rf-stack`, `.rf-row`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
+| Superficies | `.rf-card`, `.rf-card--elevated` |
 | Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill` |
 | Formularios | `.rf-field`, `.rf-field--error`, `.rf-label`, `.rf-input`, `.rf-hint` |
 | Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-dialog`, `.rf-scrim` |

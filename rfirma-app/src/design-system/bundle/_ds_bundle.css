@@ -20,26 +20,11 @@
 }
 
 /* ---------------------------------------------------------- 2. Typography */
-.rf-display {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-display-size);
-  font-weight: var(--rf-display-weight);
-  line-height: var(--rf-display-leading);
-  letter-spacing: var(--rf-display-tracking);
-  margin: 0;
-}
 .rf-heading {
   font-family: var(--rf-font-display);
   font-size: var(--rf-heading-size);
   font-weight: var(--rf-heading-weight);
   line-height: var(--rf-heading-leading);
-  margin: 0;
-}
-.rf-headline {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-headline-size);
-  font-weight: var(--rf-headline-weight);
-  line-height: var(--rf-headline-leading);
   margin: 0;
 }
 .rf-title {
@@ -49,21 +34,6 @@
   line-height: var(--rf-title-leading);
   margin: 0;
 }
-.rf-subtitle {
-  font-family: var(--rf-font-display);
-  font-size: var(--rf-subtitle-size);
-  font-weight: var(--rf-subtitle-weight);
-  line-height: var(--rf-subtitle-leading);
-  margin: 0;
-}
-.rf-ui {
-  font-family: var(--rf-font-body);
-  font-size: var(--rf-ui-size);
-  font-weight: var(--rf-ui-weight);
-  line-height: var(--rf-ui-leading);
-  margin: 0;
-}
-.rf-ui--strong { font-weight: var(--rf-ui-strong-weight); }
 .rf-body {
   font-family: var(--rf-font-body);
   font-size: var(--rf-body-size);
@@ -97,15 +67,9 @@
 .rf-gap-sm { gap: var(--rf-space-sm); }
 .rf-gap-md { gap: var(--rf-space-md); }
 .rf-gap-lg { gap: var(--rf-space-lg); }
-.rf-section { padding: var(--rf-space-lg) var(--rf-space-md); }
 .rf-divider { height: 1px; background: var(--rf-border-subtle); border: 0; margin: 0; }
 
 /* ------------------------------------------------------------ 4. Surfaces */
-.rf-surface {
-  background: var(--rf-surface);
-  border: 1px solid var(--rf-border-subtle);
-  border-radius: var(--rf-radius-md);
-}
 .rf-card {
   background: var(--rf-surface);
   border: 1px solid var(--rf-border-subtle);
@@ -230,14 +194,14 @@
 .rf-scrim { background: var(--rf-scrim); }
 
 /* ------------------------------------------------------ 7.5 Tema local */
-/* `data-theme` y su alias `.rf-on-light` redefinen los roles de color en
+/* `data-theme` redefine los roles de color en
  * tokens/color.css, asi que una subseccion clara dentro de una pantalla
  * oscura (o al reves) no necesita ninguna regla de componente: los tokens
  * heredan y todo lo de arriba se recolorea solo. Solo hace falta repintar el
  * fondo del contenedor, que por defecto es transparente. Va en :where() para
  * que tenga especificidad 0: asi un .rf-card que ademas lleve data-theme
  * conserva su --rf-surface en vez de recibir el --rf-bg del lienzo. */
-:where([data-theme], .rf-on-light) { background: var(--rf-bg); color: var(--rf-text); }
+:where([data-theme]) { background: var(--rf-bg); color: var(--rf-text); }
 
 /* ------------------------------------------------------------- 8. Focus */
 /* Applies to every focusable element. */

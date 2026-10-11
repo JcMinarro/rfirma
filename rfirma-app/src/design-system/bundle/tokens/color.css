@@ -15,8 +15,7 @@
 /* Es tambien el bloque base: define TODOS los roles, para que ningun rol
  * exista solo dentro de una media query. */
 :root,
-[data-theme="light"],
-.rf-on-light {
+[data-theme="light"] {
   color-scheme: light;
 
   --rf-bg: #ffffff;
