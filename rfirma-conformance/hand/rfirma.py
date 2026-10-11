@@ -7,7 +7,7 @@ import time
 import gi
 
 gi.require_version("Atspi", "2.0")
-from gi.repository import Atspi  # noqa: E402
+from gi.repository import Atspi, GLib
 
 PIN = "1234"
 PRIMARY = [
@@ -178,7 +178,7 @@ def run(home, plan):
                 pressed.append(choice)
                 time.sleep(0.8)
                 break
-        except Exception as error:
+        except (GLib.Error, AttributeError) as error:
             say(f"mano: AT-SPI falló al mirar la ventana: {error}")
 
 
