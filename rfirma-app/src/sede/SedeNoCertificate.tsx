@@ -72,7 +72,6 @@ export function SedeNoCertificate({
       steadyFooter
       footer={
         <>
-          <div className="sede-window__spacer" />
           <Button
             ref={closeOnly ? defaultButton : undefined}
             type="button"

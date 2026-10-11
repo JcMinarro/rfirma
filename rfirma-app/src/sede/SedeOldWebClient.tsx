@@ -19,7 +19,6 @@ export function SedeOldWebClient({ onDismiss }: { onDismiss: () => void }) {
       steadyFooter
       footer={
         <>
-          <div className="sede-window__spacer" />
           <Button ref={dismissButton} variant="primary" onClick={onDismiss}>
             {t("actions.continue")}
           </Button>
