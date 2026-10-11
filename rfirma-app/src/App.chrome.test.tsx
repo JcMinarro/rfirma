@@ -44,7 +44,7 @@ describe("App", () => {
   it("opens Preferences from the menu, replacing the tabs and the viewer", async () => {
     const user = userEvent.setup();
     renderApp({ recents: inMemoryRecents([row("a.pdf")]) });
-    await screen.findByText("a.pdf");
+    await screen.findByRole("button", { name: "Abiertos recientemente" });
 
     await user.click(screen.getByRole("button", { name: "Menú" }));
     await user.click(screen.getByRole("menuitem", { name: "Preferencias…" }));
@@ -263,7 +263,7 @@ describe("App", () => {
 
   it("empties the recents when Remember my activity is turned off", async () => {
     const user = userEvent.setup();
-    renderApp({ recents: inMemoryRecents([row("a.pdf")]) });
+    renderApp({ recents: inMemoryRecents([row("a.pdf")]), settings: { showWelcome: true } });
     await screen.findByText("a.pdf");
 
     await user.click(screen.getByRole("button", { name: "Menú" }));
@@ -317,6 +317,7 @@ describe("App", () => {
         initialSignature={DEFAULT_VISIBLE_SIGNATURE}
         version="0.1.0"
         menuAnchor="header"
+        welcomeAtStartup
       />,
     );
     await screen.findByText("a.pdf");
@@ -333,7 +334,11 @@ describe("App", () => {
 
   it("stops remembering once Remember my activity is off, not just purges what there was", async () => {
     const user = userEvent.setup();
-    renderApp({ recents: inMemoryRecents([row("a.pdf")]), documents: [document("factura.pdf")] });
+    renderApp({
+      recents: inMemoryRecents([row("a.pdf")]),
+      documents: [document("factura.pdf")],
+      settings: { showWelcome: true },
+    });
     await screen.findByText("a.pdf");
 
     await user.click(screen.getByRole("button", { name: "Menú" }));
@@ -343,7 +348,8 @@ describe("App", () => {
     await waitFor(() => expect(screen.queryByText("a.pdf")).not.toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: "Cerrar" }));
 
-    await openPdf(user);
+    const viewer = screen.getByRole("region", { name: "Visor del documento" });
+    await user.click(within(viewer).getByRole("button", { name: "Abrir PDF…" }));
     await screen.findByRole("tab", { name: /factura\.pdf/ });
 
     expect(

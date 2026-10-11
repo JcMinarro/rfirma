@@ -3,7 +3,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DocumentTabs } from "../documents/DocumentTabs";
-import { RecentsSection } from "../documents/RecentRows";
 import { storyRecents } from "../documents/testing/fixtures";
 import { NewVersionStrip } from "../updates/NewVersionStrip";
 import { DocumentViewer } from "../viewer/DocumentViewer";
@@ -22,14 +21,7 @@ const noTabs = (
   />
 );
 
-const emptyViewer = (
-  <DocumentViewer
-    pdf={null}
-    placement={null}
-    onOpen={fn()}
-    emptyExtra={<RecentsSection recents={storyRecents} onSelect={fn()} onClear={fn()} />}
-  />
-);
+const emptyViewer = <DocumentViewer pdf={null} placement={null} onOpen={fn()} />;
 
 const meta = {
   title: "Pantallas/Ventana principal/MainWindow",

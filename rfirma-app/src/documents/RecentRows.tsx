@@ -1,4 +1,4 @@
-//! Las filas de los recientes, que comparten el menú de abiertos recientemente y el estado vacío del visor.
+//! Las filas de los recientes, que comparten el menú de abiertos recientemente y la bienvenida.
 
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,7 @@ interface RecentRowsProps {
   inMenu?: boolean;
 }
 
-/** Las filas de los recientes, que comparten el menú de abiertos recientemente y el estado vacío del visor. */
+/** Las filas de los recientes, que comparten el menú de abiertos recientemente y la bienvenida. */
 export function RecentRows({ recents, openIds, onSelect, inMenu = false }: RecentRowsProps) {
   const { t, i18n } = useTranslation();
   const now = new Date();
@@ -65,7 +65,7 @@ interface RecentsSectionProps {
   keepWhenEmpty?: boolean;
 }
 
-/** Los recientes del estado vacío del visor, con su rótulo y «Vaciar la lista». */
+/** Los recientes de la bienvenida, con su rótulo y «Vaciar la lista». */
 export function RecentsSection({
   recents,
   onSelect,

@@ -194,7 +194,9 @@ export function renderApp({
   ...overrides
 }: RenderAppOptions = {}) {
   const recents = overrides.recents ?? inMemoryRecents();
-  const preferences = inMemoryPreferences({ ...defaults, ...settings }, () => void recents.clear());
+  // Sin bienvenida salvo que la prueba la pida: la mayoría prueba la ventana sin ella.
+  const stored = { ...defaults, showWelcome: false, ...settings };
+  const preferences = inMemoryPreferences(stored, () => void recents.clear());
   const ports = aMainWindowDoubles({
     picker: inMemoryDocumentPicker(documents),
     drops: inMemoryDocumentDrops(invoked),
@@ -210,6 +212,7 @@ export function renderApp({
       initialSignature={initialSignature}
       version="0.1.0"
       menuAnchor={titlebar === null ? "header" : "titlebar"}
+      welcomeAtStartup={stored.showWelcome}
     />,
   );
   return { recents, preferences, drops: ports.drops };
