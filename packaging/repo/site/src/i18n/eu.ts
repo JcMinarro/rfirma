@@ -111,6 +111,11 @@ export const eu: Dictionary = {
   "comparison.stores.label": "Ziurtagirien bilaketa",
   "comparison.stores.autofirma": "Biltegika, bakarra aldi berean",
   "comparison.stores.rfirma": "Guztiak batera, bilatzailearekin",
+  "comparison.browsers.label": "Nabigatzaileak Linuxen",
+  "comparison.browsers.autofirma":
+    "Biltegi bat: aurkitzen den lehenengoa. Flatpak eta LibreWolf gabe",
+  "comparison.browsers.rfirma":
+    "Firefox eta Chromium familietakoak, natiboak, Snap eta Flatpak, batera",
   "comparison.stamp.label": "Sinadura ikusgaia",
   "comparison.stamp.autofirma": "Koordenatuen bidez",
   "comparison.stamp.rfirma": "Orrira arrastatuta",
