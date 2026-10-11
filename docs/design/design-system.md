@@ -328,6 +328,17 @@ Bloqueado, al 45 % con el motivo en el `title`. No está en el bundle: es
 `rfirma-app/src/design-system/Switch.tsx` con `Switch.css`, y lo usan Preferencias,
 la firma visible, «Con rúbrica» y la cuenta atrás del asistente.
 
+### Casilla
+
+`rfirma-app/src/design-system/Checkbox.tsx`: la casilla nativa dentro de su
+etiqueta, que mide 1 em del rol de texto que se le pide. **Interruptor o
+casilla:** un ajuste que vive en Preferencias o en un panel y se aplica en el
+acto es un interruptor; una opción que acompaña a lo que hay en pantalla —«Mostrar
+la bienvenida al abrir», al pie de la [bienvenida](bienvenida.md)—, una que no
+actúa hasta confirmar un formulario o una que necesita el estado indeterminado
+es una casilla. El mismo ajuste puede tener las dos caras: la casilla donde se
+ve y el interruptor en Preferencias.
+
 ### Insignia
 
 ```html
