@@ -8,13 +8,14 @@ import { useNativeTitlebar } from "./App.useNativeTitlebar";
 import { useOpenShortcut } from "./App.useOpenShortcut";
 import { usePreferencesState } from "./App.usePreferencesState";
 import { useStartupNotices } from "./App.useStartupNotices";
+import { useStartupWelcome } from "./App.useStartupWelcome";
 import { AboutDialog } from "./about/AboutDialog";
 import { DocumentTabs } from "./documents/DocumentTabs";
 import { isAPdf } from "./documents/document";
-import { RecentsSection } from "./documents/RecentRows";
 import type { RecentDocument } from "./documents/recents";
 import { useDocuments } from "./documents/useDocuments";
 import { useOpenPdf } from "./documents/useOpenPdf";
+import { Welcome } from "./documents/Welcome";
 import { SigningJourneyDialogs } from "./journey/SigningJourneyDialogs";
 import { useSigningJourney } from "./journey/useSigningJourney";
 import { usePlacement } from "./placement/usePlacement";
@@ -49,6 +50,8 @@ interface AppProps {
   onReady?: (handle: AppHandle) => void;
   /** Otra pantalla tapa la ventana, como el asistente del primer arranque. */
   covered?: boolean;
+  /** «Mostrar la bienvenida al abrir», leída antes del primer pintado. */
+  welcomeAtStartup?: boolean;
 }
 
 /** El asa que `onReady` entrega: lo único de `App` que se abre desde fuera. */
@@ -75,6 +78,7 @@ export function App({
   menuAnchor,
   onReady,
   covered = false,
+  welcomeAtStartup = false,
 }: AppProps) {
   const {
     recents,
@@ -156,13 +160,27 @@ export function App({
     documents.active,
     visibleRecents.find((row) => row.id === activeId),
   );
-  const { dropNotice } = useDropNotices(
+  const { dropNotice, invocation } = useDropNotices(
     drops,
     documents.accept,
     documents.enter,
     activeId,
     signatureReading.view,
   );
+
+  // Los dos avisos caben en el mismo sitio, y manda el del PDF: si el
+  // documento que se soltó tampoco se deja pintar, eso es más urgente
+  // que contar cuántos ficheros venían con él.
+  const viewerFailure = pdfFailure ?? (dropNotice?.about === activeId ? dropNotice.failure : null);
+  const startupScreen = useStartupWelcome(
+    welcomeAtStartup,
+    invocation,
+    documents.tabs.length > 0 || viewerFailure !== null,
+  );
+  const changeShowWelcome = async (showWelcome: boolean) => {
+    const current = settings ?? (await preferences.read());
+    await changeSettings({ ...current, showWelcome }).catch(() => {});
+  };
 
   const modalOpen = dialog !== null || journey.signals.dialogOpen;
   const canOpen = !covered && view === null && !modalOpen;
@@ -273,38 +291,39 @@ export function App({
           )
         }
         viewer={
-          <DocumentViewer
-            pdf={pdf}
-            stamped={stamp.pdf}
-            stampFrozen={stamp.frozen}
-            onGesture={stamp.onGesture}
-            placement={placement}
-            canPlace={journey.signature.value.enabled}
-            onMove={moveBox}
-            onTrace={sealPage}
-            onPageChange={viewPage}
-            onOpen={openDocument}
-            emptyExtra={
-              documents.tabs.length === 0 ? (
-                <RecentsSection
-                  recents={visibleRecents}
-                  onSelect={documents.select}
-                  onClear={clearRecents}
-                />
-              ) : null
-            }
-            // Los dos avisos caben en el mismo sitio, y manda el del PDF: si el
-            // documento que se soltó tampoco se deja pintar, eso es más urgente
-            // que contar cuántos ficheros venían con él.
-            failure={pdfFailure ?? (dropNotice?.about === activeId ? dropNotice.failure : null)}
-            withoutPreview={
-              documents.active && !isAPdf(documents.active) ? documents.active.name : null
-            }
-            stamp={stamp.state}
-            rubricGap={stamp.rubricGap}
-            onComposeStamp={stamp.compose}
-            onOpenHelp={openHelp}
-          />
+          startupScreen === "welcome" ? (
+            <Welcome
+              recents={visibleRecents}
+              rememberActivity={rememberActivity}
+              showWelcome={settings?.showWelcome ?? welcomeAtStartup}
+              onShowWelcomeChange={(show) => void changeShowWelcome(show)}
+              onOpen={openDocument}
+              onOpenStatus={() => setView("status")}
+              onSelectRecent={documents.select}
+              onClearRecents={clearRecents}
+            />
+          ) : startupScreen === "waiting" ? null : (
+            <DocumentViewer
+              pdf={pdf}
+              stamped={stamp.pdf}
+              stampFrozen={stamp.frozen}
+              onGesture={stamp.onGesture}
+              placement={placement}
+              canPlace={journey.signature.value.enabled}
+              onMove={moveBox}
+              onTrace={sealPage}
+              onPageChange={viewPage}
+              onOpen={openDocument}
+              failure={viewerFailure}
+              withoutPreview={
+                documents.active && !isAPdf(documents.active) ? documents.active.name : null
+              }
+              stamp={stamp.state}
+              rubricGap={stamp.rubricGap}
+              onComposeStamp={stamp.compose}
+              onOpenHelp={openHelp}
+            />
+          )
         }
         panel={
           signaturesShown !== null && signaturesMoment !== null ? (

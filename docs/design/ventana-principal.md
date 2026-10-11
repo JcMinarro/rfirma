@@ -25,9 +25,10 @@ De arriba abajo: la barra (la cabecera con las pestañas), la franja de
 notificación **solo si hay algo que notificar**, y debajo, en dos columnas, el
 visor —flexible— y el panel de firma, de ancho fijo.
 
-**Sin documento no hay panel.** El visor ocupa todo el ancho con la zona de
-soltar y los recientes, y la cabecera, el botón de abrir sin ninguna pestaña. El panel no se monta: no
-hay nada que firmar.
+**Sin documento no hay panel.** El visor ocupa todo el ancho con la
+[bienvenida](bienvenida.md) al arrancar o, si no, con la zona de soltar sola, y la
+cabecera, el botón de abrir sin ninguna pestaña. El panel no se monta: no hay nada
+que firmar.
 
 - [Cabecera](cabecera.md) — la barra única, o la barra de título GTK en Linux: identidad, aviso y menú principal.
 - [Pestañas de documentos](pestanas-de-documentos.md) — lo que la barra lleva
@@ -121,7 +122,7 @@ historias.
 
 | Estado | Pestañas | Visor | Panel | Historia |
 | --- | --- | --- | --- | --- |
-| Vacío | ninguna; el botón de abrir sí | zona de soltar y recientes | no se monta | `Empty` |
+| Vacío | ninguna; el botón de abrir sí | la bienvenida al arrancar; si no, la zona de soltar | no se monta | `Empty` |
 | Vacío con aviso | ídem | ídem | no se monta | `WithAttention` |
 | Versión nueva | ídem | ídem | no se monta | `NewVersionInstallable`, `NewVersionNotInstallable` |
 | Linux | solo la tira bajo la barra GTK | ídem | ídem | `NativeTitlebar` |

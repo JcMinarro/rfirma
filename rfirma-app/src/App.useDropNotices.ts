@@ -5,6 +5,9 @@ import type { DocumentInHand } from "./documents/document";
 import type { DocumentDrops, Drop } from "./documents/drops";
 import type { DocumentFailure } from "./viewer/source";
 
+/** Si la invocación externa ya contestó y si trajo algo. */
+export type Invocation = "asking" | "none" | "arrived";
+
 /**
  * Un aviso del arrastre, atado al documento del que habla.
  *
@@ -35,6 +38,7 @@ export function useDropNotices(
   seeSignaturesOf: (documentId: string) => void,
 ) {
   const [dropNotice, setDropNotice] = useState<DropNotice | null>(null);
+  const [invocation, setInvocation] = useState<Invocation>("asking");
   const activeIdRef = useRef(activeId);
   activeIdRef.current = activeId;
 
@@ -92,11 +96,12 @@ export function useDropNotices(
     if (!invocationAsked.current) {
       invocationAsked.current = true;
       void drops.pending().then((invoked) => {
+        setInvocation(invoked === null ? "none" : "arrived");
         if (invoked !== null) arrivedRef.current(invoked);
       });
     }
     return stop;
   }, [drops, acceptDocument, enterDocument, seeSignaturesOf]);
 
-  return { dropNotice, setDropNotice };
+  return { dropNotice, setDropNotice, invocation };
 }

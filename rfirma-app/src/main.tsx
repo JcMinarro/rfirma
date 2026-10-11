@@ -135,6 +135,7 @@ function RootView() {
         initialSignature={initialSignature}
         version={appVersion}
         covered={!setupWizardSeen}
+        welcomeAtStartup={initialPreferences.showWelcome}
         onReady={(handle) => {
           appHandle.current = handle;
         }}

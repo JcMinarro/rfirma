@@ -24,7 +24,6 @@ dentro del recuadro en la aplicación es el PDF que compone el backend.
 | Estado | Historia | Qué se ve |
 | --- | --- | --- |
 | Vacío | `Empty` | La zona de soltar sola, centrada; sin píldora ni panel |
-| Vacío con recientes | `EmptyWithRecents` | La zona de soltar y, debajo, los [recientes](pestanas-de-documentos.md) |
 | Con documento | `WithDocument` | La hoja y la píldora; sin firma visible, la hoja limpia |
 | Firma visible en una página | `WithSignatureBox` | El recuadro editable en la página a la vista |
 | Firma visible en todas | `SignatureBoxOnAllPages` | El mismo recuadro, replicado en cada página del conjunto |

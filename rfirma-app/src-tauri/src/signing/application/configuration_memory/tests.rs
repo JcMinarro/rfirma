@@ -19,6 +19,11 @@ fn the_consent_countdown_starts_on() {
 }
 
 #[test]
+fn the_welcome_starts_on() {
+    assert!(Configuration::default().show_welcome);
+}
+
+#[test]
 fn the_site_does_not_choose_the_certificate_alone_by_default() {
     assert!(!Configuration::default().honour_automatic_selection);
 }
@@ -89,6 +94,7 @@ fn a_configuration_missing_a_field_takes_the_default_for_it() {
     assert!(configuration.remember_activity);
     assert!(configuration.notify_new_version);
     assert!(configuration.consent_countdown);
+    assert!(configuration.show_welcome);
     assert!(!configuration.honour_automatic_selection);
 }
 
@@ -115,6 +121,7 @@ fn the_configuration_holds_no_path_to_the_rubric_the_user_chose() {
             "remember_activity",
             "remember_visible_signature",
             "setup_wizard_version_seen",
+            "show_welcome",
             "theme",
         ],
         "la rubrica es una copia en el almacen, nunca un campo con la ruta del original"

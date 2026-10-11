@@ -74,6 +74,8 @@ interface GeneralSectionProps {
   forgetFailure: string | null;
   notifyNewVersion: boolean;
   onNotifyNewVersionChange: (checked: boolean) => void;
+  showWelcome: boolean;
+  onShowWelcomeChange: (checked: boolean) => void;
 }
 
 export function GeneralSection({
@@ -85,6 +87,8 @@ export function GeneralSection({
   forgetFailure,
   notifyNewVersion,
   onNotifyNewVersionChange,
+  showWelcome,
+  onShowWelcomeChange,
 }: GeneralSectionProps) {
   const { t } = useTranslation();
   return (
@@ -113,6 +117,12 @@ export function GeneralSection({
             label={t("preferences.notifyNewVersion.label")}
             wide
             onChange={onNotifyNewVersionChange}
+          />
+          <Switch
+            checked={showWelcome}
+            label={t("welcome.showOnStartup")}
+            wide
+            onChange={onShowWelcomeChange}
           />
         </div>
       </fieldset>

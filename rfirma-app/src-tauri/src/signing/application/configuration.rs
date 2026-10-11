@@ -29,6 +29,8 @@ pub struct Preferences {
     pub setup_wizard_seen: bool,
     /// Si el botón de consentir de la ventana de sede espera una cuenta atrás.
     pub consent_countdown: bool,
+    /// Si se muestra la bienvenida al abrir sin documento.
+    pub show_welcome: bool,
     /// Si la sede puede elegir sola el único certificado candidato (ADR-0032).
     pub honour_automatic_selection: bool,
     /// Si se permite firmar con SHA-1 fuera de XML.
@@ -64,6 +66,7 @@ pub fn shown(configuration: &Configuration, documents_folder: &std::path::Path) 
             crate::documents::domain::document::the_original_folder_can_be_offered(),
         setup_wizard_seen: configuration.setup_wizard_seen(),
         consent_countdown: configuration.consent_countdown,
+        show_welcome: configuration.show_welcome,
         honour_automatic_selection: configuration.honour_automatic_selection,
         allow_sha1: configuration.allow_sha1,
     }
@@ -100,6 +103,7 @@ pub fn merged(live: &Configuration, chosen: &Preferences) -> Configuration {
             live.setup_wizard_version_seen
         },
         consent_countdown: chosen.consent_countdown,
+        show_welcome: chosen.show_welcome,
         honour_automatic_selection: chosen.honour_automatic_selection,
         allow_sha1: chosen.allow_sha1,
     }

@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "La sección de documentos recientes del estado vacío del visor, con su cabecera y el botón de vaciarla.",
+          "La sección de documentos recientes de la bienvenida, con su cabecera y el botón de vaciarla.",
           "Úsala cuando no hay ningún documento abierto, para que la persona vuelva a uno de los últimos con un clic.",
           "No la uses para la lista del menú de abrir, que ya la trae `DocumentTabs`, ni para enseñar documentos abiertos.",
         ].join("\n\n"),
