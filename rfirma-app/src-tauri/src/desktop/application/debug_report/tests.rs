@@ -1,10 +1,13 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::*;
 
 pub(super) fn ana() -> ReportOwner {
     ReportOwner {
-        home: PathBuf::from("/home/ana"),
+        folders: vec![OwnerFolder {
+            path: PathBuf::from("/home/ana"),
+            label: "~",
+        }],
         user_name: "ana".to_owned(),
     }
 }
@@ -373,10 +376,59 @@ fn a_directory_that_only_starts_like_the_home_is_not_taken_for_it() {
     );
 }
 
+fn ana_on_windows() -> ReportOwner {
+    let folder = |path: &str, label| OwnerFolder {
+        path: PathBuf::from(path),
+        label,
+    };
+    ReportOwner {
+        folders: vec![
+            folder(r"C:\Users\ana\AppData\Local", "%LOCALAPPDATA%"),
+            folder(r"C:\Users\ana\AppData\Roaming", "%APPDATA%"),
+            folder(r"C:\Users\ana", "%USERPROFILE%"),
+        ],
+        user_name: "ana".to_owned(),
+    }
+}
+
+#[test]
+fn on_windows_each_folder_of_the_owner_becomes_its_variable() {
+    for (path, shown) in [
+        (
+            r"\\?\C:\Users\ana\AppData\Local\rfirma\rfirma_crypto.dll",
+            r"%LOCALAPPDATA%\rfirma\rfirma_crypto.dll",
+        ),
+        (r"C:\Users\ana\AppData\Roaming\rfirma", r"%APPDATA%\rfirma"),
+        (
+            r"\\?\C:\Users\ana\Desktop\lib",
+            r"%USERPROFILE%\Desktop\lib",
+        ),
+    ] {
+        assert_eq!(ana_on_windows().anonymized(Path::new(path)), shown);
+    }
+}
+
+#[test]
+fn a_windows_path_outside_the_owner_folders_loses_its_verbatim_prefix_and_the_user_name() {
+    for (path, shown) in [
+        (r"\\?\D:\ana\lib", r"D:\<usuario>\lib"),
+        (r"\\?\UNC\server\share\lib", r"\\server\share\lib"),
+        (
+            r"\\?\C:\Program Files\rfirma\rfirma_crypto.dll",
+            r"C:\Program Files\rfirma\rfirma_crypto.dll",
+        ),
+    ] {
+        assert_eq!(ana_on_windows().anonymized(Path::new(path)), shown);
+    }
+}
+
 #[test]
 fn system_paths_are_left_as_they_are() {
     let owner = ReportOwner {
-        home: PathBuf::from("/home/lib"),
+        folders: vec![OwnerFolder {
+            path: PathBuf::from("/home/lib"),
+            label: "~",
+        }],
         user_name: "lib".to_owned(),
     };
 
