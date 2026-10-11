@@ -33,6 +33,7 @@ fn what_was_chosen_lands_on_the_disk_and_on_the_live_copy() {
         offers_the_original_folder: false,
         setup_wizard_seen: false,
         consent_countdown: true,
+        show_welcome: true,
         honour_automatic_selection: false,
         allow_sha1: false,
     };
@@ -151,6 +152,7 @@ fn writing_the_configuration_never_moves_the_destination_folder() {
         offers_the_original_folder: false,
         setup_wizard_seen: false,
         consent_countdown: true,
+        show_welcome: true,
         honour_automatic_selection: false,
         allow_sha1: false,
     };
@@ -206,6 +208,20 @@ fn turning_the_consent_countdown_off_survives_the_round_trip_to_the_window() {
     );
 
     assert!(!merged(&configuration, &view).consent_countdown);
+}
+
+#[test]
+fn turning_the_welcome_off_survives_the_round_trip_to_the_window() {
+    let configuration = Configuration {
+        show_welcome: false,
+        ..Configuration::default()
+    };
+    let view = shown(
+        &configuration,
+        std::path::Path::new("/home/quien/Documentos"),
+    );
+
+    assert!(!merged(&configuration, &view).show_welcome);
 }
 
 #[test]
