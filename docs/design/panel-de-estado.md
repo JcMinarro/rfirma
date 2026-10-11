@@ -92,9 +92,13 @@ es lo que el botón de instalar promete cambiar.
 
 **La CA se cuenta en navegadores, no en «almacenes».** Los sitios que rFirma
 encuentra son bases NSS de un navegador, y la palabra que nombra el sitio en el
-idioma de quien lee es «navegador». Los nombres de cada sitio salen de
-`status.storeBrands.*`, uno solo que comparten la tabla, el asistente y la
-retirada.
+idioma de quien lee es «navegador». Cada sitio de navegador se nombra por su
+navegador y su canal («Brave · Flatpak», «Firefox · Snap», «Firefox» en nativo,
+sin canal), compuestos con lo que cruza del backend y sin clave de i18n: son
+nombres propios. El almacén que comparten los navegadores Chromium nativos sale
+de `status.storeBrands.sharedChromium`, con un texto que dice que es compartido.
+El resto de sitios salen de `status.storeBrands.*`. El nombre es uno solo y lo
+comparten la tabla, el asistente y la retirada.
 
 **La segunda fila se llama «Aplicación predeterminada para firmar en sedes», no
 «Aplicación de firma».** Arrastrar un PDF a la ventana y firmarlo no toca la CA

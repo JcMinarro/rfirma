@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import { CertificateSelect } from "./CertificateSelect";
 import type { Certificate } from "./certificate";
+import { browserStore } from "./testing/storeMarks";
 
 /**
  * **Grada A**: el selector son datos y una devolución de llamada; no habla con
@@ -29,7 +30,10 @@ function aCertificate(overrides: Partial<Certificate> = {}): Certificate {
   };
 }
 
-const personal = aCertificate({ id: "personal", stores: ["firefox", "chrome"] });
+const personal = aCertificate({
+  id: "personal",
+  stores: [browserStore("Firefox", "Snap"), browserStore("Brave", "Flatpak")],
+});
 const representative = aCertificate({
   id: "representative",
   entityName: "Reformas Martín SL",
@@ -195,8 +199,8 @@ describe("CertificateSelect", () => {
 
       await userEvent.click(box());
 
-      expect(within(row(0)).getByText("Firefox")).toBeVisible();
-      expect(within(row(0)).getByText("Chrome")).toBeVisible();
+      expect(within(row(0)).getByText("Firefox · Snap")).toBeVisible();
+      expect(within(row(0)).getByText("Brave · Flatpak")).toBeVisible();
       expect(row(0)).toHaveTextContent("Caduca en 03/2028");
       expect(within(row(1)).getByText("Instalado en rFirma")).toBeVisible();
     });
@@ -227,6 +231,23 @@ describe("CertificateSelect", () => {
       expect(within(row(1)).getByText("Tarjeta")).toBeVisible();
     });
 
+    it("tags the same browser once per channel and the shared Chromium store as shared", async () => {
+      renderSelect({
+        certificates: [
+          aCertificate({
+            id: "channels",
+            stores: [browserStore("Firefox"), browserStore("Firefox", "Flatpak"), "sharedChromium"],
+          }),
+        ],
+      });
+
+      await userEvent.click(box());
+
+      expect(within(row(0)).getByText("Firefox")).toBeVisible();
+      expect(within(row(0)).getByText("Firefox · Flatpak")).toBeVisible();
+      expect(within(row(0)).getByText("Chrome y derivados")).toBeVisible();
+    });
+
     it("keeps the issuer for the tooltip, naming the other stores of the same certificate", async () => {
       renderSelect();
 
@@ -234,7 +255,7 @@ describe("CertificateSelect", () => {
 
       expect(row(0)).toHaveAttribute(
         "title",
-        "Emitido por AC FNMT Usuarios · el mismo certificado en Firefox y Chrome",
+        "Emitido por AC FNMT Usuarios · el mismo certificado en Firefox · Snap y Brave · Flatpak",
       );
       expect(row(1)).toHaveAttribute("title", "Emitido por AC Representación");
       expect(row(0)).not.toHaveTextContent("AC FNMT Usuarios");
@@ -281,8 +302,8 @@ describe("CertificateSelect", () => {
 
     it("tells two certificates with the same label apart by their handle", async () => {
       const twins = [
-        aCertificate({ id: "aaaa", stores: ["chrome"] }),
-        aCertificate({ id: "bbbb", stores: ["firefox"] }),
+        aCertificate({ id: "aaaa", stores: [browserStore("Chrome")] }),
+        aCertificate({ id: "bbbb", stores: [browserStore("Firefox")] }),
       ];
       const { onChoose } = renderSelect({ certificates: twins });
       await userEvent.click(box());

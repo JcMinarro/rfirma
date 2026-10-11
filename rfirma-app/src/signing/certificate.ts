@@ -8,6 +8,7 @@
 
 import type { TFunction } from "i18next";
 import type { NamedFailure } from "../errors/classify";
+import { type BrowserStoreMark, browserStoreLabel, isBrowserStoreMark } from "./storeMark";
 
 /**
  * En qué estado está el certificado, decidido **antes** de pedir el PIN.
@@ -50,11 +51,11 @@ export type CertificateStatus =
 type CertificateStoreClass =
   | "dnie"
   | "card"
-  | "firefox"
-  | "chrome"
+  | "sharedChromium"
   | "nssdb"
   | "installed"
-  | "windows";
+  | "windows"
+  | BrowserStoreMark;
 
 /** Un certificado elegible, con lo justo para pintarlo y para firmar con él. */
 export interface Certificate {
@@ -177,10 +178,18 @@ export interface CertificateGroups {
 /** Alfabético en castellano, con acentos y «ñ» donde toca. */
 const holderCollator = new Intl.Collator("es", { sensitivity: "base" });
 
+function firstStoreKey(certificate: Certificate): string {
+  const first = certificate.stores[0];
+  if (first === undefined) {
+    return "";
+  }
+  return isBrowserStoreMark(first) ? browserStoreLabel(first) : first;
+}
+
 function byHeadlineThenStore(a: Certificate, b: Certificate): number {
   return (
     holderCollator.compare(certificateHeadline(a), certificateHeadline(b)) ||
-    holderCollator.compare(a.stores[0] ?? "", b.stores[0] ?? "")
+    holderCollator.compare(firstStoreKey(a), firstStoreKey(b))
   );
 }
 

@@ -383,7 +383,7 @@ function CertificateStep({ t, status, onInstall, onDecline }: CertificateStepPro
               </p>
               <Stack as="ul" className="setup-wizard__stores">
                 {status.detail.map((store) => (
-                  <Row as="li" gap="xs" key={store.brand} className="rf-hint">
+                  <Row as="li" gap="xs" key={storeBrandLabel(t, store.brand)} className="rf-hint">
                     <span className="setup-wizard__store-mark">{store.trusted ? "✓" : "✗"}</span>
                     {storeBrandLabel(t, store.brand)}
                   </Row>

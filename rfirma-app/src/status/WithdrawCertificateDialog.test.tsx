@@ -1,20 +1,21 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { browserStore } from "../signing/testing/storeMarks";
 import { renderWithCatalog } from "../testing/render";
 import type { StoreDetail, WithdrawalReport } from "./status";
 import { WithdrawCertificateDialog } from "./WithdrawCertificateDialog";
 
 const STORES: StoreDetail[] = [
-  { brand: "firefox", trusted: true },
-  { brand: "chrome", trusted: true },
+  { brand: browserStore("Firefox"), trusted: true },
+  { brand: "sharedChromium", trusted: true },
 ];
 
 const SUCCESSFUL_REPORT: WithdrawalReport = {
   handler: { kind: "withdrawn" },
   stores: [
-    { brand: "firefox", outcome: { kind: "withdrawn" } },
-    { brand: "chrome", outcome: { kind: "wasNotThere" } },
+    { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+    { brand: "sharedChromium", outcome: { kind: "wasNotThere" } },
   ],
 };
 
@@ -92,8 +93,8 @@ describe("WithdrawCertificateDialog", () => {
     const partialReport: WithdrawalReport = {
       handler: { kind: "withdrawn" },
       stores: [
-        { brand: "firefox", outcome: { kind: "withdrawn" } },
-        { brand: "chrome", outcome: { kind: "failed", reason: "perfil en uso" } },
+        { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+        { brand: "sharedChromium", outcome: { kind: "failed", reason: "perfil en uso" } },
       ],
     };
     const onWithdraw = vi.fn().mockResolvedValue(partialReport);
@@ -118,8 +119,8 @@ describe("WithdrawCertificateDialog", () => {
     const partialReport: WithdrawalReport = {
       handler: { kind: "withdrawn" },
       stores: [
-        { brand: "firefox", outcome: { kind: "withdrawn" } },
-        { brand: "chrome", outcome: { kind: "failed", reason: "perfil en uso" } },
+        { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+        { brand: "sharedChromium", outcome: { kind: "failed", reason: "perfil en uso" } },
       ],
     };
     const onWithdraw = vi
@@ -151,8 +152,8 @@ describe("WithdrawCertificateDialog", () => {
     const PARTIAL_REPORT: WithdrawalReport = {
       handler: { kind: "withdrawn" },
       stores: [
-        { brand: "firefox", outcome: { kind: "withdrawn" } },
-        { brand: "chrome", outcome: { kind: "failed", reason: "perfil en uso" } },
+        { brand: browserStore("Firefox"), outcome: { kind: "withdrawn" } },
+        { brand: "sharedChromium", outcome: { kind: "failed", reason: "perfil en uso" } },
       ],
     };
 

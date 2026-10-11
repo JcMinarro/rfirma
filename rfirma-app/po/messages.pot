@@ -544,10 +544,6 @@ msgstr ""
 msgid "panel.certificate.personalKeyword"
 msgstr ""
 
-#. Nombre propio del navegador: no se traduce.
-msgid "panel.certificate.stores.chrome"
-msgstr ""
-
 #. Chip de la fila de un certificado del DNIe. Nombre propio: no se traduce.
 msgid "panel.certificate.stores.dnie"
 msgstr ""
@@ -1022,11 +1018,8 @@ msgstr ""
 msgid "status.detail.notInstalled"
 msgstr ""
 
-#. Nombre propio del navegador: no se traduce.
-msgid "status.storeBrands.firefox"
-msgstr ""
-
-msgid "status.storeBrands.chrome"
+#. El almacén NSS que comparten los navegadores Chromium nativos: dice que es compartido.
+msgid "status.storeBrands.sharedChromium"
 msgstr ""
 
 msgid "status.storeBrands.nssdb"
