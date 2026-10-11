@@ -4,7 +4,7 @@ use super::super::{
 use super::StoresWith;
 use crate::identity::application::readers::LastListing;
 use crate::identity::application::tests::{
-    a_dnie_der, a_firefox_profile_store, NoMemory, TestAuthority,
+    a_dnie_der, a_firefox_class, a_firefox_profile_store, NoMemory, TestAuthority,
 };
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
 use crate::identity::domain::store::{Store, StoreClass};
@@ -130,7 +130,7 @@ fn of_two_copies_the_one_with_its_key_on_the_card_signs() {
 
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].store, StoreClass::Card);
-    assert_eq!(rows[0].stores, vec![StoreClass::Card, StoreClass::Firefox]);
+    assert_eq!(rows[0].stores, vec![StoreClass::Card, a_firefox_class()]);
     let chosen = certificate_behind(&found, &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference(), found[1].reference());
 }

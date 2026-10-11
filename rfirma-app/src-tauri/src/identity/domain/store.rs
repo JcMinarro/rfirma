@@ -25,10 +25,8 @@ pub fn is_a_card_key_provider(provider: &str) -> bool {
 pub enum StoreClass {
     /// Tarjeta o token físico: un módulo PKCS#11, o una clave del Almacén de Windows en un proveedor de tarjeta.
     Card,
-    /// Perfil de usuario del navegador Firefox.
-    Firefox,
-    /// Almacén NSS compartido de la familia Chromium.
-    Chrome,
+    /// Almacén NSS de un navegador por un canal, o el compartido de la familia Chromium.
+    Browser(NssOwner),
     /// Base de datos NSS genérica.
     Nssdb,
     /// Almacén correspondiente a un fichero PKCS#12 instalado.
@@ -41,8 +39,7 @@ impl StoreClass {
     /// La clase de un almacén NSS según su dueño: la familia del navegador o, sin dueño, el NSS del sistema.
     pub fn of_nss_owner(owner: Option<NssOwner>) -> Self {
         match owner {
-            Some(owner) if owner.is_firefox_family() => Self::Firefox,
-            Some(_) => Self::Chrome,
+            Some(owner) => Self::Browser(owner),
             None => Self::Nssdb,
         }
     }
@@ -50,12 +47,12 @@ impl StoreClass {
     /// Qué copia de un mismo certificado se prefiere: tarjeta, Windows, Almacén de rFirma, NSS del sistema, Firefox, Chrome.
     pub fn preference(self) -> u8 {
         match self {
+            Self::Browser(owner) if owner.is_firefox_family() => 4,
+            Self::Browser(_) => 5,
             Self::Card => 0,
             Self::Windows => 1,
             Self::Installed => 2,
             Self::Nssdb => 3,
-            Self::Firefox => 4,
-            Self::Chrome => 5,
         }
     }
 }

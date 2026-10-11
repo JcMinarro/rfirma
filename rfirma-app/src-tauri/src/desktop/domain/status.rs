@@ -87,13 +87,16 @@ pub struct SiteSignatureCandidate {
 }
 
 /// Sitio donde puede haber un certificado, para el detalle desplegable de una señal.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum StoreBrand {
-    /// Perfil de usuario de Firefox o derivados.
-    Firefox,
-    /// Almacén NSS compartido de la familia Chrome/Chromium.
-    Chrome,
+    /// Almacén NSS de un navegador, con el canal por el que llegó si no es nativo.
+    Browser {
+        name: String,
+        channel: Option<String>,
+    },
+    /// Almacén NSS que comparten los navegadores de la familia Chromium nativos.
+    SharedChromium,
     /// Base de datos NSS genérica del sistema.
     Nssdb,
     /// Tarjeta o token físico.

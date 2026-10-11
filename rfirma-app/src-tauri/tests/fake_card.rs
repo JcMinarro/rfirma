@@ -9,7 +9,7 @@ use fake_pkcs11::FakeCard;
 use rfirma_lib::identity::adapters::pkcs11;
 use rfirma_lib::identity::adapters::pkcs11::stores::{candidate_modules_under, CANDIDATE_MODULES};
 use rfirma_lib::identity::adapters::pkcs11::RealToken;
-use rfirma_lib::identity::adapters::views::CertificateView;
+use rfirma_lib::identity::adapters::views::{CertificateView, StoreMarkView};
 use rfirma_lib::identity::application::certificates::{
     certificates_with_their_chains, listed_rows, ListedCertificates,
 };
@@ -424,7 +424,7 @@ impl CertificateMemory for NothingRemembered {
 }
 
 /// Lo que recibe el panel de firma o Preferencias al listar la tarjeta: la etiqueta y los chips de cada fila.
-fn the_desktop_rows_of(card: &FakeCard) -> Vec<(String, Vec<String>)> {
+fn the_desktop_rows_of(card: &FakeCard) -> Vec<(String, Vec<StoreMarkView>)> {
     let installed = tempfile::tempdir().expect("el directorio de instalados deberia crearse");
     listed_rows(
         &RealToken,
@@ -460,7 +460,7 @@ fn the_desktop_lists_only_the_signing_certificate_of_the_dnie_with_the_dnie_chip
 
     assert_eq!(
         the_desktop_rows_of(&card),
-        vec![(SIGNING_CERTIFICATE.to_owned(), vec!["dnie".to_owned()])]
+        vec![(SIGNING_CERTIFICATE.to_owned(), vec![StoreMarkView::Dnie])]
     );
 }
 

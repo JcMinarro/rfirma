@@ -16,8 +16,8 @@ fn the_first_attempt_retries_the_handler_and_every_profile() {
     assert!(handler_needs_retry(None));
 
     let profiles = vec![
-        a_profile(StoreBrand::Firefox),
-        a_profile(StoreBrand::Chrome),
+        a_profile(a_firefox()),
+        a_profile(StoreBrand::SharedChromium),
     ];
     assert_eq!(
         profiles_to_retry(&profiles, None),
@@ -36,17 +36,17 @@ fn a_failed_handler_is_retried_but_a_withdrawn_one_is_not() {
 
 #[test]
 fn retrying_only_touches_the_stores_that_failed() {
-    let firefox = a_profile(StoreBrand::Firefox);
-    let chrome = a_profile(StoreBrand::Chrome);
+    let firefox = a_profile(a_firefox());
+    let chrome = a_profile(StoreBrand::SharedChromium);
     let previous = a_report(
         Withdrawal::Withdrawn,
         vec![
             StoreWithdrawal {
-                brand: StoreBrand::Firefox,
+                brand: a_firefox(),
                 outcome: Withdrawal::Withdrawn,
             },
             StoreWithdrawal {
-                brand: StoreBrand::Chrome,
+                brand: StoreBrand::SharedChromium,
                 outcome: Withdrawal::Failed("perfil en uso".to_owned()),
             },
         ],
@@ -106,17 +106,17 @@ fn same_brand_profiles_are_correlated_by_position_not_by_brand() {
 
 #[test]
 fn merging_keeps_what_was_not_retried_and_replaces_what_was() {
-    let firefox = a_profile(StoreBrand::Firefox);
-    let chrome = a_profile(StoreBrand::Chrome);
+    let firefox = a_profile(a_firefox());
+    let chrome = a_profile(StoreBrand::SharedChromium);
     let previous = a_report(
         Withdrawal::Withdrawn,
         vec![
             StoreWithdrawal {
-                brand: StoreBrand::Firefox,
+                brand: a_firefox(),
                 outcome: Withdrawal::Withdrawn,
             },
             StoreWithdrawal {
-                brand: StoreBrand::Chrome,
+                brand: StoreBrand::SharedChromium,
                 outcome: Withdrawal::Failed("perfil en uso".to_owned()),
             },
         ],
@@ -136,14 +136,21 @@ fn merging_keeps_what_was_not_retried_and_replaces_what_was() {
             Withdrawal::Withdrawn,
             vec![
                 StoreWithdrawal {
-                    brand: StoreBrand::Firefox,
+                    brand: a_firefox(),
                     outcome: Withdrawal::Withdrawn,
                 },
                 StoreWithdrawal {
-                    brand: StoreBrand::Chrome,
+                    brand: StoreBrand::SharedChromium,
                     outcome: Withdrawal::Withdrawn,
                 },
             ]
         )
     );
+}
+
+fn a_firefox() -> StoreBrand {
+    StoreBrand::Browser {
+        name: "Firefox".to_owned(),
+        channel: None,
+    }
 }

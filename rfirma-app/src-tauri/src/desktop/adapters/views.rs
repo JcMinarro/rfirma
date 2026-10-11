@@ -191,8 +191,11 @@ impl From<SignalDetail> for SignalDetailView {
 crossing! {
     lent from "desktop/domain/status.rs":
     pub enum StoreBrand {
-        Firefox,
-        Chrome,
+        Browser {
+            name: String,
+            channel: Option<String>,
+        },
+        SharedChromium,
         Nssdb,
         Card,
         Installed,

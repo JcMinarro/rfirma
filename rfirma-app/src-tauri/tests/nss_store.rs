@@ -282,7 +282,10 @@ fn a_certificate_listed_from_a_browser_store_keeps_its_owner() {
     let listed = the_valid_one(&owned).reference().store();
 
     assert_eq!(listed.owner(), Some(NssOwner::SharedChromium));
-    assert_eq!(listed.class(), StoreClass::Chrome);
+    assert_eq!(
+        listed.class(),
+        StoreClass::Browser(NssOwner::SharedChromium)
+    );
 }
 
 #[test]

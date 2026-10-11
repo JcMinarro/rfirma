@@ -12,6 +12,16 @@ pub enum BrowserChannel {
     Flatpak,
 }
 
+impl BrowserChannel {
+    fn name(self) -> Option<&'static str> {
+        match self {
+            Self::Native => None,
+            Self::Snap => Some("Snap"),
+            Self::Flatpak => Some("Flatpak"),
+        }
+    }
+}
+
 const CHANNELS: [BrowserChannel; 3] = [
     BrowserChannel::Native,
     BrowserChannel::Snap,
@@ -292,6 +302,22 @@ impl NssOwner {
                     .unwrap_or(CHANNELS.len());
                 1 + row * CHANNELS.len() + channel
             }
+        }
+    }
+
+    /// El nombre propio del navegador, o nada en el almacén compartido de la familia Chromium.
+    pub fn browser_name(self) -> Option<&'static str> {
+        match self {
+            Self::Browser { browser, .. } => Some(browser.name),
+            Self::SharedChromium => None,
+        }
+    }
+
+    /// El nombre propio del canal, o nada en nativo y en el almacén compartido.
+    pub fn channel_name(self) -> Option<&'static str> {
+        match self {
+            Self::Browser { channel, .. } => channel.name(),
+            Self::SharedChromium => None,
         }
     }
 

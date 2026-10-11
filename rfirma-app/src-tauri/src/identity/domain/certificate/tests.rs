@@ -176,7 +176,7 @@ fn a_reference_keeps_the_owner_of_its_nss_store() {
     assert_eq!(reference.store().owner(), store.owner());
     assert_eq!(
         reference.class_under(Path::new("/nowhere")),
-        StoreClass::Chrome
+        StoreClass::Browser(store.owner().expect("la tabla le da dueño"))
     );
 }
 
