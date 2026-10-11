@@ -225,7 +225,7 @@ pub fn has_certificate_database(directory: &Path) -> bool {
 }
 
 /// Pares de directorios de configuración y datos de Firefox en el sistema.
-fn firefox_layouts(home: &Path) -> [(PathBuf, PathBuf); 7] {
+fn firefox_layouts(home: &Path) -> [(PathBuf, PathBuf); 8] {
     let flatpak = home.join(".var/app/org.mozilla.firefox");
     [
         (home.join(".mozilla/firefox"), home.join(".mozilla/firefox")),
@@ -244,6 +244,10 @@ fn firefox_layouts(home: &Path) -> [(PathBuf, PathBuf); 7] {
         (
             home.join("snap/firefox/common/.mozilla/firefox"),
             home.join("snap/firefox/common/.mozilla/firefox"),
+        ),
+        (
+            home.join(".var/app/io.gitlab.librewolf-community/config/librewolf/librewolf"),
+            home.join(".var/app/io.gitlab.librewolf-community/config/librewolf/librewolf"),
         ),
         (home.join(".librewolf"), home.join(".librewolf")),
         (
@@ -296,8 +300,19 @@ fn nss_profile_candidates(home: &Path) -> Vec<PathBuf> {
     }
     profiles.push(home.join(".pki/nssdb"));
     profiles.push(home.join(".local/share/pki/nssdb"));
-    profiles.push(home.join("snap/chromium/current/.local/share/pki/nssdb"));
-    profiles.push(home.join("snap/chromium/current/.pki/nssdb"));
+    for snap in ["chromium", "brave", "vivaldi"] {
+        profiles.push(home.join(format!("snap/{snap}/current/.local/share/pki/nssdb")));
+        profiles.push(home.join(format!("snap/{snap}/current/.pki/nssdb")));
+    }
+    for flatpak in [
+        "com.google.Chrome",
+        "org.chromium.Chromium",
+        "com.brave.Browser",
+        "com.microsoft.Edge",
+        "com.vivaldi.Vivaldi",
+    ] {
+        profiles.push(home.join(format!(".var/app/{flatpak}/data/pki/nssdb")));
+    }
     profiles
 }
 

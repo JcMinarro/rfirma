@@ -647,4 +647,5 @@ fn reads_a_firefox_profile_from_the_flatpak_legacy_layout() {
     assert_eq!(nss_profiles(home.path()), vec![profile]);
 }
 
+mod browser_stores;
 mod modules_report;
