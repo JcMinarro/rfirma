@@ -199,6 +199,50 @@ fn the_documents_folder_follows_the_xdg_variable_when_the_system_localises_it() 
     assert_eq!(documents, PathBuf::from("/home/quien/Documentos"));
 }
 
+#[cfg(unix)]
+#[test]
+fn the_documents_folder_follows_the_user_dirs_file_when_the_variable_is_not_exported() {
+    let config = tempfile::tempdir().expect("deberia haber directorio temporal");
+    std::fs::write(
+        config.path().join("user-dirs.dirs"),
+        "# comentario\nXDG_DESKTOP_DIR=\"$HOME/Escritorio\"\nXDG_DOCUMENTS_DIR=\"$HOME/Documentos\"\n",
+    )
+    .expect("deberia escribirse");
+
+    let documents = documents_folder_of(
+        Platform::Linux,
+        &environment(&[
+            ("HOME", "/home/quien"),
+            ("XDG_CONFIG_HOME", &config.path().to_string_lossy()),
+        ]),
+    )
+    .expect("deberia resolverse");
+
+    assert_eq!(documents, PathBuf::from("/home/quien/Documentos"));
+}
+
+#[cfg(unix)]
+#[test]
+fn the_user_dirs_file_may_carry_an_absolute_documents_folder() {
+    let config = tempfile::tempdir().expect("deberia haber directorio temporal");
+    std::fs::write(
+        config.path().join("user-dirs.dirs"),
+        "XDG_DOCUMENTS_DIR=\"/home/quien/Documentos\"\n",
+    )
+    .expect("deberia escribirse");
+
+    let documents = documents_folder_of(
+        Platform::Linux,
+        &environment(&[
+            ("HOME", "/home/quien"),
+            ("XDG_CONFIG_HOME", &config.path().to_string_lossy()),
+        ]),
+    )
+    .expect("deberia resolverse");
+
+    assert_eq!(documents, PathBuf::from("/home/quien/Documentos"));
+}
+
 #[test]
 fn without_the_xdg_variable_the_documents_folder_is_the_english_default() {
     let documents = documents_folder_of(Platform::Linux, &environment(&[("HOME", "/home/quien")]))
