@@ -18,7 +18,6 @@ const meta = {
         component: [
           "El selector del certificado con que se firma: una caja de dos líneas que, al abrirse, es un buscador con una `CertificateCard` por opción.",
           "Úsalo como primer bloque del panel de firma y en el consentimiento de la sede, que comparten el mismo componente.",
-          "Le das los certificados, el elegido (o ninguno) y qué hacer al elegir otro. Mientras se listan los certificados, `searching`; sin ninguno que elegir, `absent` dice si la lista está vacía o ha fallado.",
           "No lo sustituyas por un `Select` o un `Combobox` a mano: busca sin tildes y pinta cada opción como su tarjeta. No lo abras tú, salvo en una historia con `defaultOpen`.",
         ].join("\n\n"),
       },

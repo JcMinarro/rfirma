@@ -59,7 +59,6 @@ const meta = {
         component: [
           "Una lista desplegable con buscador: caja cerrada, buscador al abrirla, filtrado que ignora tildes, grupos y teclado completo.",
           "Úsala cuando hay que elegir una opción entre muchas y conviene buscar. Para pocas opciones de texto fijo, `Select`.",
-          "Aportas `label`, `options` (cada una con `id`, `item`, `keywords` y, si hace falta, `group`, `disabled` o `title`), `value`, `onChange`, `renderOption` para pintar cada opción y `children` con lo que enseña la caja cerrada. También los textos `searchPlaceholder`, `emptyMessage` y `countLabel`, y, si los necesitas, `listMaxHeight`, `alwaysGroupHeaders`, `disabled` y `defaultOpen`.",
           "No escribas los textos en línea: llegan del catálogo de quien la usa. No metas acciones dentro de una opción: elegirla es la única acción.",
         ].join("\n\n"),
       },

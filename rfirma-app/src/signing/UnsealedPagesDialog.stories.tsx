@@ -14,7 +14,6 @@ const meta = {
         component: [
           "El diálogo que avisa de cuántas páginas del conjunto elegido se quedan sin firma visible.",
           "Ábrelo justo antes de firmar y solo cuando alguna página se va a quedar sin sello: es el único aviso, porque el visor no deja marca por página.",
-          "Aportas `fallen`, cuántas páginas se quedan sin sello, y `onConfirm` y `onCancel`.",
           "No digas «recortadas»: la firma cubre el documento entero y lo que falta es la marca visible. No enumeres las páginas: basta el recuento.",
         ].join("\n\n"),
       },

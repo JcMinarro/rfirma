@@ -15,7 +15,6 @@ const meta = {
         component: [
           "El fichero que la sede quiere guardar o cargar, mientras el diálogo del portal está encima.",
           "Úsalo cuando la sede pide guardar un fichero o cargar uno o varios, mientras la persona decide en el diálogo.",
-          "Aportas `transfer`: el guardado, con el nombre del fichero, o la carga, con si es uno o varios.",
           "No nombres la carpeta: la ruta la elige el diálogo y no vuelve. No le añadas acciones: quien confirma o descarta es la persona, dentro del diálogo.",
         ].join("\n\n"),
       },

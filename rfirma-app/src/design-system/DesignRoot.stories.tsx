@@ -34,7 +34,6 @@ const meta = {
         component: [
           "La raíz obligatoria de todo lo que pintes con el sistema de diseño: carga el catálogo de textos en `language`, aplica el tema `theme` y pone la clase `rf-root`, de la que cuelgan la tipografía y el fondo.",
           "Úsala una sola vez, en lo más alto del árbol. Sin ella los componentes no tienen textos —ninguno lleva una cadena escrita en línea— y caen sobre el blanco del navegador.",
-          "Props: `language` (`es`, `ca`, `eu`, `gl`, `en`; `es` por defecto), `theme` (`light` o `dark`; `light` por defecto) y `children`, el diseño entero.",
           "No la anides para cambiar de tema en una zona: pon `data-theme` en el elemento. No pintes texto de la interfaz fuera de ella.",
         ].join("\n\n"),
       },

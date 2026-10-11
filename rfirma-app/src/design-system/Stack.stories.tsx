@@ -12,7 +12,6 @@ const meta = {
         component: [
           "La pila vertical `rf-stack`: coloca sus hijos uno debajo de otro con un hueco de la escala.",
           "Úsala para apilar bloques: un título, su texto y sus acciones. Para ponerlos en fila, `Row`.",
-          "Aportas `children`, `gap` (`xs` o `md`; sin él, el hueco por defecto de `rf-stack`) y `as`, para pintarla con otro elemento (`section`, `ul`…). Además, lo de un `<div>`.",
           "No separes los hijos con márgenes propios ni con `gap` literal: elige un hueco de la escala.",
         ].join("\n\n"),
       },

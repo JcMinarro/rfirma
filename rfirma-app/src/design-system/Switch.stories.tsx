@@ -57,7 +57,6 @@ const meta = {
         component: [
           'El interruptor con `role="switch"`, para que el lector de pantalla diga «activado» y no «marcado».',
           "Úsalo para un ajuste que se aplica en el acto. Si la opción no actúa hasta confirmar un formulario, una casilla.",
-          "Aportas `checked` y `onChange`, y su nombre: `label`, el texto a su lado, o `labelledBy`, el `id` de otro elemento que lo nombra (entonces va desnudo). Si hace falta, `hint`, `disabled`, `title`, `wide` (la separación de Preferencias) y `trailing` (el interruptor detrás del texto).",
           "No le pases a la vez `label` y `labelledBy`. No decide su estado: `checked` y `disabled` llegan de fuera, y puede estar encendido y bloqueado a la vez.",
         ].join("\n\n"),
       },

@@ -20,7 +20,6 @@ const meta = {
         component: [
           "El diálogo «Ver firmas»: las firmas que ya trae el documento, con su validez.",
           "Ábrelo cuando la persona pide ver las firmas previas del documento; se mira y se cierra.",
-          "Aportas `report`, el informe de firmas previas, y `onClose`, su única salida.",
           "No le añadas acciones. No señales la validez solo con color: cada firma lleva su icono y su palabra.",
         ].join("\n\n"),
       },

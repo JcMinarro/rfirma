@@ -27,7 +27,6 @@ const meta = {
         component: [
           "La columna derecha con todas las firmas del documento: el acuse después de firmarlo o la lectura de firmas al abrirlo solo para verlas.",
           "Úsala en la región del panel de `MainWindow`, en lugar de `SigningPanel`, cuando el documento acaba de firmarse aquí o se abre para ver sus firmas.",
-          "Aportas `documentName`; `destination`; `moment`, el acuse o la lectura; `failure` si falló lo que se pidió, y las salidas `onOpenDocument`, `onOpenFolder` y `onSign`, que vuelve al panel de firma con el original releído del disco.",
           "No enseñes la ruta del fichero, solo su nombre. En la lectura de firmas no hay «Cambiar»: solo el acuse mueve el destino.",
         ].join("\n\n"),
       },

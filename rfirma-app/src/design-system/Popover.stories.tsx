@@ -40,7 +40,6 @@ const meta = {
         component: [
           "El panel flotante de los desplegables: se cierra al pulsar fuera, con Escape o tabulando desde dentro, y mueve el foco al abrirse y al cerrarse.",
           "Úsalo como base de un desplegable propio. Si lo que quieres es un menú o una lista de opciones, usa `Menu`, `Select` o `Combobox`, que ya lo llevan dentro.",
-          "Aportas `open` y `onClose` (tú decides qué es «cerrado»), `anchorRef` (el disparador: pulsarlo no cierra), `initialFocus` y `returnFocusRef` para el foco, `restoreFocus` para cuándo vuelve y `portal`, que lo pinta en `body` bajo el ancla con un alto máximo. Además, `children` y lo de un `<div>` salvo `style`.",
           "No le pases `style`: la colocación es suya. No lo uses como diálogo: no es modal.",
         ].join("\n\n"),
       },

@@ -52,7 +52,6 @@ const meta = {
         component: [
           "La columna derecha antes de firmar: todo lo que hay que decidir, en una zona que se desliza, y el pie fijo con el botón de firmar.",
           "Úsalo en la región del panel de `MainWindow` cuando hay un documento abierto para firmar.",
-          "Aportas `document`, `previousSignatures`, cada sección ya resuelta (`certificate`, `signature`, `rubric`, `destination`, `signing`), `placementState` para la colocación y `failure` si la firma falló; `onOpenHelp`, `onEmptyStore` y `platform` completan los avisos de fallo.",
           "No le añadas otro botón primario: es la única región de la aplicación que lo tiene, y va al final. No compongas aquí el texto del recuadro: llega resuelto.",
         ].join("\n\n"),
       },

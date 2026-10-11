@@ -15,7 +15,6 @@ const meta = {
         component: [
           "El icono de un papel de la interfaz: pides `name` («done», «warning», «document»…) y no el dibujo, y el sistema elige la familia que lo dibuja.",
           "Úsalo junto a una palabra que diga lo mismo: es decorativo (`aria-hidden`) y toma el color del texto que lo rodea.",
-          "Props: `name`, uno de los papeles del catálogo; `size`, el lado en px, que por defecto es el de cada papel; `strokeWidth`, el grosor del contorno.",
           "No lo uses como único indicador de un estado ni le pongas color propio: icono y palabra van del mismo color. No dibujes un SVG suelto si el papel ya existe.",
         ].join("\n\n"),
       },

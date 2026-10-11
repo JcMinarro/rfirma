@@ -17,7 +17,6 @@ const meta = {
         component: [
           "El momento 5 de la ventana de sede: no hay certificado utilizable, porque no hay ninguno o porque la sede los excluyó todos.",
           "Úsalo en lugar del consentimiento cuando no hay nada que elegir: es otra situación, no una variante.",
-          "Aportas `origin`, `terminal`, `reason`, `owned` (cuántos certificados tiene la persona, que solo se dice si están excluidos), `failure` y las salidas `onInstall`, `onLookAgain` y `onLeave`.",
           "No pongas «Firmar» en el botón principal ni enumeres lo que la sede descartó. No quites «Cerrar» del pie: es la salida etiquetada.",
         ].join("\n\n"),
       },

@@ -12,7 +12,6 @@ const meta = {
         component: [
           "La fila horizontal `rf-row`: alinea sus hijos al centro con un hueco de la escala.",
           "Úsala para poner piezas una al lado de otra: un icono y su texto, un grupo de botones. Para apilar en vertical, `Stack`.",
-          "Aportas `children`, `gap` (`xs` o `sm`; sin él, el hueco por defecto de `rf-row`) y `as`, para pintarla con otro elemento. Además, lo de un `<div>`.",
           "No escribas `gap` ni márgenes literales para separar los hijos: elige un hueco de la escala.",
         ].join("\n\n"),
       },

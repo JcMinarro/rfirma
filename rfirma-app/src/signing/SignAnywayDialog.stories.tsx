@@ -21,7 +21,6 @@ const meta = {
         component: [
           "El diálogo «¿Firmar de todos modos?», con una fila por cada problema del documento.",
           "Ábrelo justo antes de firmar cuando el documento trae alguna firma caducada o no válida, o algún hallazgo.",
-          "Aportas `problems`, las filas ya calculadas, con los hallazgos primero; `locale`, el idioma con que se escriben las fechas de cada motivo, y `onConfirm` y `onCancel`.",
           "No le añadas un recuento: la lista ya lo cuenta. No metas las firmas válidas: para verlas todas está «Ver firmas».",
         ].join("\n\n"),
       },

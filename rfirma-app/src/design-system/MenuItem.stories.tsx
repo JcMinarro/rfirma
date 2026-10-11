@@ -13,7 +13,6 @@ const meta = {
         component: [
           'Una entrada de `Menu`: un botón con `role="menuitem"`, fuera del orden de tabulación, al que `Menu` lleva el foco con las flechas, Inicio y Fin.',
           'Úsala solo como hija directa de `Menu`; para separar grupos de entradas, un `<hr className="rf-divider" />` entre ellas.',
-          "Aporta lo de un `<button>`: `children` con el texto o una composición, `onClick` y `disabled`. `type` es `button` por defecto.",
           "No le pongas `role` ni `tabIndex`: los fija ella. No la uses fuera de un `Menu`, que es quien la hace navegable.",
         ].join("\n\n"),
       },

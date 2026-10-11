@@ -12,7 +12,6 @@ const meta = {
         component: [
           'El botón del sistema de diseño, con `type="button"` por defecto para que no envíe formularios sin querer.',
           "Úsalo para cualquier acción. `primary` es la acción principal de la pantalla o del diálogo; `secondary`, las demás con contorno; `ghost`, las microacciones en línea. Sin `variant` sale llano.",
-          "Aportas `children`, la etiqueta o el icono con su palabra, y `variant`. Además, lo de un `<button>`: `onClick`, `disabled`, `ref`, `aria-*`…",
           "No pongas más de un `primary` por pantalla ni escribas a mano las clases `rf-btn`. Para una acción con alternativas, `SplitButton`; para un enlace, un `<a>`.",
         ].join("\n\n"),
       },

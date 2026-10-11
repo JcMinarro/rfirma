@@ -17,7 +17,6 @@ const meta = {
         component: [
           "El visor de PDF de la ventana principal: la hoja, el recuadro de la firma visible con sus tiradores y la barra de páginas y zoom.",
           "Úsalo en la región del visor de `MainWindow`. Sin documento enseña la zona de soltar y, debajo, lo que le pases en `emptyExtra`, normalmente los recientes.",
-          "Aportas `pdf` (o `null`); `placement`, el recuadro y sus páginas en espacio de usuario; `canPlace`, si se puede colocar ahora; los gestos `onMove`, `onTrace` y `onPageChange`; `onOpen`, y `failure` o `withoutPreview` cuando el documento no se puede pintar.",
           "No le pases el recuadro en píxeles: va en espacio de usuario. No lleves el fallo de apertura al panel: sin documento no hay panel y el rechazo quedaría mudo.",
         ].join("\n\n"),
       },

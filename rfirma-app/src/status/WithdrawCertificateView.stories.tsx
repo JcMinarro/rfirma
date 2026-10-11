@@ -43,7 +43,6 @@ const meta = {
         component: [
           "El velo de la retirada del certificado de rFirma en sus tres momentos: la pregunta, el trabajo y el resultado.",
           "Úsalo sobre la vista de estado cuando la persona pide retirar el certificado. Empieza bajo la cabecera para dejarla alcanzable.",
-          "Aportas `stores`, los almacenes donde está hoy el certificado; `moment`; `report`, el resultado del último intento; `onWithdraw`, que lanza la retirada o la repite sobre lo que falló, y `onClose`.",
           "No le des estado ni puertos: el momento lo decide quien lo monta. `report` solo se pinta en el momento `result`.",
         ].join("\n\n"),
       },

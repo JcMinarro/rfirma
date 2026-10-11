@@ -37,7 +37,6 @@ const meta = {
         component: [
           "Cómo se ve un certificado: el titular o representado, la línea con el NIF, sus almacenes, la caducidad y, si no sirve para firmar, por qué.",
           "Úsala allí donde haya que reconocer un certificado: es la misma en el selector de firma y en la lista de Preferencias.",
-          "Le das el certificado y ella decide qué líneas pinta y cómo marca uno que no se puede usar.",
           "No la uses como opción elegible por sí sola, que para eso está `CertificateSelect`, ni recompongas sus líneas a mano en otra pantalla.",
         ].join("\n\n"),
       },

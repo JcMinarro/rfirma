@@ -32,7 +32,6 @@ const meta = {
         component: [
           'Las pestañas del sistema de diseño: un `role="tablist"` con sus `Tab`, recorridas con las flechas.',
           "Úsalas para alternar entre vistas hermanas de un mismo contenido. Para acciones, `Button` o `Menu`.",
-          "En `Tabs` aportas `children`, las `Tab`, y lo de un `<div>`. En cada `Tab`, `selected`, `children` con su texto y lo de un `<button>`, como `onClick`, `aria-controls` o `disabled`. El contenido de cada pestaña lo pintas tú.",
           "No les pongas `role`, `tabIndex` ni `aria-selected`: los fijan ellas. No marques más de una `Tab` como `selected`.",
         ].join("\n\n"),
       },

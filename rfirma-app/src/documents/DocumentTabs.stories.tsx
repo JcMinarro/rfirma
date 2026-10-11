@@ -14,7 +14,6 @@ const meta = {
         component: [
           "La tira de pestañas de los documentos abiertos, con el menú «+N» de los que no caben y el botón partido de abrir.",
           "Úsala en lo alto de la ventana principal, una sola vez: cada pestaña es un documento y la activa es el que se ve y se firma.",
-          "Le das las pestañas y cuál está activa, los recientes del menú de abrir y qué hacer al activar, cerrar, abrir, elegir un reciente o vaciar los recientes. Con una firma en curso, bloquea las demás pestañas; en Linux, quita el botón de abrir, que va en la barra de título.",
           "No la uses como pestañas genéricas: para eso está `Tabs`. No metas aquí el contenido del documento, que es del visor.",
         ].join("\n\n"),
       },
