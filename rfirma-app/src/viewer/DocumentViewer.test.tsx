@@ -37,7 +37,6 @@ describe("el visor vacío", () => {
 
     expect(onOpen).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("button", { name: "Acercar" })).not.toBeInTheDocument();
-    expect(screen.getByText("No sale de tu ordenador")).toBeInTheDocument();
   });
 });
 

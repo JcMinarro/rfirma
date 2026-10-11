@@ -1,0 +1,28 @@
+/* La zona de soltar (docs/design/bienvenida.md). Ancho fluido hasta su máximo. */
+
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rf-space-sm);
+  width: 100%;
+  max-width: 520px;
+  height: 170px;
+  border: 2px dashed var(--rf-border-strong);
+  border-radius: var(--rf-radius-lg);
+  background: var(--rf-surface);
+  color: var(--rf-text);
+  font-family: var(--rf-font-body);
+  cursor: pointer;
+}
+
+.drop-zone__icon {
+  display: flex;
+  color: var(--rf-text-muted);
+}
+
+.drop-zone__title {
+  font-size: var(--rf-subtitle-size);
+  text-align: center;
+}

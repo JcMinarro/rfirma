@@ -23,7 +23,7 @@ dentro del recuadro en la aplicación es el PDF que compone el backend.
 
 | Estado | Historia | Qué se ve |
 | --- | --- | --- |
-| Vacío | `Empty` | La zona de soltar (`viewer.dropZone`, `viewer.dropZoneHint`); sin píldora ni panel |
+| Vacío | `Empty` | La zona de soltar sola, centrada; sin píldora ni panel |
 | Vacío con recientes | `EmptyWithRecents` | La zona de soltar y, debajo, los [recientes](pestanas-de-documentos.md) |
 | Con documento | `WithDocument` | La hoja y la píldora; sin firma visible, la hoja limpia |
 | Firma visible en una página | `WithSignatureBox` | El recuadro editable en la página a la vista |
@@ -52,10 +52,11 @@ Superficie flexible sobre `--rf-bg`, sin desbordar:
 Ningún control de la firma visible vive fuera del propio recuadro: el resto está
 en el panel.
 
-**La zona de soltar** es un recuadro de borde discontinuo con el icono de subir,
-la invitación a soltar o abrir y una línea que dice que el documento no sale del
-ordenador. Debajo, al mismo ancho, los recientes. El conjunto, centrado en el
-visor.
+**La zona de soltar** es `DropZone` («Dominio/Documentos/DropZone»): un
+recuadro de borde discontinuo con el icono de subir y la invitación a soltar o
+abrir, el mismo que lleva la [bienvenida](bienvenida.md). En el visor vacío va
+sola, centrada en los dos ejes y sin recientes: los recientes quedan en la
+bienvenida, que es la que sale al arrancar.
 
 **La hoja** lleva borde, esquinas pequeñas y la sombra de tarjeta. **La píldora**
 es del radio de píldora, de superficie elevada, y cada botón es un círculo con el

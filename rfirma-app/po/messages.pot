@@ -326,7 +326,16 @@ msgstr ""
 msgid "viewer.dropZone"
 msgstr ""
 
-msgid "viewer.dropZoneHint"
+msgid "welcome.subtitle"
+msgstr ""
+
+msgid "welcome.start"
+msgstr ""
+
+msgid "recents.empty"
+msgstr ""
+
+msgid "welcome.showOnStartup"
 msgstr ""
 
 msgid "viewer.noPreview"

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { Row } from "../design-system/Row";
+import { DropZone } from "../documents/DropZone";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { StampPreview } from "../signing/stampPreview";
 import type { RubricGap } from "../signing/visibleSignature";
@@ -216,7 +217,7 @@ export function DocumentViewer({
 
   if (!pdf) {
     return (
-      <div className="viewer viewer--empty">
+      <div className="viewer viewer--empty viewer--drop">
         {failure && (
           <ErrorNotice
             situation={failure.situation}
@@ -224,13 +225,7 @@ export function DocumentViewer({
             onOpenHelp={onOpenHelp}
           />
         )}
-        <button type="button" className="viewer__drop-zone" onClick={onOpen}>
-          <span className="viewer__drop-icon">
-            <Icon name="dropFile" size={32} />
-          </span>
-          <span className="rf-title viewer__drop-title">{t("viewer.dropZone")}</span>
-          <span className="rf-body rf-text-muted">{t("viewer.dropZoneHint")}</span>
-        </button>
+        <DropZone onOpen={onOpen} />
         {emptyExtra}
       </div>
     );

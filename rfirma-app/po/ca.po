@@ -336,8 +336,17 @@ msgstr "ahir"
 msgid "viewer.dropZone"
 msgstr "Arrossega un PDF o prem per obrir-lo"
 
-msgid "viewer.dropZoneHint"
-msgstr "No surt del teu ordinador"
+msgid "welcome.subtitle"
+msgstr "Signatura electrònica de documents"
+
+msgid "welcome.start"
+msgstr "Començar"
+
+msgid "recents.empty"
+msgstr "Encara no has obert cap document"
+
+msgid "welcome.showOnStartup"
+msgstr "Mostrar la benvinguda en obrir"
 
 msgid "viewer.noPreview"
 msgstr "Sense previsualització"
@@ -523,7 +532,9 @@ msgid "panel.certificate.reader.unreadable"
 msgstr "L'rFirma no pot llegir la targeta del lector"
 
 msgid "panel.certificate.reader.unreadableHelp.windows"
-msgstr "Si Windows no la reconeix, el programari de la targeta arriba per Windows Update en inserir-la o es descarrega de la pàgina de la DGP."
+msgstr ""
+"Si Windows no la reconeix, el programari de la targeta arriba per Windows "
+"Update en inserir-la o es descarrega de la pàgina de la DGP."
 
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instal·la OpenSC perquè l'rFirma la pugui llegir."

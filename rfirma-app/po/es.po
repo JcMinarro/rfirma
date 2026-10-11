@@ -336,8 +336,17 @@ msgstr "ayer"
 msgid "viewer.dropZone"
 msgstr "Arrastra un PDF o pulsa para abrirlo"
 
-msgid "viewer.dropZoneHint"
-msgstr "No sale de tu ordenador"
+msgid "welcome.subtitle"
+msgstr "Firma electrónica de documentos"
+
+msgid "welcome.start"
+msgstr "Empezar"
+
+msgid "recents.empty"
+msgstr "Aún no has abierto ningún documento"
+
+msgid "welcome.showOnStartup"
+msgstr "Mostrar la bienvenida al abrir"
 
 msgid "viewer.noPreview"
 msgstr "Sin vista previa"
@@ -523,7 +532,9 @@ msgid "panel.certificate.reader.unreadable"
 msgstr "rFirma no puede leer la tarjeta del lector"
 
 msgid "panel.certificate.reader.unreadableHelp.windows"
-msgstr "Si Windows no la reconoce, llega por Windows Update al meter la tarjeta o se descarga de la página de la DGP."
+msgstr ""
+"Si Windows no la reconoce, llega por Windows Update al meter la tarjeta o se "
+"descarga de la página de la DGP."
 
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instala OpenSC para que rFirma pueda leerla."

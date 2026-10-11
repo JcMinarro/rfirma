@@ -1,0 +1,34 @@
+/* La casilla del sistema de diseño. Ver [`Checkbox`]. */
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.checkbox--ui {
+  font-size: var(--rf-ui-size);
+  font-weight: var(--rf-ui-weight);
+  line-height: var(--rf-ui-leading);
+}
+
+.checkbox__box {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  accent-color: var(--rf-primary);
+  cursor: inherit;
+}
+
+.checkbox__box:focus-visible {
+  outline: var(--rf-focus-ring-width) solid var(--rf-focus-ring);
+  outline-offset: var(--rf-focus-ring-offset);
+}
+
+.checkbox--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

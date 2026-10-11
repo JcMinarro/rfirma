@@ -22,13 +22,12 @@ const {
 const boxName = "Recuadro de la firma visible";
 
 describe("the empty viewer", () => {
-  it("draws an icon and the supporting line in the drop zone, with no floating bar", () => {
+  it("draws an icon in the drop zone, with no floating bar", () => {
     renderWithCatalog(<Empty />);
 
     const dropZone = screen.getByRole("button", { name: /Arrastra un PDF/ });
 
     expect(dropZone.querySelector("svg")).not.toBeNull();
-    expect(dropZone).toHaveTextContent("No sale de tu ordenador");
     expect(screen.queryByRole("button", { name: "Acercar" })).not.toBeInTheDocument();
   });
 });
