@@ -171,11 +171,9 @@ export function StatusView({
                 {expandedDetail.has(row.signal) && (
                   <ul id={`status-view__detail-${row.signal}`} className="status-view__detail-list">
                     {row.detail.kind === "trust"
-                      ? row.detail.stores.map((store) => (
-                          <li
-                            key={storeBrandLabel(t, store.brand)}
-                            className="status-view__detail-item"
-                          >
+                      ? row.detail.stores.map((store, index) => (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: dos perfiles del mismo navegador y canal comparten marca, y la vista no trae la ruta.
+                          <li key={index} className="status-view__detail-item">
                             {store.trusted ? (
                               <Icon name="success" size={14} />
                             ) : (

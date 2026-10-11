@@ -240,7 +240,7 @@ pub fn browser_named(name: &str) -> Option<&'static Browser> {
     BROWSERS.iter().find(|browser| browser.name == name)
 }
 
-/// De quién es un Almacén NSS:un navegador por un canal, o el almacén nativo que comparte la familia Chromium.
+/// De quién es un Almacén NSS: un navegador por un canal, o el almacén nativo que comparte la familia Chromium.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum NssOwner {
     Browser {
@@ -318,6 +318,15 @@ impl NssOwner {
         match self {
             Self::Browser { channel, .. } => channel.name(),
             Self::SharedChromium => None,
+        }
+    }
+
+    /// El rótulo en castellano del almacén: «Brave · Flatpak», «Firefox» o «Chrome y derivados».
+    pub fn label(self) -> String {
+        match (self.browser_name(), self.channel_name()) {
+            (Some(browser), Some(channel)) => format!("{browser} · {channel}"),
+            (Some(browser), None) => browser.to_owned(),
+            (None, _) => "Chrome y derivados".to_owned(),
         }
     }
 

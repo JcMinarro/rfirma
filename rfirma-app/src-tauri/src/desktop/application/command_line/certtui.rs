@@ -170,11 +170,7 @@ pub(super) fn store_of(class: StoreClass, reference: &CertificateRef) -> String 
     match class {
         StoreClass::Card => format!("tarjeta «{}»", reference.token_label()),
         StoreClass::Installed => "Almacén de rFirma".to_owned(),
-        StoreClass::Browser(owner) => match (owner.browser_name(), owner.channel_name()) {
-            (Some(browser), Some(channel)) => format!("{browser} · {channel}"),
-            (Some(browser), None) => browser.to_owned(),
-            (None, _) => "Chrome".to_owned(),
-        },
+        StoreClass::Browser(owner) => owner.label(),
         StoreClass::Nssdb => "NSS del sistema".to_owned(),
         StoreClass::Windows => "Windows".to_owned(),
     }

@@ -361,7 +361,10 @@ fn each_store_class_is_named_in_the_list() {
             a_browser_class("Brave", BrowserChannel::Flatpak),
             "Brave · Flatpak",
         ),
-        (StoreClass::Browser(NssOwner::SharedChromium), "Chrome"),
+        (
+            StoreClass::Browser(NssOwner::SharedChromium),
+            "Chrome y derivados",
+        ),
         (StoreClass::Nssdb, "NSS del sistema"),
         (StoreClass::Windows, "Windows"),
     ] {

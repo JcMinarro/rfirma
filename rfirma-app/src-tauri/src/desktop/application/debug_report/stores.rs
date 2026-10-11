@@ -1,7 +1,5 @@
 //! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers.
 
-use crate::identity::domain::browsers::NssOwner;
-
 use super::{section, NssProfileState, NssStores, ReportOwner, WindowsStores};
 
 pub(super) fn windows_sections(stores: Option<&WindowsStores>) -> [Option<String>; 2] {
@@ -37,7 +35,7 @@ pub(super) fn nss_lines(stores: &NssStores, owner: &ReportOwner) -> Vec<String> 
             [
                 format!(
                     "{}: {}",
-                    owner_name(profile.owner),
+                    profile.owner.label(),
                     profile_state(&profile.state)
                 ),
                 format!("  ruta: {}", owner.anonymized(&profile.directory)),
@@ -59,13 +57,5 @@ fn profile_state(state: &NssProfileState) -> String {
         }
         NssProfileState::DoesNotTrustLocalChannel => "no confía en el canal local".to_owned(),
         NssProfileState::IgnoredWithoutCertificateDatabase => "ignorado · sin cert9.db".to_owned(),
-    }
-}
-
-fn owner_name(owner: NssOwner) -> String {
-    match (owner.browser_name(), owner.channel_name()) {
-        (Some(browser), Some(channel)) => format!("{browser} · {channel}"),
-        (Some(browser), None) => browser.to_owned(),
-        (None, _) => "Chrome y derivados".to_owned(),
     }
 }
