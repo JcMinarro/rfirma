@@ -487,9 +487,9 @@ no carga nada por su cuenta. Se publica en el kit de diseño.
 _Avoid_: entidad, molécula, pieza a secas
 
 **Flujo** (`flows`):
-Composición autónoma con la que se arma un recorrido de la aplicación: un paso,
-un diálogo de un trayecto, una sección de un panel. Se publica en el kit de
-diseño: es el material para diseñar recorridos nuevos.
+Recorrido compuesto y reutilizable: encadena piezas de dominio y primitivos, y
+lo monta más de una pantalla. Se publica en el kit de diseño: es el material
+para diseñar recorridos nuevos.
 _Avoid_: bloque —es el bloque trifásico—, widget, organismo
 
 **Rol tipográfico** (`type role`):
@@ -499,8 +499,10 @@ El texto elige rol, no números; un tamaño suelto no es un rol.
 _Avoid_: escala como lista de píxeles, tamaño de fuente, estilo de texto
 
 **Pantalla** (`screens`):
-Ventana o página completa que compone flujos y piezas de dominio. Es referencia
-local: no se publica en el kit de diseño.
+Ventana o página completa que compone flujos y piezas de dominio, también cada
+página de una ventana que muestra una cada vez, como los momentos de la ventana
+de sede, y los diálogos y paneles de un recorrido concreto. Es referencia local:
+no se publica en el kit de diseño.
 _Avoid_: página, vista, layout
 
 ### Identidad del producto

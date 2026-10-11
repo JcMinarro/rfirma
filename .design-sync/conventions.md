@@ -50,7 +50,20 @@ Un solo componente, `Icon`, que se pide por papel y no por dibujo: `<Icon name="
 
 ### Pantallas
 
-La ventana que abre una sede electrónica (520 × 420) se compone de momentos, cada uno un componente con props finas y sus órdenes como props, sin puertos: `SedeWaiting`, `SedeConsent`, `SedeMarking`, `SedeOutcome` y los demás `Sede*` del catálogo. Úsalos cuando el diseño sea uno de esos momentos; sus textos salen del catálogo. Las pantallas nuevas se componen con los primitivos de arriba, el texto con sus clases y los iconos.
+El kit no trae pantallas: se componen con los primitivos y las piezas de dominio, el texto con sus clases y los iconos.
+
+Un momento nuevo de la ventana que abre una sede electrónica se diseña dentro de `SedeBody`, su marco: el cuerpo que se desplaza y el pie con las acciones. Va sobre una superficie de 520 × 420 con la clase `sede-window`, como en la ventana real.
+
+```jsx
+const { DesignRoot, SedeBody, Button } = window.RFirma;
+<DesignRoot language="es" theme="light">
+  <div className="sede-window" style={{ width: 520, height: 420 }}>
+    <SedeBody footer={<><Button variant="ghost">Cancelar</Button><Button variant="primary">Continuar</Button></>}>
+      {/* el momento */}
+    </SedeBody>
+  </div>
+</DesignRoot>
+```
 
 ### Catálogo publicado
 
@@ -66,15 +79,7 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Dominio | Firma / CertificateCard | `CertificateCard` |
 | Dominio | Firma / CertificateSelect | `CertificateSelect` |
 | Dominio | Firma / PlacementBlock | `PlacementBlock` |
-| Flujos | Sede / Cliente antiguo | `SedeOldWebClient` |
-| Flujos | Sede / Confirmar | `SedeConfirm` |
-| Flujos | Sede / Consentimiento | `SedeConsent` |
-| Flujos | Sede / Desenlace | `SedeOutcome` |
-| Flujos | Sede / Espera | `SedeWaiting` |
-| Flujos | Sede / Firmando | `SedeSigning` |
-| Flujos | Sede / Guardar y cargar | `SedeTransfer` |
-| Flujos | Sede / Marcar la firma | `SedeMarking` |
-| Flujos | Sede / Sin certificado | `SedeNoCertificate` |
+| Dominio | Sede / SedeBody | `SedeBody` |
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |
@@ -98,7 +103,6 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 ### Dónde mirar
 
 - `styles.css` e `_ds_bundle.css`: todas las clases y tokens.
-- `components/sede/<Momento>/<Momento>.prompt.md`: los estados de cada momento de la ventana de sede.
 
 ### Ejemplo
 
