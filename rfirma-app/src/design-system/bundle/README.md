@@ -1,8 +1,8 @@
 # rFirma Design System
 
-Sistema **solo CSS**. **No hay componentes React que
-importar**: `window.RFirma` únicamente expone los nombres de los tokens. Se
-construye con elementos HTML normales y las clases `rf-*` de `_ds_bundle.css`.
+La capa CSS del sistema de diseño: tokens `--rf-*` y clases `rf-*`. Los
+componentes React que la usan viven en `design-system/`, y sus tipos los emite
+`just build-design-system`.
 
 Tipografía: **Inter** (OFL), una sola familia para todos los roles.
 
@@ -49,8 +49,7 @@ cometer aquí.
 
 ## Roles de color
 
-Los tokens `--rf-color-*` son los literales de la paleta y **no cambian con el
-tema**; están como referencia. Lo que se consume son los roles:
+Lo que se consume son los roles:
 
 | Rol | Oscuro | Claro |
 | --- | --- | --- |
@@ -112,21 +111,20 @@ sombra, duración ni tipografía.
   la exclamación abre con "¡".
 - Las duraciones caen a 1ms bajo `prefers-reduced-motion` desde
   `tokens/motion.css`; no repitas la media query.
-- Puntos de ruptura: 400, 640, 768, 1024, 1280, 1400px. Escríbelos literales en
-  `@media`; las custom properties no funcionan ahí.
+- Puntos de ruptura: 400, 640, 768, 1024, 1280, 1400px, literales en `@media`;
+  las custom properties no funcionan ahí.
 
 ## Dónde está la verdad
 
 `styles.css` y su cierre de imports: `tokens/color.css` (los dos temas),
 `typography.css`, `spacing.css`, `radius.css`, `shadow.css`, `motion.css`,
-`breakpoint.css`, `fonts/fonts.css` y `_ds_bundle.css`. Léelos antes de dar
+`fonts/fonts.css` y `_ds_bundle.css`. Léelos antes de dar
 estilo.
 
 ## Ficheros
 
 - `styles.css` — hoja raíz. Todo lo que recibe un diseño llega por su cierre de imports.
 - `tokens/color.css` — los dos temas (claro por defecto, oscuro bajo `prefers-color-scheme`, ambos forzables con `data-theme`).
-- `tokens/*.css` — tipografía, espaciado, radio, sombra, movimiento, breakpoints.
+- `tokens/*.css` — tipografía, espaciado, radio, sombra, movimiento.
 - `_ds_bundle.css` — capa de componentes y utilidades `rf-*`.
-- `_ds_bundle.js` — expone `window.RFirma` (solo nombres de tokens; **no hay componentes React**).
-- `fonts/fonts.css` — carga Inter (OFL) desde Google Fonts.
+- `fonts/fonts.css` — Inter (OFL), autoalojada en esta carpeta.
