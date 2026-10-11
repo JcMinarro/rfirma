@@ -8,11 +8,11 @@ use x509_cert::der::DateTime;
 
 use crate::desktop::adapters::graphics_info::this_session_graphics;
 use crate::desktop::adapters::installation::{this_glibc, this_installation, this_webview};
-use crate::desktop::adapters::paths::Paths;
+use crate::desktop::adapters::paths::{Paths, Platform};
 use crate::desktop::adapters::registry::this_desktop;
 use crate::desktop::application::debug_report::{
     DebugReport, DiscardReason, LinuxEnvironment, ModuleStatus, NativeLibrary, NativeLibraryStatus,
-    NssProfile, NssProfileState, NssStores, PcscStatus, Pkcs11Module, Pkcs11Modules,
+    NssProfile, NssProfileState, NssStores, OwnerFolder, PcscStatus, Pkcs11Module, Pkcs11Modules,
     ProtocolHandlerStatus, ReportOwner, WindowsStores,
 };
 use crate::desktop::domain::channel::Channel;
@@ -60,14 +60,29 @@ pub fn this_process_report() -> DebugReport {
     }
 }
 
-/// El home y el nombre de quien ejecuta este proceso.
+/// Las carpetas personales y el nombre de quien ejecuta este proceso.
 pub fn this_process_owner() -> ReportOwner {
     ReportOwner {
-        home: first_defined(&["HOME", "USERPROFILE"])
-            .map(PathBuf::from)
-            .unwrap_or_default(),
+        folders: owner_folders(Platform::CURRENT),
         user_name: first_defined(&["USER", "USERNAME", "LOGNAME"]).unwrap_or_default(),
     }
+}
+
+fn owner_folders(platform: Platform) -> Vec<OwnerFolder> {
+    let labelled: &[(&str, &'static str)] = match platform {
+        Platform::Windows => &[
+            ("LOCALAPPDATA", "%LOCALAPPDATA%"),
+            ("APPDATA", "%APPDATA%"),
+            ("USERPROFILE", "%USERPROFILE%"),
+        ],
+        Platform::Linux | Platform::MacOs => &[("HOME", "~")],
+    };
+    labelled
+        .iter()
+        .filter_map(|&(variable, label)| {
+            defined_path(variable).map(|path| OwnerFolder { path, label })
+        })
+        .collect()
 }
 
 fn first_defined(names: &[&str]) -> Option<String> {

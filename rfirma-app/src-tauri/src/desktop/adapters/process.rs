@@ -111,12 +111,19 @@ fn native_library_found_or_looked_for() -> String {
     let executable = std::env::current_exe().unwrap_or_default();
     let directory = executable.parent().unwrap_or(Path::new("."));
     let environment = |name: &str| std::env::var_os(name);
+    let owner = this_process_owner();
     match locate(&environment, directory) {
-        Ok(path) => path.display().to_string(),
+        Ok(path) => owner.anonymized(&path),
         Err(_) => {
             let looked_at: Vec<String> = candidates(&environment, directory)
                 .iter()
-                .map(ToString::to_string)
+                .map(|candidate| {
+                    format!(
+                        "{} ({})",
+                        owner.anonymized(&candidate.library_path()),
+                        candidate.origin()
+                    )
+                })
                 .collect();
             format!("no encontrada, buscada en {}", looked_at.join("; "))
         }

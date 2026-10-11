@@ -208,10 +208,19 @@ pub struct NativeLibrary {
 /// De quién es la sesión: lo que ninguna línea del informe puede contener.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReportOwner {
-    /// Directorio personal.
-    pub home: PathBuf,
+    /// Sus carpetas, de la más concreta a la más general.
+    pub folders: Vec<OwnerFolder>,
     /// Nombre de usuario.
     pub user_name: String,
+}
+
+/// Una carpeta de quien ejecuta rFirma y lo que la sustituye en el informe: `~`, `%LOCALAPPDATA%`…
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OwnerFolder {
+    /// Ruta de la carpeta.
+    pub path: PathBuf,
+    /// Lo que se escribe en su lugar.
+    pub label: &'static str,
 }
 
 /// Todo lo que el informe cuenta, recogido ya del entorno.
@@ -450,7 +459,7 @@ const SYSTEM_DIRECTORIES: [&str; 3] = ["/usr", "/etc", "/app"];
 const RUNTIME_DIRECTORY: &str = "/run/user";
 
 impl ReportOwner {
-    /// La ruta sin el home ni el nombre de usuario; las del sistema, tal cual.
+    /// La ruta sin sus carpetas personales ni el nombre de usuario; las del sistema, tal cual.
     pub fn anonymized(&self, path: &Path) -> String {
         if SYSTEM_DIRECTORIES
             .iter()
@@ -458,20 +467,33 @@ impl ReportOwner {
         {
             return path.display().to_string();
         }
+        let text = without_verbatim_prefix(&path.display().to_string());
         let shortened = self
-            .relative_to_home(path)
+            .relative_to_a_folder(&text)
             .or_else(|| relative_to_runtime_directory(path))
-            .unwrap_or_else(|| path.display().to_string());
+            .unwrap_or(text);
         if self.user_name.is_empty() {
             return shortened;
         }
         shortened.replace(&self.user_name, "<usuario>")
     }
 
-    fn relative_to_home(&self, path: &Path) -> Option<String> {
-        self.home.parent()?;
-        with_prefix_replaced(path, &self.home, "~")
+    fn relative_to_a_folder(&self, text: &str) -> Option<String> {
+        self.folders
+            .iter()
+            .filter(|folder| folder.path.parent().is_some())
+            .find_map(|folder| {
+                let prefix = without_verbatim_prefix(&folder.path.display().to_string());
+                with_prefix_replaced(text, &prefix, folder.label)
+            })
     }
+}
+
+fn without_verbatim_prefix(text: &str) -> String {
+    if let Some(share) = text.strip_prefix(r"\\?\UNC\") {
+        return format!(r"\\{share}");
+    }
+    text.strip_prefix(r"\\?\").unwrap_or(text).to_owned()
 }
 
 fn relative_to_runtime_directory(path: &Path) -> Option<String> {
@@ -486,15 +508,16 @@ fn relative_to_runtime_directory(path: &Path) -> Option<String> {
         return None;
     }
     let own_directory = format!("{RUNTIME_DIRECTORY}/{uid}");
-    with_prefix_replaced(path, Path::new(&own_directory), "$XDG_RUNTIME_DIR")
+    with_prefix_replaced(
+        &path.display().to_string(),
+        &own_directory,
+        "$XDG_RUNTIME_DIR",
+    )
 }
 
-fn with_prefix_replaced(path: &Path, prefix: &Path, label: &str) -> Option<String> {
-    path.strip_prefix(prefix).ok()?;
-    let text = path.display().to_string();
-    let prefix_text = prefix.display().to_string();
-    let tail = text.strip_prefix(prefix_text.trim_end_matches(['/', '\\']))?;
-    Some(format!("{label}{tail}"))
+fn with_prefix_replaced(text: &str, prefix: &str, label: &str) -> Option<String> {
+    let tail = text.strip_prefix(prefix.trim_end_matches(['/', '\\']))?;
+    (tail.is_empty() || tail.starts_with(['/', '\\'])).then(|| format!("{label}{tail}"))
 }
 
 mod pkcs11;
