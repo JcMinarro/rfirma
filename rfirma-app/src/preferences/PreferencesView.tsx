@@ -269,6 +269,10 @@ export function PreferencesView({
         onNotifyNewVersionChange={(checked) =>
           void change("general", () => onChange({ ...preferences, notifyNewVersion: checked }))
         }
+        showWelcome={preferences.showWelcome}
+        onShowWelcomeChange={(checked) =>
+          void change("general", () => onChange({ ...preferences, showWelcome: checked }))
+        }
       />
     ),
     signing: (

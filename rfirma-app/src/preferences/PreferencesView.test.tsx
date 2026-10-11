@@ -210,6 +210,24 @@ describe("PreferencesView", () => {
     expect(onChange).toHaveBeenCalledWith({ ...defaults, notifyNewVersion: false });
   });
 
+  it("turns Mostrar la bienvenida al abrir off from the general section", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderView({ onChange });
+
+    await user.click(screen.getByRole("switch", { name: "Mostrar la bienvenida al abrir" }));
+
+    expect(onChange).toHaveBeenCalledWith({ ...defaults, showWelcome: false });
+  });
+
+  it("shows the welcome switch off when the preference is off", () => {
+    renderView({ preferences: { ...defaults, showWelcome: false } });
+
+    expect(
+      screen.getByRole("switch", { name: "Mostrar la bienvenida al abrir" }),
+    ).not.toBeChecked();
+  });
+
   it("turns the protection against accidental signing off without asking", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
