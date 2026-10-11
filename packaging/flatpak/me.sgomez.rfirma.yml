@@ -103,6 +103,8 @@ finish-args:
   - --filesystem=~/.local/share/pki/nssdb
   - --filesystem=~/snap/firefox/common/.mozilla/firefox
   - --filesystem=~/snap/chromium/current
+  - --filesystem=~/snap/brave/current
+  - --filesystem=~/snap/vivaldi/current
   - --filesystem=~/.librewolf
   - --filesystem=~/.config/librewolf
   # El perfil del Firefox de Flatpak vive bajo ~/.var/app, que --filesystem=home
@@ -110,6 +112,12 @@ finish-args:
   - --filesystem=~/.var/app/org.mozilla.firefox/.mozilla/firefox
   - --filesystem=~/.var/app/org.mozilla.firefox/config/mozilla/firefox
   - --filesystem=~/.var/app/org.mozilla.firefox/data/mozilla/firefox
+  - --filesystem=~/.var/app/com.google.Chrome/data/pki/nssdb
+  - --filesystem=~/.var/app/org.chromium.Chromium/data/pki/nssdb
+  - --filesystem=~/.var/app/com.brave.Browser/data/pki/nssdb
+  - --filesystem=~/.var/app/com.microsoft.Edge/data/pki/nssdb
+  - --filesystem=~/.var/app/com.vivaldi.Vivaldi/data/pki/nssdb
+  - --filesystem=~/.var/app/io.gitlab.librewolf-community/config/librewolf/librewolf
 
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
