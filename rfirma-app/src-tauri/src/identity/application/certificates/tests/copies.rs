@@ -5,7 +5,7 @@ use super::super::{
 };
 use super::removal::{FixedPinKeyring, RemovalOutcome};
 use super::{CARD, INSTALLED, SOFTOKEN};
-use crate::identity::application::tests::{a_certificate_with_id, TestAuthority};
+use crate::identity::application::tests::{a_certificate_with_id, a_firefox_class, TestAuthority};
 use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::store::{Store, StoreClass};
@@ -146,7 +146,7 @@ fn two_copies_of_one_certificate_are_one_row_with_both_stores() {
     );
 
     assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].stores, vec![StoreClass::Card, StoreClass::Firefox]);
+    assert_eq!(rows[0].stores, vec![StoreClass::Card, a_firefox_class()]);
 }
 
 #[test]
@@ -197,8 +197,8 @@ fn with_nothing_remembered_the_row_signs_with_the_copy_of_the_preferred_store() 
             StoreClass::Card,
             StoreClass::Installed,
             StoreClass::Nssdb,
-            StoreClass::Firefox,
-            StoreClass::Chrome
+            a_firefox_class(),
+            StoreClass::Browser(NssOwner::SharedChromium)
         ]
     );
     assert_eq!(rows[0].store, StoreClass::Card);
@@ -271,7 +271,7 @@ fn the_remembered_copy_is_the_one_behind_the_row_and_marks_it() {
         rows[0].remembered,
         "la fila esta recordada por su copia de Firefox"
     );
-    assert_eq!(rows[0].store, StoreClass::Firefox);
+    assert_eq!(rows[0].store, a_firefox_class());
     let chosen = certificate_behind(&copies, &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference(), copies[1].reference());
 }
@@ -301,7 +301,7 @@ fn a_row_signed_with_a_remembered_browser_copy_still_removes_its_installed_copy(
     assert_eq!(rows.len(), 1);
     assert_eq!(
         rows[0].store,
-        StoreClass::Firefox,
+        a_firefox_class(),
         "se sigue firmando con la copia recordada"
     );
     assert!(

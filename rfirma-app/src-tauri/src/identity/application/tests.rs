@@ -10,6 +10,7 @@ use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::secret::StoreSecret;
 use crate::identity::domain::store::Store;
+use crate::identity::domain::store::StoreClass;
 use crate::identity::ports::{CertificateMemory, Token};
 use crate::memory_error::MemoryError;
 use crate::site::domain::local_ca::{generate_key, random_serial, LocalCa};
@@ -104,6 +105,14 @@ pub(crate) fn a_firefox_profile_store(softoken: &str, profile: &str) -> Store {
     let firefox = browser_named("Firefox").expect("Firefox esta en la tabla");
     Store::nss(softoken, Path::new(profile)).owned_by(NssOwner::Browser {
         browser: firefox,
+        channel: BrowserChannel::Native,
+    })
+}
+
+/// La clase de almacén de un perfil del Firefox nativo.
+pub(crate) fn a_firefox_class() -> StoreClass {
+    StoreClass::Browser(NssOwner::Browser {
+        browser: browser_named("Firefox").expect("Firefox esta en la tabla"),
         channel: BrowserChannel::Native,
     })
 }

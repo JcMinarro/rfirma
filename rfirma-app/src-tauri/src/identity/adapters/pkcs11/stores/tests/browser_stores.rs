@@ -274,12 +274,15 @@ fn each_nss_store_opened_carries_the_owner_it_was_discovered_with() {
         vec![
             (
                 Some(owned_by("Firefox", BrowserChannel::Snap)),
-                StoreClass::Firefox
+                StoreClass::Browser(owned_by("Firefox", BrowserChannel::Snap))
             ),
-            (Some(NssOwner::SharedChromium), StoreClass::Chrome),
+            (
+                Some(NssOwner::SharedChromium),
+                StoreClass::Browser(NssOwner::SharedChromium)
+            ),
             (
                 Some(owned_by("Chrome", BrowserChannel::Flatpak)),
-                StoreClass::Chrome
+                StoreClass::Browser(owned_by("Chrome", BrowserChannel::Flatpak))
             ),
         ]
     );

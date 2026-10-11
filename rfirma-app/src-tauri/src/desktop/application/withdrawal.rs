@@ -51,7 +51,7 @@ pub fn merged_report(
                     .unwrap_or(Withdrawal::WasNotThere)
             });
             StoreWithdrawal {
-                brand: *brand,
+                brand: brand.clone(),
                 outcome,
             }
         })

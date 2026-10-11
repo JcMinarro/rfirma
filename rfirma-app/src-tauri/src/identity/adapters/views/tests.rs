@@ -1,9 +1,17 @@
-use super::{store_name, CertificateView, ReaderNewsView, SecretView, StatusView};
+use super::{CertificateView, ReaderNewsView, SecretView, StatusView, StoreMarkView};
 use crate::identity::application::readers::ReaderNews;
+use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
 use crate::identity::domain::certificate::{CertificateStatus, ListedCertificate};
 use crate::identity::domain::readers::{ReaderStatus, ReadyCard};
 use crate::identity::domain::secret::StoreSecret;
 use crate::identity::domain::store::StoreClass;
+
+fn a_browser_store(name: &str, channel: BrowserChannel) -> StoreClass {
+    StoreClass::Browser(NssOwner::Browser {
+        browser: browser_named(name).expect("el navegador esta en la tabla"),
+        channel,
+    })
+}
 
 #[test]
 fn the_secret_crosses_as_one_of_three_kinds_and_never_as_a_string() {
@@ -57,7 +65,7 @@ fn a_view() -> CertificateView {
         entity_name: None,
         issuer: "FNMT-RCM".to_owned(),
         certificate_serial_number: "1234567890".to_owned(),
-        stores: vec![store_name(StoreClass::Firefox).to_owned()],
+        stores: vec![StoreMarkView::Installed],
         status: StatusView::Valid {
             not_after: 1_900_000_000,
         },
@@ -88,49 +96,90 @@ fn a_row_in(stores: Vec<StoreClass>, from_a_dnie: bool) -> ListedCertificate {
 
 #[test]
 fn a_row_crosses_every_store_it_is_in_but_not_the_one_behind_its_handle() {
-    let view = CertificateView::from(a_row_in(vec![StoreClass::Card, StoreClass::Firefox], false));
+    let view = CertificateView::from(a_row_in(
+        vec![
+            StoreClass::Card,
+            a_browser_store("Firefox", BrowserChannel::Native),
+        ],
+        false,
+    ));
     let json = serde_json::to_string(&view).expect("serializa");
 
     assert!(!json.contains(r#""store":"#), "{json}");
-    assert!(json.contains(r#""stores":["card","firefox"]"#), "{json}");
+    assert!(
+        json.contains(r#""stores":["card",{"browser":{"name":"Firefox","channel":null}}]"#),
+        "{json}"
+    );
 }
 
 #[test]
 fn a_dnie_row_carries_the_dnie_chip_in_place_of_the_card_one() {
     let view = CertificateView::from(a_row_in(vec![StoreClass::Card], true));
 
-    assert_eq!(view.stores, ["dnie"]);
+    assert_eq!(view.stores, [StoreMarkView::Dnie]);
 }
 
 #[test]
 fn a_dnie_certificate_copied_into_another_store_keeps_that_store_label() {
-    let view = CertificateView::from(a_row_in(vec![StoreClass::Firefox], true));
+    let view = CertificateView::from(a_row_in(
+        vec![a_browser_store("Firefox", BrowserChannel::Native)],
+        true,
+    ));
 
-    assert_eq!(view.stores, ["firefox"]);
+    assert_eq!(
+        view.stores,
+        [StoreMarkView::Browser {
+            name: "Firefox".to_owned(),
+            channel: None
+        }]
+    );
 }
 
 #[test]
-fn the_store_crosses_as_a_class_and_never_as_a_path() {
-    let names = [
-        store_name(StoreClass::Card),
-        store_name(StoreClass::Firefox),
-        store_name(StoreClass::Chrome),
-        store_name(StoreClass::Nssdb),
-        store_name(StoreClass::Installed),
-        store_name(StoreClass::Windows),
-    ];
+fn the_classes_that_are_not_a_browser_cross_with_the_marks_they_always_had() {
+    let view = a_view_with(vec![
+        StoreClass::Card,
+        StoreClass::Nssdb,
+        StoreClass::Installed,
+        StoreClass::Windows,
+    ]);
 
     assert_eq!(
-        names,
-        ["card", "firefox", "chrome", "nssdb", "installed", "windows"]
+        serde_json::to_string(&view.stores).expect("serializa"),
+        r#"["card","nssdb","installed","windows"]"#
     );
-    for name in names {
-        assert!(!name.contains('/'), "«{name}» parece una ruta");
-        assert!(
-            name.chars().all(|letter| letter.is_ascii_lowercase()),
-            "«{name}» no es una clase en ingles"
-        );
-    }
+}
+
+#[test]
+fn a_browser_store_crosses_with_its_proper_name_and_its_optional_channel() {
+    let view = a_view_with(vec![
+        a_browser_store("Brave", BrowserChannel::Flatpak),
+        a_browser_store("Firefox", BrowserChannel::Snap),
+        a_browser_store("Brave", BrowserChannel::Native),
+    ]);
+
+    assert_eq!(
+        serde_json::to_string(&view.stores).expect("serializa"),
+        concat!(
+            r#"[{"browser":{"name":"Brave","channel":"Flatpak"}},"#,
+            r#"{"browser":{"name":"Firefox","channel":"Snap"}},"#,
+            r#"{"browser":{"name":"Brave","channel":null}}]"#
+        )
+    );
+}
+
+#[test]
+fn the_chromium_store_shared_by_the_native_browsers_crosses_as_its_own_mark() {
+    let view = a_view_with(vec![StoreClass::Browser(NssOwner::SharedChromium)]);
+
+    assert_eq!(
+        serde_json::to_string(&view.stores).expect("serializa"),
+        r#"["sharedChromium"]"#
+    );
+}
+
+fn a_view_with(stores: Vec<StoreClass>) -> CertificateView {
+    CertificateView::from(a_row_in(stores, false))
 }
 
 #[test]

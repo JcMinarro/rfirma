@@ -32,7 +32,7 @@ fn a_store_under_the_installed_directory_is_its_own_class() {
         Store::nss("/usr/lib/libsoftokn3.so", &elsewhere)
             .owned_by(NssOwner::SharedChromium)
             .class_under(&installed),
-        StoreClass::Chrome
+        StoreClass::Browser(NssOwner::SharedChromium)
     );
 }
 
@@ -84,8 +84,8 @@ fn a_cng_store_is_the_windows_store_and_not_a_card() {
 #[test]
 fn the_stores_are_preferred_card_windows_installed_system_nss_firefox_chrome() {
     let mut classes = [
-        StoreClass::Chrome,
-        StoreClass::Firefox,
+        StoreClass::Browser(NssOwner::SharedChromium),
+        a_firefox_class(),
         StoreClass::Nssdb,
         StoreClass::Installed,
         StoreClass::Windows,
@@ -101,8 +101,8 @@ fn the_stores_are_preferred_card_windows_installed_system_nss_firefox_chrome() {
             StoreClass::Windows,
             StoreClass::Installed,
             StoreClass::Nssdb,
-            StoreClass::Firefox,
-            StoreClass::Chrome,
+            a_firefox_class(),
+            StoreClass::Browser(NssOwner::SharedChromium),
         ]
     );
 }
@@ -116,19 +116,19 @@ fn a_browser_store_is_classified_by_the_family_of_its_owner() {
         Store::nss(softoken, anywhere)
             .owned_by(owned_by("LibreWolf", BrowserChannel::Flatpak))
             .class(),
-        StoreClass::Firefox
+        StoreClass::Browser(owned_by("LibreWolf", BrowserChannel::Flatpak))
     );
     assert_eq!(
         Store::nss(softoken, anywhere)
             .owned_by(owned_by("Brave", BrowserChannel::Snap))
             .class(),
-        StoreClass::Chrome
+        StoreClass::Browser(owned_by("Brave", BrowserChannel::Snap))
     );
     assert_eq!(
         Store::nss(softoken, anywhere)
             .owned_by(NssOwner::SharedChromium)
             .class(),
-        StoreClass::Chrome
+        StoreClass::Browser(NssOwner::SharedChromium)
     );
 }
 
@@ -377,3 +377,7 @@ fn a_firefox_profile_at(home: &Path, profiles_ini_dir: &str, profile_dir: &str) 
 mod browser_stores;
 mod modules_report;
 mod profile_discovery;
+
+fn a_firefox_class() -> StoreClass {
+    StoreClass::Browser(owned_by("Firefox", BrowserChannel::Native))
+}

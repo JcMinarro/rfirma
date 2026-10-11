@@ -1,4 +1,5 @@
 use super::*;
+use crate::identity::domain::browsers::NssOwner;
 
 #[test]
 fn a_store_that_asks_for_no_session_needs_no_secret() {
@@ -63,8 +64,7 @@ fn a_module_asks_for_a_pin_and_every_store_that_is_a_file_asks_for_a_password() 
     assert_eq!(SecretName::of(StoreClass::Windows), SecretName::Pin);
 
     for class in [
-        StoreClass::Firefox,
-        StoreClass::Chrome,
+        StoreClass::Browser(NssOwner::SharedChromium),
         StoreClass::Nssdb,
         StoreClass::Installed,
     ] {

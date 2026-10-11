@@ -7,9 +7,9 @@ use super::{
 };
 use crate::identity::application::readers::LastListing;
 use crate::identity::application::tests::{
-    a_certificate, a_certificate_with_id, a_firefox_profile_store, a_representative_certificate,
-    a_representative_certificate_of_a_natural_person, a_usable_certificate, listed_from, NoToken,
-    TestAuthority,
+    a_certificate, a_certificate_with_id, a_firefox_class, a_firefox_profile_store,
+    a_representative_certificate, a_representative_certificate_of_a_natural_person,
+    a_usable_certificate, listed_from, NoToken, TestAuthority,
 };
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -473,7 +473,7 @@ fn each_class_of_store_brings_its_own_count() {
 
     assert_eq!(
         certificates_by_class(&token, &stores, Path::new(INSTALLED)),
-        vec![(StoreClass::Card, 2), (StoreClass::Firefox, 1)]
+        vec![(StoreClass::Card, 2), (a_firefox_class(), 1)]
     );
 }
 
@@ -490,7 +490,7 @@ fn two_profiles_of_the_same_class_are_one_line() {
 
     assert_eq!(
         certificates_by_class(&token, &stores, Path::new(INSTALLED)),
-        vec![(StoreClass::Firefox, 2)]
+        vec![(a_firefox_class(), 2)]
     );
 }
 
