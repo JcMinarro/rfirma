@@ -75,7 +75,7 @@ Antes de abrir código, en este orden:
 * **El fichero entero, solo si `just outline` marca menos de 300 líneas** y vas a tocarlo entero.
 * **De los tests, los nombres:** `grep -n 'fn \|it('`. Se abren para tocarlos.
 * **Los documentos de `docs/` se abren por `grep`**; los de `research/`, solo si vas a cambiar la decisión que sostienen.
-* Si lees entero un fichero que el índice no anunciaba, **arregla el índice** en la misma PR, en `## Discoveries`.
+* Si lees entero un fichero que el índice no anunciaba, **arregla el índice** en la misma PR.
 
 ## Agent skills
 

@@ -126,7 +126,7 @@ sistema de diseño entero (14 KB).
 
 `issue-tracker.md` (mecánica de issues) · `code-host.md` (mecánica de PR) ·
 `triage-labels.md` · `domain.md` · `prototyping.md` ·
-`developer-defaults.md` · `delivery-ledger.md`
+`developer-defaults.md`
 
 Dos de ellos son **anexos de una sola fase**, y no se abren fuera de ella:
 `code-host-ci.md` (esperar, leer o clasificar el CI de una PR — incluye qué
