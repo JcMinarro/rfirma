@@ -15,11 +15,12 @@ Los nativos no se empaquetan aquí: los produce el *bundler* de Tauri
 | `cargo-sources.json` | Dependencias de cargo vendorizadas, generadas |
 | `sources.lock` | El sello del `Cargo.lock` contra el que se generó |
 | `check-sources.sh` | Falla si esas fuentes se han quedado atrás |
+| `grype.yaml` | Los CVE que el escaneo del flatpak ignora, cada uno con su motivo |
 
-OpenSC y `pcsc-lite` llevan `x-checker-data` en el manifiesto, y el workflow
-`flatpak-versions.yml` (lunes y a mano) sale en rojo cuando se publica una
-versión nueva de cualquiera de los dos. La subida es a mano, a la siguiente
-versión publicada y nunca a un commit de `master`.
+El workflow `flatpak-cves.yml` (lunes y a mano) sale en rojo cuando el NVD
+publica un CVE que afecta a la versión de OpenSC o de `pcsc-lite` fijada en el
+manifiesto. La subida es a mano, a la siguiente versión publicada y nunca a un
+commit de `master`.
 
 ## Instalar
 
