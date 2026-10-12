@@ -1,0 +1,5 @@
+ignore:
+  - vulnerability: CVE-2024-8443
+    package:
+      name: opensc
+    reason: corregida en OpenSC 0.26.0 (NEWS, #3219); el CPE del NVD no lleva rango de versiones y casa con todas

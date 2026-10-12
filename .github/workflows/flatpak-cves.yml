@@ -1,0 +1,46 @@
+# Avisa de los CVE de OpenSC y pcsc-lite, que van dentro del flatpak y no ve Dependabot (ADR-0049).
+name: CVE del flatpak
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  cves:
+    name: CVE del flatpak
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # El CPE es el del NVD: el fabricante de pcsc-lite es "muscle".
+      - name: SBOM de los modulos de C del manifiesto
+        run: |
+          set -euo pipefail
+          manifest=packaging/flatpak/me.sgomez.rfirma.yml
+          component() {
+            local module="$1" cpe="$2" url version
+            url="$(yq -e ".modules[] | select(.name == \"$module\") | .sources[0].url" "$manifest")"
+            version="$(sed -nE "s|.*/$module-([0-9.]+)\.tar\.[a-z]+$|\1|p" <<<"$url")"
+            [ -n "$version" ] || { echo "$module: sin version en $url" >&2; exit 1; }
+            echo "$module $version" >> "$GITHUB_STEP_SUMMARY"
+            jq -n --arg n "$module" --arg v "$version" --arg c "$cpe" \
+              '{type: "library", "bom-ref": "\($n)@\($v)", name: $n, version: $v,
+                cpe: "cpe:2.3:a:\($c):\($v):*:*:*:*:*:*:*"}'
+          }
+          {
+            component opensc opensc_project:opensc
+            component pcsc-lite muscle:pcsc-lite
+          } | jq -s '{bomFormat: "CycloneDX", specVersion: "1.5", version: 1, components: .}' \
+            > "$RUNNER_TEMP/flatpak.cdx.json"
+
+      - name: Falla si alguna version fijada tiene un CVE
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          sbom: ${{ runner.temp }}/flatpak.cdx.json
+          config: packaging/flatpak/grype.yaml
+          severity-cutoff: negligible
+          output-format: table
