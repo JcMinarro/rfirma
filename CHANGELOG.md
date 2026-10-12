@@ -8,6 +8,44 @@ Desde la v0.11.2 cada sección la genera `just release <version>` a partir de
 los títulos de las PR fusionadas en `main` desde la etiqueta anterior: los
 `feat`, `fix` y `perf` que no son de ámbito interno.
 
+## [0.15.0] - 2026-10-12
+
+### Added
+- El generador deriva la selección de Claude Design desde los títulos, con sello (#1687).
+- Los overrides viven en la historia y las tablas de conventions.md se generan (#1689).
+- La ventana principal y el visor entran al kit como flujos (#1690).
+- Los ocho roles tipográficos en los tokens y el bundle sin literales (#1702).
+- Documentos, visor, ventana y errores eligen rol tipográfico (#1703).
+- Los primitivos Tabs y SplitButton (#1719).
+- El primitivo Combobox: la lista con buscador del kit, con teclado completo (#1720).
+- Rfirma --debug-info: diagnóstico del entorno para informes de fallo (#1726).
+- Hace opcional la instalacion en `just flatpak` (install="true").
+- Intro acepta y Escape cancela en todas las ventanas (#1746).
+- Indicador de lector de tarjetas en la cabecera (#1801).
+- La landing anuncia el DNIe y compara con AutoFirma en lenguaje llano (#1876).
+- La bienvenida, la zona de soltar y Checkbox, como fuente del diseño (#1900).
+- Pantalla de bienvenida al arrancar, con Checkbox en el design system (#1912).
+
+### Fixed
+- Accesibilidad y carga de la landing según PageSpeed (#1650).
+- Cinco historias que se veían mal (#1717).
+- Quita del CI la guarda del sello de la selección (#1722).
+- Aclara la fila de la aplicación para firmar en sedes en Flatpak (#1727).
+- Una credencial del almacén vacía en Windows construye un slice desde un puntero nulo (#1728).
+- El canal acepta la siguiente operación en cuanto contesta la anterior (#1730).
+- Estado avisa cuando falla elegir el manejador de sede, volver a comprobar o reparar la CA local (#1737).
+- «Añadir un certificado…» del panel instala un .p12 (#1738).
+- Firefox instalado como Flatpak: la CA local no llega a su almacén (#1755).
+- Cierra los avisos de Dependabot de source-map-js y postcss-selector-parser (#1756).
+- Cancelar el diálogo del PIN al firmar rompe la ventana principal (#1775).
+- El lector de tarjetas pasa de la cabecera al panel de estado (#1807).
+- El reenvío de confianza de p11-kit en el flatpak no es un almacén de tarjeta (#1808).
+- ProtectedSecret nunca desbloquea su memoria al soltarse (#1816).
+- El flatpak se cierra al abrirse en Wayland con NVIDIA: Error 71 aun con el paliativo del manifiesto (#1835).
+- Rutas de Windows sin \\?\ y con su %VARIABLE% en --debug-info y --version (#1880).
+- Fijar en ubuntu-24.04 los runners que compilan para Linux: los canales nativos cubren glibc 2.39 y lo anterior va por flatpak (#1882).
+- La carpeta de destino por defecto respeta el nombre localizado de Documentos (#1913).
+
 ## [0.14.0] - 2026-10-05
 
 ### Added
