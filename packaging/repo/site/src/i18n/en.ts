@@ -3,8 +3,9 @@ import type { Dictionary } from "./es";
 export const en: Dictionary = {
   "meta.title": "rFirma: e-signature without Java, an AutoFirma alternative",
   "meta.description":
-    "Sign PDFs with your digital certificate or DNIe on Linux, Windows and macOS. Works on the government sites that require AutoFirma, no Java. Alpha version.",
-  "meta.image.alt": "The rFirma logo on a green background with the domain rfirma.sgomez.me",
+    "An AutoFirma alternative with no Java. Sign PDFs with your digital certificate or DNIe on Linux and Windows, including on the government sites that require AutoFirma. Alpha version.",
+  "meta.image.alt":
+    "The rFirma logo on a green background with the tagline “Alternativa a AutoFirma” and the domain rfirma.sgomez.me",
 
   "notice.aria": "Notice about official ownership",
   "notice.badge": "Notice",

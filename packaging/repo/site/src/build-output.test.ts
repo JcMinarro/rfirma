@@ -124,7 +124,7 @@ describe.each(locales)("landing %s", (locale) => {
       "@type": "SoftwareApplication",
       name: "rFirma",
       description,
-      operatingSystem: expect.stringMatching(/Linux.*Windows.*macOS/),
+      operatingSystem: expect.stringMatching(/Linux.*Windows/),
       applicationCategory: expect.any(String),
       offers: { "@type": "Offer", price: "0" },
       downloadUrl: expect.stringMatching(/^https:\/\//),

@@ -1,8 +1,9 @@
 export const es = {
   "meta.title": "rFirma: firma electrónica sin Java, alternativa a AutoFirma",
   "meta.description":
-    "Firma PDF con tu certificado digital o DNIe en Linux, Windows y macOS. Funciona en las sedes que piden AutoFirma, sin Java. Versión alfa.",
-  "meta.image.alt": "Logotipo de rFirma sobre fondo verde con el dominio rfirma.sgomez.me",
+    "Alternativa a AutoFirma sin Java. Firma PDF con tu certificado digital o DNIe en Linux y Windows, también en las sedes que piden AutoFirma. Versión alfa.",
+  "meta.image.alt":
+    "Logotipo de rFirma sobre fondo verde con el lema «Alternativa a AutoFirma» y el dominio rfirma.sgomez.me",
 
   "notice.aria": "Aviso sobre titularidad oficial",
   "notice.badge": "Aviso",
