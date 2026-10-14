@@ -292,14 +292,13 @@ _Avoid_: aviso, validez del documento
 
 **Compatible con AutoFirma**:
 Que una sede que hoy habla con AutoFirma 1.9.2 hable con rFirma sin cambiar nada,
-con **cinco desviaciones a propósito**, y ninguna más: rFirma **no firma con
+con **unas desviaciones a propósito**, y ninguna más: rFirma **no firma con
 SHA1** salvo que la persona lo permita en sus preferencias, y nunca en un XML
-que firme ella misma, porque por defecto no produce firmas con una huella rota
-(ADR-0023);
+que firme ella misma, porque por defecto no produce firmas con una huella rota;
+el mismo permiso cubre la **XAdES explícita** (`mode=explicit`), que ata la
+firma al documento solo por su SHA1 (ADR-0023);
 **no atiende XMLDSig**, porque el original lo firma en una sola fase con la
-clave privada dentro de Java y eso lo prohíbe el ADR-0001; **no reproduce la
-XAdES explícita** (`mode=explicit`), que el propio original da por obsoleta y
-resuelve hasheando el dato con SHA1; **solo admite el lote local en JSON**, no
+clave privada dentro de Java y eso lo prohíbe el ADR-0001; **solo admite el lote local en JSON**, no
 el XML heredado que el original todavía acepta; y **en el flatpak no soporta
 tarjetas criptográficas ni el DNIe**, porque no lleva su fontanería PC/SC y
 PKCS#11 (ADR-0004); el `.deb` y el `.rpm` las usan con el OpenSC del sistema.
