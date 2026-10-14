@@ -3,8 +3,9 @@ import type { Dictionary } from "./es";
 export const ca: Dictionary = {
   "meta.title": "rFirma: signatura electrònica sense Java, alternativa a AutoFirma",
   "meta.description":
-    "Signa PDF amb el teu certificat digital o DNIe a Linux, Windows i macOS. Funciona a les seus que demanen AutoFirma, sense Java. Versió alfa.",
-  "meta.image.alt": "Logotip de rFirma sobre fons verd amb el domini rfirma.sgomez.me",
+    "Alternativa a AutoFirma sense Java. Signa PDF amb el teu certificat digital o DNIe a Linux i Windows, també a les seus que demanen AutoFirma. Versió alfa.",
+  "meta.image.alt":
+    "Logotip de rFirma sobre fons verd amb el lema «Alternativa a AutoFirma» i el domini rfirma.sgomez.me",
 
   "notice.aria": "Avís sobre titularitat oficial",
   "notice.badge": "Avís",

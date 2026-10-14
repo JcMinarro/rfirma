@@ -3,8 +3,9 @@ import type { Dictionary } from "./es";
 export const eu: Dictionary = {
   "meta.title": "rFirma: sinadura elektronikoa Javarik gabe, AutoFirmaren alternatiba",
   "meta.description":
-    "Sinatu PDFak zure ziurtagiri digitalarekin edo NANe elektronikoarekin Linux, Windows eta macOS sistemetan. AutoFirma eskatzen duten egoitzetan dabil, Javarik gabe. Alfa bertsioa.",
-  "meta.image.alt": "rFirmaren logotipoa hondo berdearen gainean, rfirma.sgomez.me domeinuarekin",
+    "AutoFirmaren alternatiba, Javarik gabe. Sinatu PDFak zure ziurtagiri digitalarekin edo NANe elektronikoarekin Linux eta Windows sistemetan, baita AutoFirma eskatzen duten egoitzetan ere. Alfa bertsioa.",
+  "meta.image.alt":
+    "rFirmaren logotipoa hondo berdearen gainean, «Alternativa a AutoFirma» leloarekin eta rfirma.sgomez.me domeinuarekin",
 
   "notice.aria": "Titulartasun ofizialari buruzko oharra",
   "notice.badge": "Oharra",
