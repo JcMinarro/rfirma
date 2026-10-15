@@ -98,6 +98,14 @@ impl Outcome {
         }
     }
 
+    fn refused_with(reason: &str) -> Self {
+        Self {
+            exit_code: REFUSED,
+            stdout: Vec::new(),
+            stderr: vec![format!("rfirma: {reason}")],
+        }
+    }
+
     fn failed(line: String) -> Self {
         Self {
             exit_code: FAILED,

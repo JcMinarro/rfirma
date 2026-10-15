@@ -85,8 +85,18 @@ fn sha1_is_read_when_the_preference_allows_it() {
 }
 
 #[test]
-fn facturae_ooxml_and_odf_are_unsupported_formats() {
-    for format in ["facturae", "ooxml", "odf"] {
+fn facturae_is_read_in_any_case() {
+    for format in ["facturae", "FacturaE", "FACTURAE"] {
+        let arguments =
+            parsed(&["-i", "a", "-o", "b", "-alias", "yo", "-format", format]).expect("válidos");
+
+        assert_eq!(arguments.format, Format::FacturaE);
+    }
+}
+
+#[test]
+fn ooxml_and_odf_are_unsupported_formats() {
+    for format in ["ooxml", "odf"] {
         assert_eq!(
             parsed(&["-i", "a", "-o", "b", "-alias", "yo", "-format", format]),
             Err(ArgumentsRefusal::UnsupportedFormat(format.to_owned()))

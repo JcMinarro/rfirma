@@ -315,6 +315,7 @@ mod certgui;
 mod certtui;
 mod cosign;
 mod filter_and_xml;
+mod invoice;
 mod json;
 mod listaliases;
 mod listaliases_json;
@@ -402,7 +403,7 @@ fn invalid_sign_arguments_are_refused_before_anything_else_with_a_nonzero_code()
             "sha1",
         ][..],
         &[
-            "sign", "-i", "a.pdf", "-o", "b.pdf", "-alias", "yo", "-format", "facturae",
+            "sign", "-i", "a.pdf", "-o", "b.pdf", "-alias", "yo", "-format", "ooxml",
         ][..],
         &["sign", "-i", "a.pdf", "-o", "b.pdf"][..],
         &[

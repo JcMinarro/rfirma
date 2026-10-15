@@ -89,6 +89,7 @@ fn signed(
             parsed.input
         ))
     })?;
+    refuse_a_format_the_input_cannot_take(parsed.format, operation, &bytes)?;
     let format = signature_format_of(parsed.format, &bytes);
     let (certificate, typed_in_the_window) =
         the_certificate_chosen_by(selection, input, arguments, ports)?;
@@ -159,11 +160,31 @@ fn response_of(outcome: &Outcome, signature: Option<&[u8]>) -> Response {
     Response::new(result, fields)
 }
 
+fn refuse_a_format_the_input_cannot_take(
+    asked: Format,
+    operation: SignatureOperation,
+    bytes: &[u8],
+) -> Result<(), Outcome> {
+    let is_an_invoice = shape_of(bytes) == DetectedShape::Invoice;
+    if operation == SignatureOperation::Cosign && is_an_invoice {
+        return Err(Outcome::refused_with(
+            "FacturaE no admite cofirma ni contrafirma",
+        ));
+    }
+    if asked == Format::FacturaE && !is_an_invoice {
+        return Err(Outcome::refused_with(
+            "el fichero de -i no es una factura electrónica (FacturaE)",
+        ));
+    }
+    Ok(())
+}
+
 fn signature_format_of(asked: Format, bytes: &[u8]) -> SignatureFormat {
     match asked {
         Format::Pades => SignatureFormat::Pades,
         Format::Cades => SignatureFormat::Cades,
         Format::Xades => SignatureFormat::Xades(XadesVariant::Enveloping),
+        Format::FacturaE => SignatureFormat::FacturaE,
         Format::Auto => match shape_of(bytes) {
             DetectedShape::Pdf => SignatureFormat::Pades,
             DetectedShape::Xml | DetectedShape::Invoice => {

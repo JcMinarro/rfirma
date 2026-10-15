@@ -74,6 +74,16 @@ fn sign_json_names_the_formats_asked_for_with_their_official_names() {
 }
 
 #[test]
+fn sign_json_names_an_invoice_as_facturae() {
+    let invoice =
+        b"<?xml version=\"1.0\"?><fe:Facturae><FileHeader/><Parties/><Invoices/></fe:Facturae>";
+
+    let signed = signed_as_json("sign", invoice, &["-format", "facturae"]);
+
+    assert_eq!(signed["format"], "FacturaE");
+}
+
+#[test]
 fn sign_json_gives_the_common_fields_of_the_certificate_with_its_alias() {
     let root = TestAuthority::root_with_serial("Raíz de pruebas", 0x0A_1B2C);
     let (not_before, not_after) = root.as_certificate("yo").validity().expect("el DER se lee");
