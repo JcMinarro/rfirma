@@ -1,0 +1,21 @@
+.sede-missing__look-again {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.sede-missing__look-again > svg {
+  flex: none;
+}
+
+.sede-missing__look-again-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sede-missing__steady {
+  flex: none;
+  white-space: nowrap;
+}

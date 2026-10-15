@@ -1642,6 +1642,12 @@ msgstr[0] "Non se acepta o teu certificado"
 msgstr[1] "Non se acepta ningún dos teus {{count}} certificados"
 msgstr[2] "Non se acepta ningún dos teus {{count}} certificados"
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] "Non acepta o teu certificado"
+msgstr[1] "Non acepta ningún dos teus {{count}} certificados"
+msgstr[2] "Non acepta ningún dos teus {{count}} certificados"
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "O teu --filter non deixa o teu certificado"

@@ -1647,6 +1647,12 @@ msgstr[0] "Your certificate isn't accepted"
 msgstr[1] "None of your {{count}} certificates are accepted"
 msgstr[2] "None of your {{count}} certificates are accepted"
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] "It doesn't accept your certificate"
+msgstr[1] "It accepts none of your {{count}} certificates"
+msgstr[2] "It accepts none of your {{count}} certificates"
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "Your --filter leaves out your certificate"

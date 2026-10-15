@@ -1662,6 +1662,12 @@ msgstr[0] "Ez da zure ziurtagiria onartzen"
 msgstr[1] "Ez da zure {{count}} ziurtagirietako bat ere onartzen"
 msgstr[2] "Ez da zure {{count}} ziurtagirietako bat ere onartzen"
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] "Ez du zure ziurtagiria onartzen"
+msgstr[1] "Ez du zure {{count}} ziurtagirietako bat ere onartzen"
+msgstr[2] "Ez du zure {{count}} ziurtagirietako bat ere onartzen"
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "Zure --filter-ak ez du zure ziurtagiria uzten"

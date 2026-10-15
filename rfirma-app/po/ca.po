@@ -1651,6 +1651,12 @@ msgstr[0] "No s'accepta el teu certificat"
 msgstr[1] "No s'accepta cap dels teus {{count}} certificats"
 msgstr[2] "No s'accepta cap dels teus {{count}} certificats"
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] "No accepta el teu certificat"
+msgstr[1] "No accepta cap dels teus {{count}} certificats"
+msgstr[2] "No accepta cap dels teus {{count}} certificats"
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "El teu --filter no deixa el teu certificat"
