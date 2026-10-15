@@ -109,10 +109,11 @@ if command -v dpkg-deb > /dev/null 2>&1; then
 Recommends: opensc, pcscd
 }" staging
         staging="$(mktemp -d "$tmp/deb.XXXX")"
-        mkdir -p "$staging/DEBIAN" "$staging/usr/lib/rfirma"
+        mkdir -p "$staging/DEBIAN" "$staging/usr/lib/rfirma" "$staging/usr/share/doc/rfirma/licenses"
         printf 'Package: rfirma\nVersion: 1.0.0\nArchitecture: amd64\nMaintainer: pruebas\nDescription: pruebas\n%s' \
             "$relations" > "$staging/DEBIAN/control"
         : > "$staging/usr/lib/rfirma/librfirma_crypto.so"
+        : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
         [ -z "$library" ] || : > "$staging/usr/lib/rfirma/$library"
         dpkg-deb --build --root-owner-group "$staging" "$out" > /dev/null
     }
