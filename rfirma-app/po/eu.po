@@ -1584,6 +1584,9 @@ msgstr ""
 "du, eta akatsak izan ditzake edo baliteke segurua ez izatea. Sakatu Jarraitu "
 "aurrera egiteko; zerbait gaizki badoa, jakinarazi orria kudeatzen duenari."
 
+msgid "sede.oldWebClient.risk"
+msgstr "Akatsak izan ditzake edo baliteke segurua ez izatea."
+
 msgid "sede.refusals.retry"
 msgstr "Itzuli egoitzara eta saiatu berriro."
 

@@ -1568,6 +1568,9 @@ msgstr ""
 "erros ou non ser segura. Preme Continuar para seguir; se algo falla, avisa a "
 "quen mantén a páxina."
 
+msgid "sede.oldWebClient.risk"
+msgstr "Pode ter erros ou non ser segura."
+
 msgid "sede.refusals.retry"
 msgstr "Volve á sede e téntao de novo."
 

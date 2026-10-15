@@ -1572,6 +1572,9 @@ msgstr ""
 "have bugs or not be secure. Press Continue to proceed; if something goes "
 "wrong, tell whoever runs the page."
 
+msgid "sede.oldWebClient.risk"
+msgstr "It may have errors or not be secure."
+
 msgid "sede.refusals.retry"
 msgstr "Go back to the site and try again."
 

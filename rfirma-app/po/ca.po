@@ -1576,6 +1576,9 @@ msgstr ""
 "tenir errors o no ser segura. Prem Continuar per seguir; si alguna cosa "
 "falla, avisa qui manté la pàgina."
 
+msgid "sede.oldWebClient.risk"
+msgstr "Pot tenir errors o no ser segura."
+
 msgid "sede.refusals.retry"
 msgstr "Torna a la seu i prova-ho de nou."
 
