@@ -1,17 +1,12 @@
-import { composeStories } from "@storybook/react-vite";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
-import * as consentModule from "./SedeConsent.stories";
-import * as noCertificateModule from "./SedeNoCertificate.stories";
 import { SedeWindow } from "./SedeWindow";
+import { TerminalExcludedByFilter, TerminalOrder } from "./testing/fixtures/sedeErrands";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: la variante de origen «orden de terminal» de la ventana de sede (`-certgui`). */
-
-const { TerminalOrder } = composeStories(consentModule);
-const { TerminalExcludedByFilter } = composeStories(noCertificateModule);
 
 describe("terminal order origin", () => {
   it("says only that a terminal order asks, with nothing addressed to a site", () => {

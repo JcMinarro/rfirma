@@ -1,11 +1,9 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import { CHROME_LOCAL_NETWORK_SETTINGS, noErrand } from "./errand";
-import * as oldWebClientModule from "./SedeOldWebClient.stories";
-import * as waitingModule from "./SedeWaiting.stories";
 import { SedeWindow } from "./SedeWindow";
+import { NoChannel, OldWebClient, Unreachable, Waiting } from "./testing/fixtures/sedeErrands";
 import { sedeErrand } from "./testing/fixtures/sedeView";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
@@ -14,9 +12,6 @@ import { scriptedFrom } from "./testing/fixtures/sedeWindow";
  * de la petición. Cada estado se monta desde su historia y las conductas se leen
  * en la pantalla; lo que enseña cada historia está en `SedeWindow.presentation.test.tsx`.
  */
-
-const { OldWebClient } = composeStories(oldWebClientModule);
-const { Waiting, Unreachable, NoChannel } = composeStories(waitingModule);
 
 const LocalCaMissing = {
   args: {},

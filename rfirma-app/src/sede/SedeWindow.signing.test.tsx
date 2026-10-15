@@ -1,17 +1,12 @@
-import { composeStories } from "@storybook/react-vite";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
-import * as confirmModule from "./SedeConfirm.stories";
-import * as signingModule from "./SedeSigning.stories";
 import { SedeWindow } from "./SedeWindow";
+import { Returning, ShadowAttackSuspect, Signing } from "./testing/fixtures/sedeErrands";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: el momento 2b (la confirmación que exige el validador) y el 3 (la firma), por su puerto. */
-
-const { ShadowAttackSuspect } = composeStories(confirmModule);
-const { Signing, Returning } = composeStories(signingModule);
 
 describe("2b · confirming what the validator flags", () => {
   it("focuses Continuar, so Enter goes on to consent: the person has not consented yet", () => {

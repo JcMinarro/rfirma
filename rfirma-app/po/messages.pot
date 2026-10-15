@@ -403,12 +403,6 @@ msgstr ""
 msgid "viewer.stamp.failed"
 msgstr ""
 
-msgid "panel.document.pages"
-msgid_plural "panel.document.pages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
 msgid_plural "panel.previousSignatures.alongside"
@@ -1259,13 +1253,7 @@ msgstr ""
 msgid "sede.waiting.title"
 msgstr ""
 
-msgid "sede.waiting.lead"
-msgstr ""
-
 msgid "sede.unreachable.title"
-msgstr ""
-
-msgid "sede.unreachable.lead"
 msgstr ""
 
 msgid "sede.repair.caMissing"
@@ -1290,101 +1278,12 @@ msgstr ""
 msgid "sede.repair.retry"
 msgstr ""
 
-msgid "sede.consent.asksSignature"
-msgstr ""
-
-msgid "sede.consent.asksIdentity"
-msgstr ""
-
-#. La misma frase que "asksSignature", con el formato del #530 nombrado.
-msgid "sede.consent.asksSignatureOf"
-msgstr ""
-
-#. Qué es lo que la sede pide firmar, según el formato de la petición (#530).
-msgid "sede.consent.signingKind.pdf"
-msgstr ""
-
-msgid "sede.consent.signingKind.challenge"
-msgstr ""
-
-msgid "sede.consent.signingKind.xml"
-msgstr ""
-
-msgid "sede.consent.signingKind.invoice"
-msgstr ""
-
-#. Misma forma que "asksSignature", con una página sin identificar como sujeto.
-msgid "sede.consent.unknownOriginSignature"
-msgstr ""
-
-msgid "sede.consent.terminalTitle"
-msgstr ""
-
-msgid "sede.consent.unknownOriginIdentity"
-msgstr ""
-
 #. El PDF no trae título en sus metadatos, y el nombre de fichero no viaja
 #. nunca en la petición.
 msgid "sede.consent.untitled"
 msgstr ""
 
-#. Nunca se enumera lo que la sede descartó ni con qué criterio.
-msgid "sede.consent.narrowed"
-msgstr ""
-
-msgid "sede.consent.narrowedUnknownOrigin"
-msgstr ""
-
-msgid "sede.consent.sha1Allowed"
-msgstr ""
-
-msgid "sede.consent.sha1ToAllowTitle"
-msgstr ""
-
-msgid "sede.consent.sha1ToAllow"
-msgstr ""
-
-msgid "sede.consent.signOnce"
-msgstr ""
-
 msgid "sede.consent.willSend"
-msgstr ""
-
-#. Contrafirma: se firma sobre las firmas que el documento ya trae, y el
-#. objetivo dice sobre cuáles.
-msgid "sede.consent.counterSignatureTree"
-msgstr ""
-
-msgid "sede.consent.counterSignatureLeafs"
-msgstr ""
-
-#. Cofirma: se firma junto a las firmas que el documento ya trae, sin
-#. contarlas, porque las cuenta el aviso de firmas previas de debajo.
-msgid "sede.consent.coSignature"
-msgstr ""
-
-msgid "sede.consent.batchTitle"
-msgid_plural "sede.consent.batchTitle"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-msgid "sede.consent.batchNote"
-msgstr ""
-
-msgid "sede.consent.batchItemLabel"
-msgstr ""
-
-msgid "sede.consent.localBatchRoundSign"
-msgstr ""
-
-msgid "sede.consent.localBatchRoundCosign"
-msgstr ""
-
-msgid "sede.consent.localBatchRoundCounterTree"
-msgstr ""
-
-msgid "sede.consent.localBatchRoundCounterLeafs"
 msgstr ""
 
 msgid "actions.sign"
@@ -1412,31 +1311,16 @@ msgstr ""
 msgid "sede.marking.title"
 msgstr ""
 
-msgid "sede.marking.hint"
-msgstr ""
-
 msgid "sede.marking.unreadable"
 msgstr ""
 
-msgid "sede.signing.with"
-msgstr ""
-
-msgid "sede.returning.title"
-msgstr ""
-
 msgid "sede.returning.titleUnknownOrigin"
-msgstr ""
-
-msgid "sede.returning.body"
 msgstr ""
 
 msgid "sede.saving.title"
 msgstr ""
 
 msgid "sede.saving.titleUnnamed"
-msgstr ""
-
-msgid "sede.saving.lead"
 msgstr ""
 
 msgid "sede.saving.leadUnwritable"
@@ -1448,60 +1332,14 @@ msgstr ""
 msgid "sede.loading.titleMany"
 msgstr ""
 
-msgid "sede.loading.lead"
-msgstr ""
-
-msgid "sede.loading.leadMany"
-msgstr ""
-
 msgid "sede.outcome.signedTitle"
-msgstr ""
-
-msgid "sede.outcome.signedBody"
-msgstr ""
-
-msgid "sede.outcome.signedBodyUnknownOrigin"
-msgstr ""
-
-#. No se deduce mirando: la aplicación sí tiene bandeja de recientes.
-msgid "sede.outcome.signedNote"
 msgstr ""
 
 msgid "sede.outcome.savedTitle"
 msgstr ""
 
-msgid "sede.outcome.savedBody"
-msgstr ""
-
-msgid "sede.outcome.savedBodyUnknownOrigin"
-msgstr ""
-
 msgid "sede.outcome.loadedTitle"
 msgstr ""
-
-msgid "sede.outcome.loadedBody"
-msgid_plural "sede.outcome.loadedBody"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-msgid "sede.outcome.loadedBodyUnknownOrigin"
-msgid_plural "sede.outcome.loadedBodyUnknownOrigin"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-msgid "sede.outcome.batchBody"
-msgid_plural "sede.outcome.batchBody"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-msgid "sede.outcome.batchBodyUnknownOrigin"
-msgid_plural "sede.outcome.batchBodyUnknownOrigin"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
 
 msgid "sede.outcome.cancelledTitle"
 msgstr ""
@@ -1515,16 +1353,10 @@ msgstr ""
 msgid "sede.outcome.reportHint"
 msgstr ""
 
-msgid "sede.outcome.autoClose"
-msgstr ""
-
 msgid "sede.outcome.closeIn"
 msgstr ""
 
 msgid "sede.oldWebClient.title"
-msgstr ""
-
-msgid "sede.oldWebClient.body"
 msgstr ""
 
 msgid "sede.oldWebClient.risk"
@@ -1555,9 +1387,6 @@ msgstr ""
 msgid "sede.siteNotes.sha1"
 msgstr ""
 
-msgid "sede.refusalHints.sha1"
-msgstr ""
-
 msgid "sede.siteNotes.invoiceMultisignature"
 msgstr ""
 
@@ -1567,31 +1396,8 @@ msgstr ""
 msgid "sede.noCertificate.noneTitle"
 msgstr ""
 
-msgid "sede.noCertificate.noneBody"
-msgstr ""
-
-msgid "sede.noCertificate.noneBodyUnknownOrigin"
-msgstr ""
-
-msgid "sede.noCertificate.noneHint"
-msgstr ""
-
 msgid "sede.noCertificate.install"
 msgstr ""
-
-#. La sede excluyó todos los certificados de la persona. Se dice cuántos tiene
-#. —estado de su almacén— y nunca cuáles descartó la sede ni por qué.
-msgid "sede.noCertificate.excludedTitle"
-msgid_plural "sede.noCertificate.excludedTitle"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-msgid "sede.noCertificate.excludedTitleUnknownOrigin"
-msgid_plural "sede.noCertificate.excludedTitleUnknownOrigin"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
 
 msgid "sede.noCertificate.notAcceptedTitle"
 msgid_plural "sede.noCertificate.notAcceptedTitle"
@@ -1604,9 +1410,6 @@ msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-
-msgid "sede.noCertificate.excludedBody"
-msgstr ""
 
 #. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
 msgid "sede.origin.asks"

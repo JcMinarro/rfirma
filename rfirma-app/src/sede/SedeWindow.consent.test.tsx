@@ -1,12 +1,17 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
-import * as consentModule from "./SedeConsent.stories";
 import { SedeWindow } from "./SedeWindow";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
+import {
+  Batch,
+  Consent,
+  IdentityData,
+  LocalBatch,
+  PreviousSignaturesWithProblem,
+} from "./testing/fixtures/sedeErrands";
 import {
   certificate,
   consentStage,
@@ -17,9 +22,6 @@ import {
 } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: el momento 2, el consentimiento compacto, con su aviso único y su cuenta atrás. */
-
-const { Consent, Batch, LocalBatch, IdentityData, PreviousSignaturesWithProblem } =
-  composeStories(consentModule);
 
 const grace = certificate({
   id: "grace",

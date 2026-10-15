@@ -113,9 +113,9 @@ describe("la resolución de cadenas", () => {
   it("reparte los plurales con `Intl.PluralRules`, no con un ternario", () => {
     const i18n = createI18n("es");
 
-    expect(i18n.t("panel.document.pages", { count: 1 })).toBe("1 página");
-    expect(i18n.t("panel.document.pages", { count: 2 })).toBe("2 páginas");
-    expect(i18n.t("panel.document.pages", { count: 1_000_000 })).toBe("1000000 páginas");
+    expect(i18n.t("panel.signed.count", { count: 1 })).toBe("1 firma");
+    expect(i18n.t("panel.signed.count", { count: 2 })).toBe("2 firmas");
+    expect(i18n.t("panel.signed.count", { count: 1_000_000 })).toBe("1000000 firmas");
   });
 
   it("cae al castellano donde el catálogo está sin traducir", () => {

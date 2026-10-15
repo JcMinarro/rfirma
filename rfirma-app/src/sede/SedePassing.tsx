@@ -4,13 +4,15 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
+import { Icon } from "../design-system/icons";
 import { ProgressBar } from "../design-system/ProgressBar";
+import { Row } from "../design-system/Row";
+import { Stack } from "../design-system/Stack";
 import { Tab, Tabs } from "../design-system/Tabs";
 import { useDefaultButton } from "../design-system/useDefaultButton";
-import type { SigningPhase } from "./errand";
+import { CHROME_LOCAL_NETWORK_SETTINGS, type SigningPhase } from "./errand";
 import { SedeBody } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
-import { type Browser, ChromeRecipe, FirefoxRecipe } from "./SedeWaiting";
 import "./SedeWindow.css";
 import "./SedeEnding.css";
 import "./SedePassing.css";
@@ -228,5 +230,44 @@ export function SedeFileTransfer({ origin, transfer }: SedeFileTransferProps) {
         </div>
       </div>
     </SedeBody>
+  );
+}
+
+/** Cuál de las dos recetas se está leyendo. */
+type Browser = "chrome" | "firefox";
+
+/** Los dos pasos para permitir la red local en Chrome. */
+function ChromeRecipe() {
+  const { t } = useTranslation();
+  return (
+    <Stack as="ol" className="sede-waiting__steps">
+      <li className="rf-prose">{t("sede.repair.chromeAllow")}</li>
+      <li className="rf-prose">
+        {t("sede.repair.chromeGone")}
+        <Row as="span" gap="xs" className="sede-waiting__address">
+          {/* Un `chrome://` no es navegable desde fuera: se copia, no se pulsa. */}
+          <code className="rf-body">{CHROME_LOCAL_NETWORK_SETTINGS}</code>
+          <Button
+            variant="ghost"
+            onClick={() => void navigator.clipboard.writeText(CHROME_LOCAL_NETWORK_SETTINGS)}
+          >
+            <Icon name="copy" size={14} />
+            {t("actions.copy")}
+          </Button>
+        </Row>
+        <span className="rf-hint">{t("sede.repair.chromePadlock")}</span>
+      </li>
+    </Stack>
+  );
+}
+
+/** Los dos pasos para permitir la red local en Firefox. */
+function FirefoxRecipe() {
+  const { t } = useTranslation();
+  return (
+    <Stack as="ol" className="sede-waiting__steps">
+      <li className="rf-prose">{t("sede.repair.firefoxAllow")}</li>
+      <li className="rf-prose">{t("sede.repair.firefoxGone")}</li>
+    </Stack>
   );
 }

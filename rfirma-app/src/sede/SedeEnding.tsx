@@ -1,5 +1,6 @@
 //! 4 · El desenlace con el esqueleto del consentimiento compacto: el nombre de la sede, el icono junto al título, y en el rechazo su frase y el detalle copiable.
 
+import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
@@ -7,6 +8,7 @@ import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { Row } from "../design-system/Row";
 import { useDefaultButton } from "../design-system/useDefaultButton";
+import { errorText } from "../errors/errorMessage";
 import {
   isSedeRefusal,
   OUTCOME_CLOSE_MS,
@@ -16,7 +18,6 @@ import {
 } from "./errand";
 import { SedeBody, useOutcomeClock } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
-import { OutcomeIcon, title as outcomeTitle, RefusalStatement, siteNote } from "./SedeOutcome";
 import "./SedeWindow.css";
 import "./SedeEnding.css";
 
@@ -125,4 +126,83 @@ function useClosingSeconds(enabled: boolean): number {
   }, [enabled, remaining]);
 
   return remaining;
+}
+
+/** Los tres del artboard: visto, aspa y triángulo, uno por desenlace. */
+function OutcomeIcon({ kind }: { kind: SiteOutcome["kind"] }) {
+  switch (kind) {
+    case "signed":
+    case "batchSigned":
+    case "saved":
+    case "loaded":
+      return <Icon name="success" size={24} />;
+    case "cancelled":
+      return <Icon name="failure" size={24} />;
+    default:
+      return <Icon name="warning" size={24} />;
+  }
+}
+
+/** Lo que puede hacer la persona; cada clave va entera para que la vea `extract`. */
+function RefusalSentence({ situation }: { situation: RefusalSituation }) {
+  const { t } = useTranslation();
+
+  if (!isSedeRefusal(situation)) return <>{errorText(situation, t).title}</>;
+  switch (REFUSAL_ACTION_OF[situation]) {
+    case "retry":
+      return <>{t("sede.refusals.retry")}</>;
+    case "contactSite":
+      return <>{t("sede.refusals.contactSite")}</>;
+    case "closeOther":
+      return <>{t("sede.refusals.closeOther")}</>;
+    case "otherCertificate":
+      return <>{t("sede.refusals.otherCertificate")}</>;
+  }
+}
+
+/** Por qué rFirma no hace una firma que la sede pide de forma insegura o imposible; en otro rechazo, qué hacer. */
+function RefusalStatement({ situation }: { situation: RefusalSituation }) {
+  const { t } = useTranslation();
+
+  switch (situation) {
+    case "sha1":
+      return <>{t("sede.refusalCauses.sha1")}</>;
+    case "invoiceMultisignature":
+      return <>{t("sede.refusalCauses.invoiceMultisignature")}</>;
+    case "unsupportedCountersignature":
+      return <>{t("sede.refusalCauses.unsupportedCountersignature")}</>;
+    default:
+      return <RefusalSentence situation={situation} />;
+  }
+}
+
+/** Lo que quien mantiene la sede puede cambiar para que rFirma firme, cuando rFirma se niega. */
+function siteNote(situation: RefusalSituation, t: TFunction): string | null {
+  switch (situation) {
+    case "sha1":
+      return t("sede.siteNotes.sha1");
+    case "invoiceMultisignature":
+      return t("sede.siteNotes.invoiceMultisignature");
+    case "unsupportedCountersignature":
+      return t("sede.siteNotes.unsupportedCountersignature");
+    default:
+      return null;
+  }
+}
+
+/** El título ya dice lo que pasó; nada debajo lo repite. */
+function outcomeTitle(outcome: SiteOutcome, t: TFunction): string {
+  switch (outcome.kind) {
+    case "signed":
+    case "batchSigned":
+      return t("sede.outcome.signedTitle");
+    case "saved":
+      return t("sede.outcome.savedTitle");
+    case "loaded":
+      return t("sede.outcome.loadedTitle");
+    case "cancelled":
+      return t("sede.outcome.cancelledTitle");
+    default:
+      return t("sede.outcome.refusedTitle");
+  }
 }

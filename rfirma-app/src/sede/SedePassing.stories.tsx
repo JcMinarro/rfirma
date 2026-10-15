@@ -1,4 +1,4 @@
-//! Las historias provisionales de los momentos de paso de la sede con el esqueleto del consentimiento compacto: la espera, la firma y el guardar o cargar.
+//! Las historias de los momentos de paso de la sede con el esqueleto del consentimiento compacto: la espera, la firma y el guardar o cargar.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { sedeMomentMeta } from "../../.storybook/decorators/sedeWindow";
@@ -61,7 +61,7 @@ function TransferDesign({ kind, named, unwritable, many, withOrigin }: PassingDe
 }
 
 const meta = {
-  title: "Pantallas/Ventana de sede/Momentos de paso nuevos",
+  title: "Pantallas/Ventana de sede/Momentos de paso",
   ...sedeMomentMeta,
   component: AwaitingDesign,
   args: {
@@ -86,7 +86,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "Provisional: el diseño de los momentos de paso con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir; en la espera y la firma, con lo que pide la sede; al guardar o cargar, solo su nombre. Debajo, alineado a la izquierda, solo el título.",
+          "Los momentos de paso con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir; en la espera y la firma, con lo que pide la sede; al guardar o cargar, solo su nombre. Debajo, alineado a la izquierda, solo el título.",
           "Cuando la petición no llega, la pantalla da las recetas del permiso del navegador. Si rFirma sabe que falta su CA local, lo dice en el único aviso de la pantalla, con «Instalar» a su derecha como principal, y siempre encima de las pestañas de Chrome y Firefox; bajo ellas va la receta del navegador elegido. El pie conserva las posiciones del consentimiento: a la izquierda, qué hacer tras permitir, que cede si no cabe; a la derecha, «Cerrar», que es el principal cuando no hay aviso.",
           "Mientras se espera o se firma, «Cancelar» queda a la derecha; mientras se envía la firma y mientras el diálogo del sistema guarda o carga, el pie queda vacío a la misma altura.",
         ].join("\n\n"),

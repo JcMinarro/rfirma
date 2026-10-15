@@ -1,4 +1,4 @@
-//! La historia provisional del momento sin certificado utilizable con el esqueleto del consentimiento compacto, que documenta el diseño hasta que se implemente.
+//! Las historias del momento sin certificado utilizable con el esqueleto del consentimiento compacto.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { sedeMomentMeta } from "../../.storybook/decorators/sedeWindow";
@@ -40,7 +40,7 @@ function MissingDesign({ reason, owned, errand, withOrigin, installFailed }: Mis
 }
 
 const meta = {
-  title: "Pantallas/Ventana de sede/Sin certificado nuevo",
+  title: "Pantallas/Ventana de sede/Sin certificado",
   ...sedeMomentMeta,
   component: MissingDesign,
   args: {
@@ -85,7 +85,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "Provisional: el diseño del momento sin certificado utilizable con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir, con quién lo pide; debajo, alineado a la izquierda, solo el título con el icono a su izquierda.",
+          "El momento sin certificado utilizable con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir, con quién lo pide; debajo, alineado a la izquierda, solo el título con el icono a su izquierda.",
           "El pie conserva las posiciones del consentimiento: a la izquierda, «Volver a buscar», que cede y se corta si no cabe; a la derecha, «Cancelar» e «Instalar un certificado…» como principal. Desde una orden de terminal con todos excluidos no hay arreglo que ofrecer y solo queda «Cerrar».",
           "Si falla la instalación, el fallo va bajo el título en un aviso de error con su detalle técnico.",
         ].join("\n\n"),

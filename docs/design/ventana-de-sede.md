@@ -199,15 +199,15 @@ de las cabeceras de los componentes.
   salir y para las microacciones, y `--secondary` no se usa en ningún momento de
   esta ventana.
 
-### Consentimiento ampliable (diseño pendiente de implementar)
+### Consentimiento ampliable (la compacta es real; la ampliada, pendiente)
 
 Quien no se fía de la sede puede ver lo que firma sin cargar la ventana a quien
 sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consentimiento
 ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
-enseña. **Son provisionales**: documentan el diseño sobre componentes que solo
-usan ellas (`SedeConsentCompact`, `SedeConsentExpanded`, `SedeSignatureCards`),
-sin cambiar el consentimiento real. La spec que lo implemente lleva la vista
-nueva a `SedeConsent`, sustituye estas historias por las de siempre y borra lo
+enseña. **La compacta es el consentimiento real** (`SedeConsentCompact`). **Las
+`Expanded*` son provisionales**: documentan el diseño sobre componentes que solo
+usan ellas (`SedeConsentExpanded`, `SedeSignatureCards`), sin cambiar la ventana
+real. La spec que implemente la vista ampliada las lleva a la ventana y borra lo
 que solo existía para ellas.
 
 - **Primero con qué se firma, y después qué.** En las dos formas el selector
@@ -293,11 +293,10 @@ firmas previas como aviso compacto dejan de ser ciertas.
   cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
   al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
 
-### El resto de momentos con el esqueleto nuevo (diseño pendiente de implementar)
+### El resto de momentos con el esqueleto nuevo
 
 Los demás momentos se rehacen sobre el esqueleto del consentimiento ampliable.
-Como él, las historias son provisionales y no cambian la ventana real; las
-decisiones de abajo sustituyen a las de su momento cuando se implementen.
+Es el de la ventana real; las decisiones de abajo son las de cada momento.
 
 - **Un solo esqueleto en todos los momentos**: arriba la cabecera `SedeOrigin` de
   56 px; el cuerpo, alineado a la izquierda, con el icono a la izquierda del
@@ -352,11 +351,8 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
   cambia el esqueleto.
 - **Como mucho un `Admonition` por pantalla, con un solo estilo para todos los
   tonos**: el tono solo cambia el icono.
-- **Las historias provisionales sustituyen a las de hoy al implementarse.** Cada
-  grupo «… nuevo», «Consentimiento ampliable», «Momentos de paso nuevos» y
-  «Avisos previos nuevos» de «Pantallas/Ventana de sede» reemplaza al de su
-  momento y pierde el «nuevo» del nombre, y «Ventana» queda en una sola
-  composición con el consentimiento nuevo.
+- **Las historias de «Pantallas/Ventana de sede» son las de la ventana real**,
+  salvo las `Expanded*` del consentimiento, que siguen como diseño provisional.
 
 ### Marcar el área
 
@@ -523,21 +519,12 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 
 | Momento | Historias |
 | --- | --- |
-| 0 · aviso del cliente antiguo | `SedeOldWebClient.stories.tsx`: `OldWebClient` |
-| 1 · espera | `SedeWaiting.stories.tsx`: `Waiting`, `Unreachable`, `NoChannel` |
-| 1c · marcar el área | `SedeMarking.stories.tsx`: `Marking`, `UnreadableDocument` |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: una por certificado, varios, acotado, sin título, cofirma, contrafirma sobre todas o sobre las últimas, firmas previas válidas o con problema, lote remoto y local, cesión de identidad, sin origen, cuenta atrás y orden de terminal |
-| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
-| 2b · confirmar | `SedeConfirm.stories.tsx`: `ShadowAttackSuspect`, `ModifiedForm`, `CertifiedPdf`, `UnknownMessage` |
-| 3 · firmando | `SedeSigning.stories.tsx`: `Signing`, `Returning` |
-| 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |
-| 4 · desenlace | `SedeOutcome.stories.tsx`: un final por tipo y un rechazo por cada acción, el desconocido, el del escritorio y el de sin origen |
-| 5 · sin certificado | `SedeNoCertificate.stories.tsx`: `NoneInstalled`, `ExcludedBySite`, `InstallFailed` y las dos de terminal |
-| 0 y 2b · avisos previos (diseño pendiente) | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador con el esqueleto nuevo |
-| 1 y 3 · espera, firmando, guardar y cargar (diseño pendiente) | `SedePassing.stories.tsx`: los momentos de paso con el esqueleto nuevo |
-| 1c · marcar el área (diseño pendiente) | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 4 · desenlace (diseño pendiente) | `SedeEnding.stories.tsx`: los finales y los rechazos con el esqueleto nuevo |
-| 5 · sin certificado (diseño pendiente) | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar con el esqueleto nuevo |
+| 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
+| 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
+| 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y, como diseño provisional, `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
+| 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 
 `src/stories.test.tsx` las pinta todas con axe, así que una historia nueva queda
 revisada sin escribir otro test. El momento de consentimiento, que comparten las

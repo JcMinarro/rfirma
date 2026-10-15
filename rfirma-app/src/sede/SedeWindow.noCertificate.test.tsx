@@ -1,4 +1,3 @@
-import { composeStories } from "@storybook/react-vite";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,15 +6,11 @@ import type { Certificate } from "../signing/certificate";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import { OUTCOME_CLOSE_MS } from "./errand";
-import * as noCertificateModule from "./SedeNoCertificate.stories";
-import * as outcomeModule from "./SedeOutcome.stories";
 import { SedeWindow } from "./SedeWindow";
+import { Cancelled, ExcludedBySite, NoneInstalled } from "./testing/fixtures/sedeErrands";
 import { scriptedErrand, scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: el momento 5 (sin certificado utilizable), el fallo de un hijo y la forma de la ventana. */
-
-const { NoneInstalled, ExcludedBySite } = composeStories(noCertificateModule);
-const { Cancelled } = composeStories(outcomeModule);
 
 describe("5 · no usable certificate", () => {
   it("leaves through the footer, and the window paints no cross of its own", async () => {
