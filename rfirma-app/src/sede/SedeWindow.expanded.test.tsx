@@ -21,11 +21,15 @@ const BAREMO: SiteDocument = {
   ...signedDocument,
   name: "Baremo.xml",
   detected: "xml",
-  content: { kind: "text", text: '<baremo convocatoria="FACHADAS-2026"/>' },
+  content: { kind: "xml", text: '<baremo convocatoria="FACHADAS-2026"/>' },
 };
 
 function consenting(document: SiteDocument = BAREMO) {
   return scriptedErrand(consentStage({ document }));
+}
+
+function depthOf(line: HTMLElement) {
+  return line.style.getPropertyValue("--xml-depth");
 }
 
 function footerButtons() {
@@ -158,6 +162,32 @@ describe("2 · the expanded consent", () => {
         "src",
         "data:image/png;base64,AQID",
       );
+    });
+
+    it("shows a one-line XML indented, one element per line", async () => {
+      await expandWith({
+        ...BAREMO,
+        content: {
+          kind: "xml",
+          text: '<baremo convocatoria="FACHADAS-2026"><criterio id="1"><peso>40</peso></criterio></baremo>',
+        },
+      });
+
+      const root = screen.getByText('<baremo convocatoria="FACHADAS-2026">');
+      expect(depthOf(root)).toBe("0");
+      expect(depthOf(screen.getByText('<criterio id="1">'))).toBe("1");
+      expect(depthOf(screen.getByText("<peso>40</peso>"))).toBe("2");
+      expect(depthOf(screen.getByText("</criterio>"))).toBe("1");
+      expect(depthOf(screen.getByText("</baremo>"))).toBe("0");
+    });
+
+    it("shows an XML that cannot be parsed as it comes", async () => {
+      await expandWith({
+        ...BAREMO,
+        content: { kind: "xml", text: "<baremo><criterio></baremo>" },
+      });
+
+      expect(screen.getByText("<baremo><criterio></baremo>")).toBeInTheDocument();
     });
 
     it("says a document without preview cannot be shown, with its name", async () => {

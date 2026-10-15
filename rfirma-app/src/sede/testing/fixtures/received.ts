@@ -123,16 +123,15 @@ export const resolutionPdf: PdfDocument = {
   getPage: (number) => Promise.resolve(pageWith(number, RESOLUTION)),
 };
 
-/** El baremo en XML, que el visor enseña como texto literal. */
-const BAREMO_XML = `<?xml version="1.0" encoding="UTF-8"?>
-<baremo convocatoria="FACHADAS-2026">
-  <criterio id="1" peso="40">Antigüedad del edificio</criterio>
-  <criterio id="2" peso="30">Estado de conservación</criterio>
-  <criterio id="3" peso="20">Accesibilidad</criterio>
-  <criterio id="4" peso="10">Eficiencia energética</criterio>
-  <puntuacionMinima>50</puntuacionMinima>
-  <solicitudes total="38" concedidas="21"/>
-</baremo>`;
+/** El baremo en XML, en una sola línea como lo mandan las sedes, que el visor enseña indentado. */
+const BAREMO_XML =
+  '<?xml version="1.0" encoding="UTF-8"?><baremo convocatoria="FACHADAS-2026">' +
+  '<criterio id="1" peso="40">Antigüedad del edificio</criterio>' +
+  '<criterio id="2" peso="30">Estado de conservación</criterio>' +
+  '<criterio id="3" peso="20">Accesibilidad</criterio>' +
+  '<criterio id="4" peso="10">Eficiencia energética</criterio>' +
+  "<puntuacionMinima>50</puntuacionMinima>" +
+  '<solicitudes total="38" concedidas="21"/></baremo>';
 
 /** Las tres firmas PAdES de la resolución: una válida, una caducada que cierra el documento y una que no admitía, con el documento cambiado después. */
 export const PADES_SIGNATURES: PreviousSignaturesReport = previousSignaturesReport(
@@ -239,7 +238,13 @@ const POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420
   <text x="40" y="404" fill="#64748b" font-family="Inter, sans-serif" font-size="14">Presupuesto: 84.250,00 €</text>
 </svg>`;
 
-const DETECTED_BY_CONTENT = { pdf: "pdf", text: "xml", image: "jpeg", none: "xlsx" } as const;
+const DETECTED_BY_CONTENT = {
+  pdf: "pdf",
+  xml: "xml",
+  text: "text",
+  image: "jpeg",
+  none: "xlsx",
+} as const;
 
 function document(overrides: Partial<ReceivedDocument> & Pick<ReceivedDocument, "id" | "name">) {
   const content = overrides.content ?? { kind: "none" };
@@ -263,7 +268,7 @@ export const RESOLUTION_DOCUMENT = document({
 export const BAREMO_DOCUMENT = document({
   id: "baremo",
   name: "Anexo II · Baremo.xml",
-  content: { kind: "text", text: BAREMO_XML },
+  content: { kind: "xml", text: BAREMO_XML },
   previousSignatures: XADES_SIGNATURES,
 });
 
@@ -325,10 +330,10 @@ export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
   document({
     id: "003",
     name: "003",
-    content: { kind: "text", text: BAREMO_XML },
+    content: { kind: "xml", text: BAREMO_XML },
     previousSignatures: XADES_SIGNATURES,
   }),
-  document({ id: "004", name: "004", content: { kind: "text", text: FACTURAE_XML } }),
+  document({ id: "004", name: "004", content: { kind: "xml", text: FACTURAE_XML } }),
   document({
     id: "005",
     name: "005",

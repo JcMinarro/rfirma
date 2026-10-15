@@ -178,11 +178,25 @@ describe("contentOf", () => {
     expect(await contentOf("pdf", bytes, broken)).toEqual({ kind: "none" });
   });
 
-  it.each(["xml", "invoice", "text"] as const)("shows %s as its literal text", async (detected) => {
-    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
+  it("shows text as its literal text", async () => {
+    expect(await contentOf("text", bytes, loadPdf)).toEqual({
       kind: "text",
       text: "<baremo>Antigüedad</baremo>",
     });
+  });
+
+  it.each(["xml", "invoice"] as const)("shows %s as XML", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
+      kind: "xml",
+      text: "<baremo>Antigüedad</baremo>",
+    });
+  });
+
+  it("reads an XML with the encoding it declares", async () => {
+    const declared = '<?xml version="1.0" encoding="ISO-8859-1"?><n>Peña</n>';
+    const latin1 = Uint8Array.from(declared, (char) => char.charCodeAt(0));
+
+    expect(await contentOf("xml", latin1, loadPdf)).toEqual({ kind: "xml", text: declared });
   });
 
   it.each([
