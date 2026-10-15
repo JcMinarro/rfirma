@@ -99,7 +99,8 @@ de las cabeceras de los componentes.
    persona lo permitió en Preferencias y no hay ningún aviso que enseñar
    (ADR-0032).
 2. **No hay bandeja, ni destino, ni memoria.** El documento de la sede no se
-   recuerda ni entra en recientes. El visor solo aparece en el momento 1c.
+   recuerda ni entra en recientes. El visor solo aparece al marcar el área (1c) y en el consentimiento ampliado
+   (2).
 3. **Nunca se enumera lo que la sede descartó**, ni su criterio: es política de la
    sede, no información de quien firma.
 4. **Los dos canales van desacompasados a propósito.** Lo que recibe la sede (la
@@ -173,11 +174,10 @@ de las cabeceras de los componentes.
   no ocurre. Negarla con una frase («esto no es una firma») es la verborrea que
   la regla de redacción de [design-system.md](design-system.md) ya echó de la
   ventana: decir lo que se hace basta.
-- **Las firmas previas son el aviso compacto del panel de firma**, el mismo, con
-  el mismo diálogo «Ver firmas» ([`dialogo-ver-firmas.md`](dialogo-ver-firmas.md)),
-  dentro de la caja del documento. El porqué está en
-  [`panel-de-firma.md`](panel-de-firma.md#decisiones). Un lote no trae los PDF, así
-  que no hay firmas previas que contar.
+- **Las firmas previas son de cada documento.** La compacta las resume en el
+  aviso; la ampliada las cuenta en la franja de cada documento y las detalla en
+  un panel (véase «Consentimiento ampliable»). Un lote remoto no trae los
+  documentos, así que no hay firmas previas que contar.
 - **La sede no bloquea ni pide confirmación por una firma no válida**, como
   AutoFirma: esta pantalla ya es un consentimiento y lo informa. «¿Firmar de todos
   modos?» es solo de la ventana principal.
@@ -199,16 +199,13 @@ de las cabeceras de los componentes.
   salir y para las microacciones, y `--secondary` no se usa en ningún momento de
   esta ventana.
 
-### Consentimiento ampliable (la compacta es real; la ampliada, pendiente)
+### Consentimiento ampliable
 
 Quien no se fía de la sede puede ver lo que firma sin cargar la ventana a quien
 sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consentimiento
 ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
-enseña. **La compacta es el consentimiento real** (`SedeConsentCompact`). **Las
-`Expanded*` son provisionales**: documentan el diseño sobre componentes que solo
-usan ellas (`SedeConsentExpanded`), sin cambiar la ventana
-real. La spec que implemente la vista ampliada las lleva a la ventana y borra lo
-que solo existía para ellas.
+enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`, con
+`ReceivedList`, `ReceivedViewer` y `SignaturesStrip`.
 
 - **Primero con qué se firma, y después qué.** En las dos formas el selector
   va bajo la cabecera. En la compacta, lo que se firma va pegado al pie: primero
@@ -228,10 +225,9 @@ que solo existía para ellas.
   válida. En la ampliada, el aviso dice lo que ya firmaste tú y el SHA-1 por
   permitir, y cambia con el certificado elegido como en la compacta; las firmas
   no válidas y las de otras personas las cuenta la franja de cada documento.
-  La lista es de la ampliada, que abre «Ver documentos». Con huellas no hay nada
-  que ver ni vista ampliada. El lote remoto solo da el recuento: sus documentos y
-  sus prefirmas no llegan hasta después de elegir certificado, así que no hay
-  huellas, ni «Descargar», ni «Ver documentos».
+  La lista es de la ampliada, que abre «Ver documentos». El lote remoto solo da
+  el recuento: sus documentos y sus prefirmas no llegan hasta después de elegir
+  certificado, así que no hay «Descargar», ni «Ver documentos».
 - **En la lista, el icono de cada fila dice su tipo** (`documentPdf`,
   `documentXml`, `documentImage` y, para el resto, `document`), con el mismo
   criterio con que el visor decide cómo pintarlo, nunca por la extensión del
@@ -247,8 +243,7 @@ que solo existía para ellas.
 - **La franja de firmas no lleva avisos**: solo el recuento, la validez y «Ver
   firmas», en una línea.
 - **«Descargar»** guarda el documento tal cual; con varios, «Descargar todo» es
-  un `.zip` con los documentos y un `SHA256SUMS`; con huellas, un `.txt` con el
-  algoritmo que manda la sede y el valor.
+  un `.zip` con los documentos y un `SHA256SUMS`.
 - **«Abrir con…»** sale del tipo que rFirma detecta en los bytes, nunca de lo
   que diga la sede: el tipo da la extensión y, con ella, el sistema operativo
   elige la aplicación. Que no haya vista previa no lo quita; solo un tipo que no
@@ -274,16 +269,7 @@ que solo existía para ellas.
   cede «Ver documentos», que se corta con puntos suspensivos y conserva su icono
   y el texto entero en el `title`.
 
-**Pendiente de implementar: la ampliada, «Ver documentos» y la descarga.** En la
-compacta real, el hueco izquierdo del pie queda vacío y el resumen no lleva
-«Descargar…». Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
-huella con su algoritmo desde el backend; el nombre por defecto del
-documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
-tiene que depender del tipo o ser neutro. Cuando se implemente, la
-invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
-firmas previas como aviso compacto dejan de ser ciertas.
-
-- **Antes de implementar, una persona nativa revisa las traducciones** de las
+- **Una persona nativa revisa las traducciones** de las
   cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
   al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
 
@@ -346,7 +332,7 @@ de la ventana real; las decisiones de abajo son las de cada momento.
 - **Como mucho un `Admonition` por pantalla, con un solo estilo para todos los
   tonos**: el tono solo cambia el icono.
 - **Las historias de «Pantallas/Ventana de sede» son las de la ventana real**,
-  salvo las `Expanded*` del consentimiento, que siguen como diseño provisional.
+  incluidas las `Expanded*` del consentimiento.
 
 ### Marcar el área
 
@@ -513,7 +499,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
 | 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
 | 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y, como diseño provisional, `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
 | 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 
