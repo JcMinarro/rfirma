@@ -1,7 +1,8 @@
 import type { TFunction } from "i18next";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { DocumentType } from "./errand";
 import {
+  contentOf,
   previousSignaturesState,
   previousSignaturesTally,
   receivedCount,
@@ -117,6 +118,13 @@ describe("receivedOf", () => {
     expect(document?.sha256).toBe("ab12");
   });
 
+  it("carries what the viewer paints of the document", () => {
+    const content = { kind: "text", text: "<baremo/>" } as const;
+    const [document] = documentsOf(consentStage({ document: { ...signedDocument, content } }));
+
+    expect(document?.content).toEqual(content);
+  });
+
   it("gives nothing to show when the document does not travel", () => {
     expect(receivedOf(consentStage({ document: null, signing: null }))).toBeNull();
   });
@@ -144,6 +152,45 @@ describe("receivedOf", () => {
 
   it("gives nothing when the site asks for your data", () => {
     expect(receivedOf(consentStage({ document: null, signing: null }))).toBeNull();
+  });
+});
+
+describe("contentOf", () => {
+  const bytes = new TextEncoder().encode("<baremo>Antigüedad</baremo>");
+  const pdf = { pageCount: 1, getPage: () => Promise.reject(new Error("sin páginas")) };
+  const loadPdf = vi.fn(async () => pdf);
+
+  it("opens a PDF to page through it", async () => {
+    expect(await contentOf("pdf", bytes, loadPdf)).toEqual({ kind: "pdf", pdf });
+    expect(loadPdf).toHaveBeenCalledWith(bytes);
+  });
+
+  it("gives nothing to show of a PDF that cannot be opened", async () => {
+    const broken = async () => {
+      throw new Error("no es un PDF");
+    };
+
+    expect(await contentOf("pdf", bytes, broken)).toEqual({ kind: "none" });
+  });
+
+  it.each(["xml", "text"] as const)("shows %s as its literal text", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
+      kind: "text",
+      text: "<baremo>Antigüedad</baremo>",
+    });
+  });
+
+  it.each([
+    ["png", "image/png"],
+    ["jpeg", "image/jpeg"],
+    ["gif", "image/gif"],
+    ["webp", "image/webp"],
+  ] as const)("shows a %s as an image of %s", async (detected, mediaType) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "image", mediaType, bytes });
+  });
+
+  it.each(["xlsx", "zip", "unknown"] as const)("has no preview of %s", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "none" });
   });
 });
 

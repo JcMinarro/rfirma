@@ -48,7 +48,8 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     | "lookAgain"
     | "installCertificate"
     | "installLocalCa"
-    | "dismissWarning",
+    | "dismissWarning"
+    | "expandWindow",
     Mock
   > = {
     consent: fn(),
@@ -60,6 +61,7 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     installCertificate: fn(),
     installLocalCa: fn(),
     dismissWarning: fn(),
+    expandWindow: fn(),
   };
   const listeners = new Set<(news: ReaderNews) => void>();
   const announce = (news: ReaderNews) => {
@@ -84,6 +86,7 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     installCertificate: async () => calls.installCertificate(),
     installLocalCa: async () => calls.installLocalCa(),
     dismissWarning: async () => calls.dismissWarning(),
+    expandWindow: async (expanded) => calls.expandWindow(expanded),
   };
   return { port, calls, announce };
 }
@@ -131,6 +134,7 @@ export const signedDocument: SiteDocument = {
   sizeBytes: 2_400_000,
   round: { kind: "sign" },
   previousSignatures: NO_PREVIOUS_SIGNATURES,
+  content: { kind: "none" },
 };
 
 type ConsentStage = Extract<ErrandStage, { kind: "consent" }>;

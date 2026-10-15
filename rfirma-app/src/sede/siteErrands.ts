@@ -6,6 +6,7 @@ import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import type { StoreSecret } from "../signing/secret";
 import type { PdfDocument } from "../viewer/pdf";
 import type {
+  DocumentType,
   Errand,
   ErrandStage,
   MarkedArea,
@@ -20,6 +21,7 @@ import {
   refusedBy,
   refusedByTheBatch,
 } from "./errandConversion";
+import type { DocumentContent } from "./received";
 import type {
   DescribedDocument,
   PortalResult,
@@ -128,6 +130,10 @@ export interface SiteCommands {
   openDocument(id: string): Promise<PdfDocument | null>;
   /** Las firmas que ya trae el documento, igual que pide `journey/usePreviousSignatures.ts` en escritorio. */
   previousSignatures(id: string): Promise<PreviousSignaturesReport>;
+  /** Lo que el visor de la ampliada pinta del documento, leído por su asa según el tipo detectado. */
+  readContent(id: string, detected: DocumentType): Promise<DocumentContent>;
+  /** `site_expand_window`: amplía la ventana del consentimiento o la devuelve a su tamaño. */
+  expandWindow(expanded: boolean): Promise<void>;
 }
 
 /**
@@ -262,12 +268,13 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
       consentWithoutAsking(view.stage);
       return;
     }
-    const [described, previousSignatures] = await Promise.all([
+    const [described, previousSignatures, content] = await Promise.all([
       commands.describeDocument(view.stage.document),
       commands.previousSignatures(view.stage.document),
+      commands.readContent(view.stage.document, view.stage.detected),
     ]);
     if (arrival !== arrivals) return;
-    publish(errandOf(view, documentOf(described, view.stage, previousSignatures)));
+    publish(errandOf(view, documentOf(described, view.stage, previousSignatures, content)));
     consentWithoutAsking(view.stage);
   };
 
@@ -384,5 +391,7 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
     installLocalCa: () => commands.installLocalCa(),
 
     dismissWarning: () => commands.dismissWarning(),
+
+    expandWindow: (expanded) => commands.expandWindow(expanded),
   };
 }

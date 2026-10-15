@@ -16,6 +16,7 @@ export const sedeViewActions = {
   onInstallLocalCa: fn(),
   onDismissWarning: fn(),
   onOpenHelp: fn(),
+  onExpandWindow: fn(),
 } satisfies Partial<SedeViewProps>;
 
 /** Un trámite de una sede de ejemplo en el momento `stage`; `errand` sobrescribe el resto. */

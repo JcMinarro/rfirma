@@ -9,6 +9,7 @@ import {
   certificate,
   DOCUMENT_SHA256,
   described,
+  opened,
   watched,
 } from "./testing/fixtures/siteErrands";
 
@@ -353,6 +354,7 @@ describe("los momentos que pone el adaptador", () => {
           sizeBytes: 4096,
           round: { kind: "cosign" },
           previousSignatures: NO_PREVIOUS_SIGNATURES,
+          content: { kind: "pdf", pdf: opened },
         },
       },
     });
@@ -639,10 +641,12 @@ describe("las salidas de la pantalla sin certificado", () => {
     await port.installLocalCa();
     await port.close();
     await port.dismissWarning();
+    await port.expandWindow(true);
 
     expect(calls.lookAgain).toHaveBeenCalledOnce();
     expect(calls.installLocalCa).toHaveBeenCalledOnce();
     expect(calls.closeWindow).toHaveBeenCalledOnce();
     expect(calls.dismissWarning).toHaveBeenCalledOnce();
+    expect(calls.expandWindow).toHaveBeenCalledWith(true);
   });
 });

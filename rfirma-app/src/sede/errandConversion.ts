@@ -11,6 +11,7 @@ import {
   type SiteDocument,
   type SiteOutcome,
 } from "./errand";
+import type { DocumentContent } from "./received";
 import type { DescribedDocument, SiteErrandView, SiteStageView } from "./siteErrandView";
 
 /** Las etiquetas del backend que la tabla de rechazos ya nombra de otro modo: las del lote, sin su prefijo. */
@@ -169,6 +170,7 @@ export function documentOf(
   described: DescribedDocument | null,
   stage: Extract<SiteStageView, { kind: "askingToSign" }>,
   previousSignatures: PreviousSignaturesReport,
+  content: DocumentContent,
 ): SiteDocument {
   return {
     name: stage.name,
@@ -179,6 +181,7 @@ export function documentOf(
     sizeBytes: described?.sizeBytes ?? 0,
     round: stage.round,
     previousSignatures,
+    content,
   };
 }
 

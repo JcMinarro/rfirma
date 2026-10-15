@@ -125,6 +125,7 @@ function SedeDialog({
       onInstallLocalCa={() => void errands.installLocalCa()}
       onDismissWarning={() => void errands.dismissWarning()}
       onOpenHelp={openHelp}
+      onExpandWindow={(expanded) => void errands.expandWindow(expanded)}
     />
   );
 }
