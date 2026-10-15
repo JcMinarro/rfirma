@@ -289,6 +289,8 @@ fn with_the_five_roots(
             site::adapters::tauri::site_begin_signing,
             site::adapters::tauri::site_confirm_signatures,
             site::adapters::tauri::site_mark_area,
+            site::adapters::tauri::site_expand_window,
+            site::adapters::tauri::site_open_with,
             site::adapters::tauri::site_finish_signing,
             site::adapters::tauri::site_install_certificate,
             site::adapters::tauri::site_look_again,
