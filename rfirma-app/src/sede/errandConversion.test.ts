@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import type { Errand } from "./errand";
 import { errandOf, refusedBy } from "./errandConversion";
+import type { ReceivedDocument } from "./received";
 import type { SiteErrandView, SiteStageView } from "./siteErrandView";
 import {
   ASKING_TO_SIGN,
@@ -399,40 +400,51 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
   });
 });
 
-describe("el lote local: el resumen de cada elemento", () => {
-  it("turns the local batch moment into a consent with the summary of each element", () => {
-    const view: SiteErrandView = {
-      origin: "sede.ejemplo.gob.es",
-      stage: {
-        kind: "askingToSignTheLocalBatch",
-        items: [
-          { id: "001", signing: "pdf", round: { kind: "sign" } },
-          { id: "002", signing: "challenge", round: { kind: "cosign" } },
-          { id: "003", signing: "xml", round: { kind: "sign" } },
-        ],
-        certificates: [certificate()],
-        narrowed: false,
-        notAccepted: 0,
-        alreadyChosen: null,
-        withoutAsking: false,
-        sha1Allowed: false,
-        sha1ToAllow: false,
-      },
-    };
+describe("el lote local: cada elemento como documento", () => {
+  const receivedDocument = (overrides: Partial<ReceivedDocument>): ReceivedDocument => ({
+    id: "001",
+    handle: "handle-001",
+    name: null,
+    content: { kind: "none" },
+    sha256: DOCUMENT_SHA256,
+    detected: "pdf",
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+    ...overrides,
+  });
+  const item = { signing: "pdf", round: { kind: "sign" }, sha256: DOCUMENT_SHA256 } as const;
+  const view: SiteErrandView = {
+    origin: "sede.ejemplo.gob.es",
+    stage: {
+      kind: "askingToSignTheLocalBatch",
+      items: [
+        { id: "001", document: "handle-001", name: "001", detected: "pdf", ...item },
+        { id: "002", document: "handle-002", name: null, detected: "unknown", ...item },
+      ],
+      certificates: [certificate()],
+      narrowed: false,
+      notAccepted: 0,
+      alreadyChosen: null,
+      withoutAsking: false,
+      sha1Allowed: false,
+      sha1ToAllow: false,
+    },
+  };
 
-    expect(errandOf(view)).toEqual<Errand>({
+  it("turns the local batch moment into a consent whose items are the documents it was given", () => {
+    const documents = [
+      receivedDocument({ id: "001", name: "001", detected: "pdf" }),
+      receivedDocument({ id: "002", handle: "handle-002", name: null, detected: "unknown" }),
+    ];
+
+    expect(errandOf(view, null, documents)).toEqual<Errand>({
       origin: "sede.ejemplo.gob.es",
       operation: "sign",
       stage: {
         kind: "consent",
         document: null,
-        signs: 3,
+        signs: 2,
         signing: null,
-        items: [
-          { id: "001", signing: "pdf", round: { kind: "sign" } },
-          { id: "002", signing: "challenge", round: { kind: "cosign" } },
-          { id: "003", signing: "xml", round: { kind: "sign" } },
-        ],
+        items: documents,
         certificates: [certificate()],
         narrowed: false,
         sha1Allowed: false,

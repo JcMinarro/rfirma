@@ -15,6 +15,7 @@ import {
   BATCH,
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  LOCAL_BATCH_DOCUMENTS,
   ONE_DOCUMENT,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
@@ -139,19 +140,18 @@ describe("receivedOf", () => {
     expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 4 });
   });
 
-  it("gives only the count of a local batch, like the remote one", () => {
-    const item = { signing: "pdf", round: { kind: "sign" } } as const;
+  it("gives the elements of a local batch as documents, like any other", () => {
     const stage = consentStage({
       document: null,
       signing: null,
       signs: 2,
-      items: [
-        { id: "001", ...item },
-        { id: "002", ...item },
-      ],
+      items: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
     });
 
-    expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 2 });
+    expect(receivedOf(stage)).toEqual({
+      kind: "documents",
+      documents: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
+    });
   });
 
   it("gives nothing when the site asks for your data", () => {
@@ -256,7 +256,7 @@ describe("receivedActions", () => {
     const orders = commands();
     receivedActions(ONE_DOCUMENT, orders).onDownload?.();
 
-    expect(orders.downloadDocument).toHaveBeenCalledWith(RESOLUTION_DOCUMENT.id);
+    expect(orders.downloadDocument).toHaveBeenCalledWith(RESOLUTION_DOCUMENT.handle);
     expect(orders.downloadAll).not.toHaveBeenCalled();
   });
 
@@ -277,8 +277,8 @@ describe("receivedActions", () => {
     actions.onSaveCopy?.(second);
     actions.onOpenWith?.(second);
 
-    expect(orders.downloadDocument).toHaveBeenCalledWith(second.id);
-    expect(orders.openWith).toHaveBeenCalledWith(second.id);
+    expect(orders.downloadDocument).toHaveBeenCalledWith(second.handle);
+    expect(orders.openWith).toHaveBeenCalledWith(second.handle);
   });
 
   it.each([

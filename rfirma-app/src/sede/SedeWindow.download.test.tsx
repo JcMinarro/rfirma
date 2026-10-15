@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import type { SiteDocument } from "./errand";
 import { SedeWindow } from "./SedeWindow";
-import { Batch, TerminalOrder } from "./testing/fixtures/sedeErrands";
+import { Batch, LocalBatch, TerminalOrder } from "./testing/fixtures/sedeErrands";
 import {
   consentStage,
   scriptedErrand,
@@ -109,6 +109,17 @@ describe("downloading and opening what the site sends", () => {
 
     expect(screen.queryByRole("menuitem", { name: "Abrir con…" })).not.toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Guardar copia" })).toBeInTheDocument();
+  });
+
+  it("downloads a local batch all together", async () => {
+    const user = userEvent.setup();
+    const { port, calls } = scriptedFrom(LocalBatch);
+    renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+    await user.click(screen.getByRole("button", { name: "Descargar todo" }));
+
+    expect(calls.downloadAll).toHaveBeenCalledOnce();
+    expect(calls.downloadDocument).not.toHaveBeenCalled();
   });
 
   it.each([

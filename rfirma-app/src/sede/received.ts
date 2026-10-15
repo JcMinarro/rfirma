@@ -15,6 +15,8 @@ export type Received =
 /** Un documento recibido, con lo que el visor necesita para enseñarlo. */
 export interface ReceivedDocument {
   id: string;
+  /** El asa con que el backend guarda los bytes: por ella se descarga y se abre. */
+  handle: string;
   /** El nombre que propone la sede o, sin él, el título del PDF; `null` si no hay ninguno. */
   name: string | null;
   content: DocumentContent;
@@ -141,6 +143,7 @@ export function allSignaturesOf(
 
 /** Lo recibido en el consentimiento, o `null` cuando no hay ningún documento que firmar. */
 export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Received | null {
+  if (stage.items !== null) return { kind: "documents", documents: stage.items };
   if (stage.signs !== null) return { kind: "remoteBatch", count: stage.signs };
   if (stage.document === null) return null;
   return { kind: "documents", documents: [consentedDocument(stage.document)] };
@@ -151,6 +154,7 @@ function consentedDocument(document: SiteDocument): ReceivedDocument {
   const name = document.name?.trim() ? document.name : document.title;
   return {
     id: document.handle,
+    handle: document.handle,
     name: name?.trim() ? name : null,
     content: document.content,
     sha256: document.sha256,
@@ -178,10 +182,10 @@ export function receivedActions(
     onCopy,
     onDownload:
       received.documents.length === 1 && only !== undefined
-        ? () => commands.downloadDocument(only.id)
+        ? () => commands.downloadDocument(only.handle)
         : commands.downloadAll,
-    onOpenWith: (document) => commands.openWith(document.id),
-    onSaveCopy: (document) => commands.downloadDocument(document.id),
+    onOpenWith: (document) => commands.openWith(document.handle),
+    onSaveCopy: (document) => commands.downloadDocument(document.handle),
   };
 }
 
