@@ -7,7 +7,7 @@ import { Icon } from "../design-system/icons";
 import { type Received, receivedCount } from "./received";
 import "./ReceivedHeading.css";
 
-/** «Vas a firmar N documentos» o «N referencias», con su descarga si hay `onDownload`; del reto y del lote remoto, solo qué se firma. */
+/** «Vas a firmar N documentos», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
 export function ReceivedHeading({
   received,
   onDownload,
@@ -23,9 +23,7 @@ export function ReceivedHeading({
 
   return (
     <div className="received-heading">
-      {!withoutCount && (
-        <p className="rf-body received-heading__title">{headingOf(t, received, count)}</p>
-      )}
+      {!withoutCount && <p className="rf-body received-heading__title">{headingOf(t, count)}</p>}
       {onDownload !== undefined && (
         <DownloadButton received={received} count={count} onDownload={onDownload} />
       )}
@@ -33,16 +31,8 @@ export function ReceivedHeading({
   );
 }
 
-function headingOf(t: TFunction, received: Received, count: number): string {
-  switch (received.kind) {
-    case "digests":
-      return t("sede.received.digests", { count });
-    case "challenge":
-      return t("sede.received.challenge");
-    case "documents":
-    case "remoteBatch":
-      return t("sede.received.documents", { count });
-  }
+function headingOf(t: TFunction, count: number): string {
+  return t("sede.received.documents", { count });
 }
 
 function DownloadButton({
@@ -55,14 +45,9 @@ function DownloadButton({
   onDownload: () => void;
 }) {
   const { t } = useTranslation();
-  if (received.kind === "remoteBatch" || received.kind === "challenge") return null;
-  const [label, title] =
-    received.kind === "digests"
-      ? [t("sede.received.downloadDigests"), t("sede.received.downloadDigestsTitle")]
-      : [
-          count === 1 ? t("sede.received.download") : t("sede.received.downloadAll"),
-          t("sede.received.downloadAllTitle", { count }),
-        ];
+  if (received.kind === "remoteBatch") return null;
+  const label = count === 1 ? t("sede.received.download") : t("sede.received.downloadAll");
+  const title = t("sede.received.downloadAllTitle", { count });
 
   return (
     <Button variant="ghost" title={title} onClick={onDownload}>

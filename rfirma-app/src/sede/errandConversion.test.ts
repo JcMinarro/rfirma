@@ -5,7 +5,12 @@ import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import type { Errand } from "./errand";
 import { errandOf, refusedBy } from "./errandConversion";
 import type { SiteErrandView, SiteStageView } from "./siteErrandView";
-import { ASKING_TO_SIGN, certificate, watched } from "./testing/fixtures/siteErrands";
+import {
+  ASKING_TO_SIGN,
+  certificate,
+  DOCUMENT_SHA256,
+  watched,
+} from "./testing/fixtures/siteErrands";
 
 /**
  * Grada A: la conversión pura del momento del backend al `Errand` que la
@@ -261,6 +266,9 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "consent",
           document: {
+            name: "Solicitud.pdf",
+            detected: "pdf",
+            sha256: DOCUMENT_SHA256,
             title: "Solicitud",
             pages: 3,
             sizeBytes: 4096,
@@ -306,6 +314,9 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "askingToSign",
           document: "asa-opaca-1",
+          name: null,
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           signing,
           round: { kind: "cosign" },
           certificates: [certificate()],
@@ -345,6 +356,9 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "askingToSign",
           document: "asa-opaca-1",
+          name: null,
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           signing: "pdf",
           round: { kind: "counter", target },
           certificates: [certificate()],
@@ -368,12 +382,16 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     },
   );
 
-  it("consents without a card when the document cannot be read", async () => {
+  it("consents with the name, type and hash when the document cannot be read", async () => {
     const { push, last } = watched({ describeDocument: async () => null });
 
     push(ASKING_TO_SIGN);
 
-    await vi.waitFor(() => expect(last()?.stage).toMatchObject({ document: null }));
+    await vi.waitFor(() =>
+      expect(last()?.stage).toMatchObject({
+        document: { name: "Solicitud.pdf", detected: "pdf", sha256: DOCUMENT_SHA256, title: null },
+      }),
+    );
   });
 });
 

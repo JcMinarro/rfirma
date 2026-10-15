@@ -1,20 +1,15 @@
-//! Lo que la sede manda a firmar, como lo enseña la ventana: documentos con su contenido, huellas con su algoritmo, un reto de autenticación o el recuento de un lote remoto. Sin React.
+//! Lo que la sede manda a firmar, como lo enseña la ventana: documentos con su contenido o el recuento de un lote remoto. Sin React.
 
 import type { TFunction } from "i18next";
 import type { Certificate } from "../signing/certificate";
-import {
-  NO_PREVIOUS_SIGNATURES,
-  type PreviousSignaturesReport,
-} from "../signing/previousSignatures";
+import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import { sameSignerNotice } from "../signing/sameSignerNotice";
 import type { PdfDocument } from "../viewer/pdf";
-import type { ErrandStage, SiteDocument } from "./errand";
+import type { DocumentType, ErrandStage, SiteDocument } from "./errand";
 
-/** Lo que se va a firmar: documentos, huellas que calculó la sede, un reto de autenticación o un lote, remoto o local, del que solo se sabe cuántos son. */
+/** Lo que se va a firmar: documentos o un lote remoto, del que solo se sabe cuántos son. */
 export type Received =
   | { kind: "documents"; documents: readonly ReceivedDocument[] }
-  | { kind: "digests"; digests: readonly ReceivedDigest[] }
-  | { kind: "challenge" }
   | { kind: "remoteBatch"; count: number };
 
 /** Un documento recibido, con lo que el visor necesita para enseñarlo. */
@@ -24,8 +19,8 @@ export interface ReceivedDocument {
   name: string | null;
   content: DocumentContent;
   sha256: string;
-  /** Si rFirma reconoce su tipo por los bytes: sin ello sale como `.bin` y no se ofrece «Abrir con…». */
-  knownType: boolean;
+  /** El tipo que rFirma reconoce en los bytes: `unknown` sale como `.bin` y no ofrece «Abrir con…». */
+  detected: DocumentType;
   previousSignatures: PreviousSignaturesReport;
 }
 
@@ -36,15 +31,30 @@ type DocumentContent =
   | { kind: "image"; mediaType: string; bytes: Uint8Array }
   | { kind: "none" };
 
-/** El nombre con que se enseña el documento: el suyo o, sin él, el del documento sin título. */
+/** El nombre con que se enseña el documento: el suyo o, sin él, uno por defecto que dice lo que es. */
 export function receivedName(t: TFunction, document: ReceivedDocument): string {
-  return document.name ?? t("sede.consent.untitled");
+  return document.name ?? t(untitledKey(document.detected));
 }
 
-/** Una huella que calculó la sede, con el algoritmo que la sede dice. */
-interface ReceivedDigest {
-  algorithm: string;
-  value: string;
+function untitledKey(detected: DocumentType) {
+  switch (detected) {
+    case "pdf":
+      return "sede.consent.untitled";
+    case "xml":
+      return "sede.consent.untitledXml";
+    case "png":
+    case "jpeg":
+    case "gif":
+    case "webp":
+      return "sede.consent.untitledImage";
+    default:
+      return "sede.consent.untitledDocument";
+  }
+}
+
+/** Si rFirma reconoce el tipo del documento por sus bytes. */
+export function hasKnownType(document: ReceivedDocument): boolean {
+  return document.detected !== "unknown";
 }
 
 /** Lo que la persona puede hacer con lo recibido antes de firmarlo. */
@@ -102,45 +112,33 @@ export function allSignaturesOf(
   ]);
 }
 
-/** Lo recibido en el consentimiento, o `null` cuando la sede pide los datos y no hay nada que firmar. */
+/** Lo recibido en el consentimiento, o `null` cuando no hay ningún documento que firmar. */
 export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Received | null {
   if (stage.signs !== null) return { kind: "remoteBatch", count: stage.signs };
-  switch (stage.signing) {
-    case null:
-      return null;
-    case "challenge":
-      return { kind: "challenge" };
-    case "pdf":
-    case "xml":
-    case "invoice":
-      return { kind: "documents", documents: [consentedDocument(stage.document)] };
-  }
+  if (stage.document === null) return null;
+  return { kind: "documents", documents: [consentedDocument(stage.document)] };
 }
 
 const CONSENTED_DOCUMENT_ID = "document";
 
-/** El documento que se consiente, sin sus bytes ni su huella, que no llegan al consentimiento. */
-function consentedDocument(document: SiteDocument | null): ReceivedDocument {
-  const title = document?.title ?? null;
+/** El documento que se consiente, sin sus bytes, que no llegan al consentimiento. */
+function consentedDocument(document: SiteDocument): ReceivedDocument {
+  const name = document.name?.trim() ? document.name : document.title;
   return {
     id: CONSENTED_DOCUMENT_ID,
-    name: title?.trim() ? title : null,
+    name: name?.trim() ? name : null,
     content: { kind: "none" },
-    sha256: "",
-    knownType: true,
-    previousSignatures: document?.previousSignatures ?? NO_PREVIOUS_SIGNATURES,
+    sha256: document.sha256,
+    detected: document.detected,
+    previousSignatures: document.previousSignatures,
   };
 }
 
-/** Cuántos documentos, huellas o retos se firman. */
+/** Cuántos documentos se firman. */
 export function receivedCount(received: Received): number {
   switch (received.kind) {
     case "documents":
       return received.documents.length;
-    case "digests":
-      return received.digests.length;
-    case "challenge":
-      return 1;
     case "remoteBatch":
       return received.count;
   }

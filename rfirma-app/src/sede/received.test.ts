@@ -1,8 +1,11 @@
+import type { TFunction } from "i18next";
 import { describe, expect, it } from "vitest";
+import type { DocumentType } from "./errand";
 import {
   previousSignaturesState,
   previousSignaturesTally,
   receivedCount,
+  receivedName,
   receivedOf,
 } from "./received";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
@@ -47,6 +50,27 @@ describe("previousSignaturesState", () => {
   });
 });
 
+describe("receivedName", () => {
+  const t = ((key: string) => key) as unknown as TFunction;
+  const named = (detected: DocumentType) =>
+    receivedName(t, { ...RESOLUTION_DOCUMENT, name: null, detected });
+
+  it("keeps the name the document has", () => {
+    expect(receivedName(t, { ...RESOLUTION_DOCUMENT, name: "Acta.pdf" })).toBe("Acta.pdf");
+  });
+
+  it.each([
+    ["pdf", "sede.consent.untitled"],
+    ["xml", "sede.consent.untitledXml"],
+    ["png", "sede.consent.untitledImage"],
+    ["webp", "sede.consent.untitledImage"],
+    ["xlsx", "sede.consent.untitledDocument"],
+    ["unknown", "sede.consent.untitledDocument"],
+  ] as const)("names an untitled %s by what it is", (detected, key) => {
+    expect(named(detected)).toBe(key);
+  });
+});
+
 describe("receivedCount", () => {
   it("counts the remote batch by its number", () => {
     expect(receivedCount({ kind: "remoteBatch", count: 4 })).toBe(4);
@@ -76,22 +100,25 @@ describe("receivedOf", () => {
     expect(document?.name).toBeNull();
   });
 
-  it.each(["xml", "invoice"] as const)("gives one unnamed document for %s", (signing) => {
-    const [document, ...rest] = documentsOf(consentStage({ document: null, signing }));
+  it("prefers the name the site proposes to the title of the PDF", () => {
+    const [document] = documentsOf(
+      consentStage({ document: { ...signedDocument, name: "Solicitud.pdf" } }),
+    );
 
-    expect(rest).toEqual([]);
-    expect(document?.name).toBeNull();
-    expect(document?.previousSignatures.signatures).toEqual([]);
+    expect(document?.name).toBe("Solicitud.pdf");
   });
 
-  it("gives one unnamed document for a PDF that could not be read", () => {
-    expect(documentsOf(consentStage({ document: null, signing: "pdf" }))).toHaveLength(1);
+  it("carries the detected type and the SHA-256 of the document", () => {
+    const [document] = documentsOf(
+      consentStage({ document: { ...signedDocument, detected: "xml", sha256: "ab12" } }),
+    );
+
+    expect(document?.detected).toBe("xml");
+    expect(document?.sha256).toBe("ab12");
   });
 
-  it("gives the challenge for whatever the window counts as one", () => {
-    expect(receivedOf(consentStage({ document: null, signing: "challenge" }))).toEqual({
-      kind: "challenge",
-    });
+  it("gives nothing to show when the document does not travel", () => {
+    expect(receivedOf(consentStage({ document: null, signing: null }))).toBeNull();
   });
 
   it("gives only the count of a remote batch", () => {
