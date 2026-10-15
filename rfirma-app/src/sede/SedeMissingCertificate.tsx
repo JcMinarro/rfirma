@@ -1,4 +1,4 @@
-//! 5 · El momento sin certificado utilizable, provisional, con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título con su icono y las salidas en el pie; hoy solo lo pintan las historias.
+//! 5 · El momento sin certificado utilizable con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título con su icono y las salidas en el pie.
 
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
