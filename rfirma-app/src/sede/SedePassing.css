@@ -15,14 +15,11 @@
 }
 
 .sede-passing__tabs,
+.sede-passing__recipe,
 .sede-passing__progress {
   flex: none;
 }
 
 .sede-passing__file {
   overflow-wrap: anywhere;
-}
-
-.sede-ending__body > .sede-waiting__steps {
-  flex: none;
 }

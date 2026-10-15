@@ -102,7 +102,7 @@ export function SedeWaiting({ moment, onInstallLocalCa, onCancel }: SedeWaitingP
 }
 
 /** El botón que elige una de las dos recetas, con `aria-pressed`. */
-export function BrowserTab({
+function BrowserTab({
   id,
   chosen,
   onChoose,

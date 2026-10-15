@@ -1,16 +1,16 @@
 //! 1, 3 y el guardar o cargar, provisionales, con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título a la izquierda y las salidas en el pie; hoy solo lo pintan las historias.
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
 import { ProgressBar } from "../design-system/ProgressBar";
-import { Row } from "../design-system/Row";
+import { Tab, Tabs } from "../design-system/Tabs";
 import { useDefaultButton } from "../design-system/useDefaultButton";
 import type { SigningPhase } from "./errand";
 import { SedeBody } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
-import { type Browser, BrowserTab, ChromeRecipe, FirefoxRecipe } from "./SedeWaiting";
+import { type Browser, ChromeRecipe, FirefoxRecipe } from "./SedeWaiting";
 import "./SedeWindow.css";
 import "./SedeEnding.css";
 import "./SedePassing.css";
@@ -90,18 +90,55 @@ export function SedeAwaiting({
           </p>
           {repairing && (
             <>
-              {browser === "chrome" && localCa}
-              <Row gap="xs" className="sede-passing__tabs">
-                <BrowserTab id="chrome" chosen={browser} onChoose={setBrowser} />
-                <BrowserTab id="firefox" chosen={browser} onChoose={setBrowser} />
-              </Row>
-              {browser === "chrome" ? <ChromeRecipe /> : <FirefoxRecipe />}
-              {browser === "firefox" && localCa}
+              {localCa}
+              <BrowserRecipes browser={browser} onChoose={setBrowser} />
             </>
           )}
         </div>
       </div>
     </SedeBody>
+  );
+}
+
+const BROWSERS: readonly Browser[] = ["chrome", "firefox"];
+const BROWSER_NAMES: Record<Browser, string> = { chrome: "Chrome", firefox: "Firefox" };
+
+/** Las pestañas de Chrome y Firefox con la receta de la elegida como panel. */
+function BrowserRecipes({
+  browser,
+  onChoose,
+}: {
+  browser: Browser;
+  onChoose: (browser: Browser) => void;
+}) {
+  const id = useId();
+  const tabId = (each: Browser) => `${id}-${each}`;
+  const panelId = `${id}-panel`;
+
+  return (
+    <>
+      <Tabs className="sede-passing__tabs">
+        {BROWSERS.map((each) => (
+          <Tab
+            key={each}
+            id={tabId(each)}
+            selected={each === browser}
+            aria-controls={panelId}
+            onClick={() => onChoose(each)}
+          >
+            {BROWSER_NAMES[each]}
+          </Tab>
+        ))}
+      </Tabs>
+      <div
+        role="tabpanel"
+        id={panelId}
+        aria-labelledby={tabId(browser)}
+        className="sede-passing__recipe"
+      >
+        {browser === "chrome" ? <ChromeRecipe /> : <FirefoxRecipe />}
+      </div>
+    </>
   );
 }
 
