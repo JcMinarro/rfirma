@@ -2,7 +2,7 @@
 
 mod certificates;
 mod confirmation;
-mod scratch;
+pub(in crate::site::application) mod scratch;
 
 pub use certificates::{consent_for, consent_to_the_batch, consent_to_the_local_batch};
 use certificates::{
