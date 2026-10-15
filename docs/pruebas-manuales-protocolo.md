@@ -116,6 +116,27 @@ actualizador de Tauri llama al desinstalador anterior; ninguna de las dos cosas 
 sesión de escritorio con el instalador ejecutado. Que `rfirma.com` gane al `.exe` en cmd y en
 PowerShell sí lo mide el CI de Windows (`just smoke-console`).
 
+### 8. La factura en su marco aislado, en los tres webviews
+
+En **Linux (WebKitGTK)**, **Windows (WebView2)** y **macOS (WKWebView)**, una sede manda a firmar
+una FacturaE 3.2.1 o 3.2.2 de prueba, con datos inventados, y en la vista ampliada:
+
+1. **la factura se ve** como en FACe —emisor, receptor, líneas y totales—, y no como XML;
+2. **los códigos salen traducidos** (clase de impuesto, forma de pago, residencia), prueba de que
+   corren los scripts de la hoja, y los datos del emisor y del receptor se despliegan;
+3. desde la consola de las herramientas de desarrollo, **en el contexto del marco**,
+   `window.__TAURI__` y `window.__TAURI_INTERNALS__` son `undefined`, `parent.document` lanza un
+   error de seguridad y un `fetch("https://example.org")` lo bloquea la CSP;
+4. el tabulador entra en el marco y sale de él, y con el foco fuera, Escape cierra el panel de
+   firmas o la ventana como en cualquier otro documento.
+
+*Por qué no cabe en una grada* (ADR-0051): lo que se mide es el aislamiento que da cada motor al
+`iframe` con `sandbox="allow-scripts"` servido por un esquema propio, y la CSP que aplica a su
+respuesta. jsdom no tiene motor de verdad, y el CI no levanta los tres webviews con una ventana de
+sede delante. Que el marco lleve ese `sandbox` y ese `src` lo mide la grada A
+(`SedeWindow.expanded.test.tsx`); que el esquema sirva el HTML con su CSP, también
+(`invoice_scheme/tests.rs`).
+
 ## Condición de salida
 
 Esta lista **no es permanente**. El día que exista un arnés de navegador sin cabeza capaz de

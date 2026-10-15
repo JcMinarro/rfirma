@@ -12,6 +12,16 @@
   background: var(--rf-surface);
 }
 
+.received-viewer__frame {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  /* ADR-0051 */
+  background: #ffffff;
+}
+
 .received-viewer__sheet {
   box-sizing: border-box;
   max-width: 600px;

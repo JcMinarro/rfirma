@@ -1,10 +1,10 @@
 //! El puerto de Tauri del trámite de sede: sus órdenes y el evento que lo empuja.
 
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { SiteErrandPort } from "./sede/errand";
 import { contentOf } from "./sede/received";
-import { type SiteErrandView, siteErrands } from "./sede/siteErrands";
+import { type SiteCommands, type SiteErrandView, siteErrands } from "./sede/siteErrands";
 import {
   NO_PREVIOUS_SIGNATURES,
   type PreviousSignaturesReport,
@@ -16,6 +16,9 @@ import { pdfjsLoader } from "./viewer/pdfjsLoader";
 
 /** El nombre del evento del trámite de sede. Es `commands::SITE_ERRAND`. */
 const SITE_ERRAND = "site-errand";
+
+/** El esquema con que el trámite sirve la vista de una factura. Es `INVOICE_SCHEME`. */
+const INVOICE_SCHEME = "rfirma-invoice";
 
 /**
  * **El trámite de una sede, por sus órdenes y su evento**.
@@ -38,9 +41,14 @@ const SITE_ERRAND = "site-errand";
  * el selector y pide la contraseña por su propio diálogo, con reintentos.
  */
 export function tauriSiteErrands(): SiteErrandPort {
+  return siteErrands(tauriSiteCommands());
+}
+
+/** Las órdenes del trámite de sede sobre `invoke`, una línea por orden. */
+export function tauriSiteCommands(): SiteCommands {
   const loader = pdfjsLoader();
 
-  return siteErrands({
+  return {
     watch: (onView) => {
       let listening = true;
       const stopping = listen<SiteErrandView>(SITE_ERRAND, (event) => {
@@ -108,7 +116,13 @@ export function tauriSiteErrands(): SiteErrandPort {
     readContent: async (id, detected) => {
       try {
         const bytes = new Uint8Array(await invoke<ArrayBuffer>("read_document", { id }));
-        return await contentOf(detected, bytes, (pdf) => loader.load(pdf));
+        return await contentOf(detected, bytes, {
+          loadPdf: (pdf) => loader.load(pdf),
+          invoiceView: async () =>
+            (await invoke<boolean>("site_prepare_invoice_view", { document: id }))
+              ? convertFileSrc(id, INVOICE_SCHEME)
+              : null,
+        });
       } catch {
         return { kind: "none" };
       }
@@ -121,5 +135,5 @@ export function tauriSiteErrands(): SiteErrandPort {
       await invoke<boolean>("site_download_all");
     },
     openWith: (document) => invoke<void>("site_open_with", { document }),
-  });
+  };
 }

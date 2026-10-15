@@ -1,4 +1,4 @@
-//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, el lote local, sus firmas PAdES y XAdES, un PDF que pinta su texto y un cartel en imagen.
+//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, el lote local, sus firmas PAdES y XAdES, un PDF que pinta su texto, un cartel en imagen y una factura con su vista.
 
 import { fn } from "storybook/test";
 import type { Certificate } from "../../../signing/certificate";
@@ -238,8 +238,24 @@ const POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420
   <text x="40" y="404" fill="#64748b" font-family="Inter, sans-serif" font-size="14">Presupuesto: 84.250,00 €</text>
 </svg>`;
 
+/** La vista de la factura del diseño, como la pintaría la hoja de FACe: emisor, receptor, líneas y total, con datos inventados. */
+const INVOICE_HTML = `<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
+body{margin:0;padding:24px;font:13px Arial,sans-serif;color:#000;background:#fff}
+h1{font-size:18px;margin:0 0 12px}table{width:100%;border-collapse:collapse;margin:12px 0}
+th,td{border:1px solid #9aa;padding:4px 6px;text-align:left}th{background:#dde6ee}
+.importe{text-align:right}</style></head><body>
+<h1>Factura 2026-0087 · Serie OBR</h1>
+<table><tr><th>Emisor</th><th>Receptor</th></tr>
+<tr><td>Talleres Inventados del Norte SL<br>NIF B00000000</td><td>Ayuntamiento de Villaejemplo<br>NIF P0000000J</td></tr></table>
+<table><tr><th>Concepto</th><th class="importe">Importe</th></tr>
+<tr><td>Rehabilitación de fachada, Calle Mayor 12</td><td class="importe">10.289,26 €</td></tr>
+<tr><td>IVA 21 %</td><td class="importe">2.160,74 €</td></tr>
+<tr><th>Total factura</th><th class="importe">12.450,00 €</th></tr></table>
+</body></html>`;
+
 const DETECTED_BY_CONTENT = {
   pdf: "pdf",
+  invoice: "invoice",
   xml: "xml",
   text: "text",
   image: "jpeg",
@@ -270,6 +286,16 @@ export const BAREMO_DOCUMENT = document({
   name: "Anexo II · Baremo.xml",
   content: { kind: "xml", text: BAREMO_XML },
   previousSignatures: XADES_SIGNATURES,
+});
+
+/** La factura de la obra, con su vista: en una historia, la vista va en una dirección `data:` porque no hay trámite que la sirva. */
+export const INVOICE_DOCUMENT = document({
+  id: "invoice",
+  name: "Factura 2026-0087.xml",
+  content: {
+    kind: "invoice",
+    src: `data:text/html;charset=utf-8,${encodeURIComponent(INVOICE_HTML)}`,
+  },
 });
 
 /** La hoja de cálculo de los beneficiarios: rFirma reconoce su tipo y sabe con qué abrirla, pero no tiene vista previa. */
