@@ -6,10 +6,10 @@ import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../sign
 import type { Errand, MarkedArea } from "./errand";
 import { SedeConfirm } from "./SedeConfirm";
 import { SedeConsent } from "./SedeConsent";
+import { SedeEnding } from "./SedeEnding";
 import { SedeMarking } from "./SedeMarking";
-import { SedeNoCertificate } from "./SedeNoCertificate";
+import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeOldWebClient } from "./SedeOldWebClient";
-import { SedeOutcome } from "./SedeOutcome";
 import { SedeSigning } from "./SedeSigning";
 import { SedeTransfer } from "./SedeTransfer";
 import { SedeWaiting } from "./SedeWaiting";
@@ -119,7 +119,7 @@ export function SedeView({
             nombra el fichero (ADR-0011). */}
         {(stage.kind === "saving" || stage.kind === "loading") && <SedeTransfer transfer={stage} />}
         {stage.kind === "outcome" && (
-          <SedeOutcome
+          <SedeEnding
             origin={errand.origin}
             outcome={stage.outcome}
             onClose={onClose}
@@ -127,7 +127,7 @@ export function SedeView({
           />
         )}
         {stage.kind === "noCertificate" && (
-          <SedeNoCertificate
+          <SedeMissingCertificate
             origin={errand.origin}
             terminal={errand.terminalOrder !== undefined}
             reason={stage.reason}
