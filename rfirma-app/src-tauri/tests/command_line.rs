@@ -9,6 +9,8 @@ use support::*;
 mod config;
 #[path = "command_line/cosign.rs"]
 mod cosign;
+#[path = "command_line/facturae.rs"]
+mod facturae;
 #[path = "command_line/formats.rs"]
 mod formats;
 #[path = "command_line/schema.rs"]

@@ -12,7 +12,7 @@ pub use rfirma_lib::desktop::adapters::command_line_ports::{
 pub use rfirma_lib::desktop::adapters::paths::Paths;
 pub use rfirma_lib::desktop::adapters::terminal::{ProcessDescriptors, RootsSigner, SeenStores};
 pub use rfirma_lib::desktop::application::command_line::{
-    attend, CommandLinePorts, Outcome, FAILED, SUCCEEDED,
+    attend, CommandLinePorts, Outcome, FAILED, REFUSED, SUCCEEDED,
 };
 pub use rfirma_lib::desktop::ports::{
     AskedSecret, DesktopHandover, GraphicalPicker, OfferedCertificate, Terminal, WindowChoice,

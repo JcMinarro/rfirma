@@ -45,7 +45,7 @@ estándar a un fichero o a otro programa sin que se mezclen.
 rfirma sign -i <fichero> (-o <fichero> | --xml | --json)
             (--alias <alias> | --filter <filtro> | --certgui | --certtui)
             [--filter <filtro>] [--store <almacén>]
-            [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+            [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
             [--config <propiedades>] [--password-fd <N>]
 rfirma sign --gui -i <fichero>
 ```
@@ -64,7 +64,7 @@ rfirma sign -i contrato.pdf -o contrato-firmado.pdf --alias mi-certificado
 rfirma cosign -i <fichero> (-o <fichero> | --xml | --json)
               (--alias <alias> | --filter <filtro> | --certgui | --certtui)
               [--filter <filtro>] [--store <almacén>]
-              [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+              [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
               [--config <propiedades>] [--password-fd <N>]
 ```
 
@@ -127,7 +127,7 @@ rfirma verify -i contrato-firmado.pdf -v
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `-i <fichero>`               | El fichero de entrada.                                                                                     |
 | `-o <fichero>`               | El fichero de salida, que se sobrescribe si existe. Obligatorio en `sign` y `cosign`, salvo con `--xml` o `--json`. |
-| `--format <formato>`         | `auto` (por omisión), `pades`, `cades` o `xades`. Con `auto`, un PDF se firma en PAdES, un XML en XAdES y lo demás en CAdES. |
+| `--format <formato>`         | `auto` (por omisión), `pades`, `cades`, `xades` o `facturae`. Con `auto`, un PDF se firma en PAdES, un XML (también una factura) en XAdES y lo demás en CAdES. Con `facturae`, el fichero tiene que ser una factura electrónica. |
 | `--algorithm <algoritmo>`    | `sha512` (por omisión), `sha384` o `sha256`.                                                               |
 | `--store <almacén>`          | Busca los certificados solo en ese almacén; sin él, en todos. Los valores, en [Almacenes](#almacenes).      |
 | `--alias <alias>`            | Firma con el certificado de ese alias, sin preguntar. No admite `--filter`.                                 |
@@ -194,7 +194,7 @@ explica:
 - **`--preurl`, `--posturl`, `--hformat`, `--halgorithm`, `-r`** y **`--operation`** no
   existen.
 - **`--algorithm sha1`** se rechaza por débil.
-- **`--format facturae`, `ooxml` y `odf`** no están soportados.
+- **`--format ooxml` y `odf`** no están soportados.
 
 ## Ejemplos
 

@@ -7,7 +7,7 @@
   "properties": {
     "format": {
       "description": "El formato de la firma, también cuando se pidió auto.",
-      "enum": ["PAdES", "CAdES", "XAdES"]
+      "enum": ["PAdES", "CAdES", "XAdES", "FacturaE"]
     },
     "certificate": {
       "type": "object",
