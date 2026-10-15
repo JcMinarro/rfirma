@@ -1,0 +1,190 @@
+//! 1, 3 y el guardar o cargar, provisionales, con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título a la izquierda y las salidas en el pie; hoy solo lo pintan las historias.
+
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Admonition } from "../design-system/Admonition";
+import { Button } from "../design-system/Button";
+import { ProgressBar } from "../design-system/ProgressBar";
+import { Row } from "../design-system/Row";
+import { useDefaultButton } from "../design-system/useDefaultButton";
+import type { SigningPhase } from "./errand";
+import { SedeBody } from "./SedeFrame";
+import { SedeOrigin } from "./SedeOrigin";
+import { type Browser, BrowserTab, ChromeRecipe, FirefoxRecipe } from "./SedeWaiting";
+import "./SedeWindow.css";
+import "./SedeEnding.css";
+import "./SedePassing.css";
+
+type Asks = "signature" | "identity";
+
+interface SedeAwaitingProps {
+  origin: string | null;
+  asks?: Asks;
+  moment: "connecting" | "unreachable" | "noChannel";
+  onInstallLocalCa: () => void;
+  onCancel: () => void;
+}
+
+/** La espera del canal y, cuando ya no va a abrirse, la CA local como aviso y las dos recetas de navegador. */
+export function SedeAwaiting({
+  origin,
+  asks = "signature",
+  moment,
+  onInstallLocalCa,
+  onCancel,
+}: SedeAwaitingProps) {
+  const { t } = useTranslation();
+  const [browser, setBrowser] = useState<Browser>("chrome");
+  const repairing = moment !== "connecting";
+  const closeButton = useDefaultButton(repairing);
+
+  const localCa = (
+    <Admonition
+      tone="warning"
+      className="sede-ending__detail"
+      title={t("sede.repair.caMissing")}
+      action={
+        <Button variant="ghost" onClick={onInstallLocalCa}>
+          {t("status.actions.install")}
+        </Button>
+      }
+    />
+  );
+
+  return (
+    <SedeBody
+      flush
+      steadyFooter
+      primary={repairing ? closeButton : undefined}
+      onEscape={onCancel}
+      footer={
+        repairing ? (
+          <>
+            <p className="rf-hint sede-passing__retry">{t("sede.repair.retry")}</p>
+            <Button
+              ref={closeButton}
+              variant="primary"
+              className="sede-passing__steady"
+              onClick={onCancel}
+            >
+              {t("actions.close")}
+            </Button>
+          </>
+        ) : (
+          <Button variant="ghost" className="sede-passing__steady" onClick={onCancel}>
+            {t("actions.cancel")}
+          </Button>
+        )
+      }
+    >
+      <div className="sede-ending">
+        <SedeOrigin origin={origin} asks={asks} />
+        <div className="sede-ending__body">
+          <p className="rf-title sede-ending__title">
+            {repairing ? t("sede.unreachable.title") : t("sede.waiting.title")}
+          </p>
+          {repairing && (
+            <>
+              {browser === "chrome" && localCa}
+              <Row gap="xs" className="sede-passing__tabs">
+                <BrowserTab id="chrome" chosen={browser} onChoose={setBrowser} />
+                <BrowserTab id="firefox" chosen={browser} onChoose={setBrowser} />
+              </Row>
+              {browser === "chrome" ? <ChromeRecipe /> : <FirefoxRecipe />}
+              {browser === "firefox" && localCa}
+            </>
+          )}
+        </div>
+      </div>
+    </SedeBody>
+  );
+}
+
+interface SedeSigningProgressProps {
+  origin: string | null;
+  asks?: Asks;
+  terminal?: boolean;
+  phase: SigningPhase;
+  onCancel: () => void;
+}
+
+const PROGRESS: Record<SigningPhase, number> = { signing: 45, returning: 88 };
+
+/** Los dos tramos de la firma con su barra: «Cancelar» mientras se firma y el pie vacío mientras se envía. */
+export function SedeSigningProgress({
+  origin,
+  asks = "signature",
+  terminal = false,
+  phase,
+  onCancel,
+}: SedeSigningProgressProps) {
+  const { t } = useTranslation();
+  const returning = phase === "returning";
+
+  return (
+    <SedeBody
+      flush
+      steadyFooter
+      onEscape={returning ? undefined : onCancel}
+      footer={
+        returning ? null : (
+          <Button variant="ghost" className="sede-passing__steady" onClick={onCancel}>
+            {t("actions.cancel")}
+          </Button>
+        )
+      }
+    >
+      <div className="sede-ending">
+        <SedeOrigin origin={origin} asks={asks} terminal={terminal} />
+        <div className="sede-ending__body">
+          <p className="rf-title sede-ending__title">
+            {returning ? t("sede.returning.titleUnknownOrigin") : t("panel.footer.signing")}
+          </p>
+          <ProgressBar
+            variant="framed"
+            className="sede-passing__progress"
+            value={PROGRESS[phase]}
+            aria-label={t("panel.footer.signing")}
+          />
+        </div>
+      </div>
+    </SedeBody>
+  );
+}
+
+interface SedeFileTransferProps {
+  origin: string | null;
+  transfer:
+    | { kind: "saving"; filename: string | null; unwritable?: boolean }
+    | { kind: "loading"; multiple: boolean };
+}
+
+/** El fichero que va o que viene mientras el diálogo del portal está encima: solo el título, sin acciones. */
+export function SedeFileTransfer({ origin, transfer }: SedeFileTransferProps) {
+  const { t } = useTranslation();
+  const unwritable = transfer.kind === "saving" && transfer.unwritable === true;
+  const title =
+    transfer.kind === "loading"
+      ? transfer.multiple
+        ? t("sede.loading.titleMany")
+        : t("sede.loading.title")
+      : transfer.filename === null
+        ? t("sede.saving.titleUnnamed")
+        : t("sede.saving.title", { filename: transfer.filename });
+
+  return (
+    <SedeBody flush steadyFooter footer={null}>
+      <div className="sede-ending">
+        <SedeOrigin origin={origin} asks={null} />
+        <div className="sede-ending__body">
+          <p className="rf-title sede-ending__title sede-passing__file">{title}</p>
+          {unwritable && (
+            <Admonition tone="error" className="sede-ending__detail">
+              {t("sede.saving.leadUnwritable")}
+            </Admonition>
+          )}
+        </div>
+      </div>
+    </SedeBody>
+  );
+}

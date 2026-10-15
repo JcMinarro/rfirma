@@ -18,7 +18,7 @@ interface SedeWaitingProps {
 }
 
 /** Cuál de las dos recetas se está leyendo. */
-type Browser = "chrome" | "firefox";
+export type Browser = "chrome" | "firefox";
 
 /**
  * **1 · Esperando el canal.** Lo que se ve mientras el canal no se abre, y lo
@@ -101,7 +101,8 @@ export function SedeWaiting({ moment, onInstallLocalCa, onCancel }: SedeWaitingP
   );
 }
 
-function BrowserTab({
+/** El botón que elige una de las dos recetas, con `aria-pressed`. */
+export function BrowserTab({
   id,
   chosen,
   onChoose,
@@ -122,7 +123,8 @@ function BrowserTab({
   );
 }
 
-function ChromeRecipe() {
+/** Los dos pasos para permitir la red local en Chrome. */
+export function ChromeRecipe() {
   const { t } = useTranslation();
   return (
     <Stack as="ol" className="sede-waiting__steps">
@@ -146,7 +148,8 @@ function ChromeRecipe() {
   );
 }
 
-function FirefoxRecipe() {
+/** Los dos pasos para permitir la red local en Firefox. */
+export function FirefoxRecipe() {
   const { t } = useTranslation();
   return (
     <Stack as="ol" className="sede-waiting__steps">
