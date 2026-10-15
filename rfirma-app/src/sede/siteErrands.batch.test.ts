@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SiteErrandView } from "./siteErrands";
-import { certificate, watched } from "./testing/fixtures/siteErrands";
+import { certificate, DOCUMENT_SHA256, watched } from "./testing/fixtures/siteErrands";
 
 /** Grada A: el lote, remoto y local, contra las órdenes dobladas (TD-78). */
 
@@ -168,15 +168,31 @@ describe("el lote remoto", () => {
   });
 });
 
+const LOCAL_ITEM = {
+  id: "001",
+  document: "handle-001",
+  name: null,
+  detected: "pdf",
+  sha256: DOCUMENT_SHA256,
+  signing: "pdf",
+  round: { kind: "sign" },
+} as const;
+
 describe("el lote local", () => {
   const ASKING_TO_SIGN_THE_LOCAL_BATCH: SiteErrandView = {
     origin: "sede.ejemplo.gob.es",
     stage: {
       kind: "askingToSignTheLocalBatch",
       items: [
-        { id: "001", signing: "pdf", round: { kind: "sign" } },
-        { id: "002", signing: "challenge", round: { kind: "cosign" } },
-        { id: "003", signing: "xml", round: { kind: "sign" } },
+        { ...LOCAL_ITEM, id: "001", document: "handle-001", detected: "pdf" },
+        {
+          ...LOCAL_ITEM,
+          id: "002",
+          document: "handle-002",
+          signing: "challenge",
+          detected: "unknown",
+        },
+        { ...LOCAL_ITEM, id: "003", document: "handle-003", signing: "xml", detected: "xml" },
       ],
       certificates: [certificate()],
       narrowed: false,
@@ -187,6 +203,37 @@ describe("el lote local", () => {
       sha1ToAllow: false,
     },
   };
+
+  it("reads the previous signatures and the content of every element by its handle", async () => {
+    const read: [string, string][] = [];
+    const { push, calls, last } = watched({
+      readContent: async (id, detected) => {
+        read.push([id, detected]);
+        return { kind: "text", text: `leído como ${detected}` };
+      },
+    });
+
+    push(ASKING_TO_SIGN_THE_LOCAL_BATCH);
+    await vi.waitFor(() => expect(last()?.stage.kind).toBe("consent"));
+
+    expect(calls.previousSignatures.mock.calls.map(([id]) => id)).toEqual([
+      "handle-001",
+      "handle-002",
+      "handle-003",
+    ]);
+    expect(read).toEqual([
+      ["handle-001", "pdf"],
+      ["handle-002", "unknown"],
+      ["handle-003", "xml"],
+    ]);
+    const stage = last()?.stage;
+    if (stage?.kind !== "consent") throw new Error("no es un consentimiento");
+    expect(stage.items?.map((item) => [item.id, item.content])).toEqual([
+      ["001", { kind: "text", text: "leído como pdf" }],
+      ["002", { kind: "text", text: "leído como unknown" }],
+      ["003", { kind: "text", text: "leído como xml" }],
+    ]);
+  });
 
   it("closes the local batch with the secret alone, without a postsign of its own", async () => {
     const { push, port, calls, last } = watched();

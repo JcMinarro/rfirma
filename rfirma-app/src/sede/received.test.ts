@@ -13,6 +13,7 @@ import { previousSignature, previousSignaturesReport } from "./testing/fixtures/
 import {
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  LOCAL_BATCH_DOCUMENTS,
   RESOLUTION_DOCUMENT,
   withYourSignature,
   yourSignature,
@@ -135,19 +136,18 @@ describe("receivedOf", () => {
     expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 4 });
   });
 
-  it("gives only the count of a local batch, like the remote one", () => {
-    const item = { signing: "pdf", round: { kind: "sign" } } as const;
+  it("gives the elements of a local batch as documents, like any other", () => {
     const stage = consentStage({
       document: null,
       signing: null,
       signs: 2,
-      items: [
-        { id: "001", ...item },
-        { id: "002", ...item },
-      ],
+      items: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
     });
 
-    expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 2 });
+    expect(receivedOf(stage)).toEqual({
+      kind: "documents",
+      documents: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
+    });
   });
 
   it("gives nothing when the site asks for your data", () => {

@@ -9,12 +9,14 @@ import type {
   DocumentType,
   Errand,
   ErrandStage,
+  LocalBatchItem,
   MarkedArea,
   SiteDocument,
   SiteErrandPort,
   SiteOutcome,
 } from "./errand";
 import {
+  batchDocumentOf,
   documentInPlay,
   documentOf,
   errandOf,
@@ -251,6 +253,14 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
     await sign("");
   };
 
+  const readBatchItem = async (item: LocalBatchItem) => {
+    const [previousSignatures, content] = await Promise.all([
+      commands.previousSignatures(item.document),
+      commands.readContent(item.document, item.detected),
+    ]);
+    return batchDocumentOf(item, previousSignatures, content);
+  };
+
   const receive = async (view: SiteErrandView) => {
     const arrival = ++arrivals;
     // Un momento del backend manda sobre cualquier momento local: la sede ya
@@ -260,6 +270,13 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
       const pdf = await commands.openDocument(view.stage.document);
       if (arrival !== arrivals) return;
       publish({ ...errandOf(view), stage: { kind: "marking", pdf } });
+      return;
+    }
+    if (view.stage.kind === "askingToSignTheLocalBatch") {
+      const documents = await Promise.all(view.stage.items.map(readBatchItem));
+      if (arrival !== arrivals) return;
+      publish(errandOf(view, null, documents));
+      consentWithoutAsking(view.stage);
       return;
     }
     if (view.stage.kind !== "askingToSign") {
