@@ -134,6 +134,12 @@ export interface SiteCommands {
   readContent(id: string, detected: DocumentType): Promise<DocumentContent>;
   /** `site_expand_window`: amplía la ventana del consentimiento o la devuelve a su tamaño. */
   expandWindow(expanded: boolean): Promise<void>;
+  /** `site_download_document`: guarda el documento tal cual donde elija la persona. */
+  downloadDocument(handle: string): Promise<void>;
+  /** `site_download_all`: guarda un `.zip` con los documentos y su `SHA256SUMS`. */
+  downloadAll(): Promise<void>;
+  /** `site_open_with`: abre una copia del documento con la aplicación del sistema. */
+  openWith(handle: string): Promise<void>;
 }
 
 /**
@@ -393,5 +399,11 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
     dismissWarning: () => commands.dismissWarning(),
 
     expandWindow: (expanded) => commands.expandWindow(expanded),
+
+    downloadDocument: (handle) => commands.downloadDocument(handle),
+
+    downloadAll: () => commands.downloadAll(),
+
+    openWith: (handle) => commands.openWith(handle),
   };
 }

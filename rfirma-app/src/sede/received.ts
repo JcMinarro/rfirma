@@ -146,18 +146,42 @@ export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Re
   return { kind: "documents", documents: [consentedDocument(stage.document)] };
 }
 
-const CONSENTED_DOCUMENT_ID = "document";
-
 /** El documento que se consiente, con lo que el visor pinta de él. */
 function consentedDocument(document: SiteDocument): ReceivedDocument {
   const name = document.name?.trim() ? document.name : document.title;
   return {
-    id: CONSENTED_DOCUMENT_ID,
+    id: document.handle,
     name: name?.trim() ? name : null,
     content: document.content,
     sha256: document.sha256,
     detected: document.detected,
     previousSignatures: document.previousSignatures,
+  };
+}
+
+/** Las órdenes con que la ventana descarga y abre lo recibido. */
+export interface ReceivedCommands {
+  downloadDocument: (handle: string) => void;
+  downloadAll: () => void;
+  openWith: (handle: string) => void;
+}
+
+/** Las acciones de lo recibido: nada que descargar en un lote remoto, un documento tal cual y varios en un `.zip`. */
+export function receivedActions(
+  received: Received | null,
+  commands: ReceivedCommands,
+): ReceivedActions {
+  const onCopy = (value: string) => void navigator.clipboard.writeText(value);
+  if (received?.kind !== "documents") return { onCopy };
+  const [only] = received.documents;
+  return {
+    onCopy,
+    onDownload:
+      received.documents.length === 1 && only !== undefined
+        ? () => commands.downloadDocument(only.id)
+        : commands.downloadAll,
+    onOpenWith: (document) => commands.openWith(document.id),
+    onSaveCopy: (document) => commands.downloadDocument(document.id),
   };
 }
 

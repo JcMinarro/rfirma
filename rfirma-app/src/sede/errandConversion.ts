@@ -173,6 +173,7 @@ export function documentOf(
   content: DocumentContent,
 ): SiteDocument {
   return {
+    handle: stage.document,
     name: stage.name,
     detected: stage.detected,
     sha256: stage.sha256,

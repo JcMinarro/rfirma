@@ -66,6 +66,9 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
     previousSignatures: fn(),
     readContent: fn(),
     expandWindow: fn(),
+    downloadDocument: fn(),
+    downloadAll: fn(),
+    openWith: fn(),
   };
   const commands: SiteCommands = {
     watch: (onView) => {
@@ -137,6 +140,9 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
       return { kind: "pdf", pdf: opened };
     },
     expandWindow: async (expanded) => calls.expandWindow(expanded),
+    downloadDocument: async (handle) => calls.downloadDocument(handle),
+    downloadAll: async () => calls.downloadAll(),
+    openWith: async (handle) => calls.openWith(handle),
     ...overrides,
   };
 

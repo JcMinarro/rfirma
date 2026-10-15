@@ -126,6 +126,9 @@ function SedeDialog({
       onDismissWarning={() => void errands.dismissWarning()}
       onOpenHelp={openHelp}
       onExpandWindow={(expanded) => void errands.expandWindow(expanded)}
+      onDownloadDocument={(handle) => void errands.downloadDocument(handle)}
+      onDownloadAll={() => void errands.downloadAll()}
+      onOpenWith={(handle) => void errands.openWith(handle)}
     />
   );
 }

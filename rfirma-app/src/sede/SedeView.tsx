@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
 import { consentActionKey, type Errand, type MarkedArea } from "./errand";
-import { type ReceivedActions, receivedOf } from "./received";
+import { receivedActions, receivedOf } from "./received";
 import { SedeAreaMarking } from "./SedeAreaMarking";
 import { SedeEnding } from "./SedeEnding";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
@@ -12,10 +12,6 @@ import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
 import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import "./SedeWindow.css";
-
-const RECEIVED_ACTIONS: ReceivedActions = {
-  onCopy: (value) => void navigator.clipboard.writeText(value),
-};
 
 export interface SedeViewProps {
   errand: Errand;
@@ -34,6 +30,9 @@ export interface SedeViewProps {
   onDismissWarning: () => void;
   onOpenHelp?: () => void;
   onExpandWindow: (expanded: boolean) => void;
+  onDownloadDocument: (handle: string) => void;
+  onDownloadAll: () => void;
+  onOpenWith: (handle: string) => void;
 }
 
 /**
@@ -59,10 +58,19 @@ export function SedeView({
   onDismissWarning,
   onOpenHelp,
   onExpandWindow,
+  onDownloadDocument,
+  onDownloadAll,
+  onOpenWith,
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
   const asks = consentActionKey(errand.operation) === "identify" ? "identity" : "signature";
+  const received = stage.kind === "consent" ? receivedOf(stage) : null;
+  const actions = receivedActions(received, {
+    downloadDocument: onDownloadDocument,
+    downloadAll: onDownloadAll,
+    openWith: onOpenWith,
+  });
 
   return (
     <div className="sede-window__frame">
@@ -98,14 +106,14 @@ export function SedeView({
             origin={errand.origin}
             asks={asks}
             terminalDocument={errand.terminalOrder?.documentPath}
-            received={receivedOf(stage)}
+            received={received}
             certificates={stage.certificates}
             liveCertificates={liveCertificates}
             reader={reader}
             narrowed={stage.narrowed}
             sha1ToAllow={stage.sha1ToAllow}
             countdown={consentCountdown}
-            actions={RECEIVED_ACTIONS}
+            actions={actions}
             onExpandWindow={onExpandWindow}
             onConsent={onConsent}
             onCancel={onCancel}

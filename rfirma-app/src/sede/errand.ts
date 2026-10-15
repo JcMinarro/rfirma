@@ -52,6 +52,8 @@ export type DocumentType =
  * hay nombre de fichero ni ruta que enseñar, y fabricar uno sería inventarlo.
  */
 export interface SiteDocument {
+  /** El asa con que el backend guarda los bytes: por ella se leen, se descargan y se abren. */
+  handle: string;
   /** El nombre que propone la sede, o `null` si no propone ninguno. */
   name: string | null;
   /** El tipo que rFirma detecta en los bytes, nunca el que diga la sede (ADR-0050). */
@@ -110,6 +112,7 @@ export const REFUSAL_ACTION_OF = {
   invalidSignature: "contactSite",
   confirmationNeeded: "contactSite",
   localBatchSign: "contactSite",
+  unrecognisedType: "retry",
   siteErrandNotLive: "retry",
   pdfHasUnregisteredSignatures: "contactSite",
   secretOnTheReaderKeypad: "otherCertificate",
@@ -396,6 +399,12 @@ export interface SiteErrandPort {
   dismissWarning(): Promise<void>;
   /** Amplía la ventana del consentimiento a 1080 × 660 para ver los documentos, o la devuelve a su tamaño. */
   expandWindow(expanded: boolean): Promise<void>;
+  /** Guarda tal cual el documento, donde elija la persona con el diálogo del sistema. */
+  downloadDocument(handle: string): Promise<void>;
+  /** Guarda un `.zip` con los documentos del consentimiento y su `SHA256SUMS`. */
+  downloadAll(): Promise<void>;
+  /** Abre una copia temporal del documento con la aplicación del sistema; el backend se niega si no reconoce el tipo. */
+  openWith(handle: string): Promise<void>;
 }
 
 /**
@@ -418,6 +427,9 @@ export function noErrand(): SiteErrandPort {
     installLocalCa: async () => {},
     dismissWarning: async () => {},
     expandWindow: async () => {},
+    downloadDocument: async () => {},
+    downloadAll: async () => {},
+    openWith: async () => {},
   };
 }
 

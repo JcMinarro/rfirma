@@ -71,12 +71,12 @@ describe("2 · consent", () => {
     expect(screen.queryByText("001")).not.toBeInTheDocument();
   });
 
-  it("offers the document, but not its download yet", () => {
+  it("offers the document and its download", () => {
     const { port } = scriptedFrom(Consent);
     renderWithCatalog(<SedeWindow errands={port} />);
 
     expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar" })).toBeInTheDocument();
   });
 
   it("labels the selector «Certificado» also when handing over identity data", () => {

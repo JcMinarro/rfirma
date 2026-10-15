@@ -267,6 +267,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "consent",
           document: {
+            handle: "asa-opaca-1",
             name: "Solicitud.pdf",
             detected: "pdf",
             sha256: DOCUMENT_SHA256,

@@ -114,5 +114,12 @@ export function tauriSiteErrands(): SiteErrandPort {
       }
     },
     expandWindow: (expanded) => invoke<void>("site_expand_window", { expanded }),
+    downloadDocument: async (document) => {
+      await invoke<boolean>("site_download_document", { document });
+    },
+    downloadAll: async () => {
+      await invoke<boolean>("site_download_all");
+    },
+    openWith: (document) => invoke<void>("site_open_with", { document }),
   });
 }
