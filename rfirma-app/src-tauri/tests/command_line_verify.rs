@@ -20,7 +20,8 @@ use rfirma_lib::desktop::application::command_line::{
     attend, CommandLinePorts, Outcome, SUCCEEDED, UNKNOWN_FORMAT,
 };
 use rfirma_lib::desktop::ports::{
-    CommandLineSigning, DocumentSigner, GraphicalPicker, LocalTimeZone, WindowChoice, WindowOffer,
+    CommandLineSigning, DocumentSigner, GraphicalPicker, LocalTimeZone, WindowChoice,
+    WindowDocument, WindowOffer,
 };
 use rfirma_lib::identity::domain::algorithm::SignatureAlgorithm;
 use rfirma_lib::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -45,8 +46,12 @@ impl GraphicalPicker for NeverSigns {
         panic!("verify no abre la ventana de sede")
     }
 
-    fn chosen(&self, document: &Path, _offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
-        panic!("verify no elige certificado para {}", document.display())
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        _offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
+        panic!("verify no elige certificado para {:?}", document.path)
     }
 }
 

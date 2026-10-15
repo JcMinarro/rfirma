@@ -25,7 +25,11 @@ impl GraphicalPicker for ChoosingTheActiveCertificate {
         true
     }
 
-    fn chosen(&self, _document: &Path, offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
+    fn chosen(
+        &self,
+        _document: WindowDocument<'_>,
+        offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
         let WindowOffer::Certificates(certificates) = offer else {
             return Ok(WindowChoice::Cancelled);
         };
