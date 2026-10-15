@@ -83,6 +83,9 @@ getrandom = "0.3"
 quick-xml = "0.41"
 # Descompresión de dat cuando la sede envía gzip=true.
 flate2 = "1"
+# El `.zip` de «Descargar todo» en la ventana de sede. Solo escribe, y solo con
+# deflate sobre el `flate2` de arriba: nada de cifrado ni de otros compresores.
+zip = { version = "9", default-features = false, features = ["deflate-flate2"] }
 # La memoria entre sesiones son dos ficheros JSON (ADR-0010), asi que serde
 # entra aqui y no con el primer #[tauri::command]: el formato de configuracion
 # y estado lo escribe este modulo, no la interfaz.

@@ -3,6 +3,7 @@
 mod area;
 mod closing;
 pub mod desk;
+mod download;
 pub mod outcome;
 mod pdf_password;
 pub mod readers;
@@ -44,6 +45,7 @@ pub use desk::{
     consent_to_sign_with_chosen_document, consent_to_the_batch, consent_to_the_confirmed_signature,
     consent_to_the_local_batch, ErrandDesk, Neighbours,
 };
+pub use download::{download_all, download_one, DownloadError};
 pub use outcome::{
     BatchConsent, ConfirmationConsent, ErrandStep, ForTheSiteServer, LoadCompletion,
     LoadingConsent, LocalBatchConsent, LocalBatchItem, Moment, NoCertificate, NoChannel,

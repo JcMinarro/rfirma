@@ -3,6 +3,7 @@
 pub mod batch;
 pub mod batch_error;
 pub mod channel;
+pub mod download;
 pub mod local_ca;
 pub mod protocol;
 pub mod relay_error;
