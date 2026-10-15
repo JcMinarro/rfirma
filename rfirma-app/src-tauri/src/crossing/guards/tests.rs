@@ -316,7 +316,7 @@ fn the_command_that_takes_the_pin_runs_off_the_main_thread() {
 }
 
 #[test]
-fn the_pin_is_taken_by_a_single_command_in_each_process() {
+fn the_pin_is_taken_by_a_single_command() {
     let takers: Vec<(&str, usize)> = sources()
         .iter()
         .map(|(file, source)| {
@@ -328,11 +328,8 @@ fn the_pin_is_taken_by_a_single_command_in_each_process() {
 
     assert_eq!(
         takers,
-        [
-            ("desktop/adapters/tauri_certgui.rs", 1),
-            ("signing/adapters/tauri.rs", 1)
-        ],
-        "el PIN entra por una sola orden en cada proceso: sign_with_pin en el de escritorio y \
-         el de sede, terminal_hand_the_secret en el de terminal con -certgui"
+        [("signing/adapters/tauri.rs", 1)],
+        "el PIN entra por una sola orden, sign_with_pin; la ventana de -certgui lo pide con el \
+         diálogo del sistema y no cruza la webview"
     );
 }

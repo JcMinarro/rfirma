@@ -16,7 +16,7 @@ pub use rfirma_lib::desktop::application::command_line::{
 };
 pub use rfirma_lib::desktop::ports::{
     AskedSecret, DesktopHandover, GraphicalPicker, OfferedCertificate, Terminal, WindowChoice,
-    WindowOffer,
+    WindowDocument, WindowOffer,
 };
 pub use rfirma_lib::identity::adapters::folder::RealInstalledFolder;
 pub use rfirma_lib::identity::adapters::pkcs11;
@@ -220,7 +220,11 @@ impl GraphicalPicker for NoSiteWindow {
         false
     }
 
-    fn chosen(&self, _document: &Path, _offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
+    fn chosen(
+        &self,
+        _document: WindowDocument<'_>,
+        _offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
         Err("estas pruebas no abren la ventana de sede".to_owned())
     }
 }

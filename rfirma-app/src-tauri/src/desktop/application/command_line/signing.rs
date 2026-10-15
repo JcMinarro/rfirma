@@ -93,8 +93,13 @@ fn signed(
     refuse_cosigning_an_invoice(operation, shape)?;
     refuse_facturae_on_what_is_not_an_invoice(parsed.format, shape)?;
     let format = signature_format_of(parsed.format, shape);
+    let document = WindowDocument {
+        path: input,
+        detected: type_of(&bytes),
+        format,
+    };
     let (certificate, typed_in_the_window) =
-        the_certificate_chosen_by(selection, input, arguments, ports)?;
+        the_certificate_chosen_by(selection, document, arguments, ports)?;
     let document = ports
         .signer
         .sign(&CommandLineSigning {
