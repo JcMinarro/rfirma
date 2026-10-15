@@ -5,15 +5,19 @@ import {
   contentOf,
   previousSignaturesState,
   previousSignaturesTally,
+  receivedActions,
   receivedCount,
   receivedName,
   receivedOf,
 } from "./received";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
 import {
+  BATCH,
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
   LOCAL_BATCH_DOCUMENTS,
+  ONE_DOCUMENT,
+  REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   withYourSignature,
   yourSignature,
@@ -242,5 +246,49 @@ describe("previousSignaturesTally", () => {
       ...nobody,
       troubled: 1,
     });
+  });
+});
+
+describe("receivedActions", () => {
+  const commands = () => ({ downloadDocument: vi.fn(), downloadAll: vi.fn(), openWith: vi.fn() });
+
+  it("downloads a single document as it is", () => {
+    const orders = commands();
+    receivedActions(ONE_DOCUMENT, orders).onDownload?.();
+
+    expect(orders.downloadDocument).toHaveBeenCalledWith(RESOLUTION_DOCUMENT.handle);
+    expect(orders.downloadAll).not.toHaveBeenCalled();
+  });
+
+  it("downloads several documents all together", () => {
+    const orders = commands();
+    receivedActions(BATCH, orders).onDownload?.();
+
+    expect(orders.downloadAll).toHaveBeenCalledOnce();
+    expect(orders.downloadDocument).not.toHaveBeenCalled();
+  });
+
+  it("saves and opens the document of the row it is asked about", () => {
+    const orders = commands();
+    const [, second] = BATCH_DOCUMENTS;
+    if (second === undefined) throw new Error("the batch has a second document");
+    const actions = receivedActions(BATCH, orders);
+
+    actions.onSaveCopy?.(second);
+    actions.onOpenWith?.(second);
+
+    expect(orders.downloadDocument).toHaveBeenCalledWith(second.handle);
+    expect(orders.openWith).toHaveBeenCalledWith(second.handle);
+  });
+
+  it.each([
+    ["a remote batch", REMOTE_BATCH],
+    ["nothing received", null],
+  ])("offers no download for %s", (_, received) => {
+    const actions = receivedActions(received, commands());
+
+    expect(actions.onDownload).toBeUndefined();
+    expect(actions.onSaveCopy).toBeUndefined();
+    expect(actions.onOpenWith).toBeUndefined();
   });
 });

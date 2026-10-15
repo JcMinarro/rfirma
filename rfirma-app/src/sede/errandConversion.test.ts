@@ -268,6 +268,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "consent",
           document: {
+            handle: "asa-opaca-1",
             name: "Solicitud.pdf",
             detected: "pdf",
             sha256: DOCUMENT_SHA256,
@@ -402,6 +403,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
 describe("el lote local: cada elemento como documento", () => {
   const receivedDocument = (overrides: Partial<ReceivedDocument>): ReceivedDocument => ({
     id: "001",
+    handle: "handle-001",
     name: null,
     content: { kind: "none" },
     sha256: DOCUMENT_SHA256,
@@ -431,7 +433,7 @@ describe("el lote local: cada elemento como documento", () => {
   it("turns the local batch moment into a consent whose items are the documents it was given", () => {
     const documents = [
       receivedDocument({ id: "001", name: "001", detected: "pdf" }),
-      receivedDocument({ id: "002", name: null, detected: "unknown" }),
+      receivedDocument({ id: "002", handle: "handle-002", name: null, detected: "unknown" }),
     ];
 
     expect(errandOf(view, null, documents)).toEqual<Errand>({

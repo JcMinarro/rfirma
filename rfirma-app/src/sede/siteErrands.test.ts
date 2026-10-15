@@ -346,6 +346,7 @@ describe("los momentos que pone el adaptador", () => {
       outcome: {
         kind: "signed",
         document: {
+          handle: "asa-opaca-1",
           name: "Solicitud.pdf",
           detected: "pdf",
           sha256: DOCUMENT_SHA256,
@@ -642,11 +643,17 @@ describe("las salidas de la pantalla sin certificado", () => {
     await port.close();
     await port.dismissWarning();
     await port.expandWindow(true);
+    await port.downloadDocument("doc-7");
+    await port.downloadAll();
+    await port.openWith("doc-8");
 
     expect(calls.lookAgain).toHaveBeenCalledOnce();
     expect(calls.installLocalCa).toHaveBeenCalledOnce();
     expect(calls.closeWindow).toHaveBeenCalledOnce();
     expect(calls.dismissWarning).toHaveBeenCalledOnce();
     expect(calls.expandWindow).toHaveBeenCalledWith(true);
+    expect(calls.downloadDocument).toHaveBeenCalledWith("doc-7");
+    expect(calls.downloadAll).toHaveBeenCalledOnce();
+    expect(calls.openWith).toHaveBeenCalledWith("doc-8");
   });
 });

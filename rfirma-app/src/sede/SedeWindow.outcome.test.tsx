@@ -58,6 +58,7 @@ const SITE_ACTION: Record<keyof typeof REFUSAL_ACTION_OF, string> = {
   invalidSignature: CONTACT_SITE,
   confirmationNeeded: CONTACT_SITE,
   localBatchSign: CONTACT_SITE,
+  unrecognisedType: RETRY,
   siteErrandNotLive: RETRY,
   pdfHasUnregisteredSignatures: CONTACT_SITE,
   secretOnTheReaderKeypad: OTHER_CERTIFICATE,

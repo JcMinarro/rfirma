@@ -249,6 +249,7 @@ function document(overrides: Partial<ReceivedDocument> & Pick<ReceivedDocument, 
     detected: DETECTED_BY_CONTENT[content.kind],
     previousSignatures: NO_PREVIOUS_SIGNATURES,
     ...overrides,
+    handle: overrides.handle ?? `${overrides.id}-handle`,
   } satisfies ReceivedDocument;
 }
 

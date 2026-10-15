@@ -182,6 +182,7 @@ export function documentOf(
   content: DocumentContent,
 ): SiteDocument {
   return {
+    handle: stage.document,
     name: stage.name,
     detected: stage.detected,
     sha256: stage.sha256,
@@ -202,6 +203,7 @@ export function batchDocumentOf(
 ): ReceivedDocument {
   return {
     id: item.id,
+    handle: item.document,
     name: item.name,
     content,
     sha256: item.sha256,

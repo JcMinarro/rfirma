@@ -17,6 +17,9 @@ export const sedeViewActions = {
   onDismissWarning: fn(),
   onOpenHelp: fn(),
   onExpandWindow: fn(),
+  onDownloadDocument: fn(),
+  onDownloadAll: fn(),
+  onOpenWith: fn(),
 } satisfies Partial<SedeViewProps>;
 
 /** Un trámite de una sede de ejemplo en el momento `stage`; `errand` sobrescribe el resto. */

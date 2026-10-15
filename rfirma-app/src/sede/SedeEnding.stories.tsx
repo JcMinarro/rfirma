@@ -62,6 +62,7 @@ const SITUATION_LABELS: Record<RefusalSituation, string> = {
   invalidSignature: "Firma no válida",
   confirmationNeeded: "Pide confirmación",
   localBatchSign: "Lote local",
+  unrecognisedType: "Tipo no reconocido",
   siteErrandNotLive: "El trámite ya no está activo",
   pdfHasUnregisteredSignatures: "PDF con firmas sin registrar",
   secretOnTheReaderKeypad: "PIN en el teclado del lector",
