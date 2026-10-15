@@ -1,9 +1,11 @@
 use super::{CounterTarget, Format, LocalBatchItem, Moment, SignatureRound, SignatureRoundView};
-use super::{NoCertificateView, NoChannelView, RefusalSituationView, SiteErrandView};
+use super::{
+    DocumentTypeView, NoCertificateView, NoChannelView, RefusalSituationView, SiteErrandView,
+};
 use crate::signing::domain::bridge::XadesVariant;
 use crate::site::application::errand::ReceivedDocument;
 use crate::site::domain::batch_error::Situation as BatchSituation;
-use crate::site::domain::protocol::RefusalSituation;
+use crate::site::domain::protocol::{DocumentType, RefusalSituation};
 use crate::site::domain::site_origin::SiteOrigin;
 
 #[test]
@@ -271,6 +273,32 @@ fn each_refusal_situation_crosses_as_its_own_view() {
         (RefusalSituation::Unknown, RefusalSituationView::Unknown),
     ] {
         assert_eq!(RefusalSituationView::from(situation), expected);
+    }
+}
+
+#[test]
+fn each_detected_type_crosses_with_its_own_camel_case_name() {
+    for (detected, expected) in [
+        (DocumentType::Pdf, "pdf"),
+        (DocumentType::Xml, "xml"),
+        (DocumentType::Png, "png"),
+        (DocumentType::Jpeg, "jpeg"),
+        (DocumentType::Gif, "gif"),
+        (DocumentType::Webp, "webp"),
+        (DocumentType::Odt, "odt"),
+        (DocumentType::Ods, "ods"),
+        (DocumentType::Odp, "odp"),
+        (DocumentType::Docx, "docx"),
+        (DocumentType::Xlsx, "xlsx"),
+        (DocumentType::Pptx, "pptx"),
+        (DocumentType::Zip, "zip"),
+        (DocumentType::Text, "text"),
+        (DocumentType::Unknown, "unknown"),
+    ] {
+        assert_eq!(
+            serde_json::to_value(DocumentTypeView::from(detected)).unwrap(),
+            expected
+        );
     }
 }
 
