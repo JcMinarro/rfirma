@@ -31,6 +31,7 @@ pub enum Format {
     Pades,
     Cades,
     Xades,
+    FacturaE,
 }
 
 /// El algoritmo de huella que se pide.
@@ -99,7 +100,7 @@ impl fmt::Display for ArgumentsRefusal {
             }
             Self::UnknownFormat(format) => write!(
                 formatter,
-                "el formato «{format}» no se reconoce: auto, pades, cades o xades"
+                "el formato «{format}» no se reconoce: auto, pades, cades, xades o facturae"
             ),
             Self::Sha1Refused => write!(
                 formatter,
@@ -172,7 +173,8 @@ fn format_of(collected: &Collected) -> Result<Format, ArgumentsRefusal> {
         "pades" => Ok(Format::Pades),
         "cades" => Ok(Format::Cades),
         "xades" => Ok(Format::Xades),
-        "facturae" | "ooxml" | "odf" => Err(ArgumentsRefusal::UnsupportedFormat(name.to_owned())),
+        "facturae" => Ok(Format::FacturaE),
+        "ooxml" | "odf" => Err(ArgumentsRefusal::UnsupportedFormat(name.to_owned())),
         _ => Err(ArgumentsRefusal::UnknownFormat(name.to_owned())),
     }
 }

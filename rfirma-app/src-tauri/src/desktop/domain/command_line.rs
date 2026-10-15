@@ -364,7 +364,7 @@ const SIGN_SYNTAX: &str = "\
 Uso: rfirma sign -i <fichero> (-o <fichero> | --xml | --json)
                  (--alias <alias> | --filter <filtro> | --certgui | --certtui)
                  [--filter <filtro>] [--store <almacén>]
-                 [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+                 [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
                  [--config <propiedades>] [--password-fd <N>]
      rfirma sign --gui -i <fichero>
 
@@ -376,7 +376,7 @@ const COSIGN_SYNTAX: &str = "\
 Uso: rfirma cosign -i <fichero> (-o <fichero> | --xml | --json)
                    (--alias <alias> | --filter <filtro> | --certgui | --certtui)
                    [--filter <filtro>] [--store <almacén>]
-                   [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+                   [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
                    [--config <propiedades>] [--password-fd <N>]
 
 Añade una firma al fichero ya firmado de -i y escribe el resultado en -o, que se
@@ -387,7 +387,7 @@ const SIGN_SYNTAX_WINDOWS: &str = "\
 Uso: rfirma sign -i <fichero> (-o <fichero> | --xml | --json)
                  (--alias <alias> | --filter <filtro> | --certgui)
                  [--filter <filtro>] [--store <almacén>]
-                 [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+                 [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
                  [--config <propiedades>]
      rfirma sign --gui -i <fichero>
 
@@ -399,7 +399,7 @@ const COSIGN_SYNTAX_WINDOWS: &str = "\
 Uso: rfirma cosign -i <fichero> (-o <fichero> | --xml | --json)
                    (--alias <alias> | --filter <filtro> | --certgui)
                    [--filter <filtro>] [--store <almacén>]
-                   [--format auto|pades|cades|xades] [--algorithm sha512|sha384|sha256]
+                   [--format auto|pades|cades|xades|facturae] [--algorithm sha512|sha384|sha256]
                    [--config <propiedades>]
 
 Añade una firma al fichero ya firmado de -i y escribe el resultado en -o, que se
