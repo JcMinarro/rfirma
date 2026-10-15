@@ -3,12 +3,11 @@
 import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
-import type { Errand, MarkedArea } from "./errand";
-import { SedeConfirm } from "./SedeConfirm";
+import { consentActionKey, type Errand, type MarkedArea } from "./errand";
+import { SedeAreaMarking } from "./SedeAreaMarking";
 import { SedeConsent } from "./SedeConsent";
-import { SedeMarking } from "./SedeMarking";
+import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
 import { SedeNoCertificate } from "./SedeNoCertificate";
-import { SedeOldWebClient } from "./SedeOldWebClient";
 import { SedeOutcome } from "./SedeOutcome";
 import { SedeSigning } from "./SedeSigning";
 import { SedeTransfer } from "./SedeTransfer";
@@ -58,6 +57,7 @@ export function SedeView({
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
+  const asks = consentActionKey(errand.operation) === "identify" ? "identity" : "signature";
 
   return (
     <div className="sede-window__frame">
@@ -82,7 +82,9 @@ export function SedeView({
             onCancel={onCancel}
           />
         )}
-        {stage.kind === "oldWebClient" && <SedeOldWebClient onDismiss={onDismissWarning} />}
+        {stage.kind === "oldWebClient" && (
+          <SedeOutdatedPage origin={errand.origin} asks={asks} onDismiss={onDismissWarning} />
+        )}
         {stage.kind === "consent" && (
           <SedeConsent
             origin={errand.origin}
@@ -97,10 +99,18 @@ export function SedeView({
           />
         )}
         {stage.kind === "marking" && (
-          <SedeMarking pdf={stage.pdf} onMark={onMarkArea} onCancel={() => void onMarkArea(null)} />
+          <SedeAreaMarking
+            pdf={stage.pdf}
+            origin={errand.origin}
+            asks={asks}
+            onMark={onMarkArea}
+            onCancel={() => void onMarkArea(null)}
+          />
         )}
         {stage.kind === "confirming" && (
-          <SedeConfirm
+          <SedeValidatorQuestion
+            origin={errand.origin}
+            asks={asks}
             messageCode={stage.messageCode}
             onConfirm={onConfirmSignatures}
             onCancel={onCancel}
