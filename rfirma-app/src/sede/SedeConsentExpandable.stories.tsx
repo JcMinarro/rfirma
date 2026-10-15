@@ -1,6 +1,7 @@
 //! Las historias provisionales del consentimiento ampliable de sede, que documentan el diseño hasta que se implemente: la ventana compacta con lo recibido y la ampliada con el visor.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { sedeAreaMomentMeta, sedeMomentMeta } from "../../.storybook/decorators/sedeWindow";
 import type { ReaderStatus } from "../signing/certificate";
 import type { SameSignerNotice } from "../signing/sameSignerNotice";
@@ -92,7 +93,6 @@ function ExpandableConsentDesign({
   const shown = receivedOf(errand === "terminal" ? "one" : received, previousSignatures, yours);
   const basics = {
     origin: withOrigin ? "sede.villaejemplo.es" : null,
-    actions: receivedActions,
     certificates: certificates === "one" ? DESIGN_CERTIFICATES.slice(0, 1) : DESIGN_CERTIFICATES,
     reader: READERS[reader],
     narrowed: siteFiltersCertificates,
@@ -111,17 +111,22 @@ function ExpandableConsentDesign({
       received={shown}
       asks={errand === "identity" ? "identity" : "signature"}
       terminal={errand === "terminal"}
+      onDownload={receivedActions.onDownload}
+      onExpand={onExpand}
     />
   ) : (
     <SedeConsentExpanded
       key={countdownStart}
       {...basics}
       documents={shown.kind === "documents" ? shown.documents : []}
+      actions={receivedActions}
       defaultDocument={defaultDocument}
       defaultSignaturesOpen={defaultSignaturesOpen}
     />
   );
 }
+
+const onExpand = fn();
 
 const hidden = { table: { disable: true } };
 

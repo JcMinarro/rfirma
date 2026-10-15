@@ -6,35 +6,21 @@ import { renderWithCatalog } from "../testing/render";
 import * as consentModule from "./SedeConsent.stories";
 import * as noCertificateModule from "./SedeNoCertificate.stories";
 import { SedeWindow } from "./SedeWindow";
-import { errandOf, scriptedErrand, scriptedFrom } from "./testing/fixtures/sedeWindow";
+import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: la variante de origen «orden de terminal» de la ventana de sede (`-certgui`). */
 
 const { TerminalOrder } = composeStories(consentModule);
 const { TerminalExcludedByFilter } = composeStories(noCertificateModule);
 
-const DOCUMENT_PATH = errandOf(TerminalOrder).terminalOrder?.documentPath ?? "";
-
 describe("terminal order origin", () => {
-  it("names the document in the title with its full path in the tooltip", () => {
+  it("says only that a terminal order asks, with nothing addressed to a site", () => {
     const { port } = scriptedFrom(TerminalOrder);
     renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
 
-    expect(screen.getByText("Firmar convenio.pdf")).toHaveAttribute("title", DOCUMENT_PATH);
-  });
-
-  it("shortens a long name in the middle, keeping the start, the end and the extension", () => {
-    const name = `${"a".repeat(30)}-informe-final-revisado.pdf`;
-    const errand = errandOf(TerminalOrder);
-    const { port } = scriptedErrand(errand.stage, {
-      ...errand,
-      terminalOrder: { documentPath: `/tmp/${name}` },
-    });
-    renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
-
-    const title = screen.getByText(/^Firmar a+….*\.pdf$/);
-    expect(title).toHaveAttribute("title", `/tmp/${name}`);
-    expect(title.textContent?.length).toBeLessThan(name.length);
+    expect(screen.getByText("Una orden de terminal")).toBeInTheDocument();
+    expect(screen.queryByText(/^Te pide/)).not.toBeInTheDocument();
+    expect(screen.getByText("Vas a firmar 1 documento")).toBeInTheDocument();
   });
 
   it("consents with the chosen certificate", async () => {

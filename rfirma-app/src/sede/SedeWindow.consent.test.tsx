@@ -2,22 +2,44 @@ import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { expectNoticeLine } from "../signing/testing/harness";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import * as consentModule from "./SedeConsent.stories";
 import { SedeWindow } from "./SedeWindow";
+import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
 import {
   certificate,
   consentStage,
+  errandOf,
   scriptedErrand,
   scriptedFrom,
+  signedDocument,
 } from "./testing/fixtures/sedeWindow";
 
-/** Grada A: el momento 2, el consentimiento, con su cuenta atrás. Lo que enseña cada historia está en `SedeWindow.presentation.test.tsx`. */
+/** Grada A: el momento 2, el consentimiento compacto, con su aviso único y su cuenta atrás. */
 
-const { Consent, Batch, IdentityData, PreviousSignaturesValid, PreviousSignaturesWithProblem } =
+const { Consent, Batch, LocalBatch, IdentityData, PreviousSignaturesWithProblem } =
   composeStories(consentModule);
+
+const grace = certificate({
+  id: "grace",
+  holderName: "GRACE BREWSTER HOPPER",
+  stampedSigner: "GRACE BREWSTER HOPPER",
+  givenName: "GRACE",
+  surname: "BREWSTER HOPPER",
+  idNumber: "00056780Q",
+  certificateSerialNumber: "987654321",
+});
+
+const signedByAdaWithThisCertificate = {
+  ...signedDocument,
+  previousSignatures: previousSignaturesReport([
+    previousSignature({
+      issuer: certificate().issuer,
+      certificateSerialNumber: certificate().certificateSerialNumber,
+    }),
+  ]),
+};
 
 describe("2 · consent", () => {
   it("is not laid under the dialog scrim, which would cover the certificate list", () => {
@@ -27,15 +49,32 @@ describe("2 · consent", () => {
     expect(container.querySelector(".rf-scrim")).toBeNull();
   });
 
-  it("orders the body origin, then certificate, then document", () => {
+  it("orders who asks, then the certificate, then what is signed", () => {
     const { port } = scriptedFrom(Consent);
     const { container } = renderWithCatalog(<SedeWindow errands={port} />);
 
     const text = container.textContent ?? "";
-    expect(text.indexOf("sede.ejemplo.gob.es pide tu firma")).toBeLessThan(
-      text.indexOf("Certificado"),
-    );
-    expect(text.indexOf("Certificado")).toBeLessThan(text.indexOf("Solicitud de subvención 2026"));
+    expect(text.indexOf("Te pide la firma")).toBeLessThan(text.indexOf("Certificado"));
+    expect(text.indexOf("Certificado")).toBeLessThan(text.indexOf("Vas a firmar 1 documento"));
+  });
+
+  it.each([
+    ["a remote batch", Batch, "Vas a firmar 3 documentos"],
+    ["a local batch", LocalBatch, "Vas a firmar 5 documentos"],
+  ])("sums up %s with its count alone", (_, story, count) => {
+    const { port } = scriptedFrom(story);
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByText(count)).toBeInTheDocument();
+    expect(screen.queryByText("001")).not.toBeInTheDocument();
+  });
+
+  it("offers neither the documents nor their download", () => {
+    const { port } = scriptedFrom(Consent);
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
   });
 
   it("labels the selector «Certificado» also when handing over identity data", () => {
@@ -43,6 +82,14 @@ describe("2 · consent", () => {
     renderWithCatalog(<SedeWindow errands={port} />);
 
     expect(screen.getByRole("combobox", { name: "Certificado" })).toBeInTheDocument();
+  });
+
+  it("says what it sends when handing over identity data, and nothing about what is signed", () => {
+    const { port } = scriptedFrom(IdentityData);
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByText("Te pide tus datos")).toBeInTheDocument();
+    expect(screen.queryByText(/^Vas a firmar/)).not.toBeInTheDocument();
   });
 
   it.each([
@@ -64,17 +111,10 @@ describe("2 · consent", () => {
   });
 
   describe("a site asking for SHA-1 the person has not allowed", () => {
-    it("signs just this once, with the countdown even when it is turned off", () => {
-      const { port } = scriptedErrand(consentStage({ sha1ToAllow: true }));
-      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
-
-      expect(screen.getByRole("button", { name: /^Firmar solo esta vez \(\d+\)$/ })).toBeDisabled();
-    });
-  });
-
-  describe("a local batch asking for SHA-1 the person has not allowed", () => {
-    it("signs just this once, with the countdown even when it is turned off", () => {
-      const { port } = scriptedErrand(
+    it.each([
+      ["a single signature", consentStage({ sha1ToAllow: true })],
+      [
+        "a local batch",
         consentStage({
           document: null,
           signs: 1,
@@ -82,10 +122,68 @@ describe("2 · consent", () => {
           sha1ToAllow: true,
           items: [{ id: "001", signing: "pdf", round: { kind: "sign" } }],
         }),
-      );
+      ],
+    ])("signs anyway for %s, with the countdown even when it is turned off", (_, stage) => {
+      const { port } = scriptedErrand(stage);
       renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
 
-      expect(screen.getByRole("button", { name: /^Firmar solo esta vez \(\d+\)$/ })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /^Firmar igualmente \(\d+\)$/ })).toBeDisabled();
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^Esta sede usa un método de firma poco seguro\.$/,
+      );
+    });
+
+    it("says nothing about SHA-1 once the person allowed it", () => {
+      const { port } = scriptedErrand(consentStage({ sha1Allowed: true }));
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByText(/SHA-1|poco seguro/)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Firmar" })).toBeEnabled();
+    });
+  });
+
+  describe("the facts of the previous signatures", () => {
+    it("tells them in one notice, the invalid signature first, with the tone of the worst", () => {
+      const errand = errandOf(PreviousSignaturesWithProblem);
+      if (errand.stage.kind !== "consent") throw new Error("la historia no es un consentimiento");
+      const stage = { ...errand.stage, sha1ToAllow: true };
+      const { port } = scriptedErrand(stage, { ...errand, stage });
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Tiene una firma que no es válida." +
+          "Esta sede usa un método de firma poco seguro. " +
+          "Lo firmaste tú con otro certificado tuyo. " +
+          "Trae firmas de otras personas.",
+      );
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+
+    it("changes what you already signed when another certificate is chosen", async () => {
+      const user = userEvent.setup();
+      const { port } = scriptedErrand(
+        consentStage({
+          document: signedByAdaWithThisCertificate,
+          certificates: [certificate({ remembered: true }), grace],
+        }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^Lo firmaste tú con este certificado\.$/,
+      );
+
+      await user.click(screen.getByRole("combobox", { name: "Certificado" }));
+      await user.click(screen.getByRole("option", { name: /GRACE BREWSTER HOPPER/ }));
+
+      expect(screen.getByRole("status")).toHaveTextContent(/^Trae firmas de otras personas\.$/);
+    });
+
+    it("draws no notice when the document brings no signature", () => {
+      const { port } = scriptedFrom(Consent);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
   });
 
@@ -125,32 +223,6 @@ describe("2 · consent", () => {
       await user.click(screen.getByRole("button", { name: "Firmar" }));
 
       expect(calls.consent).toHaveBeenCalledWith("bea");
-    });
-  });
-
-  describe("previous signatures of the document", () => {
-    it("shows the notice with the right count and states", () => {
-      const { port } = scriptedFrom(PreviousSignaturesWithProblem);
-      renderWithCatalog(<SedeWindow errands={port} />);
-
-      expectNoticeLine("Junto a 2 firmas", "1 problema");
-    });
-
-    it("renders the site variant, where the stylesheet keeps the notice to one line", () => {
-      const { port } = scriptedFrom(PreviousSignaturesWithProblem);
-      renderWithCatalog(<SedeWindow errands={port} />);
-
-      expect(document.querySelector(".panel__co-signature--site")).toBeInTheDocument();
-    });
-
-    it("opens the «Ver firmas» dialog from the site notice", async () => {
-      const user = userEvent.setup();
-      const { port } = scriptedFrom(PreviousSignaturesValid);
-      renderWithCatalog(<SedeWindow errands={port} />);
-
-      await user.click(screen.getByRole("button", { name: "Ver firmas →" }));
-
-      expect(screen.getByRole("dialog", { name: "Firmas del documento" })).toBeInTheDocument();
     });
   });
 

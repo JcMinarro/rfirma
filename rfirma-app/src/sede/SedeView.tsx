@@ -4,12 +4,13 @@ import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
 import { consentActionKey, type Errand, type MarkedArea } from "./errand";
+import { receivedOf } from "./received";
 import { SedeAreaMarking } from "./SedeAreaMarking";
-import { SedeConsent } from "./SedeConsent";
 import { SedeEnding } from "./SedeEnding";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
 import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
+import { SedeConsentCompact } from "./SedeReceivedConsent";
 import "./SedeWindow.css";
 
 export interface SedeViewProps {
@@ -87,14 +88,17 @@ export function SedeView({
           />
         )}
         {stage.kind === "consent" && (
-          <SedeConsent
+          <SedeConsentCompact
             origin={errand.origin}
-            terminalOrder={errand.terminalOrder ?? null}
-            operation={errand.operation}
-            stage={stage}
-            countdown={consentCountdown}
-            reader={reader}
+            asks={asks}
+            terminal={errand.terminalOrder !== undefined}
+            received={receivedOf(stage)}
+            certificates={stage.certificates}
             liveCertificates={liveCertificates}
+            reader={reader}
+            narrowed={stage.narrowed}
+            sha1ToAllow={stage.sha1ToAllow}
+            countdown={consentCountdown}
             onConsent={onConsent}
             onCancel={onCancel}
           />
