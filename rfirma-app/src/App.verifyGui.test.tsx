@@ -79,11 +79,11 @@ describe("App, con verify --gui", () => {
   it("opens straight onto the summary of the document's signatures, with no strip, badge or Cambiar", async () => {
     render(aSigner({ previousSignatures: withSignatures("GRACE HOPPER", "ADA LOVELACE") }));
 
-    expect(await screen.findByText("2 firmas")).toBeInTheDocument();
+    expect(await screen.findByText("PAdES · 2 firmas")).toBeInTheDocument();
     expect(screen.getByText("Firmas del documento")).toBeInTheDocument();
     const [first, second] = screen.getAllByRole("listitem") as [HTMLElement, HTMLElement];
-    expect(within(first).getByText("GRACE HOPPER (00000000T)")).toBeInTheDocument();
-    expect(within(second).getByText("ADA LOVELACE (00000000T)")).toBeInTheDocument();
+    expect(within(first).getByText("GRACE HOPPER")).toBeInTheDocument();
+    expect(within(second).getByText("ADA LOVELACE")).toBeInTheDocument();
     expect(screen.queryByText("Nueva")).not.toBeInTheDocument();
     expect(screen.queryByText(/^Firmado a las /)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cambiar" })).not.toBeInTheDocument();
@@ -102,7 +102,7 @@ describe("App, con verify --gui", () => {
       openFolder: vi.fn(async () => {}),
     };
     render(aSigner({ previousSignatures: withSignatures("GRACE HOPPER") }), opener);
-    await screen.findByText("1 firma");
+    await screen.findByText("PAdES · 1 firma");
 
     await user.click(screen.getByRole("button", { name: "Abrir el PDF" }));
     await user.click(screen.getByTitle("Abrir la carpeta"));
@@ -143,7 +143,7 @@ describe("App, con verify --gui", () => {
     it("mounts the reading beside a viewer that says there is no preview", async () => {
       renderNotAPdf(aSigner({ previousSignatures: cadesWith("GRACE HOPPER", "ADA LOVELACE") }));
 
-      expect(await screen.findByText("2 firmas")).toBeInTheDocument();
+      expect(await screen.findByText("CAdES · 2 firmas")).toBeInTheDocument();
       expect(screen.getByText("Sin vista previa")).toBeInTheDocument();
       expect(screen.queryByText("No se ha podido leer el documento")).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /zoom/i })).not.toBeInTheDocument();
@@ -152,7 +152,7 @@ describe("App, con verify --gui", () => {
 
     it("offers to open the file and disables Firmar with its reason", async () => {
       renderNotAPdf(aSigner({ previousSignatures: cadesWith("GRACE HOPPER") }));
-      await screen.findByText("1 firma");
+      await screen.findByText("CAdES · 1 firma");
 
       expect(screen.getByRole("button", { name: "Abrir el fichero" })).toBeEnabled();
       expect(screen.queryByRole("button", { name: "Abrir el PDF" })).not.toBeInTheDocument();

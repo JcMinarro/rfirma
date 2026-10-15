@@ -206,7 +206,7 @@ sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consent
 ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
 enseña. **La compacta es el consentimiento real** (`SedeConsentCompact`). **Las
 `Expanded*` son provisionales**: documentan el diseño sobre componentes que solo
-usan ellas (`SedeConsentExpanded`, `SedeSignatureCards`), sin cambiar la ventana
+usan ellas (`SedeConsentExpanded`), sin cambiar la ventana
 real. La spec que implemente la vista ampliada las lleva a la ventana y borra lo
 que solo existía para ellas.
 
@@ -277,11 +277,7 @@ que solo existía para ellas.
 **Pendiente de implementar: la ampliada, «Ver documentos» y la descarga.** En la
 compacta real, el hueco izquierdo del pie queda vacío y el resumen no lleva
 «Descargar…». Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
-huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
-previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
-`SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
-en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
-motivo), que cambia también la ventana principal. Y el nombre por defecto del
+huella con su algoritmo desde el backend; el nombre por defecto del
 documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
 tiene que depender del tipo o ser neutro. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las

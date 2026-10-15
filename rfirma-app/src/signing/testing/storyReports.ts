@@ -60,6 +60,7 @@ export const EXPIRED = aSignature({
   name: "LUIS PEREZ",
   idNumber: "11111111H",
   organizationIdentifier: "B12345678",
+  entityName: "Reformas Martín SL",
   validity: "expired",
   validityReason: { kind: "certificateExpired", date: "2026-03-01", holder: null },
   signingDate: { kind: "stamped", at: "2026-02-10T09:00:00Z", tsa: "TSA de pruebas" },

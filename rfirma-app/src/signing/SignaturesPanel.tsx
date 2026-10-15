@@ -1,8 +1,6 @@
 //! La columna derecha con todas las firmas del documento en sus dos momentos, el acuse tras firmarlo y la lectura de firmas al abrirlo para verlas (`verify --gui`), con sus tres salidas: abrir el documento, abrir la carpeta y volver a firmar.
 
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { Badge } from "../design-system/Badge";
 import { Icon } from "../design-system/icons";
 import { Row } from "../design-system/Row";
 import type { NamedFailure } from "../errors/classify";
@@ -10,7 +8,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import type { Destination } from "./destination";
 import { PanelFooter } from "./PanelFooter";
 import type { DocumentFinding, PreviousSignature, SignatureFormat } from "./previousSignatures";
-import { SignatureCards } from "./SignatureCards";
+import { SignatureCards, signaturesOverview } from "./SignatureCards";
 import { formatSignedTime } from "./signedAt";
 import type { ReadingState } from "./useSignatureReading";
 import "./SigningPanel.css";
@@ -56,8 +54,6 @@ interface SignaturesPanelProps {
   failure: NamedFailure | null;
   onOpenHelp?: () => void;
 }
-
-const FORMAT_BADGES = { pades: "PAdES", cades: "CAdES", xades: "XAdES" } as const;
 
 /** La columna derecha con todas las firmas del documento, en el acuse o en la lectura de firmas. */
 export function SignaturesPanel({
@@ -188,28 +184,9 @@ function SignaturesSummary({ signatures, findings, format, justSigned }: Signatu
         <span>{t("panel.signed.title")}</span>
       </Row>
       {format !== undefined && (
-        <Row gap="xs">
-          <Badge>{FORMAT_BADGES[format]}</Badge>
-          <Badge>{countBadge(signatures, t)}</Badge>
-        </Row>
+        <p className="rf-caption rf-text-muted">{signaturesOverview(t, { signatures, format })}</p>
       )}
       <SignatureCards signatures={signatures} findings={findings} justSigned={justSigned} />
     </section>
   );
-}
-
-function countersignaturesIn(signatures: readonly PreviousSignature[]): number {
-  return signatures.reduce(
-    (total, signature) =>
-      total + signature.countersignatures.length + countersignaturesIn(signature.countersignatures),
-    0,
-  );
-}
-
-function countBadge(signatures: readonly PreviousSignature[], t: TFunction): string {
-  const signatureCount = t("panel.signed.count", { count: signatures.length });
-  const countersignatureCount = countersignaturesIn(signatures);
-  return countersignatureCount === 0
-    ? signatureCount
-    : `${signatureCount} · ${t("panel.signed.countersignatureCount", { count: countersignatureCount })}`;
 }
