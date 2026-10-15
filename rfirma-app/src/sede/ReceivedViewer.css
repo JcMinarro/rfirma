@@ -29,6 +29,19 @@
   overflow-x: auto;
 }
 
+.received-viewer__xml {
+  padding: var(--rf-space-md);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--rf-caption-size);
+  line-height: var(--rf-body-prose-leading);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.received-viewer__xml-line {
+  padding-left: calc(var(--xml-depth, 0) * 2ch);
+}
+
 .received-viewer__image img {
   display: block;
   width: 100%;

@@ -99,9 +99,11 @@ describe("the expandable site consent", () => {
     expect(screen.getByText("Una página sin identificar")).toBeInTheDocument();
   });
 
-  it("shows an XML document as literal text", () => {
+  it("shows a one-line XML document indented, one element per line", () => {
     renderWithCatalog(<ExpandedXmlDocument />);
-    expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
+    expect(screen.getByText('<baremo convocatoria="FACHADAS-2026">')).toBeInTheDocument();
+    expect(screen.getByText("<puntuacionMinima>50</puntuacionMinima>")).toBeInTheDocument();
+    expect(screen.getByText("</baremo>")).toBeInTheDocument();
   });
 
   it("shows in the viewer the document picked in the list", async () => {
