@@ -474,6 +474,17 @@ native: build-java
     fi
     ls -la "$dest"
 
+# Compila libxml2 y libxslt estáticas, sin iconv y con el CRT estático, desde src-tauri/vcpkg.json; las enlaza build.rs.
+[windows]
+[group('ci')]
+vcpkg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    vcpkg_root="${VCPKG_ROOT:-${VCPKG_INSTALLATION_ROOT:-}}"
+    [ -n "$vcpkg_root" ] || { echo "no encuentro vcpkg: define VCPKG_ROOT" >&2; exit 1; }
+    cd "{{ tauri }}"
+    "$(cygpath -u "$vcpkg_root")/vcpkg" install --triplet x64-windows-static --no-print-usage
+
 # Escribe el paquetes.json de un directorio de paquetes (ADR-0015).
 [group('ci')]
 packages-manifest dir:
