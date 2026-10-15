@@ -421,11 +421,6 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Tree
       Leafs
 
-  pub struct LocalBatchItemView
-      id: String
-      signing: SigningKindView
-      round: SignatureRoundView
-
   pub enum SiteStageView   (serde: etiqueta "kind")
       Waiting
       AskingForConsent { certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize }
@@ -462,6 +457,15 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Zip
       Text
       Unknown
+
+  pub struct LocalBatchItemView
+      id: String
+      document: String
+      name: Option<String>
+      detected: DocumentTypeView
+      sha256: String
+      signing: SigningKindView
+      round: SignatureRoundView
 
   pub enum SiteOutcomeView   (serde: etiqueta "kind")
       Refused { situation: RefusalSituationView, detail: String }

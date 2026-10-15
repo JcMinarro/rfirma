@@ -20,9 +20,7 @@ pub(in crate::site::application) fn keep_the_document<E: FilterEngine, P: Policy
     Ok(desk.neighbours.open_unrecorded(path))
 }
 
-/// Deja el documento en el directorio de paso sin apuntarlo en el trámite: quien lo llame decide
-/// cuándo borrarlo (el lote local lo hace elemento a elemento, no al final del trámite).
-pub(in crate::site::application) fn write_the_document<E: FilterEngine, P: PolicyEngine>(
+fn write_the_document<E: FilterEngine, P: PolicyEngine>(
     desk: &ErrandDesk<'_, E, P>,
     bytes: &[u8],
 ) -> Result<PathBuf, SiteRefusal> {

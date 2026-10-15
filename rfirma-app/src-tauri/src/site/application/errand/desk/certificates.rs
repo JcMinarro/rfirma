@@ -2,14 +2,14 @@
 
 use crate::identity::domain::certificate::{ListedCertificate, TokenCertificate};
 use crate::signing::domain::bridge::Format;
-use crate::site::domain::batch::LocalSingleSign;
+use crate::site::domain::batch::{LocalBatch, LocalSingleSign};
 use crate::site::domain::protocol::{
     AlgorithmReading, AskedAlgorithm, BatchRequest, SelectCertificate, SiteFilter,
     StickyCertificate,
 };
 
 use super::super::outcome::{
-    BatchConsent, ErrandStep, LocalBatchConsent, LocalBatchItem, SiteOutcome,
+    BatchConsent, ErrandStep, LocalBatchConsent, LocalBatchItem, ReceivedDocument, SiteOutcome,
 };
 use super::super::replies::{answering, no_certificate_at_all, no_certificate_the_site_accepts};
 use super::super::request::LocalBatchAsk;
@@ -17,7 +17,9 @@ use super::super::state::LiveErrand;
 use crate::site::application::batch;
 use crate::site::application::filtering;
 use crate::site::application::session::SiteRefusal;
-use crate::site::ports::{FilterEngine, Neighbours};
+use crate::site::ports::{FilterEngine, Neighbours, PolicyEngine};
+
+use super::{keep_the_document, ErrandDesk};
 
 /// Prepara el paso de consentimiento para una selección de certificados de sede.
 pub fn consent_for<E: FilterEngine>(
@@ -98,15 +100,15 @@ pub fn consent_to_the_batch<E: FilterEngine>(
     }))
 }
 
-/// Prepara el consentimiento del lote local: los certificados cribados del lote remoto, y el
-/// resumen de qué es y qué se le hace a cada elemento (`LocalBatchSigner`, 1.9.2).
-pub fn consent_to_the_local_batch<E: FilterEngine>(
-    engine: &E,
+/// Prepara el consentimiento del lote local: los certificados cribados del lote remoto, y cada
+/// elemento como documento de paso con qué es y qué se le hace (`LocalBatchSigner`, 1.9.2).
+pub fn consent_to_the_local_batch<E: FilterEngine, P: PolicyEngine>(
+    desk: &ErrandDesk<'_, E, P>,
     ask: LocalBatchAsk,
     ours: Vec<TokenCertificate>,
-    certificates: &dyn Neighbours,
     live: &LiveErrand,
 ) -> ErrandStep {
+    let (engine, certificates) = (desk.engine, desk.neighbours);
     let LocalBatchAsk { request, batch } = ask;
     let manners = CertificateManners {
         filter: request.filter(),
@@ -130,11 +132,13 @@ pub fn consent_to_the_local_batch<E: FilterEngine>(
     let sha1_allowed = asks_for_sha1 && (certificates.sha1_allowed() || live.sha1_allowed_once());
     let sha1_to_allow = asks_for_sha1 && !sha1_allowed;
 
+    let items = match the_items_kept(desk, live, batch.as_ref().ok()) {
+        Ok(items) => items,
+        Err(refusal) => return answering(live, SiteOutcome::Refused(refusal)),
+    };
+
     ErrandStep::AskingToSignTheLocalBatch(Box::new(LocalBatchConsent {
-        items: batch
-            .as_ref()
-            .map(|batch| batch.signs().iter().map(summary_of).collect())
-            .unwrap_or_default(),
+        items,
         request,
         batch,
         certificates: rows,
@@ -146,13 +150,34 @@ pub fn consent_to_the_local_batch<E: FilterEngine>(
     }))
 }
 
-/// Qué es y qué se le hace a un elemento del lote, sin su ruta ni su contenido.
-fn summary_of(sign: &LocalSingleSign) -> LocalBatchItem {
-    LocalBatchItem {
+/// Cada elemento del lote leído guardado como documento de paso, en su orden; ninguno si no se leyó.
+fn the_items_kept<E: FilterEngine, P: PolicyEngine>(
+    desk: &ErrandDesk<'_, E, P>,
+    live: &LiveErrand,
+    batch: Option<&LocalBatch>,
+) -> Result<Vec<LocalBatchItem>, SiteRefusal> {
+    batch.map_or(Ok(Vec::new()), |batch| {
+        batch
+            .signs()
+            .iter()
+            .map(|sign| kept_as_an_item(desk, live, sign))
+            .collect()
+    })
+}
+
+/// El elemento del lote guardado como documento de paso, con qué es y qué se le hace.
+fn kept_as_an_item<E: FilterEngine, P: PolicyEngine>(
+    desk: &ErrandDesk<'_, E, P>,
+    live: &LiveErrand,
+    sign: &LocalSingleSign,
+) -> Result<LocalBatchItem, SiteRefusal> {
+    let handle = keep_the_document(desk, live, sign.document())?;
+    Ok(LocalBatchItem {
         id: sign.id().to_owned(),
+        document: ReceivedDocument::kept_as(handle, Some(sign.id().to_owned()), sign.document()),
         format: Format::from(sign.effective_format()),
         round: sign.round(),
-    }
+    })
 }
 
 /// Lo que una petición declara sobre cómo resolver el certificado, sin los candidatos.
