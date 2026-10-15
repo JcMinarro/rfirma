@@ -1,7 +1,7 @@
 //! Detector puro por cabecera: la forma que decide el formato de firma y el tipo de un documento de la sede, sin fiarse de su nombre (ADR-0050).
 
 use quick_xml::events::Event;
-use quick_xml::Reader;
+use quick_xml::{Reader, XmlVersion};
 use x509_cert::der::asn1::AnyRef;
 use x509_cert::der::{Decode, Reader as _, SliceReader, Tag, TagNumber, Tagged};
 
@@ -184,7 +184,7 @@ fn root_namespace(document: &[u8]) -> Option<String> {
                     .attributes()
                     .flatten()
                     .find(|attribute| attribute.key.as_ref() == wanted.as_bytes())
-                    .and_then(|attribute| attribute.normalized_value().ok())
+                    .and_then(|attribute| attribute.normalized_value(XmlVersion::Implicit1_0).ok())
                     .map(|value| value.into_owned());
             }
             Event::Eof => return None,

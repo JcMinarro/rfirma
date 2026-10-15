@@ -474,6 +474,17 @@ native: build-java
     fi
     ls -la "$dest"
 
+# Compila libxml2 y libxslt estáticas, sin iconv y con el CRT estático, desde src-tauri/vcpkg.json; las enlaza build.rs.
+[windows]
+[group('ci')]
+vcpkg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    vcpkg_root="${VCPKG_ROOT:-${VCPKG_INSTALLATION_ROOT:-}}"
+    [ -n "$vcpkg_root" ] || { echo "no encuentro vcpkg: define VCPKG_ROOT" >&2; exit 1; }
+    cd "{{ tauri }}"
+    "$(cygpath -u "$vcpkg_root")/vcpkg" install --triplet x64-windows-static --no-print-usage
+
 # Escribe el paquetes.json de un directorio de paquetes (ADR-0015).
 [group('ci')]
 packages-manifest dir:
@@ -559,6 +570,11 @@ bundle: check-native build-ts
     (cd "{{ tauri }}" && cargo build --release --features custom-protocol,console --bin rfirma-console)
     cp "$CARGO_TARGET_DIR/release/rfirma-console.exe" "$runtime/rfirma.com"
     (cd "{{ app }}" && pnpm exec tauri build --bundles nsis --config "{{ root }}/packaging/windows/tauri.windows.json")
+    dumpbin="$(ls "$vs"/VC/Tools/MSVC/*/bin/Hostx64/x64/dumpbin.exe | sort -V | tail -1)"
+    if "$dumpbin" -nologo -dependents "$CARGO_TARGET_DIR/release/rfirma.exe" | grep -i -E 'libxml2|libxslt|iconv|vcruntime|msvcp'; then
+        echo "rfirma.exe depende de una DLL que va estática: libxml2, libxslt y el CRT de Visual C++" >&2
+        exit 1
+    fi
     salida="$CARGO_TARGET_DIR/release/bundle/nsis"
     instalador="$(find "$salida" -maxdepth 1 -type f -name '*-setup.exe' | sort | tail -1)"
     if [ -z "$instalador" ]; then

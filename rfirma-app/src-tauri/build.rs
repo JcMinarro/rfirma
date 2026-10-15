@@ -11,6 +11,7 @@ fn main() {
     write_the_catalog();
     record_the_commit();
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    link_libxslt(&target_os);
     if target_os != "windows" {
         tauri_build::build();
         return;
@@ -30,6 +31,38 @@ fn crate_dir() -> std::path::PathBuf {
     std::path::PathBuf::from(
         std::env::var("CARGO_MANIFEST_DIR").expect("cargo define CARGO_MANIFEST_DIR"),
     )
+}
+
+// Linux carga la libxslt del sistema con `dlopen` y no enlaza nada.
+fn link_libxslt(target_os: &str) {
+    match target_os {
+        "macos" => {
+            println!("cargo:rustc-link-lib=dylib=xslt");
+            println!("cargo:rustc-link-lib=dylib=xml2");
+        }
+        "windows" => link_vcpkg_libxslt(),
+        _ => {}
+    }
+}
+
+fn link_vcpkg_libxslt() {
+    println!("cargo:rerun-if-env-changed=VCPKG_INSTALLED_DIR");
+    let installed = std::env::var_os("VCPKG_INSTALLED_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| crate_dir().join("vcpkg_installed"));
+    let lib = installed.join("x64-windows-static").join("lib");
+    for name in ["libxslt", "libxml2"] {
+        let file = lib.join(format!("{name}.lib"));
+        assert!(
+            file.is_file(),
+            "falta {}: compila libxml2 y libxslt con `just vcpkg`",
+            file.display()
+        );
+        println!("cargo:rerun-if-changed={}", file.display());
+        println!("cargo:rustc-link-lib=static={name}");
+    }
+    println!("cargo:rustc-link-search=native={}", lib.display());
+    println!("cargo:rustc-link-lib=dylib=bcrypt");
 }
 
 // ADR-0009: solo entran los idiomas al 100 %, la misma regla que `po-import`.

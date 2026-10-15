@@ -105,7 +105,7 @@ fails_with "argumentos: modo desconocido" "uso:" "$built" --otro
 
 if command -v dpkg-deb > /dev/null 2>&1; then
     deb() {
-        local out="$1" library="$2" relations="${3-Depends: libpcsclite1
+        local out="$1" library="$2" relations="${3-Depends: libpcsclite1, libxslt1.1
 Recommends: opensc, pcscd
 }" staging
         staging="$(mktemp -d "$tmp/deb.XXXX")"
@@ -134,9 +134,17 @@ Recommends: opensc, pcscd
     "$manifest" write "$bare"
     fails_with "contenido: un .deb sin depender de libpcsclite" "libpcsclite" "$bare"
 
+    no_xslt="$tmp/no-xslt"
+    mkdir "$no_xslt"
+    deb "$no_xslt/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1
+Recommends: opensc, pcscd
+"
+    "$manifest" write "$no_xslt"
+    fails_with "contenido: un .deb sin depender de libxslt" "libxslt1.1" "$no_xslt"
+
     unadvised="$tmp/unadvised"
     mkdir "$unadvised"
-    deb "$unadvised/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1
+    deb "$unadvised/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1, libxslt1.1
 "
     "$manifest" write "$unadvised"
     fails_with "contenido: un .deb que no recomienda opensc ni pcscd" "opensc" "$unadvised"

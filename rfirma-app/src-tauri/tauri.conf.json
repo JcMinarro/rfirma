@@ -27,7 +27,7 @@
           "/usr/share/nautilus-python/extensions/rfirma-sign.py": "../../packaging/gnome/rfirma-sign.py",
           "/usr/share/doc/rfirma/licenses/heroicons-MIT.txt": "../../packaging/licenses/heroicons-MIT.txt"
         },
-        "depends": ["libpcsclite1"],
+        "depends": ["libpcsclite1", "libxslt1.1"],
         "recommends": ["python3-nautilus", "opensc", "pcscd"],
         "desktopTemplate": "../../packaging/rfirma.desktop.hbs"
       },
@@ -38,7 +38,7 @@
           "/usr/share/nautilus-python/extensions/rfirma-sign.py": "../../packaging/gnome/rfirma-sign.py",
           "/usr/share/doc/rfirma/licenses/heroicons-MIT.txt": "../../packaging/licenses/heroicons-MIT.txt"
         },
-        "depends": ["libpcsclite.so.1()(64bit)"],
+        "depends": ["libpcsclite.so.1()(64bit)", "libxslt.so.1()(64bit)"],
         "recommends": ["nautilus-python", "opensc", "pcsc-lite"],
         "desktopTemplate": "../../packaging/rfirma.desktop.hbs",
         "compression": {

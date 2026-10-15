@@ -27,6 +27,7 @@ pub mod views;
 pub mod window;
 #[cfg(windows)]
 pub mod windows_root;
+pub mod xslt;
 
 use std::path::Path;
 

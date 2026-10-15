@@ -128,7 +128,7 @@ every_platform_needs() {
 
 windows_needs() {
     case "$1" in
-        packaging/windows/* | rfirma-app/src-tauri/windows-app-manifest.xml) return 0 ;;
+        packaging/windows/* | rfirma-app/src-tauri/windows-app-manifest.xml | rfirma-app/src-tauri/vcpkg.json) return 0 ;;
     esac
     every_platform_needs "$1"
 }
