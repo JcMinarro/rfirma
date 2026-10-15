@@ -55,6 +55,15 @@ function Content({
           onOpen={noop}
         />
       );
+    case "invoice":
+      return (
+        <iframe
+          className="received-viewer__frame"
+          src={content.src}
+          title={name}
+          sandbox="allow-scripts"
+        />
+      );
     case "xml":
       return (
         <div className="received-viewer__scroll">
