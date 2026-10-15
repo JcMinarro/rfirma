@@ -118,7 +118,7 @@ function pageWith(number: number, lines: readonly Line[]): PdfPage {
 }
 
 /** La resolución del diseño, de tres hojas, con su texto pintado en la primera; en jsdom, sin pintar. */
-const resolutionPdf: PdfDocument = {
+export const resolutionPdf: PdfDocument = {
   pageCount: 3,
   getPage: (number) => Promise.resolve(pageWith(number, RESOLUTION)),
 };

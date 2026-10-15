@@ -100,7 +100,7 @@ export function SedeMarking({ pdf, onMark, onCancel }: SedeMarkingProps) {
   );
 }
 
-async function markedAreaOf(pdf: PdfDocument, placement: Placement): Promise<MarkedArea> {
+export async function markedAreaOf(pdf: PdfDocument, placement: Placement): Promise<MarkedArea> {
   const first = firstSealedPage(placement) ?? 1;
   const page = await pdf.getPage(first);
   const { x0, y0, x1, y1 } = placement.rect;
