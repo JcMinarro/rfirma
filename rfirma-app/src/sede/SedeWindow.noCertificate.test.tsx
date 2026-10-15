@@ -23,15 +23,15 @@ describe("5 · no usable certificate", () => {
     const { port, calls } = scriptedFrom(NoneInstalled);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar" }));
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
     expect(calls.cancel).toHaveBeenCalledOnce();
     expect(calls.close).not.toHaveBeenCalled();
   });
 
   it.each([
-    [1, "No se acepta tu certificado"],
-    [3, "No se acepta ninguno de tus 3 certificados"],
+    [1, "No acepta tu certificado"],
+    [3, "No acepta ninguno de tus 3 certificados"],
   ])(
     "titles the exclusion of %i without naming a site when the request brings no origin",
     (owned, title) => {
@@ -147,11 +147,10 @@ describe("when a child throws", () => {
 });
 
 describe("the window's shape", () => {
-  it("has no application header, no menu, no tray and no destination footer", () => {
+  it("has no application menu, no tray and no destination footer", () => {
     const { port } = scriptedFrom(Cancelled);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(screen.queryByText(/se guardará en/i)).not.toBeInTheDocument();
   });

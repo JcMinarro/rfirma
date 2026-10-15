@@ -6,9 +6,9 @@ import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../sign
 import { consentActionKey, type Errand, type MarkedArea } from "./errand";
 import { SedeAreaMarking } from "./SedeAreaMarking";
 import { SedeConsent } from "./SedeConsent";
+import { SedeEnding } from "./SedeEnding";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
-import { SedeNoCertificate } from "./SedeNoCertificate";
-import { SedeOutcome } from "./SedeOutcome";
+import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
 import "./SedeWindow.css";
 
@@ -125,7 +125,7 @@ export function SedeView({
           <SedeFileTransfer origin={errand.origin} transfer={stage} />
         )}
         {stage.kind === "outcome" && (
-          <SedeOutcome
+          <SedeEnding
             origin={errand.origin}
             outcome={stage.outcome}
             onClose={onClose}
@@ -133,7 +133,7 @@ export function SedeView({
           />
         )}
         {stage.kind === "noCertificate" && (
-          <SedeNoCertificate
+          <SedeMissingCertificate
             origin={errand.origin}
             terminal={errand.terminalOrder !== undefined}
             reason={stage.reason}

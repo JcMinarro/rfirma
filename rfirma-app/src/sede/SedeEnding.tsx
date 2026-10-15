@@ -1,4 +1,4 @@
-//! 4 · El desenlace provisional con el esqueleto del consentimiento compacto: el nombre de la sede, el icono junto al título, y en el rechazo su frase y el detalle copiable; hoy solo lo pintan las historias.
+//! 4 · El desenlace con el esqueleto del consentimiento compacto: el nombre de la sede, el icono junto al título, y en el rechazo su frase y el detalle copiable.
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
