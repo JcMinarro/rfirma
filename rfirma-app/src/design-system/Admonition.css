@@ -1,0 +1,25 @@
+.rf-admonition {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rf-space-xs);
+  padding: 8px 10px;
+  border: 1px solid var(--rf-border-subtle);
+  border-radius: var(--rf-radius-md);
+  background: var(--rf-bg);
+}
+
+.rf-admonition--error {
+  border: 2px solid var(--rf-border-strong);
+}
+
+.rf-admonition__icon {
+  display: flex;
+  flex: none;
+  padding-top: 1px;
+}
+
+.rf-admonition__text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}

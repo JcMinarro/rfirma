@@ -1672,6 +1672,14 @@ msgstr "Instalatu beste ziurtagiri bat, edo itxi eta jarraitu egoitzatik."
 msgid "sede.origin.asks"
 msgstr "Sinadura eskatzen dizu"
 
+#. Rótulo de la cabecera cuando la sede pide los datos del certificado, no una firma.
+msgid "sede.origin.asksIdentity"
+msgstr "Zure datuak eskatzen dizkizu"
+
+#. La cabecera de la ventana de sede cuando la firma la pide una orden de terminal.
+msgid "sede.origin.terminal"
+msgstr "Terminaleko agindu bat"
+
 #. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
 msgid "sede.origin.unknown"
 msgstr "Identifikatu gabeko orrialde bat"
@@ -1681,6 +1689,22 @@ msgid_plural "sede.received.documents"
 msgstr[0] "Dokumentu 1 sinatuko duzu"
 msgstr[1] "{{count}} dokumentu sinatuko dituzu"
 msgstr[2] "{{count}} dokumentu sinatuko dituzu"
+
+#. Al pie de la lista abierta de certificados: la sede la acotó. Dice que acotó, nunca con qué criterio.
+msgid "sede.received.narrowed"
+msgstr "{{origin}} egoitzak ziurtagiri batzuk baino ez ditu onartzen"
+
+#. La misma nota cuando no hay un origen válido que nombrar.
+msgid "sede.received.narrowedUnknownOrigin"
+msgstr "Egoitzak ziurtagiri batzuk baino ez ditu onartzen"
+
+#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar solo esta vez».
+msgid "sede.received.sha1ToAllow"
+msgstr "Egoitza honek sinatzeko metodo ez oso segurua erabiltzen du"
+
+#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
+msgid "sede.received.challenge"
+msgstr "Autentifikazio-erronka bat sinatuko duzu"
 
 #. Huellas que calculó la sede: se firma la referencia, no un documento.
 msgid "sede.received.digests"
@@ -1715,22 +1739,56 @@ msgstr "{{name}}: ekintzak"
 msgid "sede.received.openWith"
 msgstr "Ireki honekin…"
 
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que ya trae firmas.
+msgid "sede.received.withSignatures"
+msgstr "Sinadurekin"
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que trae alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.withTroubledSignatures"
+msgstr "Gorabeheradun sinadurekin"
+
 msgid "sede.received.saveCopy"
 msgstr "Gorde kopia"
 
 msgid "sede.received.copySha256"
 msgstr "Kopiatu SHA-256"
 
-#. Un solo documento, que ya trae firmas.
-msgid "sede.received.signedOne"
-msgstr "Beste pertsona batzuen sinadurak ditu jada"
+#. El visor de la vista ampliada, en vez del documento, cuando su tipo no tiene vista previa.
+msgid "sede.received.noPreview"
+msgstr "Fitxategi mota hau ezin da hemen erakutsi."
 
-#. Cuántos documentos del lote ya traen firmas, válidas o no.
+#. Un solo documento que la persona ya firmó con el certificado elegido.
+msgid "sede.received.signedByYouOne"
+msgstr "Zeuk sinatu zenuen ziurtagiri honekin"
+
+#. Un solo documento que la persona ya firmó con otro certificado suyo, del mismo titular y entidad.
+msgid "sede.received.signedByYouOtherCertificateOne"
+msgstr "Zeuk sinatu zenuen beste ziurtagiri batekin"
+
+#. Un solo documento, que ya trae firmas de otras personas.
+msgid "sede.received.signedOne"
+msgstr "Beste pertsona batzuen sinadurak ditu"
+
+#. Cuántos documentos del lote ya traen firmas de otras personas, válidas o no.
 msgid "sede.received.signedCount"
 msgid_plural "sede.received.signedCount"
-msgstr[0] "Dokumentu batek beste pertsona batzuen sinadurak ditu jada"
-msgstr[1] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte jada"
-msgstr[2] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte jada"
+msgstr[0] "Dokumentu batek beste pertsona batzuen sinadurak ditu"
+msgstr[1] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte"
+msgstr[2] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte"
+
+#. Cuántos documentos del lote ya firmó la persona con el certificado elegido.
+msgid "sede.received.signedByYouCount"
+msgid_plural "sede.received.signedByYouCount"
+msgstr[0] "Dokumentu bat zeuk sinatu zenuen ziurtagiri honekin"
+msgstr[1] "{{count}} dokumentu zeuk sinatu zenituen ziurtagiri honekin"
+msgstr[2] "{{count}} dokumentu zeuk sinatu zenituen ziurtagiri honekin"
+
+#. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
+msgid "sede.received.signedByYouOtherCertificateCount"
+msgid_plural "sede.received.signedByYouOtherCertificateCount"
+msgstr[0] "Dokumentu bat zeuk sinatu zenuen beste ziurtagiri batekin"
+msgstr[1] "{{count}} dokumentu zeuk sinatu zenituen beste ziurtagiri batekin"
+msgstr[2] "{{count}} dokumentu zeuk sinatu zenituen beste ziurtagiri batekin"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"

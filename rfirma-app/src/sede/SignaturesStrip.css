@@ -16,6 +16,7 @@
   padding: 4px var(--rf-space-xs) 4px var(--rf-space-md);
   border-bottom: 1px solid var(--rf-border-subtle);
   background: var(--rf-surface);
+  white-space: nowrap;
 }
 
 .signatures-strip__validity {

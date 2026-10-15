@@ -1,8 +1,14 @@
-//! Las historias de `ReceivedSummary`, el resumen de las firmas previas en la ventana compacta: de un lote y de un documento.
+//! Las historias de `ReceivedSummary`, el aviso único de lo recibido en la ventana de sede: de un lote, de un documento y de lo que ya firmaste tú.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReceivedSummary } from "./ReceivedSummary";
-import { BATCH_DOCUMENTS, RESOLUTION_DOCUMENT } from "./testing/fixtures/received";
+import {
+  BATCH_DOCUMENTS,
+  DESIGN_CERTIFICATES,
+  RESOLUTION_DOCUMENT,
+  withYourSignature,
+  yourSignature,
+} from "./testing/fixtures/received";
 
 const meta = {
   title: "Dominio/Sede/ReceivedSummary",
@@ -12,9 +18,9 @@ const meta = {
     docs: {
       description: {
         component: [
-          "Las firmas que ya trae lo recibido, una línea por hecho: atenuada, cuántos documentos ya traen firmas de otras personas; con el icono de fallo y en seminegrita, cuántos tienen una firma que no es válida. Con un solo documento, sin número.",
-          "Úsalo en la ventana compacta, debajo de `ReceivedHeading`; el detalle de cada firma está en la vista ampliada.",
-          "No lo pintes vacío: sin firmas previas no hay resumen, y una firma caducada cuenta como no válida.",
+          "Los hechos de lo recibido en un solo `Admonition`, por orden de importancia: cuántos documentos tienen una firma que no es válida, el SHA-1 por permitir, cuántos ya firmaste tú, con el certificado elegido o con otro tuyo, y cuántos traen firmas de otras personas. El primero va en negrita y el resto le sigue; con uno solo, sin negrita. El tono es el del peor: error con una firma no válida, advertencia con SHA-1 y, si no, información. Con un solo documento, sin número.",
+          "Úsalo en la ventana compacta, encima de `ReceivedHeading`; el detalle de cada firma está en la vista ampliada.",
+          "No pintes dos avisos: todo lo que haya va en esta caja. No lo pintes vacío: sin firmas previas no hay resumen, y una firma caducada cuenta como no válida. Un documento cuyas únicas firmas son tuyas no cuenta entre los de otras personas, y la línea tuya cambia con el certificado elegido.",
         ].join("\n\n"),
       },
     },
@@ -36,3 +42,10 @@ type Story = StoryObj<typeof meta>;
 export const Batch: Story = {};
 
 export const OneDocument: Story = { args: { documents: [RESOLUTION_DOCUMENT] } };
+
+export const SignedByYou: Story = {
+  args: {
+    documents: withYourSignature(BATCH_DOCUMENTS, yourSignature("sameCertificate")),
+    certificate: DESIGN_CERTIFICATES[0],
+  },
+};

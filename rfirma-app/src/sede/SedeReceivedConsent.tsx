@@ -6,7 +6,13 @@ import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { useDefaultButton } from "../design-system/useDefaultButton";
 import { CertificateSelect } from "../signing/CertificateSelect";
-import { type Certificate, sitePreselection } from "../signing/certificate";
+import {
+  type Certificate,
+  type ReaderStatus,
+  sitePreselection,
+  UNAVAILABLE_READER,
+} from "../signing/certificate";
+import { ReaderLine } from "../signing/ReaderLine";
 import { ReceivedHeading } from "./ReceivedHeading";
 import { ReceivedList } from "./ReceivedList";
 import { ReceivedSummary } from "./ReceivedSummary";
@@ -20,20 +26,35 @@ interface ConsentBasics {
   origin: string | null;
   actions: ReceivedActions;
   certificates: readonly Certificate[];
+  reader?: ReaderStatus;
+  /** Qué pide: la firma o, con `selectcert`, los datos del certificado. */
+  asks?: "signature" | "identity";
+  /** La sede acotó los certificados: lo dice al pie de la lista abierta. */
+  narrowed?: boolean;
+  /** La sede pide SHA-1 sin permiso en Preferencias: el aviso, «Firmar solo esta vez» y la cuenta atrás obligada. */
+  sha1ToAllow?: boolean;
   countdown?: boolean;
   onConsent: (certificateId: string) => void;
   onCancel: () => void;
 }
 
-/** La ventana compacta: el origen, el recuento con su descarga, el resumen de las firmas previas, el desplegable fijo encima del pie y, con documentos, «Ver documentos». */
+/** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento con su descarga, y con documentos de una sede, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
 export function SedeConsentCompact({
   received,
+  terminal = false,
   onExpand,
   ...basics
-}: ConsentBasics & { received: Received; onExpand?: () => void }) {
+}: ConsentBasics & {
+  received: Received;
+  /** La firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
+  terminal?: boolean;
+  onExpand?: () => void;
+}) {
   const { t } = useTranslation();
   const consent = useConsent(basics);
-  const documents = received.kind === "documents" ? received.documents.length : 0;
+  const identity = basics.asks === "identity";
+  const documents =
+    received.kind === "documents" && !terminal && !identity ? received.documents.length : 0;
 
   return (
     <SedeBody
@@ -53,17 +74,35 @@ export function SedeConsentCompact({
         </>
       }
     >
-      <ReceivedColumn origin={basics.origin} certificate={consent.select}>
+      <ReceivedColumn
+        origin={basics.origin}
+        asks={basics.asks}
+        terminal={terminal}
+        certificate={consent.select}
+      >
         <div className="sede-received__overview">
-          <ReceivedHeading received={received} onDownload={basics.actions.onDownload} />
-          {received.kind === "documents" && <ReceivedSummary documents={received.documents} />}
+          {identity ? (
+            <p className="rf-prose sede-received__sends">{t("sede.consent.willSend")}</p>
+          ) : (
+            <>
+              <ReceivedSummary
+                documents={received.kind === "documents" ? received.documents : []}
+                certificate={consent.chosen}
+                sha1ToAllow={basics.sha1ToAllow}
+              />
+              <ReceivedHeading
+                received={received}
+                onDownload={terminal ? undefined : basics.actions.onDownload}
+              />
+            </>
+          )}
         </div>
       </ReceivedColumn>
     </SedeBody>
   );
 }
 
-/** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 360 px. */
+/** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 360 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
 export function SedeConsentExpanded({
   documents,
   defaultDocument,
@@ -90,7 +129,11 @@ export function SedeConsentExpanded({
     <div className="sede-received-wide">
       <div className="sede-received-wide__viewer">
         {shown !== undefined && (
-          <ReceivedViewer document={shown} defaultSignaturesOpen={signaturesOpen} />
+          <ReceivedViewer
+            document={shown}
+            defaultSignaturesOpen={signaturesOpen}
+            onOpenWith={basics.actions.onOpenWith}
+          />
         )}
       </div>
       <div className="sede-received-wide__side">
@@ -110,6 +153,12 @@ export function SedeConsentExpanded({
           }
         >
           <ReceivedColumn origin={basics.origin} certificate={consent.select}>
+            <ReceivedSummary
+              documents={documents}
+              certificate={consent.chosen}
+              sha1ToAllow={basics.sha1ToAllow}
+              yoursOnly
+            />
             <nav
               className="sede-received__documents"
               aria-label={t("sede.received.documents", { count: documents.length })}
@@ -117,6 +166,7 @@ export function SedeConsentExpanded({
               <ReceivedHeading
                 received={{ kind: "documents", documents }}
                 onDownload={basics.actions.onDownload}
+                withoutCount
               />
               {shown !== undefined && (
                 <ReceivedList
@@ -136,47 +186,70 @@ export function SedeConsentExpanded({
 
 function ReceivedColumn({
   origin,
+  asks,
+  terminal,
   certificate,
   children,
 }: {
   origin: string | null;
+  asks?: "signature" | "identity";
+  terminal?: boolean;
   certificate: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div className="sede-received">
-      <SedeOrigin origin={origin} />
+      <SedeOrigin origin={origin} asks={asks} terminal={terminal} />
       <div className="sede-received__body">
-        {children}
         <div className="sede-received__certificate">{certificate}</div>
+        {children}
       </div>
     </div>
   );
 }
 
 function useConsent({
+  origin,
+  asks = "signature",
   certificates,
+  reader = UNAVAILABLE_READER,
+  narrowed = false,
+  sha1ToAllow = false,
   countdown = false,
   onConsent,
   onCancel,
-}: Pick<ConsentBasics, "certificates" | "countdown" | "onConsent" | "onCancel">) {
+}: Omit<ConsentBasics, "actions">) {
   const { t } = useTranslation();
   const [chosen, setChosen] = useState(() => sitePreselection(certificates));
-  const remaining = useConsentCountdown(countdown);
+  const remaining = useConsentCountdown(countdown || sha1ToAllow);
   const ready = chosen !== null && remaining === 0;
   const button = useDefaultButton(ready);
-  const action = t("actions.sign");
+  const action =
+    asks === "identity"
+      ? t("sede.consent.identify")
+      : sha1ToAllow
+        ? t("sede.consent.signOnce")
+        : t("actions.sign");
+  const narrowedNote = !narrowed
+    ? undefined
+    : origin === null
+      ? t("sede.received.narrowedUnknownOrigin")
+      : t("sede.received.narrowed", { origin });
 
   return {
+    chosen,
     button,
     select: (
-      <CertificateSelect
-        certificates={certificates}
-        chosen={chosen}
-        onChoose={setChosen}
-        listMaxHeight={300}
-        opens="up"
-      />
+      <>
+        <CertificateSelect
+          certificates={certificates}
+          chosen={chosen}
+          onChoose={setChosen}
+          listMaxHeight={300}
+          footer={narrowedNote}
+        />
+        <ReaderLine reader={reader} withoutHelp />
+      </>
     ),
     footer: (
       <>

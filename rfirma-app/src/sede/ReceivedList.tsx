@@ -1,13 +1,18 @@
-//! Los documentos de la vista ampliada del consentimiento de sede: una fila por documento, que cambia el del visor, y el menú «⋯» en la activa.
+//! Los documentos de la vista ampliada del consentimiento de sede: una fila por documento, con el icono de su tipo, que cambia el del visor, y el menú «⋯» en la activa.
 
 import type { TFunction } from "i18next";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import type { IconName } from "../design-system/icons/names";
 import { Menu, MenuItem } from "../design-system/Menu";
-import type { ReceivedActions, ReceivedDocument } from "./received";
+import {
+  previousSignaturesState,
+  type ReceivedActions,
+  type ReceivedDocument,
+  receivedName,
+} from "./received";
 import "./ReceivedList.css";
 
 /** La lista seleccionable de documentos; la fila de `selected` lleva el menú con sus acciones. */
@@ -49,31 +54,76 @@ function DocumentRow({
   onSelect: () => void;
 }) {
   const { t } = useTranslation();
+  const name = receivedName(t, document);
+  const signatures = previousSignaturesState(document.previousSignatures);
+  const signed = signatures !== "none";
+  const sealId = useId();
+  const described = signed ? sealId : undefined;
   const content = (
     <>
       <span className="received-list__icon">
-        <Icon name="document" />
+        <Icon name={documentIcon(document)} />
+        {signed && (
+          <span className="received-list__seal">
+            <Icon name={signatures === "troubled" ? "sealedWarning" : "sealed"} />
+          </span>
+        )}
       </span>
-      <span className="rf-body received-list__name" title={document.name}>
-        {document.name}
+      <span
+        className={`rf-body received-list__name${document.name === null ? " rf-text-muted" : ""}`}
+        title={name}
+      >
+        {name}
       </span>
     </>
+  );
+  const sealLabel = signed && (
+    <span id={sealId} className="received-list__seal-label">
+      {signatures === "troubled"
+        ? t("sede.received.withTroubledSignatures")
+        : t("sede.received.withSignatures")}
+    </span>
   );
 
   return active ? (
     <li className="received-list__item received-list__item--active">
-      <button type="button" className="received-list__pick" aria-current="true">
+      <button
+        type="button"
+        className="received-list__pick"
+        aria-current="true"
+        aria-describedby={described}
+      >
         {content}
       </button>
-      <RowActions name={document.name} items={documentActions(t, document, actions)} />
+      {sealLabel}
+      <RowActions name={name} items={documentActions(t, document, actions)} />
     </li>
   ) : (
     <li className="received-list__item">
-      <button type="button" className="received-list__pick" onClick={onSelect}>
+      <button
+        type="button"
+        className="received-list__pick"
+        aria-describedby={described}
+        onClick={onSelect}
+      >
         {content}
       </button>
+      {sealLabel}
     </li>
   );
+}
+
+function documentIcon(document: ReceivedDocument): IconName {
+  switch (document.content.kind) {
+    case "pdf":
+      return "documentPdf";
+    case "text":
+      return "documentXml";
+    case "image":
+      return "documentImage";
+    case "none":
+      return "document";
+  }
 }
 
 interface RowAction {
@@ -135,7 +185,7 @@ function RowActions({ name, items }: { name: string; items: readonly RowAction[]
         onClose={() => setOpen(false)}
         anchorRef={trigger}
         returnFocusRef={trigger}
-        portal={{ opens: "up" }}
+        portal={{ opens: "down" }}
         aria-label={label}
       >
         {items.map((item) => (

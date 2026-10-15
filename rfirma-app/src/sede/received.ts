@@ -1,30 +1,41 @@
-//! Lo que la sede manda a firmar, como lo enseña la ventana: documentos con su contenido, huellas con su algoritmo o el recuento de un lote remoto. Sin React.
+//! Lo que la sede manda a firmar, como lo enseña la ventana: documentos con su contenido, huellas con su algoritmo, un reto de autenticación o el recuento de un lote remoto. Sin React.
 
+import type { TFunction } from "i18next";
+import type { Certificate } from "../signing/certificate";
 import type { PreviousSignaturesReport } from "../signing/previousSignatures";
+import { sameSignerNotice } from "../signing/sameSignerNotice";
 import type { PdfDocument } from "../viewer/pdf";
 
-/** Lo que se va a firmar: documentos, huellas que calculó la sede o un lote remoto del que solo se sabe cuántos son. */
+/** Lo que se va a firmar: documentos, huellas que calculó la sede, un reto de autenticación o un lote remoto del que solo se sabe cuántos son. */
 export type Received =
   | { kind: "documents"; documents: readonly ReceivedDocument[] }
   | { kind: "digests"; digests: readonly ReceivedDigest[] }
+  | { kind: "challenge" }
   | { kind: "remoteBatch"; count: number };
 
 /** Un documento recibido, con lo que el visor necesita para enseñarlo. */
 export interface ReceivedDocument {
   id: string;
-  name: string;
+  /** El nombre que propone la sede o, sin él, el título del PDF; `null` si no hay ninguno. */
+  name: string | null;
   content: DocumentContent;
   sha256: string;
-  /** Si rFirma sabe con qué abrirlo fuera: sin ello el menú no ofrece «Abrir con…». */
+  /** Si rFirma reconoce su tipo por los bytes: sin ello sale como `.bin` y no se ofrece «Abrir con…». */
   knownType: boolean;
   previousSignatures: PreviousSignaturesReport;
 }
 
-/** Lo que el visor pinta: el PDF paginado, el texto literal o nada, porque no hay vista previa. */
+/** Lo que el visor pinta: el PDF paginado, el texto literal, la imagen o nada, porque no hay vista previa. */
 type DocumentContent =
   | { kind: "pdf"; pdf: PdfDocument }
   | { kind: "text"; text: string }
+  | { kind: "image"; mediaType: string; bytes: Uint8Array }
   | { kind: "none" };
+
+/** El nombre con que se enseña el documento: el suyo o, sin él, el del documento sin título. */
+export function receivedName(t: TFunction, document: ReceivedDocument): string {
+  return document.name ?? t("sede.consent.untitled");
+}
 
 /** Una huella que calculó la sede, con el algoritmo que la sede dice. */
 interface ReceivedDigest {
@@ -51,15 +62,29 @@ export function previousSignaturesState(report: PreviousSignaturesReport): Previ
   return troubled ? "troubled" : "signed";
 }
 
-/** Cuántos documentos ya traen firmas, válidas o no, y cuántos tienen alguna con problemas. */
-export function previousSignaturesTally(documents: readonly ReceivedDocument[]): {
-  signed: number;
+/** Cuántos documentos traen firmas de otras personas, cuántos ya firmó quien firma con `certificate` o con otro certificado suyo, y cuántos tienen alguna firma con problemas. */
+export interface PreviousSignaturesTally {
+  byOthers: number;
+  sameCertificate: number;
+  otherCertificate: number;
   troubled: number;
-} {
-  const states = documents.map((document) => previousSignaturesState(document.previousSignatures));
+}
+
+export function previousSignaturesTally(
+  documents: readonly ReceivedDocument[],
+  certificate: Certificate | null = null,
+): PreviousSignaturesTally {
+  const signed = documents
+    .map((document) => document.previousSignatures)
+    .filter((report) => report.signatures.length > 0);
+  const notices = signed.map((report) => sameSignerNotice(certificate, report.signatures));
   return {
-    signed: states.filter((state) => state !== "none").length,
-    troubled: states.filter((state) => state === "troubled").length,
+    byOthers: signed.filter((report) =>
+      report.signatures.some((signature) => sameSignerNotice(certificate, [signature]) === null),
+    ).length,
+    sameCertificate: notices.filter((notice) => notice === "sameCertificate").length,
+    otherCertificate: notices.filter((notice) => notice === "otherCertificate").length,
+    troubled: signed.filter((report) => previousSignaturesState(report) === "troubled").length,
   };
 }
 
@@ -73,13 +98,15 @@ export function allSignaturesOf(
   ]);
 }
 
-/** Cuántos documentos o huellas se firman. */
+/** Cuántos documentos, huellas o retos se firman. */
 export function receivedCount(received: Received): number {
   switch (received.kind) {
     case "documents":
       return received.documents.length;
     case "digests":
       return received.digests.length;
+    case "challenge":
+      return 1;
     case "remoteBatch":
       return received.count;
   }

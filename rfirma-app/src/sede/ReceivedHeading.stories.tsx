@@ -1,4 +1,4 @@
-//! Las historias de `ReceivedHeading`, el recuento de lo que la sede manda a firmar con su descarga: documentos, referencias y lote remoto.
+//! Las historias de `ReceivedHeading`, el recuento de lo que la sede manda a firmar con su descarga: documentos, referencias, reto y lote remoto.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReceivedHeading } from "./ReceivedHeading";
@@ -12,9 +12,9 @@ const meta = {
     docs: {
       description: {
         component: [
-          "El encabezado de lo recibido: «Vas a firmar N documentos» con «Descargar» o «Descargar todo», «Vas a firmar N referencias» con «Descargar huellas», o solo el recuento del lote remoto.",
+          "El encabezado de lo recibido: «Vas a firmar N documentos» con «Descargar» o «Descargar todo», «Vas a firmar N referencias» con «Descargar huellas», «Vas a firmar un reto de autenticación» o solo el recuento del lote remoto.",
           "Úsalo debajo de `SedeOrigin`, en la ventana compacta y encima de `ReceivedList` en la ampliada.",
-          "No le pongas descarga al lote remoto: antes de elegir certificado no hay documentos ni huellas que descargar.",
+          "No le pongas descarga al lote remoto, al reto ni a la orden de terminal (sin `onDownload`): antes de elegir certificado no hay nada que descargar, el reto no es un documento y el fichero de la terminal ya es de la persona.",
         ].join("\n\n"),
       },
     },

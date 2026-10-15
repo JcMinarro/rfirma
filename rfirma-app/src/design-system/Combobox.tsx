@@ -35,6 +35,8 @@ interface ComboboxProps<T> {
   alwaysGroupHeaders?: boolean;
   /** Hacia dónde se despliega la lista: arriba cuando la caja vive al pie de la ventana. */
   opens?: "down" | "up";
+  /** Una nota al pie de la lista abierta, fuera del `listbox`. */
+  footer?: ReactNode;
   disabled?: boolean;
   defaultOpen?: boolean;
 }
@@ -58,6 +60,7 @@ export function Combobox<T>({
   listMaxHeight = 480,
   alwaysGroupHeaders = false,
   opens = "down",
+  footer,
   disabled = false,
   defaultOpen = false,
 }: ComboboxProps<T>) {
@@ -241,6 +244,9 @@ export function Combobox<T>({
         <div className="combobox__list" id={listId} role="listbox" aria-labelledby={labelId}>
           {renderGroups()}
         </div>
+        {footer !== undefined && (
+          <span className="rf-caption rf-text-muted combobox__footer">{footer}</span>
+        )}
       </Popover>
     </Stack>
   );

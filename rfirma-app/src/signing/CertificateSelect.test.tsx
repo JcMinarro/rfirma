@@ -129,6 +129,22 @@ describe("CertificateSelect", () => {
       expect(layer.style.maxHeight).toBe("300px");
     });
 
+    it("puts its footer under the open list", async () => {
+      renderSelect({ footer: "sede.ejemplo.es solo admite algunos certificados" });
+      await userEvent.click(box());
+
+      expect(
+        screen.getByText("sede.ejemplo.es solo admite algunos certificados"),
+      ).toBeInTheDocument();
+    });
+
+    it("has no footer unless given one", async () => {
+      renderSelect();
+      await userEvent.click(box());
+
+      expect(document.querySelector(".combobox__footer")).toBeNull();
+    });
+
     it("opens upwards when asked to, with the room above the box as its ceiling", async () => {
       const { container } = renderSelect({ opens: "up" });
       const frame = container.querySelector(".combobox__frame") as HTMLElement;

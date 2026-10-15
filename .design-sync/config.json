@@ -7,6 +7,7 @@
   "storybookStatic": ".design-sync/sb-reference",
   "entry": "rfirma-app/design-sync.entry.ts",
   "titleMap": {
+    "Admonition": "Admonition",
     "Badge": "Badge",
     "Button": "Button",
     "Card": "Card",

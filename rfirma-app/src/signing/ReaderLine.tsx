@@ -20,9 +20,11 @@ function cardHelpPlatformFor(userAgent: string): CardHelpPlatform {
 export function ReaderLine({
   reader,
   platform = cardHelpPlatformFor(navigator.userAgent),
+  withoutHelp = false,
 }: {
   reader: ReaderStatus;
   platform?: CardHelpPlatform;
+  withoutHelp?: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -40,7 +42,7 @@ export function ReaderLine({
       )}
       <span>
         {readerText(reader, t)}
-        {reader.kind === "unreadable" && <CardHelp platform={platform} />}
+        {reader.kind === "unreadable" && !withoutHelp && <CardHelp platform={platform} />}
       </span>
     </span>
   );

@@ -22,6 +22,7 @@ function renderCombobox({
   onChange = vi.fn(),
   defaultOpen = false,
   opens = undefined as "down" | "up" | undefined,
+  footer = undefined as string | undefined,
 } = {}) {
   render(
     <Combobox
@@ -35,6 +36,7 @@ function renderCombobox({
       countLabel={(shown, total) => `${shown} de ${total}`}
       defaultOpen={defaultOpen}
       opens={opens}
+      footer={footer}
     >
       {value ?? "Elige una"}
     </Combobox>,
@@ -73,6 +75,18 @@ describe("Combobox", () => {
     expect(search()).toHaveAttribute("aria-expanded", "true");
     expect(search()).toHaveAttribute("placeholder", "Busca una ciudad");
     expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(4);
+  });
+
+  it("puts its footer under the open list", async () => {
+    renderCombobox({ footer: "Solo algunas ciudades" });
+    expect(screen.queryByText("Solo algunas ciudades")).not.toBeInTheDocument();
+    await open();
+
+    const footer = screen.getByText("Solo algunas ciudades");
+    expect(screen.getByRole("listbox").compareDocumentPosition(footer)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(screen.getByRole("listbox")).not.toContainElement(footer);
   });
 
   it("starts open with defaultOpen", () => {

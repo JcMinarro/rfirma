@@ -1,11 +1,21 @@
-//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, sus firmas PAdES y XAdES, las huellas y un PDF que pinta su texto.
+//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, el lote local, sus firmas PAdES y XAdES, las huellas, un PDF que pinta su texto y un cartel en imagen.
 
 import { fn } from "storybook/test";
 import type { Certificate } from "../../../signing/certificate";
-import type { PreviousSignaturesReport } from "../../../signing/previousSignatures";
+import type {
+  PreviousSignature,
+  PreviousSignaturesReport,
+} from "../../../signing/previousSignatures";
 import { NO_PREVIOUS_SIGNATURES } from "../../../signing/previousSignatures";
+import type { SameSignerNotice } from "../../../signing/sameSignerNotice";
 import type { PdfDocument, PdfPage, Viewport } from "../../../viewer/pdf";
-import type { Received, ReceivedActions, ReceivedDocument } from "../../received";
+import {
+  type PreviousSignaturesState,
+  previousSignaturesState,
+  type Received,
+  type ReceivedActions,
+  type ReceivedDocument,
+} from "../../received";
 import { previousSignature, previousSignaturesReport } from "./previousSignatures";
 import { certificate } from "./sedeWindow";
 
@@ -183,7 +193,51 @@ export const XADES_SIGNATURES: PreviousSignaturesReport = previousSignaturesRepo
   { format: "xades" },
 );
 
+/** La firma PAdES de la resolución cuando todas son válidas. */
+const VALID_PADES_SIGNATURES: PreviousSignaturesReport = previousSignaturesReport(
+  [
+    previousSignature({
+      name: "JUAN EJEMPLO PRUEBA",
+      issuer: "AC FNMT Usuarios",
+      signingDate: { kind: "declared", at: "2026-10-02T07:15:00Z" },
+    }),
+  ],
+  { format: "pades" },
+);
+
 const CO_SIGNED = previousSignaturesReport([previousSignature()], { format: "xades" });
+
+const FACTURAE_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<fe:Facturae xmlns:fe="http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml">
+  <FileHeader>
+    <SchemaVersion>3.2.2</SchemaVersion>
+    <Modality>I</Modality>
+    <InvoiceIssuerType>EM</InvoiceIssuerType>
+  </FileHeader>
+  <Invoices>
+    <Invoice>
+      <InvoiceHeader>
+        <InvoiceNumber>2026-0087</InvoiceNumber>
+        <InvoiceSeriesCode>OBR</InvoiceSeriesCode>
+      </InvoiceHeader>
+      <InvoiceTotals>
+        <InvoiceTotal>12450.00</InvoiceTotal>
+      </InvoiceTotals>
+    </Invoice>
+  </Invoices>
+</fe:Facturae>`;
+
+/** El cartel de obra del diseño, como SVG con sus colores fijos: dentro de una imagen no llegan los del tema. */
+const POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420">
+  <rect width="600" height="420" fill="#fafbfc"/>
+  <rect x="40" y="36" width="520" height="70" fill="#000000"/>
+  <text x="64" y="81" fill="#ffffff" font-family="Inter, sans-serif" font-size="26" font-weight="700">AYUNTAMIENTO DE VILLAEJEMPLO</text>
+  <text x="40" y="160" fill="#000000" font-family="Inter, sans-serif" font-size="30" font-weight="700">Rehabilitación de fachadas</text>
+  <text x="40" y="196" fill="#64748b" font-family="Inter, sans-serif" font-size="18">Calle Mayor, 12–28 · Plazo: 6 meses</text>
+  <path d="M40 380 170 250 250 320 360 210 560 380Z" fill="#64748b"/>
+  <circle cx="470" cy="260" r="34" fill="#e5e5e5"/>
+  <text x="40" y="404" fill="#64748b" font-family="Inter, sans-serif" font-size="14">Presupuesto: 84.250,00 €</text>
+</svg>`;
 
 function document(overrides: Partial<ReceivedDocument> & Pick<ReceivedDocument, "id" | "name">) {
   return {
@@ -209,14 +263,33 @@ export const BAREMO_DOCUMENT = document({
   previousSignatures: XADES_SIGNATURES,
 });
 
-/** Los cinco documentos del lote de la resolución, con un tipo que rFirma no sabe abrir. */
+/** La hoja de cálculo de los beneficiarios: rFirma reconoce su tipo y sabe con qué abrirla, pero no tiene vista previa. */
+const BENEFICIARIES_DOCUMENT = document({
+  id: "beneficiaries",
+  name: "Anexo I · Beneficiarios.xlsx",
+});
+
+/** Unos bytes de tipo que rFirma no reconoce, que salen como `.bin` y sin «Abrir con…». */
+export const UNKNOWN_TYPE_DOCUMENT = document({
+  id: "unknown",
+  name: "Expediente 2026-0412.bin",
+  knownType: false,
+});
+
+const POSTER_DOCUMENT = document({
+  id: "poster",
+  name: "Cartel de obra.jpg",
+  content: {
+    kind: "image",
+    mediaType: "image/svg+xml",
+    bytes: new TextEncoder().encode(POSTER_SVG),
+  },
+});
+
+/** Los cinco documentos del lote de la resolución, uno de cada tipo que distingue la lista. */
 export const BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
   RESOLUTION_DOCUMENT,
-  document({
-    id: "beneficiaries",
-    name: "Anexo I · Beneficiarios.pdf",
-    content: { kind: "pdf", pdf: resolutionPdf },
-  }),
+  BENEFICIARIES_DOCUMENT,
   BAREMO_DOCUMENT,
   document({
     id: "report",
@@ -224,10 +297,60 @@ export const BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
     content: { kind: "pdf", pdf: resolutionPdf },
     previousSignatures: CO_SIGNED,
   }),
-  document({ id: "poster", name: "Cartel de obra.jpg", knownType: false }),
+  POSTER_DOCUMENT,
 ];
 
 export const BATCH: Received = { kind: "documents", documents: BATCH_DOCUMENTS };
+
+/** La resolución sin nombre de la sede ni título en el PDF. */
+export const UNTITLED_DOCUMENT = document({
+  ...RESOLUTION_DOCUMENT,
+  id: "untitled",
+  name: null,
+});
+
+/** El lote local de cinco elementos, cada uno con sus bytes y su identificador por nombre. */
+export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
+  document({
+    id: "001",
+    name: "001",
+    content: { kind: "pdf", pdf: resolutionPdf },
+    previousSignatures: PADES_SIGNATURES,
+  }),
+  document({ id: "002", name: "002" }),
+  document({
+    id: "003",
+    name: "003",
+    content: { kind: "text", text: BAREMO_XML },
+    previousSignatures: XADES_SIGNATURES,
+  }),
+  document({ id: "004", name: "004", content: { kind: "text", text: FACTURAE_XML } }),
+  document({
+    id: "005",
+    name: "005",
+    content: { kind: "pdf", pdf: resolutionPdf },
+    previousSignatures: CO_SIGNED,
+  }),
+];
+
+/** Los documentos con las firmas previas de `state`: sin ninguna, con las válidas o como vienen, con alguna que no lo es. */
+export function withPreviousSignatures(
+  documents: readonly ReceivedDocument[],
+  state: PreviousSignaturesState,
+): readonly ReceivedDocument[] {
+  switch (state) {
+    case "none":
+      return documents.map((each) => ({ ...each, previousSignatures: NO_PREVIOUS_SIGNATURES }));
+    case "signed":
+      return documents.map((each) =>
+        previousSignaturesState(each.previousSignatures) === "troubled"
+          ? { ...each, previousSignatures: VALID_PADES_SIGNATURES }
+          : each,
+      );
+    case "troubled":
+      return documents;
+  }
+}
 
 export const ONE_DOCUMENT: Received = { kind: "documents", documents: [RESOLUTION_DOCUMENT] };
 
@@ -240,6 +363,8 @@ export const ONE_DIGEST: Received = {
     },
   ],
 };
+
+export const CHALLENGE: Received = { kind: "challenge" };
 
 export const REMOTE_BATCH: Received = { kind: "remoteBatch", count: 4 };
 
@@ -261,9 +386,15 @@ const PERSON = {
   certificateSerialNumber: "5A1F00C2",
 };
 
-/** Los dos certificados del diseño, el de ciudadana elegido primero y el de representante. */
+/** Los dos certificados del diseño: el de ciudadana, recordado para que la sede lo traiga elegido aunque el de representante se ordene antes, y el de representante. */
 export const DESIGN_CERTIFICATES: readonly Certificate[] = [
-  certificate({ ...PERSON, id: "person", label: "FNMT-CIUDADANO", stores: ["card"] }),
+  certificate({
+    ...PERSON,
+    id: "person",
+    label: "FNMT-CIUDADANO",
+    stores: ["card"],
+    remembered: true,
+  }),
   certificate({
     ...PERSON,
     id: "representative",
@@ -273,3 +404,34 @@ export const DESIGN_CERTIFICATES: readonly Certificate[] = [
     stores: ["sharedChromium"],
   }),
 ];
+
+/** La firma previa de la ciudadana del diseño, con el certificado de `how`: el elegido primero u otro suyo. */
+export function yourSignature(how: SameSignerNotice): PreviousSignature {
+  return previousSignature({
+    name: PERSON.holderName,
+    idNumber: PERSON.idNumber,
+    issuer: PERSON.issuer,
+    certificateSerialNumber:
+      how === "sameCertificate" ? PERSON.certificateSerialNumber : "3C08E1D7",
+    signingDate: { kind: "declared", at: "2026-10-05T11:20:00Z" },
+  });
+}
+
+/** Los documentos con `signature` añadida al primero y al primero que no traía firmas, donde es la única. */
+export function withYourSignature(
+  documents: readonly ReceivedDocument[],
+  signature: PreviousSignature,
+): readonly ReceivedDocument[] {
+  const unsigned = documents.findIndex((each) => each.previousSignatures.signatures.length === 0);
+  return documents.map((each, index) =>
+    index === 0 || index === unsigned
+      ? {
+          ...each,
+          previousSignatures: {
+            ...each.previousSignatures,
+            signatures: [...each.previousSignatures.signatures, signature],
+          },
+        }
+      : each,
+  );
+}

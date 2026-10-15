@@ -3,6 +3,7 @@
 import "./src/design-system/index.css";
 import "./src/app.css";
 
+export { Admonition } from "./src/design-system/Admonition";
 export { Badge } from "./src/design-system/Badge";
 export { Button } from "./src/design-system/Button";
 export { Card } from "./src/design-system/Card";

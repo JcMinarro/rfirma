@@ -210,18 +210,51 @@ sin cambiar el consentimiento real. La spec que lo implemente lleva la vista
 nueva a `SedeConsent`, sustituye estas historias por las de siempre y borra lo
 que solo existía para ellas.
 
+- **Primero con qué se firma, y después qué.** En las dos formas el selector
+  va bajo la cabecera. En la compacta, lo que se firma va pegado al pie: primero
+  el aviso (`Admonition`) y después «Vas a firmar…» con su descarga; en la
+  ampliada, bajo el selector va el aviso y, debajo, la lista de documentos,
+  sin «Vas a firmar…», porque los documentos ya se ven: su fila solo lleva la
+  descarga, a la derecha, y la frase queda como nombre accesible de la lista.
+- **Como mucho un aviso en pantalla, nunca dos apilados.** Todos los hechos van
+  en un solo `Admonition`, por orden de importancia: la firma que no es válida,
+  el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas.
+  El primero va en negrita y los demás le siguen en texto normal; con un solo
+  hecho, sin negrita. El tono es el del peor: error con una firma no válida,
+  advertencia con SHA-1 y, si no, información.
 - **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
-  «Descargar…» y, si los hay, dos hechos de las firmas previas: cuántos
-  documentos ya traen firmas y cuántos tienen alguna que no es válida. La lista
-  es de la ampliada, que abre «Ver documentos». Con huellas no hay nada que ver
-  ni vista ampliada. El lote remoto solo da el recuento: sus documentos y sus
-  prefirmas no llegan hasta después de elegir certificado, así que no hay
+  «Descargar…» y, si los hay, los hechos de las firmas previas: cuántos
+  documentos traen firmas de otras personas, cuántos firmaste tú, con el
+  certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
+  válida. En la ampliada, el aviso dice lo que ya firmaste tú y el SHA-1 por
+  permitir, y cambia con el certificado elegido como en la compacta; las firmas
+  no válidas y las de otras personas las cuenta la franja de cada documento.
+  La lista es de la ampliada, que abre «Ver documentos». Con huellas no hay nada
+  que ver ni vista ampliada. El lote remoto solo da el recuento: sus documentos y
+  sus prefirmas no llegan hasta después de elegir certificado, así que no hay
   huellas, ni «Descargar», ni «Ver documentos».
+- **En la lista, el icono de cada fila dice su tipo** (`documentPdf`,
+  `documentXml`, `documentImage` y, para el resto, `document`), con el mismo
+  criterio con que el visor decide cómo pintarlo, nunca por la extensión del
+  nombre.
+- **En la lista, el sello del documento dice cómo vienen sus firmas**: `sealed`
+  si se validan sin incidencias y `sealedWarning` con el mismo criterio que
+  separa una firma no válida en el aviso; sin firmas, ningún sello.
+- **El visor enseña lo que puede del documento**: el PDF paginado, el texto
+  literal del XML o la imagen, centrada en una hoja de 600 px como mucho. Un
+  tipo sin vista previa ocupa esa hoja con el icono, el nombre y «Este tipo de
+  archivo no se puede mostrar aquí.», y debajo «Abrir con…» si el tipo se
+  reconoce.
+- **La franja de firmas no lleva avisos**: solo el recuento, la validez y «Ver
+  firmas», en una línea.
 - **«Descargar»** guarda el documento tal cual; con varios, «Descargar todo» es
   un `.zip` con los documentos y un `SHA256SUMS`; con huellas, un `.txt` con el
   algoritmo que manda la sede y el valor.
-- **«Abrir con…»** solo existe para un tipo que se sabe abrir; la extensión sale
-  del tipo detectado, nunca del nombre que propone la sede.
+- **«Abrir con…»** sale del tipo que rFirma detecta en los bytes, nunca de lo
+  que diga la sede: el tipo da la extensión y, con ella, el sistema operativo
+  elige la aplicación. Que no haya vista previa no lo quita; solo un tipo que no
+  se reconoce sale como `.bin` y se queda sin «Abrir con…», ni en el visor ni en
+  el menú «⋯».
 - **Las firmas previas son de cada documento**: el resumen de la compacta cuenta
   documentos, no firmas, y el detalle es el panel de la ampliada, que flota sobre
   el visor sin cambiar su ancho. **Escape cierra el panel y no cancela el
@@ -229,8 +262,8 @@ que solo existía para ellas.
 - **La ampliada es la misma ventana a 1080 × 660**, el tamaño de marcar el área,
   y se centra al crecer como en ese momento: ni Wayland ni el compositor dejan
   colocarla, así que la columna no puede quedarse quieta mientras crece.
-- **Todos los desplegables se abren hacia arriba** (`opens="up"`), porque debajo
-  del selector solo queda el pie.
+- **Los desplegables se abren hacia abajo**, el selector y el menú «⋯» de la
+  lista, porque los dos viven arriba de su columna.
 - **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en
   la ampliada ocupan el mismo sitio, y la cuenta atrás de Firmar es la de
   siempre: no se reinicia al ampliar ni al cambiar de documento.
@@ -240,7 +273,9 @@ huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
 previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
 `SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
 en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
-motivo), que cambia también la ventana principal. Cuando se implemente, la
+motivo), que cambia también la ventana principal. Y el nombre por defecto del
+documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
+tiene que depender del tipo o ser neutro. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
 firmas previas como aviso compacto dejan de ser ciertas.
 
@@ -413,7 +448,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 1 · espera | `SedeWaiting.stories.tsx`: `Waiting`, `Unreachable`, `NoChannel` |
 | 1c · marcar el área | `SedeMarking.stories.tsx`: `Marking`, `UnreadableDocument` |
 | 2 · consentimiento | `SedeConsent.stories.tsx`: una por certificado, varios, acotado, sin título, cofirma, contrafirma sobre todas o sobre las últimas, firmas previas válidas o con problema, lote remoto y local, cesión de identidad, sin origen, cuenta atrás y orden de terminal |
-| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 2b · confirmar | `SedeConfirm.stories.tsx`: `ShadowAttackSuspect`, `ModifiedForm`, `CertifiedPdf`, `UnknownMessage` |
 | 3 · firmando | `SedeSigning.stories.tsx`: `Signing`, `Returning` |
 | 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |

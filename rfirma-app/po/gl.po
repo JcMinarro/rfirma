@@ -1652,6 +1652,14 @@ msgstr "Instala outro certificado, ou pecha e continúa desde a sede."
 msgid "sede.origin.asks"
 msgstr "Pídeche a sinatura"
 
+#. Rótulo de la cabecera cuando la sede pide los datos del certificado, no una firma.
+msgid "sede.origin.asksIdentity"
+msgstr "Pídeche os teus datos"
+
+#. La cabecera de la ventana de sede cuando la firma la pide una orden de terminal.
+msgid "sede.origin.terminal"
+msgstr "Unha orde de terminal"
+
 #. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
 msgid "sede.origin.unknown"
 msgstr "Unha páxina sen identificar"
@@ -1661,6 +1669,22 @@ msgid_plural "sede.received.documents"
 msgstr[0] "Vas asinar 1 documento"
 msgstr[1] "Vas asinar {{count}} documentos"
 msgstr[2] "Vas asinar {{count}} documentos"
+
+#. Al pie de la lista abierta de certificados: la sede la acotó. Dice que acotó, nunca con qué criterio.
+msgid "sede.received.narrowed"
+msgstr "{{origin}} só admite algúns certificados"
+
+#. La misma nota cuando no hay un origen válido que nombrar.
+msgid "sede.received.narrowedUnknownOrigin"
+msgstr "A sede só admite algúns certificados"
+
+#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar solo esta vez».
+msgid "sede.received.sha1ToAllow"
+msgstr "Esta sede usa un método de sinatura pouco seguro"
+
+#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
+msgid "sede.received.challenge"
+msgstr "Vas asinar un reto de autenticación"
 
 #. Huellas que calculó la sede: se firma la referencia, no un documento.
 msgid "sede.received.digests"
@@ -1695,22 +1719,56 @@ msgstr "Accións de {{name}}"
 msgid "sede.received.openWith"
 msgstr "Abrir con…"
 
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que ya trae firmas.
+msgid "sede.received.withSignatures"
+msgstr "Con sinaturas"
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que trae alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.withTroubledSignatures"
+msgstr "Con sinaturas con incidencias"
+
 msgid "sede.received.saveCopy"
 msgstr "Gardar copia"
 
 msgid "sede.received.copySha256"
 msgstr "Copiar SHA-256"
 
-#. Un solo documento, que ya trae firmas.
-msgid "sede.received.signedOne"
-msgstr "Xa trae sinaturas doutras persoas"
+#. El visor de la vista ampliada, en vez del documento, cuando su tipo no tiene vista previa.
+msgid "sede.received.noPreview"
+msgstr "Este tipo de ficheiro non se pode amosar aquí."
 
-#. Cuántos documentos del lote ya traen firmas, válidas o no.
+#. Un solo documento que la persona ya firmó con el certificado elegido.
+msgid "sede.received.signedByYouOne"
+msgstr "Asinácheslo ti con este certificado"
+
+#. Un solo documento que la persona ya firmó con otro certificado suyo, del mismo titular y entidad.
+msgid "sede.received.signedByYouOtherCertificateOne"
+msgstr "Asinácheslo ti con outro certificado teu"
+
+#. Un solo documento, que ya trae firmas de otras personas.
+msgid "sede.received.signedOne"
+msgstr "Trae sinaturas doutras persoas"
+
+#. Cuántos documentos del lote ya traen firmas de otras personas, válidas o no.
 msgid "sede.received.signedCount"
 msgid_plural "sede.received.signedCount"
-msgstr[0] "{{count}} xa trae sinaturas doutras persoas"
-msgstr[1] "{{count}} xa traen sinaturas doutras persoas"
-msgstr[2] "{{count}} xa traen sinaturas doutras persoas"
+msgstr[0] "{{count}} trae sinaturas doutras persoas"
+msgstr[1] "{{count}} traen sinaturas doutras persoas"
+msgstr[2] "{{count}} traen sinaturas doutras persoas"
+
+#. Cuántos documentos del lote ya firmó la persona con el certificado elegido.
+msgid "sede.received.signedByYouCount"
+msgid_plural "sede.received.signedByYouCount"
+msgstr[0] "{{count}} asinácheslo ti con este certificado"
+msgstr[1] "{{count}} asináchelos ti con este certificado"
+msgstr[2] "{{count}} asináchelos ti con este certificado"
+
+#. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
+msgid "sede.received.signedByYouOtherCertificateCount"
+msgid_plural "sede.received.signedByYouOtherCertificateCount"
+msgstr[0] "{{count}} asinácheslo ti con outro certificado teu"
+msgstr[1] "{{count}} asináchelos ti con outro certificado teu"
+msgstr[2] "{{count}} asináchelos ti con outro certificado teu"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"

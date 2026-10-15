@@ -16,8 +16,10 @@
 
 .sede-received__overview {
   display: flex;
+  flex: none;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--rf-space-xs);
+  margin-top: auto;
 }
 
 .sede-received__documents {
@@ -29,12 +31,19 @@
 }
 
 .sede-received__certificate {
+  display: flex;
   flex: none;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sede-received__sends {
+  margin: 0;
 }
 
 .sede-received__view {
   margin-right: auto;
+  white-space: nowrap;
 }
 
 .sede-received-wide {

@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import { ReceivedHeading } from "./ReceivedHeading";
-import { BATCH, ONE_DIGEST, ONE_DOCUMENT, REMOTE_BATCH } from "./testing/fixtures/received";
+import {
+  BATCH,
+  CHALLENGE,
+  ONE_DIGEST,
+  ONE_DOCUMENT,
+  REMOTE_BATCH,
+} from "./testing/fixtures/received";
 
 describe("ReceivedHeading", () => {
   it("counts the documents and offers to download them all", () => {
@@ -27,6 +33,18 @@ describe("ReceivedHeading", () => {
     renderWithCatalog(<ReceivedHeading received={ONE_DIGEST} onDownload={vi.fn()} />);
     expect(screen.getByText("Vas a firmar 1 referencia")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Descargar huellas" })).toBeInTheDocument();
+  });
+
+  it("names an authentication challenge without offering a download", () => {
+    renderWithCatalog(<ReceivedHeading received={CHALLENGE} onDownload={vi.fn()} />);
+    expect(screen.getByText("Vas a firmar un reto de autenticación")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
+  });
+
+  it("leaves only the download, without the count, when the documents are listed below", () => {
+    renderWithCatalog(<ReceivedHeading received={BATCH} onDownload={vi.fn()} withoutCount />);
+    expect(screen.queryByText(/^Vas a firmar/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar todo" })).toBeInTheDocument();
   });
 
   it("gives a remote batch only its count", () => {

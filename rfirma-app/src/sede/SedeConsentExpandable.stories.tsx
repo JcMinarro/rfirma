@@ -2,98 +2,260 @@
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { sedeAreaMomentMeta, sedeMomentMeta } from "../../.storybook/decorators/sedeWindow";
+import type { ReaderStatus } from "../signing/certificate";
+import type { SameSignerNotice } from "../signing/sameSignerNotice";
+import type { PreviousSignaturesState, Received } from "./received";
 import { SedeConsentCompact, SedeConsentExpanded } from "./SedeReceivedConsent";
 import {
-  BATCH,
   BATCH_DOCUMENTS,
+  CHALLENGE,
   DESIGN_CERTIFICATES,
+  LOCAL_BATCH_DOCUMENTS,
   ONE_DIGEST,
-  ONE_DOCUMENT,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   receivedActions,
+  UNTITLED_DOCUMENT,
+  withPreviousSignatures,
+  withYourSignature,
+  yourSignature,
 } from "./testing/fixtures/received";
 import { sedeViewActions } from "./testing/fixtures/sedeView";
 
-const basics = {
-  origin: "sede.villaejemplo.es",
-  actions: receivedActions,
-  certificates: DESIGN_CERTIFICATES,
-  countdown: false,
-  onConsent: sedeViewActions.onConsent,
-  onCancel: sedeViewActions.onCancel,
+const DOCUMENTS = {
+  several: BATCH_DOCUMENTS,
+  one: [RESOLUTION_DOCUMENT],
+  untitled: [UNTITLED_DOCUMENT],
+  localBatch: LOCAL_BATCH_DOCUMENTS,
 };
+
+const WITHOUT_DOCUMENTS = { digest: ONE_DIGEST, challenge: CHALLENGE, remoteBatch: REMOTE_BATCH };
+
+type DocumentsCase = keyof typeof DOCUMENTS;
+type ReceivedCase = DocumentsCase | keyof typeof WITHOUT_DOCUMENTS;
+
+const READERS = {
+  none: { kind: "noReader" },
+  card: { kind: "dnieReady" },
+  reading: { kind: "reading" },
+  unreadable: { kind: "unreadable" },
+} satisfies Record<string, ReaderStatus>;
+
+interface ExpandableConsentDesignProps {
+  view: "compact" | "expanded";
+  errand: "site" | "identity" | "terminal";
+  received: ReceivedCase;
+  previousSignatures: PreviousSignaturesState;
+  yourSignature: SameSignerNotice | "none";
+  certificates: "one" | "several";
+  reader: keyof typeof READERS;
+  withOrigin: boolean;
+  narrowed: boolean;
+  sha1ToAllow: boolean;
+  countdown: boolean;
+  defaultDocument?: string;
+  defaultSignaturesOpen?: boolean;
+}
+
+function hasDocuments(received: ReceivedCase): received is DocumentsCase {
+  return received in DOCUMENTS;
+}
+
+function receivedOf(
+  received: ReceivedCase,
+  previousSignatures: PreviousSignaturesState,
+  yours: SameSignerNotice | "none",
+): Received {
+  if (!hasDocuments(received)) return WITHOUT_DOCUMENTS[received];
+  const documents = withPreviousSignatures(DOCUMENTS[received], previousSignatures);
+  return {
+    kind: "documents",
+    documents: yours === "none" ? documents : withYourSignature(documents, yourSignature(yours)),
+  };
+}
+
+function ExpandableConsentDesign({
+  view,
+  errand,
+  received,
+  previousSignatures,
+  yourSignature: yours,
+  certificates,
+  reader,
+  withOrigin,
+  narrowed,
+  sha1ToAllow,
+  countdown,
+  defaultDocument,
+  defaultSignaturesOpen,
+}: ExpandableConsentDesignProps) {
+  const shown = receivedOf(errand === "terminal" ? "one" : received, previousSignatures, yours);
+  const basics = {
+    origin: withOrigin ? "sede.villaejemplo.es" : null,
+    actions: receivedActions,
+    certificates: certificates === "one" ? DESIGN_CERTIFICATES.slice(0, 1) : DESIGN_CERTIFICATES,
+    reader: READERS[reader],
+    narrowed,
+    sha1ToAllow,
+    countdown,
+    onConsent: sedeViewActions.onConsent,
+    onCancel: sedeViewActions.onCancel,
+  };
+
+  return view === "compact" ? (
+    <SedeConsentCompact
+      {...basics}
+      received={shown}
+      asks={errand === "identity" ? "identity" : "signature"}
+      terminal={errand === "terminal"}
+    />
+  ) : (
+    <SedeConsentExpanded
+      {...basics}
+      documents={shown.kind === "documents" ? shown.documents : []}
+      defaultDocument={defaultDocument}
+      defaultSignaturesOpen={defaultSignaturesOpen}
+    />
+  );
+}
+
+const hidden = { table: { disable: true } };
 
 const meta = {
   title: "Pantallas/Ventana de sede/Consentimiento ampliable",
-  component: SedeConsentCompact,
-  args: { ...basics, received: BATCH },
+  component: ExpandableConsentDesign,
+  args: {
+    view: "compact",
+    errand: "site",
+    received: "several",
+    previousSignatures: "troubled",
+    yourSignature: "none",
+    certificates: "several",
+    reader: "none",
+    withOrigin: true,
+    narrowed: false,
+    sha1ToAllow: false,
+    countdown: false,
+  },
+  argTypes: {
+    view: hidden,
+    defaultDocument: hidden,
+    defaultSignaturesOpen: hidden,
+    errand: {
+      control: "inline-radio",
+      options: ["site", "identity", "terminal"],
+      labels: { site: "Firma de una sede", identity: "Datos", terminal: "Orden de terminal" },
+    },
+    received: {
+      control: "select",
+      options: [...Object.keys(DOCUMENTS), ...Object.keys(WITHOUT_DOCUMENTS)],
+      labels: {
+        several: "Varios documentos",
+        one: "Un documento",
+        untitled: "Un documento sin título",
+        localBatch: "Lote local",
+        digest: "Una huella",
+        challenge: "Un reto de autenticación",
+        remoteBatch: "Lote remoto",
+      },
+    },
+    previousSignatures: {
+      control: "inline-radio",
+      options: ["none", "signed", "troubled"],
+      labels: { none: "Sin firmas", signed: "Todas válidas", troubled: "Con problema" },
+    },
+    yourSignature: {
+      control: "inline-radio",
+      options: ["none", "sameCertificate", "otherCertificate"],
+      labels: {
+        none: "No",
+        sameCertificate: "Con este certificado",
+        otherCertificate: "Con otro certificado tuyo",
+      },
+    },
+    certificates: {
+      control: "inline-radio",
+      options: ["one", "several"],
+      labels: { one: "Uno", several: "Varios" },
+    },
+    reader: {
+      control: "inline-radio",
+      options: Object.keys(READERS),
+      labels: {
+        none: "Sin lector",
+        card: "Con tarjeta",
+        reading: "Leyendo",
+        unreadable: "Ilegible",
+      },
+    },
+  },
   parameters: {
     ...sedeMomentMeta.parameters,
     docs: {
       description: {
         component: [
-          "Provisional: el diseño del consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, el recuento con su descarga, una línea por hecho de las firmas que ya traen los documentos y el selector fijo encima del pie, que se abre hacia arriba; «Ver documentos» la amplía a 1080 × 660, con el documento a la izquierda y el consentimiento, con la lista de documentos y su menú «⋯», en una columna de 360 px.",
-          "Úsalo como referencia del momento 2 con documentos o huellas; sin documentos —huellas o lote remoto— no hay vista ampliada.",
-          "No enseñes del lote remoto más que su recuento, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
+          "Provisional: el diseño del consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento con su descarga; «Ver documentos» la amplía a 1080 × 660, con el documento a la izquierda y, en una columna de 360 px, el selector encima de la lista de documentos y su menú «⋯». Lo que ya firmaste tú lo dice la franja del documento.",
+          "Úsalo como referencia del momento 2 con documentos, huellas o un reto, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
+          "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar solo esta vez», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
+          "No enseñes del lote remoto más que su recuento, ni del reto más que qué es; no digas el tipo del documento ni si se firma, se cofirma o se contrafirma; no pongas ayuda bajo la tarjeta ilegible, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
         ].join("\n\n"),
       },
     },
   },
-} satisfies Meta<typeof SedeConsentCompact>;
+} satisfies Meta<typeof ExpandableConsentDesign>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
 const compact = sedeMomentMeta.decorators;
-const wide = sedeAreaMomentMeta.decorators;
+
+const expanded = {
+  decorators: sedeAreaMomentMeta.decorators,
+  argTypes: { errand: hidden, received: { control: "select", options: Object.keys(DOCUMENTS) } },
+} satisfies Story;
 
 export const CompactDigest: Story = {
   decorators: compact,
-  args: { origin: null, received: ONE_DIGEST },
+  args: { withOrigin: false, received: "digest" },
 };
 
-export const CompactRemoteBatch: Story = { decorators: compact, args: { received: REMOTE_BATCH } };
+export const CompactRemoteBatch: Story = { decorators: compact, args: { received: "remoteBatch" } };
 
-export const CompactOneDocument: Story = { decorators: compact, args: { received: ONE_DOCUMENT } };
+export const CompactOneDocument: Story = { decorators: compact, args: { received: "one" } };
 
 export const CompactSeveralDocuments: Story = { decorators: compact };
 
 export const CompactCountdown: Story = { decorators: compact, args: { countdown: true } };
 
-export const ExpandedSeveralDocuments: Story = {
-  decorators: wide,
-  render: () => <SedeConsentExpanded {...basics} documents={BATCH_DOCUMENTS} />,
-};
+export const ExpandedSeveralDocuments: Story = { ...expanded, args: { view: "expanded" } };
 
 export const ExpandedOneDocument: Story = {
-  decorators: wide,
-  render: () => <SedeConsentExpanded {...basics} documents={[RESOLUTION_DOCUMENT]} />,
+  ...expanded,
+  args: { view: "expanded", received: "one" },
 };
 
 export const ExpandedXmlDocument: Story = {
-  decorators: wide,
-  render: () => (
-    <SedeConsentExpanded {...basics} documents={BATCH_DOCUMENTS} defaultDocument="baremo" />
-  ),
+  ...expanded,
+  args: { view: "expanded", defaultDocument: "baremo" },
+};
+
+export const ExpandedImageDocument: Story = {
+  ...expanded,
+  args: { view: "expanded", defaultDocument: "poster" },
+};
+
+export const ExpandedOtherDocument: Story = {
+  ...expanded,
+  args: { view: "expanded", defaultDocument: "beneficiaries" },
 };
 
 export const ExpandedPadesSignatures: Story = {
-  decorators: wide,
-  render: () => (
-    <SedeConsentExpanded {...basics} documents={BATCH_DOCUMENTS} defaultSignaturesOpen />
-  ),
+  ...expanded,
+  args: { view: "expanded", defaultSignaturesOpen: true },
 };
 
 export const ExpandedXadesSignatures: Story = {
-  decorators: wide,
-  render: () => (
-    <SedeConsentExpanded
-      {...basics}
-      documents={BATCH_DOCUMENTS}
-      defaultDocument="baremo"
-      defaultSignaturesOpen
-    />
-  ),
+  ...expanded,
+  args: { view: "expanded", defaultDocument: "baremo", defaultSignaturesOpen: true },
 };

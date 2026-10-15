@@ -86,6 +86,7 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Dominio | Sede / SedeBody | `SedeBody` |
 | Dominio | Sede / SedeOrigin | `SedeOrigin` |
 | Dominio | Sede / SignaturesStrip | `SignaturesStrip` |
+| Primitivos | Admonition | `Admonition` |
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |

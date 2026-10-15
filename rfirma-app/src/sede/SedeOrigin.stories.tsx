@@ -1,4 +1,4 @@
-//! Las historias de `SedeOrigin`, la cabecera de la ventana de sede: con el dominio que pide la firma y sin origen válido.
+//! Las historias de `SedeOrigin`, la cabecera de la ventana de sede: con el dominio que pide la firma o los datos, sin origen válido y desde una orden de terminal.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SedeOrigin } from "./SedeOrigin";
@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "La cabecera de 56 px de la ventana de sede: «Te pide la firma» y el dominio, en una línea con elipsis; sin origen válido, «Una página sin identificar».",
+          "La cabecera de 56 px de la ventana de sede: «Te pide la firma», o «Te pide tus datos» si pide los del certificado, y el dominio, en una línea con elipsis; sin origen válido, «Una página sin identificar», y desde la terminal, «Una orden de terminal».",
           "Úsala arriba del consentimiento, en la ventana compacta a todo lo ancho y en la ampliada encima de la columna derecha.",
           "No le pongas el esquema, la ruta ni un aviso: el origen se nombra a secas y sirve para atribuir, nunca para afirmar.",
         ].join("\n\n"),
@@ -25,7 +25,8 @@ const meta = {
       </div>
     ),
   ],
-  args: { origin: "sede.villaejemplo.es" },
+  args: { origin: "sede.villaejemplo.es", asks: "signature", terminal: false },
+  argTypes: { asks: { control: "inline-radio", options: ["signature", "identity"] } },
 } satisfies Meta<typeof SedeOrigin>;
 
 export default meta;
