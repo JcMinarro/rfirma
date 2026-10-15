@@ -27,6 +27,16 @@ describe("1c · marking the area of the visible signature", () => {
     expect(screen.getByRole("button", { name: "Continuar" })).toBeDisabled();
   });
 
+  it("gives no help sentence under the title, only the pages label", async () => {
+    const { document, renders } = recordingDocument();
+    const { port } = scriptedErrand({ kind: "marking", pdf: document });
+    renderWithCatalog(<SedeWindow errands={port} />);
+    await waitFor(() => expect(renders).toHaveLength(1));
+
+    expect(screen.getByText("En qué páginas")).toBeInTheDocument();
+    expect(screen.queryByText(/Arrastra/)).not.toBeInTheDocument();
+  });
+
   it("hands on the traced box with the page it lies on", async () => {
     const { document, renders } = recordingDocument();
     const { port, calls } = scriptedErrand({ kind: "marking", pdf: document });

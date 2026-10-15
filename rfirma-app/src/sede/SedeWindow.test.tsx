@@ -42,6 +42,14 @@ describe("SedeWindow", () => {
       expect(calls.close).not.toHaveBeenCalled();
     });
 
+    it("says the risk in one sentence, with no Cancelar of its own yet", () => {
+      const { port } = scriptedFrom(OldWebClient);
+      renderWithCatalog(<SedeWindow errands={port} />);
+
+      expect(screen.getByText("Puede tener errores o no ser segura.")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
+    });
+
     it("focuses Continue, so Enter dismisses it", () => {
       const { port } = scriptedFrom(OldWebClient);
       renderWithCatalog(<SedeWindow errands={port} />);

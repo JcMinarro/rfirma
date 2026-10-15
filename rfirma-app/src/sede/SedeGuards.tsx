@@ -20,10 +20,10 @@ interface SedeOutdatedPageProps {
   origin: string | null;
   asks?: Asks;
   onDismiss: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
-/** La página desactualizada: quién lo pide arriba, el riesgo en una frase y, en el pie, «Cancelar» o «Continuar». */
+/** La página desactualizada: quién lo pide arriba, el riesgo en una frase y, en el pie, «Continuar» y, si se da, «Cancelar». */
 export function SedeOutdatedPage({
   origin,
   asks = "signature",
@@ -98,7 +98,7 @@ interface GuardFrameProps {
   continueButton: PrimaryButton;
   continueDisabled?: boolean;
   onContinue: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   children: ReactNode;
 }
 
@@ -122,9 +122,11 @@ function GuardFrame({
       onEscape={onCancel}
       footer={
         <>
-          <Button variant="ghost" className="sede-guards__steady" onClick={onCancel}>
-            {t("actions.cancel")}
-          </Button>
+          {onCancel !== undefined && (
+            <Button variant="ghost" className="sede-guards__steady" onClick={onCancel}>
+              {t("actions.cancel")}
+            </Button>
+          )}
           <Button
             ref={continueButton}
             variant="primary"
