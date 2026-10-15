@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import type { PreviousSignaturesReport, Validity } from "../signing/previousSignatures";
+import { SignatureCards, signaturesOverview, signaturesTally } from "../signing/SignatureCards";
 import { allSignaturesOf } from "./received";
-import { SedeSignatureCards, signaturesOverview, signaturesTally } from "./SedeSignatureCards";
 import "./SignaturesStrip.css";
 
 const VALIDITIES: readonly Validity[] = ["valid", "expired", "invalid"];
@@ -139,7 +139,7 @@ function SignaturesSheet({
         </p>
         <p className="rf-caption rf-text-muted">{signaturesOverview(t, report)}</p>
       </div>
-      <SedeSignatureCards report={report} />
+      <SignatureCards signatures={report.signatures} findings={report.findings} />
     </div>
   );
 }

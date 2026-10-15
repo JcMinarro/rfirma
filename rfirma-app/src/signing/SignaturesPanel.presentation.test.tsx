@@ -28,8 +28,7 @@ describe("the signatures panel, by moment", () => {
       renderWithCatalog(<JustSigned />);
 
       expect(screen.getByText("Firmas del documento")).toBeInTheDocument();
-      expect(screen.getByText("PAdES")).toBeInTheDocument();
-      expect(screen.getByText("2 firmas")).toBeInTheDocument();
+      expect(screen.getByText("PAdES · 2 firmas")).toBeInTheDocument();
       expect(screen.getByText(/^Firmado a las /)).toBeInTheDocument();
       expect(screen.queryByText("Firma visible")).not.toBeInTheDocument();
       expect(screen.queryByText("Resumen")).not.toBeInTheDocument();
@@ -50,7 +49,7 @@ describe("the signatures panel, by moment", () => {
       renderWithCatalog(<JustSigned />);
 
       const [, own] = cards() as [HTMLElement, HTMLElement];
-      expect(within(own).getByText("LOVELACE BYRON ADA (00000000T)")).toBeInTheDocument();
+      expect(within(own).getByText("LOVELACE BYRON ADA")).toBeInTheDocument();
       expect(within(own).getByText("AC FNMT Usuarios")).toBeInTheDocument();
       expect(within(own).getByText("Fecha")).toBeVisible();
       expect(within(own).getByText(/^14 sept 2026/)).toBeVisible();
@@ -98,15 +97,16 @@ describe("the signatures panel, by moment", () => {
       expect(screen.queryByText(/^Firmado a las /)).not.toBeInTheDocument();
     });
 
-    it("labels the date Sellada with the TSA when time-stamped, and puts «En nombre de» only where an entity is named", () => {
+    it("labels the date Sellada without the TSA when time-stamped, and puts «En nombre de» only where an entity is named, by its name", () => {
       renderWithCatalog(<VerifyWithProblems />);
 
       const [, expired] = cards() as [HTMLElement, HTMLElement, HTMLElement];
       expect(within(expired).getByText("Sellada")).toBeVisible();
-      expect(within(expired).getByText(/· TSA de pruebas$/)).toBeVisible();
+      expect(screen.queryByText(/TSA de pruebas/)).not.toBeInTheDocument();
       expect(within(expired).queryByText("Fecha")).not.toBeInTheDocument();
       expect(screen.getAllByText("En nombre de")).toHaveLength(1);
-      expect(screen.getByText("B12345678")).toBeInTheDocument();
+      expect(screen.getByText("Reformas Martín SL")).toBeInTheDocument();
+      expect(screen.queryByText("B12345678")).not.toBeInTheDocument();
     });
 
     it("puts the validity in each header and the reason as the last row", () => {
@@ -149,18 +149,16 @@ describe("the signatures panel, by moment", () => {
     it("heads a CAdES with its format and nests each countersignature in its signature", () => {
       renderWithCatalog(<VerifyCadesWithCountersignatures />);
 
-      expect(screen.getByText("CAdES")).toBeInTheDocument();
-      expect(screen.queryByText("PAdES")).not.toBeInTheDocument();
-      expect(screen.getByText("1 firma · 1 contrafirma")).toBeInTheDocument();
+      expect(screen.getByText("CAdES · 1 firma · 1 contrafirma")).toBeInTheDocument();
       const card = screen.getByText("Firma 1").closest("li") as HTMLElement;
       expect(within(card).getByText("Contrafirma 1.1")).toBeInTheDocument();
-      expect(within(card).getByText("GRACE HOPPER (44444444A)")).toBeInTheDocument();
+      expect(within(card).getByText("GRACE HOPPER")).toBeInTheDocument();
     });
 
     it("nests each countersignature inside its signature, at any depth, and counts both", () => {
       renderWithCatalog(<VerifyCadesWithNestedCountersignatures />);
 
-      expect(screen.getByText("2 firmas · 3 contrafirmas")).toBeInTheDocument();
+      expect(screen.getByText("CAdES · 2 firmas · 3 contrafirmas")).toBeInTheDocument();
       const [first, second] = cards() as [HTMLElement, HTMLElement];
       expect(within(first).getByText("Contrafirma 1.1")).toBeInTheDocument();
       expect(within(first).getByText("Contrafirma 1.1.1")).toBeInTheDocument();

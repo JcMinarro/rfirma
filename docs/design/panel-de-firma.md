@@ -351,8 +351,8 @@ De arriba abajo, cada bloque cuando toca:
 - **Solo tras firmar**, una franja con el círculo con marca y la hora
   (`panel.signed.signedAt`): fondo `--rf-surface`, borde de 1 px en
   `--rf-border-subtle`, `--rf-radius-md`. Con `verify` no hay franja.
-- **El título** con el icono de documento, y dos insignias `.rf-badge`: el
-  formato y el recuento, con las contrafirmas si las hay.
+- **El título** con el icono de documento y, debajo, el formato y el recuento
+  atenuados, con las contrafirmas si las hay (`signaturesOverview`).
 - **Los hallazgos del documento**, uno por línea y encima de las fichas.
   **Tras firmar, «modificado después de la última firma» se lee desde tu firma**
   (`documentFinding.*`): la última firma es ya la tuya, y el cambio es anterior
