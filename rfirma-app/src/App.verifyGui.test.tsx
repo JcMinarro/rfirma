@@ -13,6 +13,7 @@ const aSignature = (name: string) => ({
   name,
   idNumber: "00000000T",
   organizationIdentifier: null,
+  entityName: null,
   issuer: "AC FNMT Usuarios",
   certificateSerialNumber: "1",
   signingTime: "2026-09-14T10:32:05Z",

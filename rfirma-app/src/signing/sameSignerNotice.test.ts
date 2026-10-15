@@ -28,6 +28,7 @@ function aSignature(overrides: Partial<PreviousSignature> = {}): PreviousSignatu
     name: "Ada Lovelace Byron",
     idNumber: "99999999R",
     organizationIdentifier: null,
+    entityName: null,
     issuer: "AC FNMT Usuarios",
     certificateSerialNumber: "1234567890",
     signingTime: "2024-01-01T10:00:00Z",

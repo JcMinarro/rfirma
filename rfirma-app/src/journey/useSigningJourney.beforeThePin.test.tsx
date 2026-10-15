@@ -30,6 +30,7 @@ function aSignature(overrides: Partial<PreviousSignature>): PreviousSignature {
     name: "Bruce Wayne",
     idNumber: "00000000T",
     organizationIdentifier: null,
+    entityName: null,
     issuer: "AC FNMT Usuarios",
     certificateSerialNumber: "1",
     signingTime: "2024-01-01T10:00:00.000Z",
