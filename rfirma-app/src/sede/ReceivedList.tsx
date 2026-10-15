@@ -8,6 +8,7 @@ import { Icon } from "../design-system/icons";
 import type { IconName } from "../design-system/icons/names";
 import { Menu, MenuItem } from "../design-system/Menu";
 import {
+  hasKnownType,
   previousSignaturesState,
   type ReceivedActions,
   type ReceivedDocument,
@@ -138,7 +139,7 @@ function documentActions(
   actions: ReceivedActions,
 ): RowAction[] {
   return [
-    ...(document.knownType
+    ...(hasKnownType(document)
       ? [
           {
             icon: "externalLink" as const,

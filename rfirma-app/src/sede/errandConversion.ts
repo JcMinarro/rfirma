@@ -8,7 +8,6 @@ import {
   NAMED_BY_THE_DESK,
   type NamedByTheDesk,
   type RefusalSituation,
-  type SignatureRound,
   type SiteDocument,
   type SiteOutcome,
 } from "./errand";
@@ -159,8 +158,8 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
 }
 
 /**
- * El documento del consentimiento, con lo que dice de sí mismo y lo que la
- * sede pide firmar sobre lo que ya trae.
+ * El documento del consentimiento, con lo que dice de sí mismo, lo que la
+ * sede propone y lo que rFirma detecta en sus bytes.
  *
  * La ronda cruza entera y sin recuento: cuántas firmas lleva el PDF no lo
  * cuenta nadie, y lo que la ficha pide enseñar es qué será la firma de la
@@ -168,13 +167,17 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
  */
 export function documentOf(
   described: DescribedDocument | null,
-  round: SignatureRound,
+  stage: Extract<SiteStageView, { kind: "askingToSign" }>,
   previousSignatures: PreviousSignaturesReport,
-): SiteDocument | null {
-  if (described === null) return null;
+): SiteDocument {
   return {
-    ...described,
-    round,
+    name: stage.name,
+    detected: stage.detected,
+    sha256: stage.sha256,
+    title: described?.title ?? null,
+    pages: described?.pages ?? 0,
+    sizeBytes: described?.sizeBytes ?? 0,
+    round: stage.round,
     previousSignatures,
   };
 }

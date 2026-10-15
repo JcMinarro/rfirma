@@ -123,6 +123,9 @@ export function scriptedFrom(story: { args: object; parameters?: object }) {
 
 /** El documento del artboard, el mismo que se enseña al consentir. */
 export const signedDocument: SiteDocument = {
+  name: null,
+  detected: "pdf",
+  sha256: "3e7d1a90c4b25f8e06d9a3c7b1f4e2d85a0c6b9f3e1d7a42c8b5f0e9d3a6c71b",
   title: "Solicitud de subvención 2026",
   pages: 27,
   sizeBytes: 2_400_000,
