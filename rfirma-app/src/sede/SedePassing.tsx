@@ -1,4 +1,4 @@
-//! 1, 3 y el guardar o cargar, provisionales, con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título a la izquierda y las salidas en el pie; hoy solo lo pintan las historias.
+//! 1, 3 y el guardar o cargar, con el esqueleto del consentimiento compacto: la cabecera de quién lo pide, el título a la izquierda y las salidas en el pie.
 
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";

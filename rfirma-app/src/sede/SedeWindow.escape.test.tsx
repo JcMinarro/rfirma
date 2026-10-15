@@ -13,6 +13,7 @@ import * as outcomeModule from "./SedeOutcome.stories";
 import * as signingModule from "./SedeSigning.stories";
 import * as waitingModule from "./SedeWaiting.stories";
 import { SedeWindow } from "./SedeWindow";
+import { sedeErrand } from "./testing/fixtures/sedeView";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: Escape es el botón de cancelar o cerrar de cada momento, e Intro su acción principal. */
@@ -25,6 +26,11 @@ const { Signing, Returning } = composeStories(signingModule);
 const { NoneInstalled } = composeStories(noCertificateModule);
 const { Signed } = composeStories(outcomeModule);
 const { UnreadableDocument } = composeStories(markingModule);
+
+const LocalCaMissing = {
+  args: {},
+  parameters: { errand: sedeErrand({ kind: "noChannel", reason: "localCaMissing" }) },
+};
 
 const pressEscape = () => fireEvent.keyDown(document, { key: "Escape" });
 const pressEnter = () => fireEvent.keyDown(document, { key: "Enter" });
@@ -99,7 +105,7 @@ describe("Enter", () => {
   it.each([
     ["confirming", ShadowAttackSuspect, "confirmSignatures"],
     ["noCertificate", NoneInstalled, "installCertificate"],
-    ["unreachable", Unreachable, "installLocalCa"],
+    ["unreachable with the local CA missing", LocalCaMissing, "installLocalCa"],
     ["outcome", Signed, "close"],
     ["oldWebClient", OldWebClient, "dismissWarning"],
   ] as const)("presses the main action in %s", (_, story, action) => {
