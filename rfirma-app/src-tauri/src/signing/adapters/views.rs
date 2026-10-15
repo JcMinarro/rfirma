@@ -353,6 +353,8 @@ crossing! {
         pub id_number: String,
         /// La entidad representada, si el certificado la lleva.
         pub organization_identifier: Option<String>,
+        /// El nombre de la entidad representada, si el certificado lo lleva.
+        pub entity_name: Option<String>,
         /// La autoridad emisora del certificado.
         pub issuer: String,
         /// Número de serie del certificado.
@@ -378,6 +380,7 @@ impl From<DocumentSignature> for PreviousSignatureView {
             name: signature.name,
             id_number: signature.id_number,
             organization_identifier: signature.organization_identifier,
+            entity_name: signature.organization_name,
             issuer: signature.issuer,
             certificate_serial_number: signature.certificate_serial_number,
             signing_time: signature.signing_time,

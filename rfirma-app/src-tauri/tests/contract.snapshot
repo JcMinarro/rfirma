@@ -383,6 +383,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       name: String
       idNumber: String
       organizationIdentifier: Option<String>
+      entityName: Option<String>
       issuer: String
       certificateSerialNumber: String
       signingTime: Option<String>
