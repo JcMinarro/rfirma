@@ -47,7 +47,8 @@ function DownloadButton({
   const { t } = useTranslation();
   if (received.kind === "remoteBatch") return null;
   const label = count === 1 ? t("sede.received.download") : t("sede.received.downloadAll");
-  const title = t("sede.received.downloadAllTitle", { count });
+  const title =
+    count === 1 ? t("sede.received.downloadTitle") : t("sede.received.downloadAllTitle", { count });
 
   return (
     <Button variant="ghost" title={title} onClick={onDownload}>

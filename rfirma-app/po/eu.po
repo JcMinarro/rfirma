@@ -1515,6 +1515,10 @@ msgstr "Deskargatu"
 msgid "sede.received.downloadAll"
 msgstr "Deskargatu dena"
 
+#. La ayuda de «Descargar» con un solo documento: se guarda tal cual, sin .zip.
+msgid "sede.received.downloadTitle"
+msgstr "Dokumentua dagoen bezala, aldaketarik gabe"
+
 #. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
 msgid "sede.received.downloadAllTitle"
 msgid_plural "sede.received.downloadAllTitle"

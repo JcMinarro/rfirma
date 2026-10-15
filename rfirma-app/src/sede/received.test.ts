@@ -291,4 +291,10 @@ describe("receivedActions", () => {
     expect(actions.onSaveCopy).toBeUndefined();
     expect(actions.onOpenWith).toBeUndefined();
   });
+
+  it("offers no download of a local batch that could not be read", () => {
+    const actions = receivedActions({ kind: "documents", documents: [] }, commands());
+
+    expect(actions.onDownload).toBeUndefined();
+  });
 });

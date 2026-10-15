@@ -17,6 +17,7 @@ export interface SedeViewProps {
   errand: Errand;
   consentCountdown?: boolean;
   installFailure?: NamedFailure | null;
+  receivedFailure?: NamedFailure | null;
   reader?: ReaderStatus;
   liveCertificates?: readonly Certificate[] | null;
   onConsent: (certificateId: string) => void;
@@ -45,6 +46,7 @@ export function SedeView({
   errand,
   consentCountdown = true,
   installFailure = null,
+  receivedFailure = null,
   reader = UNAVAILABLE_READER,
   liveCertificates = null,
   onConsent,
@@ -114,6 +116,7 @@ export function SedeView({
             sha1ToAllow={stage.sha1ToAllow}
             countdown={consentCountdown}
             actions={actions}
+            failure={receivedFailure}
             onExpandWindow={onExpandWindow}
             onConsent={onConsent}
             onCancel={onCancel}

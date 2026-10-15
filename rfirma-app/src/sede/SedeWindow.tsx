@@ -13,6 +13,12 @@ interface LiveList {
   certificates: readonly Certificate[];
 }
 
+/** El fallo de descargar o abrir lo recibido, del momento del trámite en que se pidió. */
+interface ReceivedFailure {
+  errand: Errand;
+  failure: NamedFailure;
+}
+
 interface SedeWindowProps {
   errands: SiteErrandPort;
   externalDestinations?: ExternalDestinationOpener;
@@ -108,11 +114,22 @@ function SedeDialog({
     }
   };
 
+  const [received, setReceived] = useState<ReceivedFailure | null>(null);
+  const attendReceived = async (order: () => Promise<void>) => {
+    setReceived(null);
+    try {
+      await order();
+    } catch (thrown) {
+      setReceived({ errand, failure: classify(thrown) });
+    }
+  };
+
   return (
     <SedeView
       errand={errand}
       consentCountdown={consentCountdown}
       installFailure={installFailure}
+      receivedFailure={received?.errand === errand ? received.failure : null}
       reader={reader}
       liveCertificates={live?.errand === errand ? live.certificates : null}
       onConsent={(certificateId) => void errands.consent(certificateId)}
@@ -126,9 +143,9 @@ function SedeDialog({
       onDismissWarning={() => void errands.dismissWarning()}
       onOpenHelp={openHelp}
       onExpandWindow={(expanded) => void errands.expandWindow(expanded)}
-      onDownloadDocument={(handle) => void errands.downloadDocument(handle)}
-      onDownloadAll={() => void errands.downloadAll()}
-      onOpenWith={(handle) => void errands.openWith(handle)}
+      onDownloadDocument={(handle) => void attendReceived(() => errands.downloadDocument(handle))}
+      onDownloadAll={() => void attendReceived(() => errands.downloadAll())}
+      onOpenWith={(handle) => void attendReceived(() => errands.openWith(handle))}
     />
   );
 }

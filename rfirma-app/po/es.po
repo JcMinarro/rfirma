@@ -1509,6 +1509,10 @@ msgstr "Descargar"
 msgid "sede.received.downloadAll"
 msgstr "Descargar todo"
 
+#. La ayuda de «Descargar» con un solo documento: se guarda tal cual, sin .zip.
+msgid "sede.received.downloadTitle"
+msgstr "El documento tal cual, sin cambios"
+
 #. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
 msgid "sede.received.downloadAllTitle"
 msgid_plural "sede.received.downloadAllTitle"

@@ -3,7 +3,7 @@
 use crate::crossing::Failure;
 use crate::identity::adapters::failures::code_of_token;
 use crate::signing::adapters::failures::{code_of_bridge, code_of_inadmissible};
-use crate::site::application::errand::{ConsentError, DownloadError, SiteRefusal};
+use crate::site::application::errand::{ConsentError, CopyToOpenError, DownloadError, SiteRefusal};
 use crate::site::application::filtering::FilteringError;
 use crate::site::domain::batch_error::{BatchError, Situation as BatchSituation};
 use crate::site::domain::channel::Situation as ChannelSituation;
@@ -173,6 +173,22 @@ impl From<ConsentError> for Failure {
                 "userCancelled",
                 "la persona no ha dado la contraseña del PDF",
             ),
+        }
+    }
+}
+
+impl From<CopyToOpenError> for Failure {
+    fn from(error: CopyToOpenError) -> Self {
+        match error {
+            CopyToOpenError::NotReceived(handle) => Self::new(
+                "documentUnreadable",
+                format!("el consentimiento en curso no enseña el documento {handle}"),
+            ),
+            CopyToOpenError::Unreadable(detail) => Self::new("documentUnreadable", detail),
+            CopyToOpenError::Unrecognised => {
+                Self::new("unrecognisedType", "el tipo del documento no se reconoce")
+            }
+            CopyToOpenError::Unwritable(detail) => Self::new("unknown", detail),
         }
     }
 }

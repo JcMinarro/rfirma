@@ -254,6 +254,88 @@ fn cancelling_the_dialog_of_everything_writes_nothing() {
     assert_eq!(files_in(&folder.expect("hay carpeta")), 0);
 }
 
+/// El consentimiento de un lote local de tres elementos, con las asas de sus documentos.
+fn consenting_to_sign_the_local_batch() -> (Consenting, Vec<String>) {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let opened = OpenedDocuments::new();
+    let live = a_live();
+    let (reply, wire) = the_wire();
+    live.answer_through(reply);
+    let engine = AnEngine::answering(&[&[0], &[0]]);
+    let policies = APolicyEngine::answering("");
+    let scratch = home.path().join("errand");
+    let neighbours = neighbours_for_the_local_batch(home.path(), &listed, &opened, &memory, &ours);
+    let desk = a_desk(&engine, &policies, &neighbours, &scratch);
+
+    let url = a_local_batch("");
+    let step = attend_operation(&desk, &url, decoded(&url), &live);
+    let ErrandStep::AskingToSignTheLocalBatch(asked) = remembered(&live, step) else {
+        panic!("un lote local pide consentimiento");
+    };
+    let handles = asked
+        .items
+        .iter()
+        .map(|item| item.document.handle.clone())
+        .collect::<Vec<_>>();
+    drop(desk);
+    drop(neighbours);
+    let consenting = Consenting {
+        home,
+        opened,
+        live,
+        wire,
+        document: handles[0].clone(),
+    };
+    (consenting, handles)
+}
+
+#[test]
+fn an_item_of_the_local_batch_is_downloaded_as_it_is() {
+    let (consenting, handles) = consenting_to_sign_the_local_batch();
+    let destination = consenting.destination("elegido.pdf");
+    let offered = RefCell::new(None);
+
+    let written = download_one(
+        &consenting.live,
+        &handles[0],
+        &consenting.read(),
+        a_dialog_choosing(Some(destination.clone()), &offered),
+        &RealScratch,
+    );
+
+    assert_eq!(written, Ok(true));
+    assert_eq!(
+        std::fs::read(&destination).ok().as_deref(),
+        Some(A_LOCAL_PDF)
+    );
+    assert_eq!(offered.into_inner().as_deref(), Some("001.pdf"));
+}
+
+#[test]
+fn downloading_everything_of_the_local_batch_writes_every_item_in_the_zip() {
+    let (consenting, _) = consenting_to_sign_the_local_batch();
+    let destination = consenting.destination("todo.zip");
+    let offered = RefCell::new(None);
+
+    let written = download_all(
+        &consenting.live,
+        &consenting.read(),
+        a_dialog_choosing(Some(destination.clone()), &offered),
+        &RealScratch,
+    );
+
+    assert_eq!(written, Ok(true));
+    let entries = unpacked(&destination);
+    assert_eq!(entries.len(), 4, "tres elementos y su SHA256SUMS");
+    assert_eq!(entries[0].1, A_LOCAL_PDF.to_vec());
+    assert_eq!(entries[1].1, A_LOCAL_BINARY.to_vec());
+    assert_eq!(entries[2].1, A_LOCAL_XML.to_vec());
+    assert_eq!(entries[3].0, "SHA256SUMS");
+}
+
 #[test]
 fn without_a_consent_on_screen_there_is_nothing_to_download() {
     let live = a_live();

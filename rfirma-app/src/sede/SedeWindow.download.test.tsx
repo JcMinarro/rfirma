@@ -122,6 +122,45 @@ describe("downloading and opening what the site sends", () => {
     expect(calls.downloadDocument).not.toHaveBeenCalled();
   });
 
+  it("tells the person when the download fails", async () => {
+    const user = userEvent.setup();
+    const { port, calls } = consenting(BAREMO);
+    calls.downloadDocument.mockRejectedValueOnce({
+      situation: "saveDestinationUnwritable",
+      detail: "permiso denegado",
+    });
+    renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+    await user.click(screen.getByRole("button", { name: "Descargar" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+  });
+
+  it("tells the person when the system cannot open the document", async () => {
+    const user = userEvent.setup();
+    const { port, calls } = consenting(SPREADSHEET);
+    calls.openWith.mockRejectedValueOnce({ situation: "unrecognisedType", detail: "x" });
+    renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+    await user.click(screen.getByRole("button", { name: "Ver documento" }));
+
+    await user.click(screen.getByRole("button", { name: "Abrir con…" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+  });
+
+  it("clears the failure when the next attempt goes well", async () => {
+    const user = userEvent.setup();
+    const { port, calls } = consenting(BAREMO);
+    calls.downloadDocument.mockRejectedValueOnce({ situation: "unknown", detail: "x" });
+    renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+    await user.click(screen.getByRole("button", { name: "Descargar" }));
+    await screen.findByRole("alert");
+
+    await user.click(screen.getByRole("button", { name: "Descargar" }));
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it.each([
     ["a remote batch", Batch],
     ["a terminal order", TerminalOrder],

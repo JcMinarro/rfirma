@@ -2,9 +2,12 @@
 
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { useDefaultButton } from "../design-system/useDefaultButton";
+import type { NamedFailure } from "../errors/classify";
+import { errorText } from "../errors/errorMessage";
 import { CertificateSelect } from "../signing/CertificateSelect";
 import {
   type Certificate,
@@ -47,6 +50,7 @@ export function SedeReceivedConsent({
   received,
   terminalDocument,
   actions,
+  failure = null,
   onExpandWindow,
   defaultExpanded = false,
   defaultDocument,
@@ -58,6 +62,8 @@ export function SedeReceivedConsent({
   /** La ruta de `-i` cuando la firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
   terminalDocument?: string;
   actions: ReceivedActions;
+  /** Por qué no se descargó o no se abrió lo recibido la última vez que se pidió. */
+  failure?: NamedFailure | null;
   /** Pide a la ventana ampliarse a 1080 × 660 o volver a su tamaño. */
   onExpandWindow: (expanded: boolean) => void;
   defaultExpanded?: boolean;
@@ -93,6 +99,7 @@ export function SedeReceivedConsent({
       consent={consent}
       documents={viewable}
       actions={actions}
+      failure={failure}
       defaultDocument={defaultDocument}
       defaultSignaturesOpen={defaultSignaturesOpen}
       onCollapse={() => expand(false)}
@@ -106,6 +113,7 @@ export function SedeReceivedConsent({
       received={received}
       terminalDocument={terminalDocument}
       onDownload={actions.onDownload}
+      failure={failure}
       documents={viewable.length}
       onExpand={() => expand(true)}
     />
@@ -135,6 +143,7 @@ function SedeConsentCompact({
   received,
   terminalDocument,
   onDownload,
+  failure,
   documents,
   onExpand,
 }: Pick<ConsentBasics, "origin" | "asks" | "sha1ToAllow"> & {
@@ -142,6 +151,7 @@ function SedeConsentCompact({
   received: Received | null;
   terminalDocument?: string;
   onDownload?: () => void;
+  failure: NamedFailure | null;
   documents: number;
   onExpand: () => void;
 }) {
@@ -190,6 +200,7 @@ function SedeConsentCompact({
               ) : (
                 <ReceivedHeading received={received} onDownload={onDownload} />
               )}
+              {failure !== null && <ReceivedFailure failure={failure} />}
             </>
           )}
         </div>
@@ -205,6 +216,7 @@ function SedeConsentExpanded({
   consent,
   documents,
   actions,
+  failure,
   defaultDocument,
   defaultSignaturesOpen = false,
   onCollapse,
@@ -212,6 +224,7 @@ function SedeConsentExpanded({
   consent: Consent;
   documents: readonly ReceivedDocument[];
   actions: ReceivedActions;
+  failure: NamedFailure | null;
   defaultDocument?: string;
   defaultSignaturesOpen?: boolean;
   onCollapse: () => void;
@@ -273,6 +286,7 @@ function SedeConsentExpanded({
                 onDownload={actions.onDownload}
                 withoutCount
               />
+              {failure !== null && <ReceivedFailure failure={failure} />}
               {shown !== undefined && (
                 <ReceivedList
                   documents={documents}
@@ -286,6 +300,18 @@ function SedeConsentExpanded({
         </SedeBody>
       </div>
     </div>
+  );
+}
+
+/** El aviso en línea de lo recibido que no se pudo descargar ni abrir. */
+function ReceivedFailure({ failure }: { failure: NamedFailure }) {
+  const { t } = useTranslation();
+  const message = errorText(failure.situation, t);
+
+  return (
+    <Admonition tone="error" title={message.title}>
+      {message.body !== undefined && <p className="rf-body">{message.body}</p>}
+    </Admonition>
   );
 }
 

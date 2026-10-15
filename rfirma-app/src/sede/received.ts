@@ -177,16 +177,23 @@ export function receivedActions(
 ): ReceivedActions {
   const onCopy = (value: string) => void navigator.clipboard.writeText(value);
   if (received?.kind !== "documents") return { onCopy };
-  const [only] = received.documents;
   return {
     onCopy,
-    onDownload:
-      received.documents.length === 1 && only !== undefined
-        ? () => commands.downloadDocument(only.handle)
-        : commands.downloadAll,
+    onDownload: downloadOf(received.documents, commands),
     onOpenWith: (document) => commands.openWith(document.handle),
     onSaveCopy: (document) => commands.downloadDocument(document.handle),
   };
+}
+
+/** Un documento se descarga tal cual y varios en un `.zip`; sin ninguno, no hay descarga. */
+function downloadOf(
+  documents: readonly ReceivedDocument[],
+  commands: ReceivedCommands,
+): (() => void) | undefined {
+  const [first, second] = documents;
+  if (first === undefined) return undefined;
+  if (second === undefined) return () => commands.downloadDocument(first.handle);
+  return commands.downloadAll;
 }
 
 /** Cuántos documentos se firman. */

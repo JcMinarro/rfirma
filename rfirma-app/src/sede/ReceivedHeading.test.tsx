@@ -23,6 +23,14 @@ describe("ReceivedHeading", () => {
     expect(onDownload).toHaveBeenCalledOnce();
   });
 
+  it("describes the download of a single document as it is, not as a .zip", () => {
+    renderWithCatalog(<ReceivedHeading received={ONE_DOCUMENT} onDownload={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Descargar" })).toHaveAttribute(
+      "title",
+      "El documento tal cual, sin cambios",
+    );
+  });
+
   it("leaves only the download, without the count, when the documents are listed below", () => {
     renderWithCatalog(<ReceivedHeading received={BATCH} onDownload={vi.fn()} withoutCount />);
     expect(screen.queryByText(/^Vas a firmar/)).not.toBeInTheDocument();

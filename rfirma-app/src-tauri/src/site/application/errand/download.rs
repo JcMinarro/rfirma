@@ -65,19 +65,22 @@ pub fn download_all(
     written_where_chosen(&archive, choose, scratch)
 }
 
-fn received_now(live: &LiveErrand) -> Vec<ReceivedDocument> {
+/// Los documentos que enseña el momento en curso, los únicos que la ventana puede pedir.
+pub(super) fn received_now(live: &LiveErrand) -> Vec<ReceivedDocument> {
     live.moment().map(received_in).unwrap_or_default()
 }
 
 fn received_in(moment: Moment) -> Vec<ReceivedDocument> {
     match moment {
         Moment::AskingToSign { document, .. } => vec![document],
+        Moment::AskingToSignTheLocalBatch { items, .. } => {
+            items.into_iter().map(|item| item.document).collect()
+        }
         Moment::Waiting
         | Moment::AskingForConsent { .. }
         | Moment::MarkingTheArea { .. }
         | Moment::AskingToConfirm { .. }
         | Moment::AskingToSignTheBatch { .. }
-        | Moment::AskingToSignTheLocalBatch { .. }
         | Moment::NoCertificate { .. }
         | Moment::Saving { .. }
         | Moment::Loading { .. }

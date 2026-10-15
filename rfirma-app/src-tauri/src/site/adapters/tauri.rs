@@ -102,21 +102,12 @@ pub fn site_open_with(
 ) -> Result<(), Failure> {
     use tauri_plugin_opener::OpenerExt;
 
-    let bytes = crate::documents::application::documents::bytes_of(
-        documents.files.as_ref(),
-        &documents.opened,
-        &document,
-    )?;
     let copy = site_window::with_the_desk(&app_handle, |desk, live| {
-        crate::site::application::errand::copy_to_open(desk, live, &bytes)
-    })
-    .map_err(|error| match error {
-        crate::site::application::errand::CopyToOpenError::Unrecognised => {
-            Failure::new("unrecognisedType", "el tipo del documento no se reconoce")
-        }
-        crate::site::application::errand::CopyToOpenError::Unwritable(detail) => {
-            Failure::new("unknown", detail)
-        }
+        crate::site::application::errand::copy_to_open(desk, live, &document, &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        })
     })?;
     app_handle
         .opener()
