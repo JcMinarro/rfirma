@@ -13,8 +13,6 @@
   margin: 0;
 }
 
-.sede-area-marking__placement {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rf-space-xs);
+.sede-area-marking__label {
+  margin: 0;
 }

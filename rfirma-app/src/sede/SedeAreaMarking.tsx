@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
+import { Stack } from "../design-system/Stack";
 import { useDefaultButton } from "../design-system/useDefaultButton";
 import { PlacementBlock } from "../placement/PlacementBlock";
 import { usePlacement } from "../placement/usePlacement";
@@ -102,13 +103,10 @@ export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAre
               {pdf === null ? (
                 <Admonition tone="error">{t("sede.marking.unreadable")}</Admonition>
               ) : (
-                <section
-                  aria-label={t("panel.placement.title")}
-                  className="sede-area-marking__placement"
-                >
-                  <p className="rf-label panel__heading">{t("panel.placement.title")}</p>
+                <Stack as="section" aria-label={t("panel.placement.title")}>
+                  <p className="rf-label sede-area-marking__label">{t("panel.placement.title")}</p>
                   <PlacementBlock state={placementState} />
-                </section>
+                </Stack>
               )}
             </div>
           </div>
