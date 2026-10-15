@@ -119,6 +119,7 @@ function documentIcon(document: ReceivedDocument): IconName {
     case "pdf":
       return "documentPdf";
     case "xml":
+    case "invoice":
     case "text":
       return "documentXml";
     case "png":

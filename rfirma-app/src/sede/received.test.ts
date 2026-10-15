@@ -68,6 +68,7 @@ describe("receivedName", () => {
   it.each([
     ["pdf", "sede.consent.untitled"],
     ["xml", "sede.consent.untitledXml"],
+    ["invoice", "sede.consent.untitledXml"],
     ["png", "sede.consent.untitledImage"],
     ["webp", "sede.consent.untitledImage"],
     ["xlsx", "sede.consent.untitledDocument"],
@@ -177,7 +178,7 @@ describe("contentOf", () => {
     expect(await contentOf("pdf", bytes, broken)).toEqual({ kind: "none" });
   });
 
-  it.each(["xml", "text"] as const)("shows %s as its literal text", async (detected) => {
+  it.each(["xml", "invoice", "text"] as const)("shows %s as its literal text", async (detected) => {
     expect(await contentOf(detected, bytes, loadPdf)).toEqual({
       kind: "text",
       text: "<baremo>Antigüedad</baremo>",

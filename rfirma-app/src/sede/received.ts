@@ -53,7 +53,7 @@ export async function contentOf(
       return { kind: "none" };
     }
   }
-  if (detected === "xml" || detected === "text") {
+  if (detected === "xml" || detected === "invoice" || detected === "text") {
     return { kind: "text", text: new TextDecoder().decode(bytes) };
   }
   const mediaType = IMAGE_MEDIA_TYPES[detected];
@@ -70,6 +70,7 @@ function untitledKey(detected: DocumentType) {
     case "pdf":
       return "sede.consent.untitled";
     case "xml":
+    case "invoice":
       return "sede.consent.untitledXml";
     case "png":
     case "jpeg":
