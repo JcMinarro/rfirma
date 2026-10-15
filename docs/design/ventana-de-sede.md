@@ -222,8 +222,7 @@ que solo existía para ellas.
   El primero es el título del aviso, en su fila, y los demás van debajo; con un
   solo hecho, sin título. El tono es el del peor: error con una firma no válida,
   advertencia con SHA-1 y, si no, información.
-- **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
-  «Descargar…» y, si los hay, los hechos de las firmas previas: cuántos
+- **La compacta no lista nada: resume.** Dice cuánto se firma y, si los hay, los hechos de las firmas previas: cuántos
   documentos traen firmas de otras personas, cuántos firmaste tú, con el
   certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
   válida. En la ampliada, el aviso dice lo que ya firmaste tú y el SHA-1 por
@@ -275,17 +274,16 @@ que solo existía para ellas.
   cede «Ver documentos», que se corta con puntos suspensivos y conserva su icono
   y el texto entero en el `title`.
 
-Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
+**Pendiente de implementar: la ampliada, «Ver documentos» y la descarga.** En la
+compacta real, el hueco izquierdo del pie queda vacío y el resumen no lleva
+«Descargar…». Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
 huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
 previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
 `SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
 en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
 motivo), que cambia también la ventana principal. Y el nombre por defecto del
 documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
-tiene que depender del tipo o ser neutro. Y el botón de firmar con SHA-1 por
-permitir deja de decir «Firmar solo esta vez» también en la ventana de sede
-actual y pasa a «Firmar igualmente»: el «solo esta vez» se refería al permiso de
-Preferencias, que la persona no ve desde ahí. Cuando se implemente, la
+tiene que depender del tipo o ser neutro. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
 firmas previas como aviso compacto dejan de ser ciertas.
 
@@ -295,8 +293,8 @@ firmas previas como aviso compacto dejan de ser ciertas.
 
 ### El resto de momentos con el esqueleto nuevo
 
-Los demás momentos se rehacen sobre el esqueleto del consentimiento ampliable.
-Es el de la ventana real; las decisiones de abajo son las de cada momento.
+Los demás momentos usan el mismo esqueleto que el consentimiento compacto. Es el
+de la ventana real; las decisiones de abajo son las de cada momento.
 
 - **Un solo esqueleto en todos los momentos**: arriba la cabecera `SedeOrigin` de
   56 px; el cuerpo, alineado a la izquierda, con el icono a la izquierda del
