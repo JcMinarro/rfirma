@@ -1,4 +1,3 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { inMemoryExternalDestinationOpener } from "../desktop/externalDestination";
@@ -10,8 +9,13 @@ import {
   type REFUSAL_ACTION_OF,
   type RefusalSituation,
 } from "./errand";
-import * as outcomeModule from "./SedeOutcome.stories";
 import { SedeWindow } from "./SedeWindow";
+import {
+  RefusedCloseOther,
+  RefusedContactSite,
+  RefusedUnknown,
+  Signed,
+} from "./testing/fixtures/sedeErrands";
 import { scriptedErrand, scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 const RETRY = "Vuelve a la sede e inténtalo de nuevo.";
@@ -91,9 +95,6 @@ const DESK_TITLE: Record<(typeof NAMED_BY_THE_DESK)[number], string> = {
 };
 
 /** Grada A: el momento 4, el desenlace: qué se dice de cada rechazo y su cierre a los quince segundos. Lo que enseña cada historia está en `SedeWindow.presentation.test.tsx`. */
-
-const { Signed, RefusedContactSite, RefusedCloseOther, RefusedUnknown } =
-  composeStories(outcomeModule);
 
 describe("4 · outcome", () => {
   beforeEach(() => vi.useFakeTimers());

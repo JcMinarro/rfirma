@@ -414,12 +414,6 @@ msgstr "Sinadura ikusgaia osatzen…"
 msgid "viewer.stamp.failed"
 msgstr "Ezin izan da sinadura ikusgaia marraztu"
 
-msgid "panel.document.pages"
-msgid_plural "panel.document.pages"
-msgstr[0] "1 orrialde"
-msgstr[1] "{{count}} orrialde"
-msgstr[2] "{{count}} orrialde"
-
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
 msgid_plural "panel.previousSignatures.alongside"
@@ -1283,14 +1277,8 @@ msgstr "Orain rFirma irekitzen dute."
 msgid "sede.waiting.title"
 msgstr "Egoitzarekin konektatzen"
 
-msgid "sede.waiting.lead"
-msgstr "Orrialde batek dokumentu bat sina dezazun nahi du."
-
 msgid "sede.unreachable.title"
 msgstr "Eskaera ez da iritsi"
-
-msgid "sede.unreachable.lead"
-msgstr "Normalean nabigatzailearen baimena falta izaten da."
 
 msgid "sede.repair.caMissing"
 msgstr "rFirmaren tokiko CA falta da."
@@ -1316,116 +1304,15 @@ msgstr ""
 msgid "sede.repair.retry"
 msgstr "Baimendu ondoren, itzuli egoitzara eta sakatu Berriro saiatu."
 
-msgid "sede.consent.asksSignature"
-msgstr "{{origin}}(e)k zure sinadura eskatzen du."
-
-msgid "sede.consent.asksIdentity"
-msgstr "{{origin}}(e)k zure identitate-datuak eskatzen ditu."
-
-#. La misma frase que "asksSignature", con el formato del #530 nombrado.
-msgid "sede.consent.asksSignatureOf"
-msgstr "{{origin}}(e)k {{what}} sinatzeko eskatzen dizu."
-
-#. Qué es lo que la sede pide firmar, según el formato de la petición (#530).
-msgid "sede.consent.signingKind.pdf"
-msgstr "PDF dokumentu bat"
-
-msgid "sede.consent.signingKind.challenge"
-msgstr "autentifikazio-erronka bat"
-
-msgid "sede.consent.signingKind.xml"
-msgstr "XML dokumentu bat"
-
-msgid "sede.consent.signingKind.invoice"
-msgstr "faktura elektroniko bat"
-
-#. Misma forma que "asksSignature", con una página sin identificar como sujeto.
-msgid "sede.consent.unknownOriginSignature"
-msgstr "Identifikatu gabeko orrialde batek zure sinadura eskatzen du."
-
-msgid "sede.consent.terminalTitle"
-msgstr "Sinatu {{name}}"
-
-msgid "sede.consent.unknownOriginIdentity"
-msgstr ""
-"Identifikatu gabeko orrialde batek zure identitate-datuak eskatzen ditu."
-
 #. El PDF no trae título en sus metadatos, y el nombre de fichero no viaja
 #. nunca en la petición.
 msgid "sede.consent.untitled"
 msgstr "Izenbururik gabeko PDF bat"
 
-#. Nunca se enumera lo que la sede descartó ni con qué criterio.
-msgid "sede.consent.narrowed"
-msgstr "{{origin}}(e)k baliozko ziurtagiriak mugatu ditu."
-
-msgid "sede.consent.narrowedUnknownOrigin"
-msgstr "Egoitzak baliozko ziurtagiriak mugatu ditu."
-
-msgid "sede.consent.sha1Allowed"
-msgstr ""
-"Egoitza honek SHA-1 eskatzen du, algoritmo zaharkitua. Hobespenetan onartuta "
-"daukazu."
-
-msgid "sede.consent.sha1ToAllowTitle"
-msgstr "Sinadura ez hain segurua"
-
-msgid "sede.consent.sha1ToAllow"
-msgstr ""
-"Egoitza honek SHA-1 erabiltzen du, sinatzeko metodo zahar eta ez hain "
-"segurua. Sinatu fidatzen bazara bakarrik."
-
-msgid "sede.consent.signOnce"
-msgstr "Sinatu oraingo honetan bakarrik"
-
 msgid "sede.consent.willSend"
 msgstr ""
 "Zure izena, zure IFZa, ziurtagiriaren jaulkitzailea eta serie-zenbakia "
 "bidaliko dira."
-
-#. Contrafirma: se firma sobre las firmas que el documento ya trae, y el
-#. objetivo dice sobre cuáles.
-msgid "sede.consent.counterSignatureTree"
-msgstr ""
-"Sinatuta dator jada: zurea dituen sinadura guztien gaineko kontrasinadura "
-"izango da."
-
-msgid "sede.consent.counterSignatureLeafs"
-msgstr ""
-"Sinatuta dator jada: zurea dituen azken sinaduren gaineko kontrasinadura "
-"izango da."
-
-#. Cofirma: se firma junto a las firmas que el documento ya trae, sin
-#. contarlas, porque las cuenta el aviso de firmas previas de debajo.
-msgid "sede.consent.coSignature"
-msgstr ""
-"Sinatuta dator jada: zurea dituen sinadurekin batera egindako kosinadura "
-"izango da."
-
-msgid "sede.consent.batchTitle"
-msgid_plural "sede.consent.batchTitle"
-msgstr[0] "1 sinadurako sorta"
-msgstr[1] "{{count}} sinadurako sorta"
-msgstr[2] "{{count}} sinadurako sorta"
-
-msgid "sede.consent.batchNote"
-msgstr ""
-"Dokumentuak egoitzan geratzen dira: rFirmak deskargatu gabe sinatzen ditu."
-
-msgid "sede.consent.batchItemLabel"
-msgstr "{{what}} ({{round}})"
-
-msgid "sede.consent.localBatchRoundSign"
-msgstr "sinadura"
-
-msgid "sede.consent.localBatchRoundCosign"
-msgstr "kosinadura"
-
-msgid "sede.consent.localBatchRoundCounterTree"
-msgstr "sinadura guztien kontrasinadura"
-
-msgid "sede.consent.localBatchRoundCounterLeafs"
-msgstr "azken sinaduren kontrasinadura"
 
 msgid "actions.sign"
 msgstr "Sinatu"
@@ -1458,34 +1345,17 @@ msgstr ""
 msgid "sede.marking.title"
 msgstr "Markatu non doan zure sinadura"
 
-msgid "sede.marking.hint"
-msgstr ""
-"Orriak zure sinadura dokumentuan ikustea eskatzen du. Marraztu laukia orrian "
-"saguarekin."
-
 msgid "sede.marking.unreadable"
 msgstr "Ezin izan da dokumentua ireki sinadura non doan markatzeko."
 
-msgid "sede.signing.with"
-msgstr "{{holder}} · {{idNumber}} erabiliz."
-
-msgid "sede.returning.title"
-msgstr "Sinadura {{origin}}(e)ra bidaltzen"
-
 msgid "sede.returning.titleUnknownOrigin"
 msgstr "Sinadura bidaltzen"
-
-msgid "sede.returning.body"
-msgstr "Ez itxi leihoa."
 
 msgid "sede.saving.title"
 msgstr "{{filename}} gordetzen"
 
 msgid "sede.saving.titleUnnamed"
 msgstr "Fitxategia gordetzen"
-
-msgid "sede.saving.lead"
-msgstr "Aukeratu sistemaren elkarrizketa-koadroan non gorde nahi duzun."
 
 msgid "sede.saving.leadUnwritable"
 msgstr ""
@@ -1498,64 +1368,14 @@ msgstr "Fitxategi bat kargatzen"
 msgid "sede.loading.titleMany"
 msgstr "Hainbat fitxategi kargatzen"
 
-msgid "sede.loading.lead"
-msgstr ""
-"Aukeratu sistemaren elkarrizketa-koadroan bidali nahi duzun fitxategia."
-
-msgid "sede.loading.leadMany"
-msgstr ""
-"Aukeratu sistemaren elkarrizketa-koadroan bidali nahi dituzun fitxategiak."
-
 msgid "sede.outcome.signedTitle"
 msgstr "Sinatuta eta bidalita"
-
-msgid "sede.outcome.signedBody"
-msgstr "Sinadura {{origin}}(e)n dago jada."
-
-msgid "sede.outcome.signedBodyUnknownOrigin"
-msgstr "Sinadura bidali da jada."
-
-#. No se deduce mirando: la aplicación sí tiene bandeja de recientes.
-msgid "sede.outcome.signedNote"
-msgstr "rFirmak ez du kopiarik gordetzen."
 
 msgid "sede.outcome.savedTitle"
 msgstr "Gordeta"
 
-msgid "sede.outcome.savedBody"
-msgstr ""
-"{{origin}}(e)k eskatzen zuen fitxategia aukeratu duzun lekuan gordeta dago "
-"jada."
-
-msgid "sede.outcome.savedBodyUnknownOrigin"
-msgstr "Fitxategia aukeratu duzun lekuan gordeta dago jada."
-
 msgid "sede.outcome.loadedTitle"
 msgstr "Kargatuta"
-
-msgid "sede.outcome.loadedBody"
-msgid_plural "sede.outcome.loadedBody"
-msgstr[0] "Fitxategi 1 bidali da {{origin}}(e)ra."
-msgstr[1] "{{count}} fitxategi bidali dira {{origin}}(e)ra."
-msgstr[2] "{{count}} fitxategi bidali dira {{origin}}(e)ra."
-
-msgid "sede.outcome.loadedBodyUnknownOrigin"
-msgid_plural "sede.outcome.loadedBodyUnknownOrigin"
-msgstr[0] "Fitxategi 1 bidali da."
-msgstr[1] "{{count}} fitxategi bidali dira."
-msgstr[2] "{{count}} fitxategi bidali dira."
-
-msgid "sede.outcome.batchBody"
-msgid_plural "sede.outcome.batchBody"
-msgstr[0] "Sortaren sinadura {{origin}}(e)n dago jada."
-msgstr[1] "Sortaren {{count}} sinadurak {{origin}}(e)n daude jada."
-msgstr[2] "Sortaren {{count}} sinadurak {{origin}}(e)n daude jada."
-
-msgid "sede.outcome.batchBodyUnknownOrigin"
-msgid_plural "sede.outcome.batchBodyUnknownOrigin"
-msgstr[0] "Sortaren sinadura bidali da jada."
-msgstr[1] "Sortaren {{count}} sinadurak bidali dira jada."
-msgstr[2] "Sortaren {{count}} sinadurak bidali dira jada."
 
 msgid "sede.outcome.cancelledTitle"
 msgstr "Sinadura bertan behera utzi duzu"
@@ -1569,20 +1389,11 @@ msgstr "Egoitzarentzako xehetasun teknikoa"
 msgid "sede.outcome.reportHint"
 msgstr "rFirmaren akatsa dela uste duzu?"
 
-msgid "sede.outcome.autoClose"
-msgstr "Bere kabuz itxiko da {{seconds}} s barru."
-
 msgid "sede.outcome.closeIn"
 msgstr "Itxi ({{seconds}})"
 
 msgid "sede.oldWebClient.title"
 msgstr "Orri hau zaharkituta dago"
-
-msgid "sede.oldWebClient.body"
-msgstr ""
-"Orriak rFirmarekin hitz egiten duen piezaren bertsio zahar bat erabiltzen "
-"du, eta akatsak izan ditzake edo baliteke segurua ez izatea. Sakatu Jarraitu "
-"aurrera egiteko; zerbait gaizki badoa, jakinarazi orria kudeatzen duenari."
 
 msgid "sede.oldWebClient.risk"
 msgstr "Akatsak izan ditzake edo baliteke segurua ez izatea."
@@ -1619,11 +1430,6 @@ msgstr ""
 msgid "sede.siteNotes.sha1"
 msgstr "Eskatu SHA256withRSA edo handiagoa."
 
-msgid "sede.refusalHints.sha1"
-msgstr ""
-"Egoitza honetan fidatzen bazara, SHA-1 onar dezakezu Hobespenak → Sinadura "
-"atalean eta egoitzatik berriro sinatu."
-
 msgid "sede.siteNotes.invoiceMultisignature"
 msgstr ""
 "FacturaE-k ez du kosinadurarik ez kontrasinadurarik onartzen; eskatu "
@@ -1637,33 +1443,8 @@ msgstr ""
 msgid "sede.noCertificate.noneTitle"
 msgstr "Ez duzu ziurtagiririk"
 
-msgid "sede.noCertificate.noneBody"
-msgstr "Bat instalatuta izan behar duzu {{origin}}(e)n sinatzeko."
-
-msgid "sede.noCertificate.noneBodyUnknownOrigin"
-msgstr "Bat instalatuta izan behar duzu sinatzeko."
-
-msgid "sede.noCertificate.noneHint"
-msgstr "Lor ezazu FNMTn edo zure autonomia-erkidegoan."
-
 msgid "sede.noCertificate.install"
 msgstr "Instalatu ziurtagiri bat…"
-
-#. La sede excluyó todos los certificados de la persona. Se dice cuántos tiene
-#. —estado de su almacén— y nunca cuáles descartó la sede ni por qué.
-msgid "sede.noCertificate.excludedTitle"
-msgid_plural "sede.noCertificate.excludedTitle"
-msgstr[0] "{{origin}}(e)k ez du zure ziurtagiria onartzen"
-msgstr[1] ""
-"{{origin}}(e)k ez du zure {{count}} ziurtagirietako bat ere onartzen"
-msgstr[2] ""
-"{{origin}}(e)k ez du zure {{count}} ziurtagirietako bat ere onartzen"
-
-msgid "sede.noCertificate.excludedTitleUnknownOrigin"
-msgid_plural "sede.noCertificate.excludedTitleUnknownOrigin"
-msgstr[0] "Ez da zure ziurtagiria onartzen"
-msgstr[1] "Ez da zure {{count}} ziurtagirietako bat ere onartzen"
-msgstr[2] "Ez da zure {{count}} ziurtagirietako bat ere onartzen"
 
 msgid "sede.noCertificate.notAcceptedTitle"
 msgid_plural "sede.noCertificate.notAcceptedTitle"
@@ -1676,9 +1457,6 @@ msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "Zure --filter-ak ez du zure ziurtagiria uzten"
 msgstr[1] "Zure --filter-ak ez du zure {{count}} ziurtagirietako bat ere uzten"
 msgstr[2] "Zure --filter-ak ez du zure {{count}} ziurtagirietako bat ere uzten"
-
-msgid "sede.noCertificate.excludedBody"
-msgstr "Instalatu beste ziurtagiri bat, edo itxi eta jarraitu egoitzatik."
 
 #. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
 msgid "sede.origin.asks"

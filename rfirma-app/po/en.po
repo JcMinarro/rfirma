@@ -413,12 +413,6 @@ msgstr "Composing the visible signature…"
 msgid "viewer.stamp.failed"
 msgstr "We couldn't draw the visible signature"
 
-msgid "panel.document.pages"
-msgid_plural "panel.document.pages"
-msgstr[0] "1 page"
-msgstr[1] "{{count}} pages"
-msgstr[2] "{{count}} pages"
-
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
 msgid_plural "panel.previousSignatures.alongside"
@@ -1281,14 +1275,8 @@ msgstr "They now open rFirma."
 msgid "sede.waiting.title"
 msgstr "Connecting to the site"
 
-msgid "sede.waiting.lead"
-msgstr "A page wants you to sign a document."
-
 msgid "sede.unreachable.title"
 msgstr "The request hasn't arrived"
-
-msgid "sede.unreachable.lead"
-msgstr "The browser permission is usually missing."
 
 msgid "sede.repair.caMissing"
 msgstr "The rFirma local CA is missing."
@@ -1314,112 +1302,15 @@ msgstr ""
 msgid "sede.repair.retry"
 msgstr "Once allowed, go back to the site and press Retry."
 
-msgid "sede.consent.asksSignature"
-msgstr "{{origin}} asks for your signature."
-
-msgid "sede.consent.asksIdentity"
-msgstr "{{origin}} asks for your identity data."
-
-#. La misma frase que "asksSignature", con el formato del #530 nombrado.
-msgid "sede.consent.asksSignatureOf"
-msgstr "{{origin}} asks for your signature on {{what}}."
-
-#. Qué es lo que la sede pide firmar, según el formato de la petición (#530).
-msgid "sede.consent.signingKind.pdf"
-msgstr "a PDF document"
-
-msgid "sede.consent.signingKind.challenge"
-msgstr "an authentication challenge"
-
-msgid "sede.consent.signingKind.xml"
-msgstr "an XML document"
-
-msgid "sede.consent.signingKind.invoice"
-msgstr "an electronic invoice"
-
-#. Misma forma que "asksSignature", con una página sin identificar como sujeto.
-msgid "sede.consent.unknownOriginSignature"
-msgstr "An unidentified page asks for your signature."
-
-msgid "sede.consent.terminalTitle"
-msgstr "Sign {{name}}"
-
-msgid "sede.consent.unknownOriginIdentity"
-msgstr "An unidentified page asks for your identity data."
-
 #. El PDF no trae título en sus metadatos, y el nombre de fichero no viaja
 #. nunca en la petición.
 msgid "sede.consent.untitled"
 msgstr "A PDF with no title"
 
-#. Nunca se enumera lo que la sede descartó ni con qué criterio.
-msgid "sede.consent.narrowed"
-msgstr "{{origin}} has narrowed down the valid certificates."
-
-msgid "sede.consent.narrowedUnknownOrigin"
-msgstr "The site has narrowed down the valid certificates."
-
-msgid "sede.consent.sha1Allowed"
-msgstr ""
-"This site asks for SHA-1, an obsolete algorithm. You have allowed it in "
-"Preferences."
-
-msgid "sede.consent.sha1ToAllowTitle"
-msgstr "Less secure signature"
-
-msgid "sede.consent.sha1ToAllow"
-msgstr ""
-"This site uses SHA-1, an old, less secure signing method. Sign only if you "
-"trust it."
-
-msgid "sede.consent.signOnce"
-msgstr "Sign just this once"
-
 msgid "sede.consent.willSend"
 msgstr ""
 "Your name, your ID number, the certificate issuer and its serial number will "
 "be sent."
-
-#. Contrafirma: se firma sobre las firmas que el documento ya trae, y el
-#. objetivo dice sobre cuáles.
-msgid "sede.consent.counterSignatureTree"
-msgstr ""
-"It's already signed: yours will countersign every signature it carries."
-
-msgid "sede.consent.counterSignatureLeafs"
-msgstr "It's already signed: yours will countersign its latest signatures."
-
-#. Cofirma: se firma junto a las firmas que el documento ya trae, sin
-#. contarlas, porque las cuenta el aviso de firmas previas de debajo.
-msgid "sede.consent.coSignature"
-msgstr ""
-"It's already signed: yours will be a co-signature alongside the signatures "
-"it carries."
-
-msgid "sede.consent.batchTitle"
-msgid_plural "sede.consent.batchTitle"
-msgstr[0] "Batch of 1 signature"
-msgstr[1] "Batch of {{count}} signatures"
-msgstr[2] "Batch of {{count}} signatures"
-
-msgid "sede.consent.batchNote"
-msgstr ""
-"The documents stay at the site: rFirma signs them without downloading them."
-
-msgid "sede.consent.batchItemLabel"
-msgstr "{{what}} ({{round}})"
-
-msgid "sede.consent.localBatchRoundSign"
-msgstr "signature"
-
-msgid "sede.consent.localBatchRoundCosign"
-msgstr "co-signature"
-
-msgid "sede.consent.localBatchRoundCounterTree"
-msgstr "countersignature of every signature"
-
-msgid "sede.consent.localBatchRoundCounterLeafs"
-msgstr "countersignature of the latest signatures"
 
 msgid "actions.sign"
 msgstr "Sign"
@@ -1450,34 +1341,17 @@ msgstr ""
 msgid "sede.marking.title"
 msgstr "Mark where your signature goes"
 
-msgid "sede.marking.hint"
-msgstr ""
-"The page asks for your signature to be visible on the document. Draw the box "
-"on the page with the mouse."
-
 msgid "sede.marking.unreadable"
 msgstr "The document could not be opened to mark where the signature goes."
 
-msgid "sede.signing.with"
-msgstr "With {{holder}} · {{idNumber}}."
-
-msgid "sede.returning.title"
-msgstr "Sending the signature to {{origin}}"
-
 msgid "sede.returning.titleUnknownOrigin"
 msgstr "Sending the signature"
-
-msgid "sede.returning.body"
-msgstr "Don't close the window."
 
 msgid "sede.saving.title"
 msgstr "Saving {{filename}}"
 
 msgid "sede.saving.titleUnnamed"
 msgstr "Saving the file"
-
-msgid "sede.saving.lead"
-msgstr "Choose where to save it in the system dialog."
 
 msgid "sede.saving.leadUnwritable"
 msgstr ""
@@ -1490,60 +1364,14 @@ msgstr "Loading a file"
 msgid "sede.loading.titleMany"
 msgstr "Loading several files"
 
-msgid "sede.loading.lead"
-msgstr "Choose the file you want to send in the system dialog."
-
-msgid "sede.loading.leadMany"
-msgstr "Choose the files you want to send in the system dialog."
-
 msgid "sede.outcome.signedTitle"
 msgstr "Signed and sent"
-
-msgid "sede.outcome.signedBody"
-msgstr "The signature is already at {{origin}}."
-
-msgid "sede.outcome.signedBodyUnknownOrigin"
-msgstr "The signature has already been sent."
-
-#. No se deduce mirando: la aplicación sí tiene bandeja de recientes.
-msgid "sede.outcome.signedNote"
-msgstr "rFirma keeps no copy."
 
 msgid "sede.outcome.savedTitle"
 msgstr "Saved"
 
-msgid "sede.outcome.savedBody"
-msgstr "The file {{origin}} asked for is now saved where you chose."
-
-msgid "sede.outcome.savedBodyUnknownOrigin"
-msgstr "The file is now saved where you chose."
-
 msgid "sede.outcome.loadedTitle"
 msgstr "Loaded"
-
-msgid "sede.outcome.loadedBody"
-msgid_plural "sede.outcome.loadedBody"
-msgstr[0] "1 file has been sent to {{origin}}."
-msgstr[1] "{{count}} files have been sent to {{origin}}."
-msgstr[2] "{{count}} files have been sent to {{origin}}."
-
-msgid "sede.outcome.loadedBodyUnknownOrigin"
-msgid_plural "sede.outcome.loadedBodyUnknownOrigin"
-msgstr[0] "1 file has been sent."
-msgstr[1] "{{count}} files have been sent."
-msgstr[2] "{{count}} files have been sent."
-
-msgid "sede.outcome.batchBody"
-msgid_plural "sede.outcome.batchBody"
-msgstr[0] "The batch signature is now at {{origin}}."
-msgstr[1] "The batch's {{count}} signatures are now at {{origin}}."
-msgstr[2] "The batch's {{count}} signatures are now at {{origin}}."
-
-msgid "sede.outcome.batchBodyUnknownOrigin"
-msgid_plural "sede.outcome.batchBodyUnknownOrigin"
-msgstr[0] "The batch signature has been sent."
-msgstr[1] "The batch's {{count}} signatures have been sent."
-msgstr[2] "The batch's {{count}} signatures have been sent."
 
 msgid "sede.outcome.cancelledTitle"
 msgstr "You cancelled the signature"
@@ -1557,20 +1385,11 @@ msgstr "Technical detail for the site"
 msgid "sede.outcome.reportHint"
 msgstr "Does this look like an rFirma bug?"
 
-msgid "sede.outcome.autoClose"
-msgstr "It'll close by itself in {{seconds}} s."
-
 msgid "sede.outcome.closeIn"
 msgstr "Close ({{seconds}})"
 
 msgid "sede.oldWebClient.title"
 msgstr "This page is out of date"
-
-msgid "sede.oldWebClient.body"
-msgstr ""
-"The page uses an old version of the part that talks to rFirma, and it may "
-"have bugs or not be secure. Press Continue to proceed; if something goes "
-"wrong, tell whoever runs the page."
 
 msgid "sede.oldWebClient.risk"
 msgstr "It may have errors or not be secure."
@@ -1606,11 +1425,6 @@ msgstr ""
 msgid "sede.siteNotes.sha1"
 msgstr "Ask for SHA256withRSA or higher."
 
-msgid "sede.refusalHints.sha1"
-msgstr ""
-"If you trust this site, you can allow SHA-1 in Preferences → Signing and "
-"sign again from the site."
-
 msgid "sede.siteNotes.invoiceMultisignature"
 msgstr ""
 "FacturaE doesn't support cosigning or countersigning; ask for a simple "
@@ -1624,31 +1438,8 @@ msgstr ""
 msgid "sede.noCertificate.noneTitle"
 msgstr "You don't have any certificate"
 
-msgid "sede.noCertificate.noneBody"
-msgstr "You need one installed to sign at {{origin}}."
-
-msgid "sede.noCertificate.noneBodyUnknownOrigin"
-msgstr "You need one installed to sign."
-
-msgid "sede.noCertificate.noneHint"
-msgstr "Get one from the FNMT or from your regional government."
-
 msgid "sede.noCertificate.install"
 msgstr "Install a certificate…"
-
-#. La sede excluyó todos los certificados de la persona. Se dice cuántos tiene
-#. —estado de su almacén— y nunca cuáles descartó la sede ni por qué.
-msgid "sede.noCertificate.excludedTitle"
-msgid_plural "sede.noCertificate.excludedTitle"
-msgstr[0] "{{origin}} does not accept your certificate"
-msgstr[1] "{{origin}} accepts none of your {{count}} certificates"
-msgstr[2] "{{origin}} accepts none of your {{count}} certificates"
-
-msgid "sede.noCertificate.excludedTitleUnknownOrigin"
-msgid_plural "sede.noCertificate.excludedTitleUnknownOrigin"
-msgstr[0] "Your certificate isn't accepted"
-msgstr[1] "None of your {{count}} certificates are accepted"
-msgstr[2] "None of your {{count}} certificates are accepted"
 
 msgid "sede.noCertificate.notAcceptedTitle"
 msgid_plural "sede.noCertificate.notAcceptedTitle"
@@ -1661,9 +1452,6 @@ msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "Your --filter leaves out your certificate"
 msgstr[1] "Your --filter leaves none of your {{count}} certificates"
 msgstr[2] "Your --filter leaves none of your {{count}} certificates"
-
-msgid "sede.noCertificate.excludedBody"
-msgstr "Install another certificate, or close and carry on from the site."
 
 #. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
 msgid "sede.origin.asks"

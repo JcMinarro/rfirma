@@ -1,31 +1,25 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
-import * as confirmModule from "./SedeConfirm.stories";
-import * as consentModule from "./SedeConsent.stories";
-import * as markingModule from "./SedeMarking.stories";
-import * as noCertificateModule from "./SedeNoCertificate.stories";
-import * as oldWebClientModule from "./SedeOldWebClient.stories";
-import * as outcomeModule from "./SedeOutcome.stories";
-import * as signingModule from "./SedeSigning.stories";
-import * as waitingModule from "./SedeWaiting.stories";
 import { SedeWindow } from "./SedeWindow";
+import {
+  Consent,
+  NoneInstalled,
+  OldWebClient,
+  Returning,
+  ShadowAttackSuspect,
+  Signed,
+  Signing,
+  Unreachable,
+  UnreadableDocument,
+  Waiting,
+} from "./testing/fixtures/sedeErrands";
 import { sedeErrand } from "./testing/fixtures/sedeView";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: Escape es el botón de cancelar o cerrar de cada momento, e Intro su acción principal. */
-
-const { OldWebClient } = composeStories(oldWebClientModule);
-const { Waiting, Unreachable } = composeStories(waitingModule);
-const { Consent } = composeStories(consentModule);
-const { ShadowAttackSuspect } = composeStories(confirmModule);
-const { Signing, Returning } = composeStories(signingModule);
-const { NoneInstalled } = composeStories(noCertificateModule);
-const { Signed } = composeStories(outcomeModule);
-const { UnreadableDocument } = composeStories(markingModule);
 
 const LocalCaMissing = {
   args: {},
