@@ -2,11 +2,15 @@
 
 import type { TFunction } from "i18next";
 import type { Certificate } from "../signing/certificate";
-import type { PreviousSignaturesReport } from "../signing/previousSignatures";
+import {
+  NO_PREVIOUS_SIGNATURES,
+  type PreviousSignaturesReport,
+} from "../signing/previousSignatures";
 import { sameSignerNotice } from "../signing/sameSignerNotice";
 import type { PdfDocument } from "../viewer/pdf";
+import type { ErrandStage, SiteDocument } from "./errand";
 
-/** Lo que se va a firmar: documentos, huellas que calculó la sede, un reto de autenticación o un lote remoto del que solo se sabe cuántos son. */
+/** Lo que se va a firmar: documentos, huellas que calculó la sede, un reto de autenticación o un lote, remoto o local, del que solo se sabe cuántos son. */
 export type Received =
   | { kind: "documents"; documents: readonly ReceivedDocument[] }
   | { kind: "digests"; digests: readonly ReceivedDigest[] }
@@ -96,6 +100,36 @@ export function allSignaturesOf(
     signature,
     ...allSignaturesOf(signature.countersignatures),
   ]);
+}
+
+/** Lo recibido en el consentimiento, o `null` cuando la sede pide los datos y no hay nada que firmar. */
+export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Received | null {
+  if (stage.signs !== null) return { kind: "remoteBatch", count: stage.signs };
+  switch (stage.signing) {
+    case null:
+      return null;
+    case "challenge":
+      return { kind: "challenge" };
+    case "pdf":
+    case "xml":
+    case "invoice":
+      return { kind: "documents", documents: [consentedDocument(stage.document)] };
+  }
+}
+
+const CONSENTED_DOCUMENT_ID = "document";
+
+/** El documento que se consiente, sin sus bytes ni su huella, que no llegan al consentimiento. */
+function consentedDocument(document: SiteDocument | null): ReceivedDocument {
+  const title = document?.title ?? null;
+  return {
+    id: CONSENTED_DOCUMENT_ID,
+    name: title?.trim() ? title : null,
+    content: { kind: "none" },
+    sha256: "",
+    knownType: true,
+    previousSignatures: document?.previousSignatures ?? NO_PREVIOUS_SIGNATURES,
+  };
 }
 
 /** Cuántos documentos, huellas o retos se firman. */
