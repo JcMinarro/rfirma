@@ -106,9 +106,11 @@ describe("the expandable site consent", () => {
     expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
   });
 
-  it("collapses with «Ocultar»", () => {
+  it("collapses with «Ocultar» as an icon alone", () => {
     renderWithCatalog(<ExpandedSeveralDocuments />);
-    expect(screen.getByRole("button", { name: "Ocultar" })).toBeInTheDocument();
+    const hide = screen.getByRole("button", { name: "Ocultar" });
+    expect(hide).toHaveAttribute("title", "Ocultar");
+    expect(hide).toHaveTextContent(/^$/);
   });
 
   it("says only what an authentication challenge is", () => {

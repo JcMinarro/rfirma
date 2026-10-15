@@ -1765,15 +1765,15 @@ msgstr[2] "{{count}} have signatures from other people"
 msgid "sede.received.signedByYouCount"
 msgid_plural "sede.received.signedByYouCount"
 msgstr[0] "You signed {{count}} with this certificate"
-msgstr[1] "You signed {{count}} with this certificate"
-msgstr[2] "You signed {{count}} with this certificate"
+msgstr[1] "{{count}} carry your signature with this certificate"
+msgstr[2] "{{count}} carry your signature with this certificate"
 
 #. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
 msgid "sede.received.signedByYouOtherCertificateCount"
 msgid_plural "sede.received.signedByYouOtherCertificateCount"
 msgstr[0] "You signed {{count}} with another certificate of yours"
-msgstr[1] "You signed {{count}} with another certificate of yours"
-msgstr[2] "You signed {{count}} with another certificate of yours"
+msgstr[1] "{{count}} carry your signature with another of your certificates"
+msgstr[2] "{{count}} carry your signature with another of your certificates"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"

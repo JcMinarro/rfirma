@@ -46,6 +46,14 @@
   white-space: nowrap;
 }
 
+.sede-received__hide {
+  flex: none;
+  width: 44px;
+  min-width: 44px;
+  margin-right: auto;
+  padding: 0;
+}
+
 .sede-received-wide {
   display: flex;
   flex: 1;
@@ -63,6 +71,6 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  width: 360px;
+  width: 400px;
   border-left: 1px solid var(--rf-border-subtle);
 }

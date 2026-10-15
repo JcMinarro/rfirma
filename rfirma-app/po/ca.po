@@ -1769,15 +1769,15 @@ msgstr[2] "{{count}} porten signatures d'altres persones"
 msgid "sede.received.signedByYouCount"
 msgid_plural "sede.received.signedByYouCount"
 msgstr[0] "{{count}} el vas signar tu amb aquest certificat"
-msgstr[1] "{{count}} els vas signar tu amb aquest certificat"
-msgstr[2] "{{count}} els vas signar tu amb aquest certificat"
+msgstr[1] "{{count}} porten la teva signatura amb aquest certificat"
+msgstr[2] "{{count}} porten la teva signatura amb aquest certificat"
 
 #. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
 msgid "sede.received.signedByYouOtherCertificateCount"
 msgid_plural "sede.received.signedByYouOtherCertificateCount"
 msgstr[0] "{{count}} el vas signar tu amb un altre certificat teu"
-msgstr[1] "{{count}} els vas signar tu amb un altre certificat teu"
-msgstr[2] "{{count}} els vas signar tu amb un altre certificat teu"
+msgstr[1] "{{count}} porten la teva signatura amb un altre certificat teu"
+msgstr[2] "{{count}} porten la teva signatura amb un altre certificat teu"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"

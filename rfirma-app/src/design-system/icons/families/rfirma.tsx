@@ -10,13 +10,23 @@ const chevronDown = stroked(OWN, <path d="M6 9l6 6 6-6" />);
 const check = stroked(OWN, <path d="M4 12.5 9.5 18 20 6" />, 3);
 const plus = stroked(OWN, <path d="M12 5v14M5 12h14" />);
 
+function sidePanel(chevron: string) {
+  return stroked(
+    OWN,
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2.5" />
+      <path d={`M8 4v16${chevron}`} />
+    </>,
+  );
+}
+
 export const RFIRMA_ICONS: IconFamily = {
   name: "rFirma",
   glyphs: {
     ...SHARED_GLYPHS,
     add: plus,
     close: stroked(OWN, <path d="M6 6l12 12M18 6 6 18" />, 1.8),
-    collapseSide: chevronRight,
+    collapseSide: sidePanel("M13 8l4 4-4 4"),
     collapsed: chevronRight,
     copy: stroked(
       OWN,
@@ -41,7 +51,7 @@ export const RFIRMA_ICONS: IconFamily = {
         <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
       </>,
     ),
-    expandSide: chevronLeft,
+    expandSide: sidePanel("M17 8l-4 4 4 4"),
     expanded: chevronDown,
     externalLink: stroked(
       OWN,

@@ -60,7 +60,7 @@ describe("ReceivedSummary", () => {
     const documents = withYourSignature(BATCH_DOCUMENTS, yourSignature("sameCertificate"));
     renderWithCatalog(<ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^1 tiene una firma que no es válida\. 2 los firmaste tú con este certificado\. 3 traen firmas de otras personas\.$/,
+      /^1 tiene una firma que no es válida\. 2 llevan tu firma con este certificado\. 3 traen firmas de otras personas\.$/,
     );
   });
 
@@ -68,7 +68,7 @@ describe("ReceivedSummary", () => {
     const documents = withYourSignature(BATCH_DOCUMENTS, yourSignature("otherCertificate"));
     renderWithCatalog(<ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "2 los firmaste tú con otro certificado tuyo.",
+      "2 llevan tu firma con otro certificado tuyo.",
     );
   });
 
@@ -79,7 +79,7 @@ describe("ReceivedSummary", () => {
     );
     renderWithCatalog(<ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} />);
     expect(screen.getByRole("status")).toBeInTheDocument();
-    expect(bold()).toBe("2 los firmaste tú con este certificado.");
+    expect(bold()).toBe("2 llevan tu firma con este certificado.");
   });
 
   it("says only that you signed a document whose signatures are all yours", () => {

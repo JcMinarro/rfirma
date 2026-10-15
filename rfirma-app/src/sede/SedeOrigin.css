@@ -12,7 +12,9 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
+  font-size: var(--rf-ui-size);
   font-weight: var(--rf-ui-strong-weight);
+  line-height: var(--rf-ui-leading);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

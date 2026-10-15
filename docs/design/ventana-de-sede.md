@@ -267,6 +267,10 @@ que solo existía para ellas.
 - **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en
   la ampliada ocupan el mismo sitio, y la cuenta atrás de Firmar es la de
   siempre: no se reinicia al ampliar ni al cambiar de documento.
+- **La columna de la ampliada mide 400 px y «Ocultar» es solo su icono**, con
+  «Ocultar» como nombre accesible y como `title`, siempre y no solo con SHA-1:
+  así el pie cabe en una línea con «Firmar solo esta vez» y su cuenta atrás, y
+  no cambia de forma. El visor se queda con el resto de los 1080 px.
 
 Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
 huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
@@ -278,6 +282,10 @@ documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, as
 tiene que depender del tipo o ser neutro. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
 firmas previas como aviso compacto dejan de ser ciertas.
+
+- **Antes de implementar, una persona nativa revisa las traducciones** de las
+  cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
+  al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
 
 ### Marcar el área
 

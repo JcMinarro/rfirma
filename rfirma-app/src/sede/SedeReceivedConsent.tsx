@@ -66,7 +66,7 @@ export function SedeConsentCompact({
         <>
           {documents > 0 && (
             <Button variant="ghost" className="sede-received__view" onClick={onExpand}>
-              <Icon name="expandSide" size={16} strokeWidth={2} />
+              <Icon name="expandSide" size={20} />
               {t("sede.consent.viewDocuments", { count: documents })}
             </Button>
           )}
@@ -102,7 +102,7 @@ export function SedeConsentCompact({
   );
 }
 
-/** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 360 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
+/** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 400 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
 export function SedeConsentExpanded({
   documents,
   defaultDocument,
@@ -144,9 +144,14 @@ export function SedeConsentExpanded({
           onEscape={basics.onCancel}
           footer={
             <>
-              <Button variant="ghost" className="sede-received__view" onClick={onCollapse}>
-                {t("sede.consent.hideDocuments")}
-                <Icon name="collapseSide" size={16} strokeWidth={2} />
+              <Button
+                variant="ghost"
+                className="sede-received__hide"
+                aria-label={t("sede.consent.hideDocuments")}
+                title={t("sede.consent.hideDocuments")}
+                onClick={onCollapse}
+              >
+                <Icon name="collapseSide" size={20} />
               </Button>
               {consent.footer}
             </>

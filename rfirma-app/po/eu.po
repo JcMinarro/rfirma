@@ -1780,15 +1780,15 @@ msgstr[2] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte"
 msgid "sede.received.signedByYouCount"
 msgid_plural "sede.received.signedByYouCount"
 msgstr[0] "Dokumentu bat zeuk sinatu zenuen ziurtagiri honekin"
-msgstr[1] "{{count}} dokumentu zeuk sinatu zenituen ziurtagiri honekin"
-msgstr[2] "{{count}} dokumentu zeuk sinatu zenituen ziurtagiri honekin"
+msgstr[1] "{{count}} dokumentuk zure sinadura daramate ziurtagiri honekin"
+msgstr[2] "{{count}} dokumentuk zure sinadura daramate ziurtagiri honekin"
 
 #. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
 msgid "sede.received.signedByYouOtherCertificateCount"
 msgid_plural "sede.received.signedByYouOtherCertificateCount"
 msgstr[0] "Dokumentu bat zeuk sinatu zenuen beste ziurtagiri batekin"
-msgstr[1] "{{count}} dokumentu zeuk sinatu zenituen beste ziurtagiri batekin"
-msgstr[2] "{{count}} dokumentu zeuk sinatu zenituen beste ziurtagiri batekin"
+msgstr[1] "{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
+msgstr[2] "{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"
