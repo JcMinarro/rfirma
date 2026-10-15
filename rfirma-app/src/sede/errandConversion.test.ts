@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import type { Errand } from "./errand";
 import { errandOf, refusedBy } from "./errandConversion";
-import type { SiteErrandView } from "./siteErrandView";
+import type { SiteErrandView, SiteStageView } from "./siteErrandView";
 import { ASKING_TO_SIGN, certificate, watched } from "./testing/fixtures/siteErrands";
 
 /**
@@ -25,7 +25,12 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
   it("turns an identity request into a consent with no document", () => {
     const view: SiteErrandView = {
       origin: "sede.ejemplo.gob.es",
-      stage: { kind: "askingForConsent", certificates: [certificate()] },
+      stage: {
+        kind: "askingForConsent",
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+      },
     };
 
     expect(errandOf(view)).toEqual<Errand>({
@@ -52,6 +57,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         kind: "askingToSignTheBatch",
         signs: 3,
         certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
         alreadyChosen: null,
         withoutAsking: false,
         sha1Allowed: false,
@@ -188,6 +195,49 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     expect(errandOf(view).stage).toEqual({ kind: "saving", filename: null });
   });
 
+  it.each<[string, SiteStageView]>([
+    [
+      "an identity request",
+      { kind: "askingForConsent", certificates: [certificate()], narrowed: true, notAccepted: 2 },
+    ],
+    [
+      "a signature request",
+      { ...ASKING_TO_SIGN.stage, narrowed: true, notAccepted: 2 } as SiteStageView,
+    ],
+    [
+      "a remote batch",
+      {
+        kind: "askingToSignTheBatch",
+        signs: 3,
+        certificates: [certificate()],
+        narrowed: true,
+        notAccepted: 2,
+        alreadyChosen: null,
+        withoutAsking: false,
+        sha1Allowed: false,
+        sha1ToAllow: false,
+      },
+    ],
+    [
+      "a local batch",
+      {
+        kind: "askingToSignTheLocalBatch",
+        items: [],
+        certificates: [certificate()],
+        narrowed: true,
+        notAccepted: 2,
+        alreadyChosen: null,
+        withoutAsking: false,
+        sha1Allowed: false,
+        sha1ToAllow: false,
+      },
+    ],
+  ])("carries that the site narrowed the certificates in %s", (_name, stage) => {
+    const errand = errandOf({ origin: "sede.ejemplo.gob.es", stage });
+
+    expect(errand.stage).toMatchObject({ kind: "consent", narrowed: true });
+  });
+
   it("turns a load request into one file or several", () => {
     const one: SiteErrandView = {
       origin: "sede.ejemplo.gob.es",
@@ -259,6 +309,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           signing,
           round: { kind: "cosign" },
           certificates: [certificate()],
+          narrowed: false,
+          notAccepted: 0,
           alreadyChosen: null,
           withoutAsking: false,
           sha1Allowed: false,
@@ -296,6 +348,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           signing: "pdf",
           round: { kind: "counter", target },
           certificates: [certificate()],
+          narrowed: false,
+          notAccepted: 0,
           alreadyChosen: null,
           withoutAsking: false,
           sha1Allowed: false,
@@ -335,6 +389,8 @@ describe("el lote local: el resumen de cada elemento", () => {
           { id: "003", signing: "xml", round: { kind: "sign" } },
         ],
         certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
         alreadyChosen: null,
         withoutAsking: false,
         sha1Allowed: false,

@@ -6,10 +6,8 @@ import { Button } from "../design-system/Button";
 import { Dialog } from "../design-system/Dialog";
 import { Row } from "../design-system/Row";
 import type { PreviousSignaturesReport } from "./previousSignatures";
-import { SignatureCards } from "./SignatureCards";
+import { SignatureCards, signaturesOverview } from "./SignatureCards";
 import "./SignaturesDialog.css";
-
-const FORMAT_NAMES = { pades: "PAdES", cades: "CAdES", xades: "XAdES" } as const;
 
 interface SignaturesDialogProps {
   report: PreviousSignaturesReport;
@@ -19,8 +17,6 @@ interface SignaturesDialogProps {
 /** El diálogo «Ver firmas» (docs/design/dialogo-ver-firmas.md), con una sola salida. */
 export function SignaturesDialog({ report, onClose }: SignaturesDialogProps) {
   const { t } = useTranslation();
-  const format = report.format ?? "pades";
-  const count = t("panel.signed.count", { count: report.signatures.length });
   const closeButton = useRef<HTMLButtonElement>(null);
 
   return (
@@ -33,9 +29,7 @@ export function SignaturesDialog({ report, onClose }: SignaturesDialogProps) {
     >
       <div className="signatures-dialog__head">
         <p className="rf-title">{t("panel.signed.title")}</p>
-        <p className="rf-body rf-text-muted">
-          {format === "unrecognized" ? count : `${FORMAT_NAMES[format]} · ${count}`}
-        </p>
+        <p className="rf-body rf-text-muted">{signaturesOverview(t, report)}</p>
       </div>
 
       <div className="signatures-dialog__scroll">

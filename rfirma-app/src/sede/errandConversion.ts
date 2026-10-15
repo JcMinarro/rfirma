@@ -99,9 +99,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         },
       };
     case "askingForConsent":
-      // Sin documento porque no lo hay: `selectcert` no manda ninguno. Y
-      // `narrowed` es `false` porque el backend no dice si la sede acotó la
-      // lista: lo que cruza son las filas ya cribadas y nunca el criterio.
+      // Sin documento porque no lo hay: `selectcert` no manda ninguno.
       return {
         kind: "consent",
         document: null,
@@ -109,7 +107,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: null,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: false,
         sha1ToAllow: false,
       };
@@ -121,7 +119,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: stage.signing,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };
@@ -139,7 +137,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: null,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };
@@ -153,7 +151,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: null,
         items: stage.items,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };

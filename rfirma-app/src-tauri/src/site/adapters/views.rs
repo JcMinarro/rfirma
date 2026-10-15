@@ -76,11 +76,13 @@ impl SiteErrandView {
     }
 
     /// Estado de solicitud de consentimiento para identificación.
-    pub fn asking_for_consent(certificates: &[ListedCertificate]) -> Self {
+    pub fn asking_for_consent(certificates: &[ListedCertificate], not_accepted: usize) -> Self {
         Self {
             origin: None,
             stage: SiteStageView::AskingForConsent {
                 certificates: rows_of(certificates),
+                narrowed: not_accepted > 0,
+                not_accepted,
             },
         }
     }
@@ -107,6 +109,7 @@ impl SiteErrandView {
     pub fn asking_to_sign_the_batch(
         signs: usize,
         certificates: &[ListedCertificate],
+        not_accepted: usize,
         already_chosen: Option<&str>,
         without_asking: bool,
         sha1_allowed: bool,
@@ -117,6 +120,8 @@ impl SiteErrandView {
             stage: SiteStageView::AskingToSignTheBatch {
                 signs,
                 certificates: rows_of(certificates),
+                narrowed: not_accepted > 0,
+                not_accepted,
                 already_chosen: already_chosen.map(str::to_owned),
                 without_asking,
                 sha1_allowed,
@@ -129,6 +134,7 @@ impl SiteErrandView {
     pub fn asking_to_sign_the_local_batch(
         items: &[LocalBatchItem],
         certificates: &[ListedCertificate],
+        not_accepted: usize,
         already_chosen: Option<&str>,
         without_asking: bool,
         sha1_allowed: bool,
@@ -139,6 +145,8 @@ impl SiteErrandView {
             stage: SiteStageView::AskingToSignTheLocalBatch {
                 items: items.iter().map(LocalBatchItemView::from).collect(),
                 certificates: rows_of(certificates),
+                narrowed: not_accepted > 0,
+                not_accepted,
                 already_chosen: already_chosen.map(str::to_owned),
                 without_asking,
                 sha1_allowed,
@@ -180,12 +188,16 @@ impl From<&Moment> for SiteErrandView {
     fn from(moment: &Moment) -> Self {
         match moment {
             Moment::Waiting => Self::waiting(),
-            Moment::AskingForConsent { certificates } => Self::asking_for_consent(certificates),
+            Moment::AskingForConsent {
+                certificates,
+                not_accepted,
+            } => Self::asking_for_consent(certificates, *not_accepted),
             Moment::AskingToSign {
                 document,
                 format,
                 round,
                 certificates,
+                not_accepted,
                 already_chosen,
                 without_asking,
                 sha1_allowed,
@@ -198,6 +210,8 @@ impl From<&Moment> for SiteErrandView {
                 signing: (*format).into(),
                 round: (*round).into(),
                 certificates: rows_of(certificates),
+                narrowed: *not_accepted > 0,
+                not_accepted: *not_accepted,
                 already_chosen: already_chosen.clone(),
                 without_asking: *without_asking,
                 sha1_allowed: *sha1_allowed,
@@ -210,6 +224,7 @@ impl From<&Moment> for SiteErrandView {
             Moment::AskingToSignTheBatch {
                 signs,
                 certificates,
+                not_accepted,
                 already_chosen,
                 without_asking,
                 sha1_allowed,
@@ -217,6 +232,7 @@ impl From<&Moment> for SiteErrandView {
             } => Self::asking_to_sign_the_batch(
                 *signs,
                 certificates,
+                *not_accepted,
                 already_chosen.as_deref(),
                 *without_asking,
                 *sha1_allowed,
@@ -225,6 +241,7 @@ impl From<&Moment> for SiteErrandView {
             Moment::AskingToSignTheLocalBatch {
                 items,
                 certificates,
+                not_accepted,
                 already_chosen,
                 without_asking,
                 sha1_allowed,
@@ -232,6 +249,7 @@ impl From<&Moment> for SiteErrandView {
             } => Self::asking_to_sign_the_local_batch(
                 items,
                 certificates,
+                *not_accepted,
                 already_chosen.as_deref(),
                 *without_asking,
                 *sha1_allowed,
@@ -366,9 +384,14 @@ crossing! {
         /// En espera de la petición de la sede.
         Waiting,
         /// Solicitud de consentimiento de identificación.
+        #[serde(rename_all = "camelCase")]
         AskingForConsent {
             /// Certificados disponibles para la selección.
             certificates: Vec<CertificateView>,
+            /// Si la sede acotó la lista: hay certificados de la persona que no acepta.
+            narrowed: bool,
+            /// Cuántos certificados de la persona no acepta la sede.
+            not_accepted: usize,
         },
         /// La persona marca sobre el PDF el área de la firma visible.
         MarkingTheArea {
@@ -392,6 +415,10 @@ crossing! {
             round: SignatureRoundView,
             /// Certificados disponibles para la selección.
             certificates: Vec<CertificateView>,
+            /// Si la sede acotó la lista: hay certificados de la persona que no acepta.
+            narrowed: bool,
+            /// Cuántos certificados de la persona no acepta la sede.
+            not_accepted: usize,
             /// Asa del certificado que ya está resuelto, si lo está.
             already_chosen: Option<String>,
             /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -414,6 +441,10 @@ crossing! {
             signs: usize,
             /// Certificados disponibles para la selección.
             certificates: Vec<CertificateView>,
+            /// Si la sede acotó la lista: hay certificados de la persona que no acepta.
+            narrowed: bool,
+            /// Cuántos certificados de la persona no acepta la sede.
+            not_accepted: usize,
             /// Asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
             already_chosen: Option<String>,
             /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -430,6 +461,10 @@ crossing! {
             items: Vec<LocalBatchItemView>,
             /// Certificados disponibles para la selección.
             certificates: Vec<CertificateView>,
+            /// Si la sede acotó la lista: hay certificados de la persona que no acepta.
+            narrowed: bool,
+            /// Cuántos certificados de la persona no acepta la sede.
+            not_accepted: usize,
             /// Asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
             already_chosen: Option<String>,
             /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.

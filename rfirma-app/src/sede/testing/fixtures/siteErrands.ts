@@ -151,6 +151,8 @@ export const ASKING_TO_SIGN: SiteErrandView = {
     signing: "pdf",
     round: { kind: "cosign" },
     certificates: [certificate()],
+    narrowed: false,
+    notAccepted: 0,
     alreadyChosen: null,
     withoutAsking: false,
     sha1Allowed: false,

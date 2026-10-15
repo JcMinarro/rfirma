@@ -217,6 +217,7 @@ describe("App, con un documento cerrado a más firmas", () => {
       name: remembered.holderName,
       idNumber: remembered.idNumber,
       organizationIdentifier: null,
+      entityName: null,
       issuer: remembered.issuer,
       certificateSerialNumber: remembered.certificateSerialNumber,
       signingTime: "2024-01-01T10:00:00.000Z",

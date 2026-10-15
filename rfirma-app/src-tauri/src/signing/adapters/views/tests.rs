@@ -72,3 +72,18 @@ fn the_report_view_says_whether_the_document_is_closed_to_signing() {
 
     assert_eq!(json["closed"], true);
 }
+
+#[test]
+fn the_signature_view_carries_the_organization_name_only_when_the_certificate_has_it() {
+    let named = DocumentSignature {
+        organization_name: Some("ENTIDAD DE PRUEBAS SA".to_owned()),
+        ..an_expired_signature()
+    };
+    let report = DocumentSignatures::new(vec![named, an_expired_signature()], false);
+
+    let json = serde_json::to_value(PreviousSignaturesReportView::from(report))
+        .expect("la vista serializa");
+
+    assert_eq!(json["signatures"][0]["entityName"], "ENTIDAD DE PRUEBAS SA");
+    assert!(json["signatures"][1]["entityName"].is_null());
+}

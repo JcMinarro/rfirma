@@ -400,6 +400,8 @@ fn consent_to_a_signature<E: FilterEngine, P: PolicyEngine>(
         Ok(accepted) => accepted,
         Err(step) => return step,
     };
+    let not_accepted = accepted.not_accepted;
+    let accepted = accepted.certificates;
 
     let document = match keep_the_document(desk, live, ask.document) {
         Ok(handle) => ReceivedDocument::kept_as(handle, ask.name.map(str::to_owned), ask.document),
@@ -428,6 +430,7 @@ fn consent_to_a_signature<E: FilterEngine, P: PolicyEngine>(
         algorithm: ask.algorithm,
         round: ask.round,
         certificates,
+        not_accepted,
         from_the_site,
         visible,
         filter: ask.filter.clone(),

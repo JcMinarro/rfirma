@@ -383,6 +383,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       name: String
       idNumber: String
       organizationIdentifier: Option<String>
+      entityName: Option<String>
       issuer: String
       certificateSerialNumber: String
       signingTime: Option<String>
@@ -427,12 +428,12 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
 
   pub enum SiteStageView   (serde: etiqueta "kind")
       Waiting
-      AskingForConsent { certificates: Vec<CertificateView> }
+      AskingForConsent { certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize }
       MarkingTheArea { document: String }
-      AskingToSign { document: String, name: Option<String>, detected: DocumentTypeView, sha256: String, signing: SigningKindView, round: SignatureRoundView, certificates: Vec<CertificateView>, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
+      AskingToSign { document: String, name: Option<String>, detected: DocumentTypeView, sha256: String, signing: SigningKindView, round: SignatureRoundView, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
       AskingToConfirm { messageCode: String }
-      AskingToSignTheBatch { signs: usize, certificates: Vec<CertificateView>, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
-      AskingToSignTheLocalBatch { items: Vec<LocalBatchItemView>, certificates: Vec<CertificateView>, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
+      AskingToSignTheBatch { signs: usize, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
+      AskingToSignTheLocalBatch { items: Vec<LocalBatchItemView>, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
       NoChannel { reason: NoChannelView }
       Outcome { outcome: SiteOutcomeView }
       NoCertificate { reason: NoCertificateView, owned: usize }

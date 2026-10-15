@@ -10,6 +10,8 @@ export interface PreviousSignature {
   idNumber: string;
   /** La entidad representada, si el certificado la lleva. */
   organizationIdentifier: string | null;
+  /** El nombre de la entidad representada, si el certificado lo lleva. */
+  entityName: string | null;
   /** La autoridad emisora del certificado. */
   issuer: string;
   /** Número de serie del certificado. */
