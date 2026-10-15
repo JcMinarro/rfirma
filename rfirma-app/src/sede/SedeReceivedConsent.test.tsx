@@ -232,10 +232,14 @@ describe("the expandable site consent", () => {
     expect(screen.getByText("Una página sin identificar")).toBeInTheDocument();
   });
 
+  it("names a terminal order without saying who asks", () => {
+    renderWithCatalog(<CompactOneDocument errand="terminal" />);
+    expect(screen.getByText("Una orden de terminal")).toBeInTheDocument();
+    expect(screen.queryByText("Te pide la firma")).not.toBeInTheDocument();
+  });
+
   it("signs a terminal order without download or viewer, but with its previous signatures", () => {
     renderWithCatalog(<CompactSeveralDocuments errand="terminal" />);
-    expect(screen.getByText("Te pide la firma")).toBeInTheDocument();
-    expect(screen.getByText("Una orden de terminal")).toBeInTheDocument();
     expect(screen.getByText("Vas a firmar 1 documento")).toBeInTheDocument();
     expect(screen.getByText(/^Trae firmas de otras personas\.$/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
