@@ -7,6 +7,7 @@ import {
   ASKING_TO_CONFIRM,
   ASKING_TO_SIGN,
   certificate,
+  DOCUMENT_SHA256,
   described,
   watched,
 } from "./testing/fixtures/siteErrands";
@@ -344,6 +345,9 @@ describe("los momentos que pone el adaptador", () => {
       outcome: {
         kind: "signed",
         document: {
+          name: "Solicitud.pdf",
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           title: "Solicitud",
           pages: 3,
           sizeBytes: 4096,
@@ -567,6 +571,9 @@ describe("la selección automática que pide la sede", () => {
       sha1ToAllow: false,
       kind: "askingToSign",
       document: "asa-opaca-1",
+      name: null,
+      detected: "pdf",
+      sha256: DOCUMENT_SHA256,
       signing: "pdf",
       round: { kind: "sign" },
       certificates: [certificate()],

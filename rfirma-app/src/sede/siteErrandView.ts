@@ -1,7 +1,7 @@
 //! Los tipos de lo que empuja el backend (`SiteErrandView`, `SiteStageView`) y de cómo acaban sus órdenes. Sin React.
 
 import type { Certificate } from "../signing/certificate";
-import type { LocalBatchItem, SignatureRound, SigningKind } from "./errand";
+import type { DocumentType, LocalBatchItem, SignatureRound, SigningKind } from "./errand";
 
 /**
  * **El trámite tal como lo emite el backend**: `commands::SiteErrandView`,
@@ -30,6 +30,12 @@ export type SiteStageView =
       kind: "askingToSign";
       /** El asa opaca con la que se lee el documento, nunca su ruta. */
       document: string;
+      /** El nombre que propone la sede, si propone alguno. */
+      name: string | null;
+      /** El tipo que rFirma detecta en los bytes. */
+      detected: DocumentType;
+      /** La huella SHA-256 de los bytes, en hexadecimal. */
+      sha256: string;
       /** Qué es lo que se pide firmar, según el formato de la petición. */
       signing: SigningKind;
       round: SignatureRound;

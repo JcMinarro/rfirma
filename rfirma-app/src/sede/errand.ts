@@ -25,6 +25,24 @@ export type SiteOperation =
   /** Sólo entregar la identidad: `selectcert`. No hay firma de por medio. */
   | "selectcert";
 
+/** El tipo de un documento según sus bytes; `unknown` se guarda como `.bin` y no se abre fuera. */
+export type DocumentType =
+  | "pdf"
+  | "xml"
+  | "png"
+  | "jpeg"
+  | "gif"
+  | "webp"
+  | "odt"
+  | "ods"
+  | "odp"
+  | "docx"
+  | "xlsx"
+  | "pptx"
+  | "zip"
+  | "text"
+  | "unknown";
+
 /**
  * Lo que el PDF dice **de sí mismo**, que es lo único que hay para nombrarlo.
  *
@@ -33,6 +51,12 @@ export type SiteOperation =
  * hay nombre de fichero ni ruta que enseñar, y fabricar uno sería inventarlo.
  */
 export interface SiteDocument {
+  /** El nombre que propone la sede, o `null` si no propone ninguno. */
+  name: string | null;
+  /** El tipo que rFirma detecta en los bytes, nunca el que diga la sede (ADR-0050). */
+  detected: DocumentType;
+  /** La huella SHA-256 de los bytes, en hexadecimal. */
+  sha256: string;
   /** El título de los metadatos del PDF, o `null` si no lo trae. */
   title: string | null;
   /** Cuántas páginas tiene. */

@@ -1307,6 +1307,15 @@ msgstr "Once allowed, go back to the site and press Retry."
 msgid "sede.consent.untitled"
 msgstr "A PDF with no title"
 
+msgid "sede.consent.untitledXml"
+msgstr "An XML with no title"
+
+msgid "sede.consent.untitledImage"
+msgstr "An image with no title"
+
+msgid "sede.consent.untitledDocument"
+msgstr "A document with no title"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Your name, your ID number, the certificate issuer and its serial number will "
@@ -1495,17 +1504,6 @@ msgstr "This site uses an insecure signing method"
 msgid "sede.received.signAnyway"
 msgstr "Sign anyway"
 
-#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
-msgid "sede.received.challenge"
-msgstr "You are signing an authentication challenge"
-
-#. Huellas que calculó la sede: se firma la referencia, no un documento.
-msgid "sede.received.digests"
-msgid_plural "sede.received.digests"
-msgstr[0] "You are signing 1 reference"
-msgstr[1] "You are signing {{count}} references"
-msgstr[2] "You are signing {{count}} references"
-
 msgid "sede.received.download"
 msgstr "Download"
 
@@ -1518,12 +1516,6 @@ msgid_plural "sede.received.downloadAllTitle"
 msgstr[0] "The document and its SHA-256 hash, in a .zip"
 msgstr[1] "The {{count}} documents and their SHA-256 hashes, in a .zip"
 msgstr[2] "The {{count}} documents and their SHA-256 hashes, in a .zip"
-
-msgid "sede.received.downloadDigests"
-msgstr "Download hashes"
-
-msgid "sede.received.downloadDigestsTitle"
-msgstr "The hashes and their algorithm, in a .txt"
 
 #. {{name}} es el nombre del documento.
 msgid "sede.received.actionsOf"

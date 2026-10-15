@@ -9,10 +9,8 @@ import type { PreviousSignaturesState, Received } from "./received";
 import { SedeConsentCompact, SedeConsentExpanded } from "./SedeReceivedConsent";
 import {
   BATCH_DOCUMENTS,
-  CHALLENGE,
   DESIGN_CERTIFICATES,
   LOCAL_BATCH_DOCUMENTS,
-  ONE_DIGEST,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   receivedActions,
@@ -30,7 +28,7 @@ const DOCUMENTS = {
   localBatch: LOCAL_BATCH_DOCUMENTS,
 };
 
-const WITHOUT_DOCUMENTS = { digest: ONE_DIGEST, challenge: CHALLENGE, remoteBatch: REMOTE_BATCH };
+const WITHOUT_DOCUMENTS = { remoteBatch: REMOTE_BATCH };
 
 const TERMINAL_DOCUMENT = "/home/ada/contratos/convenio.pdf";
 
@@ -171,8 +169,6 @@ const meta = {
         one: "Un documento",
         untitled: "Un documento sin título",
         localBatch: "Lote local",
-        digest: "Una huella",
-        challenge: "Un reto de autenticación",
         remoteBatch: "Lote remoto",
       },
     },
@@ -259,11 +255,6 @@ const expanded = {
     received: { control: "select", options: Object.keys(DOCUMENTS) },
   },
 } satisfies Story;
-
-export const CompactDigest: Story = {
-  decorators: compact,
-  args: { withOrigin: false, received: "digest" },
-};
 
 export const CompactRemoteBatch: Story = { decorators: compact, args: { received: "remoteBatch" } };
 

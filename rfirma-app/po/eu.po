@@ -1309,6 +1309,15 @@ msgstr "Baimendu ondoren, itzuli egoitzara eta sakatu Berriro saiatu."
 msgid "sede.consent.untitled"
 msgstr "Izenbururik gabeko PDF bat"
 
+msgid "sede.consent.untitledXml"
+msgstr "Izenbururik gabeko XML bat"
+
+msgid "sede.consent.untitledImage"
+msgstr "Izenbururik gabeko irudi bat"
+
+msgid "sede.consent.untitledDocument"
+msgstr "Izenbururik gabeko dokumentu bat"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Zure izena, zure IFZa, ziurtagiriaren jaulkitzailea eta serie-zenbakia "
@@ -1500,17 +1509,6 @@ msgstr "Egoitza honek sinatzeko metodo ez oso segurua erabiltzen du"
 msgid "sede.received.signAnyway"
 msgstr "Sinatu hala ere"
 
-#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
-msgid "sede.received.challenge"
-msgstr "Autentifikazio-erronka bat sinatuko duzu"
-
-#. Huellas que calculó la sede: se firma la referencia, no un documento.
-msgid "sede.received.digests"
-msgid_plural "sede.received.digests"
-msgstr[0] "Erreferentzia 1 sinatuko duzu"
-msgstr[1] "{{count}} erreferentzia sinatuko dituzu"
-msgstr[2] "{{count}} erreferentzia sinatuko dituzu"
-
 msgid "sede.received.download"
 msgstr "Deskargatu"
 
@@ -1523,12 +1521,6 @@ msgid_plural "sede.received.downloadAllTitle"
 msgstr[0] "Dokumentua eta haren SHA-256 laburpena, .zip batean"
 msgstr[1] "{{count}} dokumentuak eta haien SHA-256 laburpenak, .zip batean"
 msgstr[2] "{{count}} dokumentuak eta haien SHA-256 laburpenak, .zip batean"
-
-msgid "sede.received.downloadDigests"
-msgstr "Deskargatu laburpenak"
-
-msgid "sede.received.downloadDigestsTitle"
-msgstr "Laburpenak eta haien algoritmoa, .txt batean"
 
 #. {{name}} es el nombre del documento.
 msgid "sede.received.actionsOf"

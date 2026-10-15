@@ -141,19 +141,35 @@ pub fn publish_the_moment(app: &tauri::AppHandle) {
     let Some(moment) = live.moment() else {
         return;
     };
+    if !can_expand(&moment) {
+        live.expand_the_window(false);
+    }
     if let Some(window) = app.get_webview_window(SITE_WINDOW) {
-        fit_to(&window, &moment);
+        fit_to(&window, &moment, live.window_is_expanded());
         let _ = window.emit(SITE_ERRAND, SiteErrandView::of(&moment, &live.origin()));
     }
 }
 
-/// Agranda la ventana para el área de la firma visible y la devuelve a su tamaño al salir.
-fn fit_to(window: &tauri::WebviewWindow, moment: &Moment) {
-    let (width, height) = if matches!(moment, Moment::MarkingTheArea { .. }) {
+/// Si el momento es un consentimiento de firma con documentos que se pueden ver.
+fn can_expand(moment: &Moment) -> bool {
+    matches!(
+        moment,
+        Moment::AskingToSign { .. } | Moment::AskingToSignTheLocalBatch { .. }
+    )
+}
+
+/// El tamaño que toma la ventana en el momento: ampliada al marcar el área, y al consentir solo si la persona la amplió.
+fn size_for(moment: &Moment, expanded: bool) -> (f64, f64) {
+    if matches!(moment, Moment::MarkingTheArea { .. }) || (can_expand(moment) && expanded) {
         AREA_SIZE
     } else {
         DIALOG_SIZE
-    };
+    }
+}
+
+/// Lleva la ventana al tamaño del momento, centrándola al crecer.
+fn fit_to(window: &tauri::WebviewWindow, moment: &Moment, expanded: bool) {
+    let (width, height) = size_for(moment, expanded);
     let scale = window.scale_factor().unwrap_or(1.0);
     let current = window
         .inner_size()
@@ -163,6 +179,18 @@ fn fit_to(window: &tauri::WebviewWindow, moment: &Moment) {
     }
     let _ = window.set_size(tauri::LogicalSize::new(width, height));
     let _ = window.center();
+}
+
+/// Amplía u oculta la ventana del consentimiento y la lleva al tamaño que le toca.
+pub fn expand_the_window(app: &tauri::AppHandle, expanded: bool) {
+    let live = &app.state::<SiteRoot>().errand;
+    live.expand_the_window(expanded);
+    let Some(moment) = live.moment() else {
+        return;
+    };
+    if let Some(window) = app.get_webview_window(SITE_WINDOW) {
+        fit_to(&window, &moment, expanded);
+    }
 }
 
 /// El buzón del canal: lo que llega de la sede va a la ventana y al trámite vivo.
@@ -245,3 +273,6 @@ pub(crate) fn with_the_desk<R>(
     };
     call(&desk, &site.errand)
 }
+
+#[cfg(test)]
+mod tests;

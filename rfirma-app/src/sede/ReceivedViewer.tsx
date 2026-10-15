@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { DocumentViewer } from "../viewer/DocumentViewer";
-import { type ReceivedDocument, receivedName } from "./received";
+import { hasKnownType, type ReceivedDocument, receivedName } from "./received";
 import { SignaturesStrip } from "./SignaturesStrip";
 import "./ReceivedViewer.css";
 
@@ -77,7 +77,7 @@ function Content({
             <Icon name="document" size={48} strokeWidth={1.2} />
             <p className="rf-body received-viewer__name">{name}</p>
             <p className="rf-body rf-text-muted">{t("sede.received.noPreview")}</p>
-            {document.knownType && onOpenWith && (
+            {hasKnownType(document) && onOpenWith && (
               <Button variant="ghost" onClick={() => onOpenWith(document)}>
                 <Icon name="externalLink" />
                 {t("sede.received.openWith")}
