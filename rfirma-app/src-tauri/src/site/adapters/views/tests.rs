@@ -364,17 +364,27 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
 }
 
 #[test]
-fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content() {
+fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha256() {
     assert_eq!(
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheLocalBatch {
             items: vec![
                 LocalBatchItem {
                     id: "001".to_owned(),
+                    document: ReceivedDocument::kept_as(
+                        "doc-1".to_owned(),
+                        Some("001".to_owned()),
+                        b"%PDF-1.7\n",
+                    ),
                     format: Format::Pades,
                     round: SignatureRound::First,
                 },
                 LocalBatchItem {
                     id: "002".to_owned(),
+                    document: ReceivedDocument::kept_as(
+                        "doc-2".to_owned(),
+                        Some("002".to_owned()),
+                        &[0x00, 0x01, 0x02],
+                    ),
                     format: Format::Cades,
                     round: SignatureRound::Again,
                 },
@@ -392,8 +402,24 @@ fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content(
             "stage": {
                 "kind": "askingToSignTheLocalBatch",
                 "items": [
-                    { "id": "001", "signing": "pdf", "round": { "kind": "sign" } },
-                    { "id": "002", "signing": "challenge", "round": { "kind": "cosign" } },
+                    {
+                        "id": "001",
+                        "document": "doc-1",
+                        "name": "001",
+                        "detected": "pdf",
+                        "sha256": "0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e",
+                        "signing": "pdf",
+                        "round": { "kind": "sign" },
+                    },
+                    {
+                        "id": "002",
+                        "document": "doc-2",
+                        "name": "002",
+                        "detected": "unknown",
+                        "sha256": "ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc",
+                        "signing": "challenge",
+                        "round": { "kind": "cosign" },
+                    },
                 ],
                 "certificates": [],
                 "narrowed": false,

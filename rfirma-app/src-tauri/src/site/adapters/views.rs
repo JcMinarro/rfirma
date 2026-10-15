@@ -13,9 +13,11 @@ use crate::identity::adapters::views::CertificateView;
 use crate::identity::domain::certificate::ListedCertificate;
 
 mod document_type;
+mod local_batch;
 mod outcome;
 
 pub use document_type::DocumentTypeView;
+pub use local_batch::LocalBatchItemView;
 pub use outcome::{NoCertificateView, RefusalSituationView, SiteOutcomeView};
 
 crossing! {
@@ -349,30 +351,6 @@ impl From<CounterTarget> for CounterTargetView {
         match target {
             CounterTarget::Tree => Self::Tree,
             CounterTarget::Leafs => Self::Leafs,
-        }
-    }
-}
-
-crossing! {
-    /// Un elemento del lote local tal como lo ve la ventana: ni su ruta ni su contenido cruzan.
-    #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-    #[serde(rename_all = "camelCase")]
-    pub struct LocalBatchItemView {
-        /// Identificador con el que la sede nombra el elemento.
-        pub id: String,
-        /// Qué es lo que se va a firmar.
-        pub signing: SigningKindView,
-        /// Tipo de firma solicitada sobre el elemento.
-        pub round: SignatureRoundView,
-    }
-}
-
-impl From<&LocalBatchItem> for LocalBatchItemView {
-    fn from(item: &LocalBatchItem) -> Self {
-        Self {
-            id: item.id.clone(),
-            signing: item.format.into(),
-            round: item.round.into(),
         }
     }
 }

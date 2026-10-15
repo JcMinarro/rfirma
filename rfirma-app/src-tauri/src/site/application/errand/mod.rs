@@ -136,6 +136,11 @@ fn remembered(live: &LiveErrand, step: ErrandStep) -> ErrandStep {
             live.remember_the_local_batch(state::PendingLocalBatch {
                 request: consent.request.clone(),
                 batch: consent.batch.clone(),
+                documents: consent
+                    .items
+                    .iter()
+                    .map(|item| item.document.handle.clone())
+                    .collect(),
                 chosen: None,
             })
         }
@@ -360,6 +365,7 @@ pub fn finish_the_local_batch<E: FilterEngine, P: PolicyEngine>(
                 &chosen,
                 secret,
                 batch,
+                &pending.documents,
                 desk.neighbours.sha1_allowed() || live.sha1_allowed_once(),
             )
         })

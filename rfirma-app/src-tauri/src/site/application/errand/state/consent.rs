@@ -45,6 +45,8 @@ pub(in crate::site::application::errand) struct PendingLocalBatch {
     pub(in crate::site::application::errand) request: BatchRequest,
     /// Las firmas del lote, o por qué no se pudieron leer.
     pub(in crate::site::application::errand) batch: Result<LocalBatch, Refusal>,
+    /// El asa del documento de paso de cada firma del lote, en su mismo orden.
+    pub(in crate::site::application::errand) documents: Vec<String>,
     /// El certificado que la persona consintió, una vez consentido.
     pub(in crate::site::application::errand) chosen: Option<TokenCertificate>,
 }
