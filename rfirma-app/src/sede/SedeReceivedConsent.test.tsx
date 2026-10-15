@@ -1,7 +1,7 @@
 import { composeStories } from "@storybook/react-vite";
-import { screen, within } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import * as stories from "./SedeConsent.stories";
 
@@ -102,6 +102,32 @@ describe("the expandable site consent", () => {
   it("shows an XML document as literal text", () => {
     renderWithCatalog(<ExpandedXmlDocument />);
     expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
+  });
+
+  it("shows in the viewer the document picked in the list", async () => {
+    renderWithCatalog(<ExpandedSeveralDocuments />);
+    expect(screen.queryByText(/<baremo convocatoria="FACHADAS-2026">/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Anexo II · Baremo.xml" }));
+
+    expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { current: true })).toHaveTextContent(
+      "Anexo II · Baremo.xml",
+    );
+  });
+
+  it("keeps the countdown when picking another document", () => {
+    vi.useFakeTimers();
+    try {
+      renderWithCatalog(<ExpandedSeveralDocuments countdown />);
+      act(() => vi.advanceTimersByTime(1000));
+
+      fireEvent.click(screen.getByRole("button", { name: "Anexo II · Baremo.xml" }));
+
+      expect(screen.getByRole("button", { name: "Firmar (2)" })).toBeDisabled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("collapses with «Ocultar» as an icon alone", () => {

@@ -4,14 +4,18 @@ import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
 import { consentActionKey, type Errand, type MarkedArea } from "./errand";
-import { receivedOf } from "./received";
+import { type ReceivedActions, receivedOf } from "./received";
 import { SedeAreaMarking } from "./SedeAreaMarking";
 import { SedeEnding } from "./SedeEnding";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
 import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
-import { SedeConsentCompact } from "./SedeReceivedConsent";
+import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import "./SedeWindow.css";
+
+const RECEIVED_ACTIONS: ReceivedActions = {
+  onCopy: (value) => void navigator.clipboard.writeText(value),
+};
 
 export interface SedeViewProps {
   errand: Errand;
@@ -29,6 +33,7 @@ export interface SedeViewProps {
   onInstallLocalCa: () => void;
   onDismissWarning: () => void;
   onOpenHelp?: () => void;
+  onExpandWindow: (expanded: boolean) => void;
 }
 
 /**
@@ -53,6 +58,7 @@ export function SedeView({
   onInstallLocalCa,
   onDismissWarning,
   onOpenHelp,
+  onExpandWindow,
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
@@ -88,7 +94,7 @@ export function SedeView({
           />
         )}
         {stage.kind === "consent" && (
-          <SedeConsentCompact
+          <SedeReceivedConsent
             origin={errand.origin}
             asks={asks}
             terminalDocument={errand.terminalOrder?.documentPath}
@@ -99,6 +105,8 @@ export function SedeView({
             narrowed={stage.narrowed}
             sha1ToAllow={stage.sha1ToAllow}
             countdown={consentCountdown}
+            actions={RECEIVED_ACTIONS}
+            onExpandWindow={onExpandWindow}
             onConsent={onConsent}
             onCancel={onCancel}
           />

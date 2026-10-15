@@ -25,11 +25,38 @@ export interface ReceivedDocument {
 }
 
 /** Lo que el visor pinta: el PDF paginado, el texto literal, la imagen o nada, porque no hay vista previa. */
-type DocumentContent =
+export type DocumentContent =
   | { kind: "pdf"; pdf: PdfDocument }
   | { kind: "text"; text: string }
   | { kind: "image"; mediaType: string; bytes: Uint8Array }
   | { kind: "none" };
+
+const IMAGE_MEDIA_TYPES: Partial<Record<DocumentType, string>> = {
+  png: "image/png",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+};
+
+/** Lo que el visor pinta de unos bytes según el tipo que rFirma detecta en ellos; un PDF que no se abre no tiene vista previa. */
+export async function contentOf(
+  detected: DocumentType,
+  bytes: Uint8Array,
+  loadPdf: (bytes: Uint8Array) => Promise<PdfDocument>,
+): Promise<DocumentContent> {
+  if (detected === "pdf") {
+    try {
+      return { kind: "pdf", pdf: await loadPdf(bytes) };
+    } catch {
+      return { kind: "none" };
+    }
+  }
+  if (detected === "xml" || detected === "text") {
+    return { kind: "text", text: new TextDecoder().decode(bytes) };
+  }
+  const mediaType = IMAGE_MEDIA_TYPES[detected];
+  return mediaType === undefined ? { kind: "none" } : { kind: "image", mediaType, bytes };
+}
 
 /** El nombre con que se enseña el documento: el suyo o, sin él, uno por defecto que dice lo que es. */
 export function receivedName(t: TFunction, document: ReceivedDocument): string {
@@ -57,11 +84,11 @@ export function hasKnownType(document: ReceivedDocument): boolean {
   return document.detected !== "unknown";
 }
 
-/** Lo que la persona puede hacer con lo recibido antes de firmarlo. */
+/** Lo que la persona puede hacer con lo recibido antes de firmarlo; sin una acción, no se ofrece. */
 export interface ReceivedActions {
-  onDownload: () => void;
-  onOpenWith: (document: ReceivedDocument) => void;
-  onSaveCopy: (document: ReceivedDocument) => void;
+  onDownload?: () => void;
+  onOpenWith?: (document: ReceivedDocument) => void;
+  onSaveCopy?: (document: ReceivedDocument) => void;
   onCopy: (value: string) => void;
 }
 
@@ -121,13 +148,13 @@ export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Re
 
 const CONSENTED_DOCUMENT_ID = "document";
 
-/** El documento que se consiente, sin sus bytes, que no llegan al consentimiento. */
+/** El documento que se consiente, con lo que el visor pinta de él. */
 function consentedDocument(document: SiteDocument): ReceivedDocument {
   const name = document.name?.trim() ? document.name : document.title;
   return {
     id: CONSENTED_DOCUMENT_ID,
     name: name?.trim() ? name : null,
-    content: { kind: "none" },
+    content: document.content,
     sha256: document.sha256,
     detected: document.detected,
     previousSignatures: document.previousSignatures,

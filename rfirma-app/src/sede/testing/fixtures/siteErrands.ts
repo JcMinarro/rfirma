@@ -64,6 +64,8 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
     describeDocument: fn(),
     openDocument: fn(),
     previousSignatures: fn(),
+    readContent: fn(),
+    expandWindow: fn(),
   };
   const commands: SiteCommands = {
     watch: (onView) => {
@@ -130,6 +132,11 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
       calls.previousSignatures(id);
       return NO_PREVIOUS_SIGNATURES;
     },
+    readContent: async (id, detected) => {
+      calls.readContent(id, detected);
+      return { kind: "pdf", pdf: opened };
+    },
+    expandWindow: async (expanded) => calls.expandWindow(expanded),
     ...overrides,
   };
 

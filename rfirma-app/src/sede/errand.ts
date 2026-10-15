@@ -5,6 +5,7 @@ import type { Certificate, ReaderNews } from "../signing/certificate";
 import type { SigningOrder } from "../signing/flow";
 import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import type { PdfDocument } from "../viewer/pdf";
+import type { DocumentContent } from "./received";
 
 /**
  * El trámite que abre una sede electrónica por `afirma://`, en el lado de la
@@ -71,6 +72,8 @@ export interface SiteDocument {
   round: SignatureRound;
   /** Las firmas que ya trae el documento, calculadas sobre el PDF real. */
   previousSignatures: PreviousSignaturesReport;
+  /** Lo que el visor de la ampliada pinta de sus bytes. */
+  content: DocumentContent;
 }
 
 /** Lo que puede hacer la persona tras un rechazo de la sede. */
@@ -391,6 +394,8 @@ export interface SiteErrandPort {
   installLocalCa(): Promise<void>;
   /** Descarta el aviso del cliente web antiguo; el trámite sigue esperando. */
   dismissWarning(): Promise<void>;
+  /** Amplía la ventana del consentimiento a 1080 × 660 para ver los documentos, o la devuelve a su tamaño. */
+  expandWindow(expanded: boolean): Promise<void>;
 }
 
 /**
@@ -412,6 +417,7 @@ export function noErrand(): SiteErrandPort {
     installCertificate: async () => {},
     installLocalCa: async () => {},
     dismissWarning: async () => {},
+    expandWindow: async () => {},
   };
 }
 

@@ -9,6 +9,7 @@ import {
   ASKING_TO_SIGN,
   certificate,
   DOCUMENT_SHA256,
+  opened,
   watched,
 } from "./testing/fixtures/siteErrands";
 
@@ -274,6 +275,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
             sizeBytes: 4096,
             round: { kind: "cosign" },
             previousSignatures: NO_PREVIOUS_SIGNATURES,
+            content: { kind: "pdf", pdf: opened },
           },
           signs: null,
           signing: "pdf",
@@ -287,6 +289,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     );
     expect(calls.describeDocument).toHaveBeenCalledWith("asa-opaca-1");
     expect(calls.previousSignatures).toHaveBeenCalledWith("asa-opaca-1");
+    expect(calls.readContent).toHaveBeenCalledWith("asa-opaca-1", "pdf");
   });
 
   it("turns the confirmation the original asks for into the confirming stage", async () => {

@@ -71,11 +71,11 @@ describe("2 · consent", () => {
     expect(screen.queryByText("001")).not.toBeInTheDocument();
   });
 
-  it("offers neither the documents nor their download", () => {
+  it("offers the document, but not its download yet", () => {
     const { port } = scriptedFrom(Consent);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
   });
 
