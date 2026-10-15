@@ -65,9 +65,16 @@ export function SedeConsentCompact({
       footer={
         <>
           {documents > 0 && (
-            <Button variant="ghost" className="sede-received__view" onClick={onExpand}>
+            <Button
+              variant="ghost"
+              className="sede-received__view"
+              title={t("sede.consent.viewDocuments", { count: documents })}
+              onClick={onExpand}
+            >
               <Icon name="expandSide" size={20} />
-              {t("sede.consent.viewDocuments", { count: documents })}
+              <span className="sede-received__view-label">
+                {t("sede.consent.viewDocuments", { count: documents })}
+              </span>
             </Button>
           )}
           {consent.footer}
@@ -258,12 +265,13 @@ function useConsent({
     ),
     footer: (
       <>
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" className="sede-received__steady" onClick={onCancel}>
           {t("actions.cancel")}
         </Button>
         <Button
           ref={button}
           variant="primary"
+          className="sede-received__steady"
           disabled={!ready}
           onClick={() => chosen !== null && onConsent(chosen.id)}
         >

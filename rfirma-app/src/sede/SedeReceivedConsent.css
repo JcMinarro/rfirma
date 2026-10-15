@@ -42,7 +42,24 @@
 }
 
 .sede-received__view {
+  flex: 0 1 auto;
+  min-width: 0;
   margin-right: auto;
+}
+
+.sede-received__view > svg {
+  flex: none;
+}
+
+.sede-received__view-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sede-received__steady {
+  flex: none;
   white-space: nowrap;
 }
 

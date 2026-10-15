@@ -41,6 +41,14 @@ describe("the expandable site consent", () => {
     expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
   });
 
+  it("keeps the whole «Ver documentos» as its title when the footer cuts it short", () => {
+    renderWithCatalog(<CompactSeveralDocuments />);
+    expect(screen.getByRole("button", { name: "Ver documentos" })).toHaveAttribute(
+      "title",
+      "Ver documentos",
+    );
+  });
+
   it("summarises the previous signatures of a batch without listing its documents", () => {
     renderWithCatalog(<CompactSeveralDocuments />);
     expect(screen.getByRole("alert")).toHaveTextContent(

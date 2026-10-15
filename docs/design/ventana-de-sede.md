@@ -271,6 +271,9 @@ que solo existía para ellas.
   «Ocultar» como nombre accesible y como `title`, siempre y no solo con SHA-1:
   así el pie cabe en una línea con «Firmar igualmente» y su cuenta atrás, y
   no cambia de forma. El visor se queda con el resto de los 1080 px.
+- **En el pie, la acción principal y «Cancelar» no ceden**: si no cabe todo,
+  cede «Ver documentos», que se corta con puntos suspensivos y conserva su icono
+  y el texto entero en el `title`.
 
 Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
 huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
