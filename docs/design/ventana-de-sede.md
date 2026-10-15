@@ -293,6 +293,71 @@ firmas previas como aviso compacto dejan de ser ciertas.
   cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
   al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
 
+### El resto de momentos con el esqueleto nuevo (diseño pendiente de implementar)
+
+Los demás momentos se rehacen sobre el esqueleto del consentimiento ampliable.
+Como él, las historias son provisionales y no cambian la ventana real; las
+decisiones de abajo sustituyen a las de su momento cuando se implementen.
+
+- **Un solo esqueleto en todos los momentos**: arriba la cabecera `SedeOrigin` de
+  56 px; el cuerpo, alineado a la izquierda, con el icono a la izquierda del
+  título, y abajo el pie fijo de 56 px. Las acciones ocupan los sitios del
+  consentimiento: «Cancelar» y la principal a la derecha, sin ceder, y a la
+  izquierda, donde va «Ver documentos», la secundaria, que cede con puntos
+  suspensivos. Nada va centrado, para que pasar de un momento a otro no mueva
+  la vista.
+- **La cabecera dice «Te pide la firma» o «Te pide tus datos» solo cuando es
+  verdad**: en el desenlace y al guardar o cargar lleva solo el nombre de la
+  sede, y con una orden de terminal, solo «Una orden de terminal», porque la
+  orden la escribe la propia persona.
+- **Los títulos ya no nombran la sede**: ya la nombra la cabecera.
+- **Ninguna frase explica lo obvio**: la interfaz no es un manual. Sobra lo que
+  repiten la cabecera, los botones o lo que se ve, como «La firma ya está en…»,
+  «rFirma no guarda copia», «Elige en el diálogo del sistema…», «Necesitas uno
+  instalado…» o «Consíguelo en la FNMT…».
+- **El desenlace es solo icono y título**, sin la fila del documento ni el
+  recuento, que ya se enseñaron al consentir. El cierre automático se ve en el
+  botón, «Cerrar (15)», que baja cada segundo, y no en la frase «Se cerrará
+  sola…».
+- **El rechazo lleva su frase y el detalle copiable en un `Admonition` neutro
+  con «Copiar»**. Desaparece la pista de permitir SHA-1 en Preferencias: en el
+  uso normal ya no se llega a ese rechazo, porque el consentimiento ofrece
+  «Firmar igualmente».
+- **Sin certificado, el título no nombra la sede**: «No acepta ninguno de tus
+  {{count}} certificados». El pie lleva «Volver a buscar» a la izquierda y
+  «Cancelar» e «Instalar un certificado…» a la derecha; con una orden de
+  terminal y todos excluidos, solo «Cerrar».
+- **El fallo al instalar es un `Admonition` de error sin «Copiar»**, porque
+  ese detalle no se lleva a ninguna sede.
+- **En la espera, «no ha llegado» y «sin canal» son una sola pantalla**: para
+  la persona la situación es la misma.
+- **El aviso «Falta la CA local» sale solo cuando rFirma sabe que falta**, y
+  siempre encima de las pestañas. Entonces «Instalar» es la acción principal y
+  «Cerrar» queda discreto, porque instalarla es lo que desbloquea el trámite.
+- **Las recetas de Chrome y Firefox van en las pestañas del sistema de diseño**,
+  en la variante con raya, y cada receta es el panel de su pestaña. La frase de
+  reintentar va en el pie, a la izquierda.
+- **Firmando y guardar o cargar enseñan solo el título**, y la barra al firmar.
+  Un destino donde no se puede escribir es un `Admonition` de error.
+- **Marcar el área tiene la geometría de la ampliada**: el visor a la izquierda
+  y la columna de 400 px con cabecera y pie, sin frase de ayuda. El recuadro
+  aparece ya en su posición estándar y «Continuar» está habilitado desde el
+  principio, porque la posición estándar ya es una respuesta válida.
+- **«En qué páginas» lleva el estilo del rótulo «Certificado»**, y un documento
+  ilegible es un `Admonition` de error.
+- **La página desactualizada es una sola frase**, «Puede tener errores o no ser
+  segura.», con «Cancelar»: si se avisa de que puede no ser segura, tiene que
+  poder pararse.
+- **Confirmar lo que señala el validador conserva sus textos y su flujo**: solo
+  cambia el esqueleto.
+- **Como mucho un `Admonition` por pantalla, con un solo estilo para todos los
+  tonos**: el tono solo cambia el icono.
+- **Las historias provisionales sustituyen a las de hoy al implementarse.** Cada
+  grupo «… nuevo», «Consentimiento ampliable», «Momentos de paso nuevos» y
+  «Avisos previos nuevos» de «Pantallas/Ventana de sede» reemplaza al de su
+  momento y pierde el «nuevo» del nombre, y «Ventana» queda en una sola
+  composición con el consentimiento nuevo.
+
 ### Marcar el área
 
 - **Es el único momento en que la ventana crece**, porque en la caja útil no cabe
@@ -468,6 +533,11 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |
 | 4 · desenlace | `SedeOutcome.stories.tsx`: un final por tipo y un rechazo por cada acción, el desconocido, el del escritorio y el de sin origen |
 | 5 · sin certificado | `SedeNoCertificate.stories.tsx`: `NoneInstalled`, `ExcludedBySite`, `InstallFailed` y las dos de terminal |
+| 0 y 2b · avisos previos (diseño pendiente) | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador con el esqueleto nuevo |
+| 1 y 3 · espera, firmando, guardar y cargar (diseño pendiente) | `SedePassing.stories.tsx`: los momentos de paso con el esqueleto nuevo |
+| 1c · marcar el área (diseño pendiente) | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
+| 4 · desenlace (diseño pendiente) | `SedeEnding.stories.tsx`: los finales y los rechazos con el esqueleto nuevo |
+| 5 · sin certificado (diseño pendiente) | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar con el esqueleto nuevo |
 
 `src/stories.test.tsx` las pinta todas con axe, así que una historia nueva queda
 revisada sin escribir otro test. El momento de consentimiento, que comparten las
