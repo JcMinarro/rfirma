@@ -1,4 +1,4 @@
-//! 1c · Marcar el área de la firma visible con el esqueleto de la ventana ampliada del consentimiento; diseño provisional que hoy solo pintan las historias.
+//! 1c · Marcar el área de la firma visible con el esqueleto de la ventana ampliada del consentimiento; el recuadro nace en la posición estándar.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,13 +7,13 @@ import { Button } from "../design-system/Button";
 import { Stack } from "../design-system/Stack";
 import { useDefaultButton } from "../design-system/useDefaultButton";
 import { PlacementBlock } from "../placement/PlacementBlock";
+import { firstSealedPage, type Placement } from "../placement/pageSets";
 import { usePlacement } from "../placement/usePlacement";
 import { DocumentViewer } from "../viewer/DocumentViewer";
 import type { PdfDocument } from "../viewer/pdf";
 import { standardRectOnPageOf } from "../viewer/signatureBox";
 import type { MarkedArea } from "./errand";
 import { SedeBody } from "./SedeFrame";
-import { markedAreaOf } from "./SedeMarking";
 import { SedeOrigin } from "./SedeOrigin";
 import "../signing/SigningPanel.css";
 import "./SedeReceivedConsent.css";
@@ -117,3 +117,17 @@ export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAre
 }
 
 function noop() {}
+
+async function markedAreaOf(pdf: PdfDocument, placement: Placement): Promise<MarkedArea> {
+  const first = firstSealedPage(placement) ?? 1;
+  const page = await pdf.getPage(first);
+  const { x0, y0, x1, y1 } = placement.rect;
+  return {
+    page: first,
+    pages: placement.pages,
+    pageCount: pdf.pageCount,
+    mediaBox: page.view,
+    rotation: page.rotate,
+    rect: [x0, y0, x1, y1],
+  };
+}

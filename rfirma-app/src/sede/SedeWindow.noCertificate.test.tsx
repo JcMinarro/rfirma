@@ -1,4 +1,3 @@
-import { composeStories } from "@storybook/react-vite";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,15 +6,11 @@ import type { Certificate } from "../signing/certificate";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import { OUTCOME_CLOSE_MS } from "./errand";
-import * as noCertificateModule from "./SedeNoCertificate.stories";
-import * as outcomeModule from "./SedeOutcome.stories";
 import { SedeWindow } from "./SedeWindow";
+import { Cancelled, ExcludedBySite, NoneInstalled } from "./testing/fixtures/sedeErrands";
 import { scriptedErrand, scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: el momento 5 (sin certificado utilizable), el fallo de un hijo y la forma de la ventana. */
-
-const { NoneInstalled, ExcludedBySite } = composeStories(noCertificateModule);
-const { Cancelled } = composeStories(outcomeModule);
 
 describe("5 · no usable certificate", () => {
   it("leaves through the footer, and the window paints no cross of its own", async () => {
@@ -23,15 +18,15 @@ describe("5 · no usable certificate", () => {
     const { port, calls } = scriptedFrom(NoneInstalled);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar" }));
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
     expect(calls.cancel).toHaveBeenCalledOnce();
     expect(calls.close).not.toHaveBeenCalled();
   });
 
   it.each([
-    [1, "No se acepta tu certificado"],
-    [3, "No se acepta ninguno de tus 3 certificados"],
+    [1, "No acepta tu certificado"],
+    [3, "No acepta ninguno de tus 3 certificados"],
   ])(
     "titles the exclusion of %i without naming a site when the request brings no origin",
     (owned, title) => {
@@ -45,6 +40,17 @@ describe("5 · no usable certificate", () => {
       expect(screen.queryByText(/La petición/)).not.toBeInTheDocument();
     },
   );
+
+  it("says the site asks for your data when selectcert finds no usable certificate", () => {
+    const { port } = scriptedErrand(
+      { kind: "noCertificate", reason: "none", owned: 0 },
+      { operation: "selectcert" },
+    );
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByText("Te pide tus datos")).toBeInTheDocument();
+    expect(screen.queryByText("Te pide la firma")).not.toBeInTheDocument();
+  });
 
   it.each([
     ["none installed", NoneInstalled],
@@ -147,11 +153,10 @@ describe("when a child throws", () => {
 });
 
 describe("the window's shape", () => {
-  it("has no application header, no menu, no tray and no destination footer", () => {
+  it("has no application menu, no tray and no destination footer", () => {
     const { port } = scriptedFrom(Cancelled);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(screen.queryByText(/se guardará en/i)).not.toBeInTheDocument();
   });

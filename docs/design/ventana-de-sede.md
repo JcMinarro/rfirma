@@ -199,15 +199,15 @@ de las cabeceras de los componentes.
   salir y para las microacciones, y `--secondary` no se usa en ningún momento de
   esta ventana.
 
-### Consentimiento ampliable (diseño pendiente de implementar)
+### Consentimiento ampliable (la compacta es real; la ampliada, pendiente)
 
 Quien no se fía de la sede puede ver lo que firma sin cargar la ventana a quien
 sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consentimiento
 ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
-enseña. **Son provisionales**: documentan el diseño sobre componentes que solo
-usan ellas (`SedeConsentCompact`, `SedeConsentExpanded`, `SedeSignatureCards`),
-sin cambiar el consentimiento real. La spec que lo implemente lleva la vista
-nueva a `SedeConsent`, sustituye estas historias por las de siempre y borra lo
+enseña. **La compacta es el consentimiento real** (`SedeConsentCompact`). **Las
+`Expanded*` son provisionales**: documentan el diseño sobre componentes que solo
+usan ellas (`SedeConsentExpanded`, `SedeSignatureCards`), sin cambiar la ventana
+real. La spec que implemente la vista ampliada las lleva a la ventana y borra lo
 que solo existía para ellas.
 
 - **Primero con qué se firma, y después qué.** En las dos formas el selector
@@ -222,8 +222,7 @@ que solo existía para ellas.
   El primero es el título del aviso, en su fila, y los demás van debajo; con un
   solo hecho, sin título. El tono es el del peor: error con una firma no válida,
   advertencia con SHA-1 y, si no, información.
-- **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
-  «Descargar…» y, si los hay, los hechos de las firmas previas: cuántos
+- **La compacta no lista nada: resume.** Dice cuánto se firma y, si los hay, los hechos de las firmas previas: cuántos
   documentos traen firmas de otras personas, cuántos firmaste tú, con el
   certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
   válida. En la ampliada, el aviso dice lo que ya firmaste tú y el SHA-1 por
@@ -275,17 +274,16 @@ que solo existía para ellas.
   cede «Ver documentos», que se corta con puntos suspensivos y conserva su icono
   y el texto entero en el `title`.
 
-Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
+**Pendiente de implementar: la ampliada, «Ver documentos» y la descarga.** En la
+compacta real, el hueco izquierdo del pie queda vacío y el resumen no lleva
+«Descargar…». Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
 huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
 previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
 `SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
 en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
 motivo), que cambia también la ventana principal. Y el nombre por defecto del
 documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
-tiene que depender del tipo o ser neutro. Y el botón de firmar con SHA-1 por
-permitir deja de decir «Firmar solo esta vez» también en la ventana de sede
-actual y pasa a «Firmar igualmente»: el «solo esta vez» se refería al permiso de
-Preferencias, que la persona no ve desde ahí. Cuando se implemente, la
+tiene que depender del tipo o ser neutro. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
 firmas previas como aviso compacto dejan de ser ciertas.
 
@@ -293,11 +291,10 @@ firmas previas como aviso compacto dejan de ser ciertas.
   cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
   al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
 
-### El resto de momentos con el esqueleto nuevo (diseño pendiente de implementar)
+### El resto de momentos con el esqueleto nuevo
 
-Los demás momentos se rehacen sobre el esqueleto del consentimiento ampliable.
-Como él, las historias son provisionales y no cambian la ventana real; las
-decisiones de abajo sustituyen a las de su momento cuando se implementen.
+Los demás momentos usan el mismo esqueleto que el consentimiento compacto. Es el
+de la ventana real; las decisiones de abajo son las de cada momento.
 
 - **Un solo esqueleto en todos los momentos**: arriba la cabecera `SedeOrigin` de
   56 px; el cuerpo, alineado a la izquierda, con el icono a la izquierda del
@@ -352,11 +349,8 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
   cambia el esqueleto.
 - **Como mucho un `Admonition` por pantalla, con un solo estilo para todos los
   tonos**: el tono solo cambia el icono.
-- **Las historias provisionales sustituyen a las de hoy al implementarse.** Cada
-  grupo «… nuevo», «Consentimiento ampliable», «Momentos de paso nuevos» y
-  «Avisos previos nuevos» de «Pantallas/Ventana de sede» reemplaza al de su
-  momento y pierde el «nuevo» del nombre, y «Ventana» queda en una sola
-  composición con el consentimiento nuevo.
+- **Las historias de «Pantallas/Ventana de sede» son las de la ventana real**,
+  salvo las `Expanded*` del consentimiento, que siguen como diseño provisional.
 
 ### Marcar el área
 
@@ -404,12 +398,9 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
 
 ### Desenlace
 
-- **Tres tipos de final y en todos la sede ya tiene su respuesta.** Firmado y
-  cancelado llevan la fila del documento —es lo único que dice qué se acaba de
-  firmar—; el rechazo no, porque ahí nunca llegó a haber documento.
-- **Firmado dice que rFirma no guarda copia**, la única frase que no se deduce
-  mirando: la aplicación sí tiene recientes y aquí no entra nada. El cancelado no
-  añade nada, porque el título ya lo dice.
+- **Tres tipos de final y en todos la sede ya tiene su respuesta**: firmado,
+  cancelado y rechazado. Lo que lleva cada uno, en «El resto de momentos con el
+  esqueleto nuevo».
 - **El rechazo se enseña aunque la persona no pueda arreglarlo**: acaba de
   arrancarse un programa en su equipo a petición de una web, y un rFirma que
   aparece y desaparece en silencio es indistinguible de uno roto. Lo accionable es
@@ -423,8 +414,6 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
   contrafirma de factura, contrafirma fuera de CAdES, CMS y XAdES; ADR-0023) dicen
   que no es un fallo de quien firma, y esa causa ocupa el lugar de la acción. La
   nota para quien mantiene la sede va dentro de la caja del detalle y se copia con él.
-  El rechazo por SHA-1 añade, antes de la caja, la pista «Si confías en esta sede,
-  puedes permitir SHA-1 en Preferencias → Firma y volver a firmar desde la sede.»
 - **La caja del detalle es de la sede y solo de la sede.** El enlace a comentarios
   y ayuda, que solo aparece cuando ni se sabe qué se rechazó, va fuera: eso no se
   lleva a la sede, se reporta a rFirma.
@@ -447,8 +436,8 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
   ofrece lo mismo, porque el recién instalado quizá sí valga, y dice cuántos
   certificados tiene la persona —estado de su almacén—, sin decir qué rechazó la
   sede de cada uno. Los caducados no se entregan nunca (ADR-0023).
-- **Volver a buscar es una microacción del cuerpo**, por si se instaló un
-  certificado con la ventana abierta; cerrar está en el pie.
+- **Volver a buscar es la acción secundaria del pie**, a la izquierda, por si se
+  instaló un certificado con la ventana abierta.
 - **Salir abandona el trámite**, por el pie o por la cruz del sistema: la sede no
   ha recibido nada todavía. Solo el desenlace cierra sin cancelar.
 
@@ -457,9 +446,11 @@ decisiones de abajo sustituyen a las de su momento cuando se implementen.
 La acción es de la persona, que acaba de escribir la orden: no hay frase de
 origen ni nada dirigido a la sede, y no se repite lo que la orden ya dice.
 
-- **Consentimiento**: el título nombra el documento de `-i`, recortado por el
-  medio conservando principio, final y extensión, con la ruta completa en el
-  tooltip. Sin rutas, destino ni nota de `-filter`.
+- **Consentimiento**: la cabecera dice solo «Una orden de terminal» y, donde la
+  compacta pone el recuento, «Firmar» con el nombre del documento de `-i`,
+  recortado por el medio conservando principio, final y extensión, con la ruta
+  completa en el tooltip. Sin descarga, «Ver documentos», destino ni nota de
+  `-filter`.
 - **La ventana solo elige**: se cierra al aceptar el secreto o al cancelar, y el
   resultado sale en la terminal; no hay firmando ni desenlace en ventana.
 - **Sin certificado utilizable** se abre la ventana aunque no haya terminal.
@@ -523,21 +514,12 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 
 | Momento | Historias |
 | --- | --- |
-| 0 · aviso del cliente antiguo | `SedeOldWebClient.stories.tsx`: `OldWebClient` |
-| 1 · espera | `SedeWaiting.stories.tsx`: `Waiting`, `Unreachable`, `NoChannel` |
-| 1c · marcar el área | `SedeMarking.stories.tsx`: `Marking`, `UnreadableDocument` |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: una por certificado, varios, acotado, sin título, cofirma, contrafirma sobre todas o sobre las últimas, firmas previas válidas o con problema, lote remoto y local, cesión de identidad, sin origen, cuenta atrás y orden de terminal |
-| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
-| 2b · confirmar | `SedeConfirm.stories.tsx`: `ShadowAttackSuspect`, `ModifiedForm`, `CertifiedPdf`, `UnknownMessage` |
-| 3 · firmando | `SedeSigning.stories.tsx`: `Signing`, `Returning` |
-| 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |
-| 4 · desenlace | `SedeOutcome.stories.tsx`: un final por tipo y un rechazo por cada acción, el desconocido, el del escritorio y el de sin origen |
-| 5 · sin certificado | `SedeNoCertificate.stories.tsx`: `NoneInstalled`, `ExcludedBySite`, `InstallFailed` y las dos de terminal |
-| 0 y 2b · avisos previos (diseño pendiente) | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador con el esqueleto nuevo |
-| 1 y 3 · espera, firmando, guardar y cargar (diseño pendiente) | `SedePassing.stories.tsx`: los momentos de paso con el esqueleto nuevo |
-| 1c · marcar el área (diseño pendiente) | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 4 · desenlace (diseño pendiente) | `SedeEnding.stories.tsx`: los finales y los rechazos con el esqueleto nuevo |
-| 5 · sin certificado (diseño pendiente) | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar con el esqueleto nuevo |
+| 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
+| 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
+| 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y, como diseño provisional, `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
+| 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 
 `src/stories.test.tsx` las pinta todas con axe, así que una historia nueva queda
 revisada sin escribir otro test. El momento de consentimiento, que comparten las
@@ -549,22 +531,8 @@ marcos —520 × 420, y 1080 × 660 al marcar el área— en
 
 ## Claves i18n
 
-Todos los textos salen del catálogo; el castellano está en `po/es.po`. Por
-momento:
-
-- **Cliente antiguo y espera**: `sede.oldWebClient.*`, `sede.waiting.*`,
-  `sede.unreachable.*` y `sede.repair.*`.
-- **Marcar el área**: `sede.marking.*`.
-- **Consentimiento**: `sede.consent.*` (origen según la operación y el formato en
-  `asksSignature*`, `asksIdentity` y las variantes `unknownOrigin*`; lo del
-  documento en `untitled`, `counterSignature*` y `signingKind.*`; el lote en
-  `batch*` y `localBatchRound*`; lo que se envía en `willSend`; la acotación en
-  `narrowed*`; la cuenta atrás en `countdown`; la terminal en `terminalTitle`).
-- **Confirmar**: `sede.confirm.messages.*`.
-- **Firmando y ficheros**: `sede.signing.with`, `sede.returning.*`,
-  `sede.saving.*` y `sede.loading.*`.
-- **Desenlace**: `sede.outcome.*`, y para los rechazos `sede.refusals.*`,
-  `sede.refusalCauses.*` y `sede.siteNotes.*`.
-- **Sin certificado**: `sede.noCertificate.*`.
-- **Acciones comunes**: `actions.sign`, `actions.cancel`, `actions.close`,
-  `actions.continue`, `actions.dismiss`, `actions.lookAgain` y `actions.copy`.
+Todos los textos salen del catálogo; el castellano está en `po/es.po`, bajo
+`sede.*`, con un espacio de nombres por momento (la cabecera en `sede.origin.*`;
+lo recibido y la vista ampliada en `sede.received.*` y `sede.signatures.*`), y
+las acciones comunes bajo `actions.*`. La lista de claves es la del catálogo,
+no se copia aquí.

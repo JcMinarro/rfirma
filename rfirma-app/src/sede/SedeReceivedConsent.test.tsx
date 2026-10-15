@@ -3,7 +3,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
-import * as stories from "./SedeConsentExpandable.stories";
+import * as stories from "./SedeConsent.stories";
 
 const {
   CompactDigest,
@@ -29,7 +29,7 @@ describe("the expandable site consent", () => {
     ["a digest", CompactDigest],
     ["a remote batch", CompactRemoteBatch],
   ])("offers no viewer for %s", (_, Story) => {
-    renderWithCatalog(<Story />);
+    renderWithCatalog(<Story pendingActions />);
     expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
   });
 
@@ -37,12 +37,12 @@ describe("the expandable site consent", () => {
     ["one document", CompactOneDocument, "Ver documento"],
     ["several documents", CompactSeveralDocuments, "Ver documentos"],
   ])("offers the viewer for %s", (_, Story, label) => {
-    renderWithCatalog(<Story />);
+    renderWithCatalog(<Story pendingActions />);
     expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
   });
 
   it("keeps the whole «Ver documentos» as its title when the footer cuts it short", () => {
-    renderWithCatalog(<CompactSeveralDocuments />);
+    renderWithCatalog(<CompactSeveralDocuments pendingActions />);
     expect(screen.getByRole("button", { name: "Ver documentos" })).toHaveAttribute(
       "title",
       "Ver documentos",
@@ -93,13 +93,13 @@ describe("the expandable site consent", () => {
   });
 
   it("offers the hashes of a digest as a reference", () => {
-    renderWithCatalog(<CompactDigest />);
+    renderWithCatalog(<CompactDigest pendingActions />);
     expect(screen.getByText("Vas a firmar 1 referencia")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Descargar huellas" })).toBeInTheDocument();
   });
 
   it("offers nothing to download from a remote batch", () => {
-    renderWithCatalog(<CompactRemoteBatch />);
+    renderWithCatalog(<CompactRemoteBatch pendingActions />);
     expect(screen.getByText("Vas a firmar 4 documentos")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
   });
@@ -122,7 +122,7 @@ describe("the expandable site consent", () => {
   });
 
   it("says only what an authentication challenge is", () => {
-    renderWithCatalog(<CompactSeveralDocuments received="challenge" />);
+    renderWithCatalog(<CompactSeveralDocuments received="challenge" pendingActions />);
     expect(screen.getByText("Vas a firmar un reto de autenticación")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
@@ -218,7 +218,7 @@ describe("the expandable site consent", () => {
   });
 
   it("asks for your details with what it sends instead of what you sign", () => {
-    renderWithCatalog(<CompactSeveralDocuments errand="identity" />);
+    renderWithCatalog(<CompactSeveralDocuments errand="identity" pendingActions />);
     expect(screen.getByText("Te pide tus datos")).toBeInTheDocument();
     expect(screen.getByText(/^Se enviarán tu nombre, tu NIF/)).toBeInTheDocument();
     expect(screen.queryByText(/^Vas a firmar/)).not.toBeInTheDocument();
@@ -238,9 +238,9 @@ describe("the expandable site consent", () => {
     expect(screen.queryByText("Te pide la firma")).not.toBeInTheDocument();
   });
 
-  it("signs a terminal order without download or viewer, but with its previous signatures", () => {
-    renderWithCatalog(<CompactSeveralDocuments errand="terminal" />);
-    expect(screen.getByText("Vas a firmar 1 documento")).toBeInTheDocument();
+  it("names the document of a terminal order, without download or viewer, but with its previous signatures", () => {
+    renderWithCatalog(<CompactSeveralDocuments errand="terminal" pendingActions />);
+    expect(screen.getByText("Firmar convenio.pdf")).toBeInTheDocument();
     expect(screen.getByText(/^Trae firmas de otras personas\.$/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();

@@ -1,30 +1,30 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
-import * as confirmModule from "./SedeConfirm.stories";
-import * as consentModule from "./SedeConsent.stories";
-import * as markingModule from "./SedeMarking.stories";
-import * as noCertificateModule from "./SedeNoCertificate.stories";
-import * as oldWebClientModule from "./SedeOldWebClient.stories";
-import * as outcomeModule from "./SedeOutcome.stories";
-import * as signingModule from "./SedeSigning.stories";
-import * as waitingModule from "./SedeWaiting.stories";
 import { SedeWindow } from "./SedeWindow";
+import {
+  Consent,
+  NoneInstalled,
+  OldWebClient,
+  Returning,
+  ShadowAttackSuspect,
+  Signed,
+  Signing,
+  Unreachable,
+  UnreadableDocument,
+  Waiting,
+} from "./testing/fixtures/sedeErrands";
+import { sedeErrand } from "./testing/fixtures/sedeView";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /** Grada A: Escape es el botón de cancelar o cerrar de cada momento, e Intro su acción principal. */
 
-const { OldWebClient } = composeStories(oldWebClientModule);
-const { Waiting, Unreachable } = composeStories(waitingModule);
-const { Consent } = composeStories(consentModule);
-const { ShadowAttackSuspect } = composeStories(confirmModule);
-const { Signing, Returning } = composeStories(signingModule);
-const { NoneInstalled } = composeStories(noCertificateModule);
-const { Signed } = composeStories(outcomeModule);
-const { UnreadableDocument } = composeStories(markingModule);
+const LocalCaMissing = {
+  args: {},
+  parameters: { errand: sedeErrand({ kind: "noChannel", reason: "localCaMissing" }) },
+};
 
 const pressEscape = () => fireEvent.keyDown(document, { key: "Escape" });
 const pressEnter = () => fireEvent.keyDown(document, { key: "Enter" });
@@ -73,14 +73,14 @@ describe("Escape", () => {
     expect(calls.cancel).not.toHaveBeenCalled();
   });
 
-  it("neither dismisses nor cancels the old web client warning, which has no Cancelar", () => {
+  it("cancels the errand from the old web client warning, without dismissing it", () => {
     const { port, calls } = scriptedFrom(OldWebClient);
     renderWithCatalog(<SedeWindow errands={port} />);
 
     pressEscape();
 
     expect(calls.dismissWarning).not.toHaveBeenCalled();
-    expect(calls.cancel).not.toHaveBeenCalled();
+    expect(calls.cancel).toHaveBeenCalledOnce();
   });
 
   it("closes the open certificate list without cancelling the errand", () => {
@@ -99,7 +99,7 @@ describe("Enter", () => {
   it.each([
     ["confirming", ShadowAttackSuspect, "confirmSignatures"],
     ["noCertificate", NoneInstalled, "installCertificate"],
-    ["unreachable", Unreachable, "installLocalCa"],
+    ["unreachable with the local CA missing", LocalCaMissing, "installLocalCa"],
     ["outcome", Signed, "close"],
     ["oldWebClient", OldWebClient, "dismissWarning"],
   ] as const)("presses the main action in %s", (_, story, action) => {

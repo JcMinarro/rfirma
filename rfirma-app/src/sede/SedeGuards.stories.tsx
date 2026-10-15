@@ -1,4 +1,4 @@
-//! Las historias provisionales de los avisos previos nuevos de sede, que documentan el diseño hasta que se implemente: la página desactualizada y la pregunta del validador.
+//! Las historias de los avisos previos de sede: la página desactualizada y la pregunta del validador.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { sedeMomentMeta } from "../../.storybook/decorators/sedeWindow";
@@ -33,7 +33,7 @@ function GuardDesign({ guard, message, withOrigin }: GuardDesignProps) {
 }
 
 const meta = {
-  title: "Pantallas/Ventana de sede/Avisos previos nuevos",
+  title: "Pantallas/Ventana de sede/Avisos previos",
   ...sedeMomentMeta,
   component: GuardDesign,
   args: { guard: "outdatedPage", message: "pdfShadowAttackSuspect", withOrigin: true },
@@ -50,7 +50,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "Provisional: el diseño de los avisos que llegan antes del consentimiento, con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir, con quién lo pide; debajo, alineado a la izquierda, el título con el icono de aviso a su izquierda y una frase.",
+          "Los avisos que llegan antes del consentimiento, con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir, con quién lo pide; debajo, alineado a la izquierda, el título con el icono de aviso a su izquierda y una frase.",
           "La página desactualizada dice solo el riesgo: «Puede tener errores o no ser segura.». La pregunta del validador conserva las palabras del original, sin resumir ni reinterpretar, porque la decisión no es de rFirma.",
           "El pie conserva las posiciones del consentimiento: «Cancelar» donde estaba «Cancelar» y «Continuar» como principal donde estaba «Firmar». Escape cancela.",
         ].join("\n\n"),

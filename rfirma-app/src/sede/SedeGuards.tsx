@@ -1,5 +1,6 @@
-//! Los avisos previos provisionales con el esqueleto del consentimiento compacto: la página desactualizada y la pregunta del validador; hoy solo los pintan las historias.
+//! Los avisos previos con el esqueleto del consentimiento compacto: la página desactualizada y la pregunta del validador.
 
+import type { TFunction } from "i18next";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PrimaryButton } from "../design-system/actionKeys";
@@ -7,7 +8,6 @@ import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { Row } from "../design-system/Row";
 import { useDefaultButton } from "../design-system/useDefaultButton";
-import { confirmationMessage } from "./SedeConfirm";
 import { SedeBody } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
 import "./SedeWindow.css";
@@ -20,10 +20,10 @@ interface SedeOutdatedPageProps {
   origin: string | null;
   asks?: Asks;
   onDismiss: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
-/** La página desactualizada: quién lo pide arriba, el riesgo en una frase y, en el pie, «Cancelar» o «Continuar». */
+/** La página desactualizada: quién lo pide arriba, el riesgo en una frase y, en el pie, «Continuar» y, si se da, «Cancelar». */
 export function SedeOutdatedPage({
   origin,
   asks = "signature",
@@ -98,7 +98,7 @@ interface GuardFrameProps {
   continueButton: PrimaryButton;
   continueDisabled?: boolean;
   onContinue: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   children: ReactNode;
 }
 
@@ -122,9 +122,11 @@ function GuardFrame({
       onEscape={onCancel}
       footer={
         <>
-          <Button variant="ghost" className="sede-guards__steady" onClick={onCancel}>
-            {t("actions.cancel")}
-          </Button>
+          {onCancel !== undefined && (
+            <Button variant="ghost" className="sede-guards__steady" onClick={onCancel}>
+              {t("actions.cancel")}
+            </Button>
+          )}
           <Button
             ref={continueButton}
             variant="primary"
@@ -151,4 +153,18 @@ function GuardFrame({
       </div>
     </SedeBody>
   );
+}
+
+/** Lo que pregunta el original, ya traducido: `t()` no admite una clave armada. */
+function confirmationMessage(t: TFunction, messageCode: string): string {
+  switch (messageCode) {
+    case "pdfShadowAttackSuspect":
+      return t("sede.confirm.messages.pdfShadowAttackSuspect");
+    case "signingCertifiedPdf":
+      return t("sede.confirm.messages.signingCertifiedPdf");
+    case "signingModifiedPdfForm":
+      return t("sede.confirm.messages.signingModifiedPdfForm");
+    default:
+      return t("sede.confirm.messages.unknown", { code: messageCode });
+  }
 }

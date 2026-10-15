@@ -413,12 +413,6 @@ msgstr "Component la signatura visible…"
 msgid "viewer.stamp.failed"
 msgstr "No s'ha pogut dibuixar la signatura visible"
 
-msgid "panel.document.pages"
-msgid_plural "panel.document.pages"
-msgstr[0] "1 pàgina"
-msgstr[1] "{{count}} pàgines"
-msgstr[2] "{{count}} pàgines"
-
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
 msgid_plural "panel.previousSignatures.alongside"
@@ -1282,14 +1276,8 @@ msgstr "Ara obren rFirma."
 msgid "sede.waiting.title"
 msgstr "Connectant amb la seu"
 
-msgid "sede.waiting.lead"
-msgstr "Una pàgina vol que signis un document."
-
 msgid "sede.unreachable.title"
 msgstr "La petició no ha arribat"
-
-msgid "sede.unreachable.lead"
-msgstr "Sol faltar el permís del navegador."
 
 msgid "sede.repair.caMissing"
 msgstr "Falta la CA local de rFirma."
@@ -1315,114 +1303,15 @@ msgstr ""
 msgid "sede.repair.retry"
 msgstr "Després de permetre-ho, torna a la seu i prem Reintenta."
 
-msgid "sede.consent.asksSignature"
-msgstr "{{origin}} demana la teva signatura."
-
-msgid "sede.consent.asksIdentity"
-msgstr "{{origin}} demana les teves dades d'identitat."
-
-#. La misma frase que "asksSignature", con el formato del #530 nombrado.
-msgid "sede.consent.asksSignatureOf"
-msgstr "{{origin}} demana la teva signatura de {{what}}."
-
-#. Qué es lo que la sede pide firmar, según el formato de la petición (#530).
-msgid "sede.consent.signingKind.pdf"
-msgstr "un document PDF"
-
-msgid "sede.consent.signingKind.challenge"
-msgstr "un repte d'autenticació"
-
-msgid "sede.consent.signingKind.xml"
-msgstr "un document XML"
-
-msgid "sede.consent.signingKind.invoice"
-msgstr "una factura electrònica"
-
-#. Misma forma que "asksSignature", con una página sin identificar como sujeto.
-msgid "sede.consent.unknownOriginSignature"
-msgstr "Una pàgina sense identificar demana la teva signatura."
-
-msgid "sede.consent.terminalTitle"
-msgstr "Signar {{name}}"
-
-msgid "sede.consent.unknownOriginIdentity"
-msgstr "Una pàgina sense identificar demana les teves dades d'identitat."
-
 #. El PDF no trae título en sus metadatos, y el nombre de fichero no viaja
 #. nunca en la petición.
 msgid "sede.consent.untitled"
 msgstr "Un PDF sense títol"
 
-#. Nunca se enumera lo que la sede descartó ni con qué criterio.
-msgid "sede.consent.narrowed"
-msgstr "{{origin}} ha limitat els certificats vàlids."
-
-msgid "sede.consent.narrowedUnknownOrigin"
-msgstr "La seu ha limitat els certificats vàlids."
-
-msgid "sede.consent.sha1Allowed"
-msgstr ""
-"Aquesta seu demana SHA-1, un algorisme obsolet. Ho tens permès a "
-"Preferències."
-
-msgid "sede.consent.sha1ToAllowTitle"
-msgstr "Signatura poc segura"
-
-msgid "sede.consent.sha1ToAllow"
-msgstr ""
-"Aquesta seu fa servir SHA-1, un mètode de signatura antic i menys segur. "
-"Signa només si hi confies."
-
-msgid "sede.consent.signOnce"
-msgstr "Signar només aquesta vegada"
-
 msgid "sede.consent.willSend"
 msgstr ""
 "S'enviaran el teu nom, el teu NIF, l'emissor del certificat i el seu número "
 "de sèrie."
-
-#. Contrafirma: se firma sobre las firmas que el documento ya trae, y el
-#. objetivo dice sobre cuáles.
-msgid "sede.consent.counterSignatureTree"
-msgstr ""
-"Ja ve signat: la teva serà una contrasignatura sobre totes les signatures "
-"que ja té."
-
-msgid "sede.consent.counterSignatureLeafs"
-msgstr ""
-"Ja ve signat: la teva serà una contrasignatura sobre les últimes signatures "
-"que té."
-
-#. Cofirma: se firma junto a las firmas que el documento ya trae, sin
-#. contarlas, porque las cuenta el aviso de firmas previas de debajo.
-msgid "sede.consent.coSignature"
-msgstr ""
-"Ja ve signat: la teva serà una cosignatura al costat de les signatures que "
-"ja té."
-
-msgid "sede.consent.batchTitle"
-msgid_plural "sede.consent.batchTitle"
-msgstr[0] "Lot d'1 signatura"
-msgstr[1] "Lot de {{count}} signatures"
-msgstr[2] "Lot de {{count}} signatures"
-
-msgid "sede.consent.batchNote"
-msgstr "Els documents es queden a la seu: rFirma signa sense descarregar-los."
-
-msgid "sede.consent.batchItemLabel"
-msgstr "{{what}} ({{round}})"
-
-msgid "sede.consent.localBatchRoundSign"
-msgstr "signatura"
-
-msgid "sede.consent.localBatchRoundCosign"
-msgstr "cosignatura"
-
-msgid "sede.consent.localBatchRoundCounterTree"
-msgstr "contrasignatura de totes les signatures"
-
-msgid "sede.consent.localBatchRoundCounterLeafs"
-msgstr "contrasignatura de les últimes signatures"
 
 msgid "actions.sign"
 msgstr "Signar"
@@ -1433,6 +1322,10 @@ msgstr "Enviar les meves dades"
 #. {{action}} es el texto del botón («Firmar»); {{seconds}}, los segundos que faltan para activarlo.
 msgid "sede.consent.countdown"
 msgstr "{{action}} ({{seconds}})"
+
+#. {{name}} es el nombre del documento de la orden, recortado por el medio.
+msgid "sede.consent.terminalTitle"
+msgstr "Signar {{name}}"
 
 msgid "sede.confirm.messages.pdfShadowAttackSuspect"
 msgstr "Sembla que el PDF s'ha modificat després de l'última signatura."
@@ -1454,34 +1347,17 @@ msgstr ""
 msgid "sede.marking.title"
 msgstr "Marca on va la teva signatura"
 
-msgid "sede.marking.hint"
-msgstr ""
-"La pàgina demana que la teva signatura es vegi al document. Traça el "
-"requadre sobre la pàgina amb el ratolí."
-
 msgid "sede.marking.unreadable"
 msgstr "No s'ha pogut obrir el document per marcar on va la signatura."
 
-msgid "sede.signing.with"
-msgstr "Amb {{holder}} · {{idNumber}}."
-
-msgid "sede.returning.title"
-msgstr "Enviant la signatura a {{origin}}"
-
 msgid "sede.returning.titleUnknownOrigin"
 msgstr "Enviant la signatura"
-
-msgid "sede.returning.body"
-msgstr "No tanquis la finestra."
 
 msgid "sede.saving.title"
 msgstr "Desant {{filename}}"
 
 msgid "sede.saving.titleUnnamed"
 msgstr "Desant el fitxer"
-
-msgid "sede.saving.lead"
-msgstr "Tria al diàleg del sistema on vols desar-lo."
 
 msgid "sede.saving.leadUnwritable"
 msgstr ""
@@ -1494,60 +1370,14 @@ msgstr "Carregant un fitxer"
 msgid "sede.loading.titleMany"
 msgstr "Carregant diversos fitxers"
 
-msgid "sede.loading.lead"
-msgstr "Tria al diàleg del sistema el fitxer que vols enviar."
-
-msgid "sede.loading.leadMany"
-msgstr "Tria al diàleg del sistema els fitxers que vols enviar."
-
 msgid "sede.outcome.signedTitle"
 msgstr "Signat i enviat"
-
-msgid "sede.outcome.signedBody"
-msgstr "La signatura ja és a {{origin}}."
-
-msgid "sede.outcome.signedBodyUnknownOrigin"
-msgstr "La signatura ja s'ha enviat."
-
-#. No se deduce mirando: la aplicación sí tiene bandeja de recientes.
-msgid "sede.outcome.signedNote"
-msgstr "rFirma no en desa cap còpia."
 
 msgid "sede.outcome.savedTitle"
 msgstr "Desat"
 
-msgid "sede.outcome.savedBody"
-msgstr "El fitxer que demanava {{origin}} ja està desat on l'has triat."
-
-msgid "sede.outcome.savedBodyUnknownOrigin"
-msgstr "El fitxer ja està desat on l'has triat."
-
 msgid "sede.outcome.loadedTitle"
 msgstr "Carregat"
-
-msgid "sede.outcome.loadedBody"
-msgid_plural "sede.outcome.loadedBody"
-msgstr[0] "S'ha enviat 1 fitxer a {{origin}}."
-msgstr[1] "S'han enviat {{count}} fitxers a {{origin}}."
-msgstr[2] "S'han enviat {{count}} fitxers a {{origin}}."
-
-msgid "sede.outcome.loadedBodyUnknownOrigin"
-msgid_plural "sede.outcome.loadedBodyUnknownOrigin"
-msgstr[0] "S'ha enviat 1 fitxer."
-msgstr[1] "S'han enviat {{count}} fitxers."
-msgstr[2] "S'han enviat {{count}} fitxers."
-
-msgid "sede.outcome.batchBody"
-msgid_plural "sede.outcome.batchBody"
-msgstr[0] "La signatura del lot ja és a {{origin}}."
-msgstr[1] "Les {{count}} signatures del lot ja són a {{origin}}."
-msgstr[2] "Les {{count}} signatures del lot ja són a {{origin}}."
-
-msgid "sede.outcome.batchBodyUnknownOrigin"
-msgid_plural "sede.outcome.batchBodyUnknownOrigin"
-msgstr[0] "La signatura del lot ja s'ha enviat."
-msgstr[1] "Les {{count}} signatures del lot ja s'han enviat."
-msgstr[2] "Les {{count}} signatures del lot ja s'han enviat."
 
 msgid "sede.outcome.cancelledTitle"
 msgstr "Has cancel·lat la signatura"
@@ -1561,20 +1391,11 @@ msgstr "Detall tècnic per a la seu"
 msgid "sede.outcome.reportHint"
 msgstr "Et sembla un error de rFirma?"
 
-msgid "sede.outcome.autoClose"
-msgstr "Es tancarà sola d'aquí a {{seconds}} s."
-
 msgid "sede.outcome.closeIn"
 msgstr "Tancar ({{seconds}})"
 
 msgid "sede.oldWebClient.title"
 msgstr "Aquesta pàgina està desactualitzada"
-
-msgid "sede.oldWebClient.body"
-msgstr ""
-"La pàgina fa servir una versió antiga de la peça que parla amb rFirma, i pot "
-"tenir errors o no ser segura. Prem Continuar per seguir; si alguna cosa "
-"falla, avisa qui manté la pàgina."
 
 msgid "sede.oldWebClient.risk"
 msgstr "Pot tenir errors o no ser segura."
@@ -1610,11 +1431,6 @@ msgstr ""
 msgid "sede.siteNotes.sha1"
 msgstr "Demaneu SHA256withRSA o superior."
 
-msgid "sede.refusalHints.sha1"
-msgstr ""
-"Si confies en aquesta seu, pots permetre SHA-1 a Preferències → Signatura i "
-"tornar a signar des de la seu."
-
 msgid "sede.siteNotes.invoiceMultisignature"
 msgstr ""
 "FacturaE no admet cosignatura ni contrasignatura; demaneu una signatura "
@@ -1628,31 +1444,8 @@ msgstr ""
 msgid "sede.noCertificate.noneTitle"
 msgstr "No tens cap certificat"
 
-msgid "sede.noCertificate.noneBody"
-msgstr "En necessites un d'instal·lat per signar a {{origin}}."
-
-msgid "sede.noCertificate.noneBodyUnknownOrigin"
-msgstr "En necessites un d'instal·lat per signar."
-
-msgid "sede.noCertificate.noneHint"
-msgstr "Aconsegueix-lo a la FNMT o a la teva comunitat autònoma."
-
 msgid "sede.noCertificate.install"
 msgstr "Instal·lar un certificat…"
-
-#. La sede excluyó todos los certificados de la persona. Se dice cuántos tiene
-#. —estado de su almacén— y nunca cuáles descartó la sede ni por qué.
-msgid "sede.noCertificate.excludedTitle"
-msgid_plural "sede.noCertificate.excludedTitle"
-msgstr[0] "{{origin}} no accepta el teu certificat"
-msgstr[1] "{{origin}} no accepta cap dels teus {{count}} certificats"
-msgstr[2] "{{origin}} no accepta cap dels teus {{count}} certificats"
-
-msgid "sede.noCertificate.excludedTitleUnknownOrigin"
-msgid_plural "sede.noCertificate.excludedTitleUnknownOrigin"
-msgstr[0] "No s'accepta el teu certificat"
-msgstr[1] "No s'accepta cap dels teus {{count}} certificats"
-msgstr[2] "No s'accepta cap dels teus {{count}} certificats"
 
 msgid "sede.noCertificate.notAcceptedTitle"
 msgid_plural "sede.noCertificate.notAcceptedTitle"
@@ -1665,9 +1458,6 @@ msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "El teu --filter no deixa el teu certificat"
 msgstr[1] "El teu --filter no deixa cap dels teus {{count}} certificats"
 msgstr[2] "El teu --filter no deixa cap dels teus {{count}} certificats"
-
-msgid "sede.noCertificate.excludedBody"
-msgstr "Instal·la un altre certificat, o tanca i continua des de la seu."
 
 #. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
 msgid "sede.origin.asks"

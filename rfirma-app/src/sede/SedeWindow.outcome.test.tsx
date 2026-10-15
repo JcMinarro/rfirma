@@ -1,4 +1,3 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { inMemoryExternalDestinationOpener } from "../desktop/externalDestination";
@@ -10,8 +9,13 @@ import {
   type REFUSAL_ACTION_OF,
   type RefusalSituation,
 } from "./errand";
-import * as outcomeModule from "./SedeOutcome.stories";
 import { SedeWindow } from "./SedeWindow";
+import {
+  RefusedCloseOther,
+  RefusedContactSite,
+  RefusedUnknown,
+  Signed,
+} from "./testing/fixtures/sedeErrands";
 import { scriptedErrand, scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 const RETRY = "Vuelve a la sede e inténtalo de nuevo.";
@@ -92,9 +96,6 @@ const DESK_TITLE: Record<(typeof NAMED_BY_THE_DESK)[number], string> = {
 
 /** Grada A: el momento 4, el desenlace: qué se dice de cada rechazo y su cierre a los quince segundos. Lo que enseña cada historia está en `SedeWindow.presentation.test.tsx`. */
 
-const { Signed, RefusedContactSite, RefusedCloseOther, RefusedUnknown } =
-  composeStories(outcomeModule);
-
 describe("4 · outcome", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
@@ -153,7 +154,7 @@ describe("4 · outcome", () => {
     },
   );
 
-  it("keeps the note for the site inside the technical detail, after the SHA-1 hint", () => {
+  it("keeps the note for the site inside the technical detail, with no hint about Preferences", () => {
     const { port } = scriptedErrand({
       kind: "outcome",
       outcome: { kind: "refused", situation: "sha1", detail: "CRUDO" },
@@ -161,11 +162,10 @@ describe("4 · outcome", () => {
     renderWithCatalog(<SedeWindow errands={port} />);
 
     const cause = screen.getByText(SHA1_CAUSE);
-    const hint = screen.getByText(/puedes permitir SHA-1 en Preferencias/);
     const detailLabel = screen.getByText("Detalle técnico para la sede");
     const note = screen.getByText("Pedid SHA256withRSA o superior.");
-    expect(cause.compareDocumentPosition(hint)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(hint.compareDocumentPosition(detailLabel)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.queryByText(/Preferencias/)).not.toBeInTheDocument();
+    expect(cause.compareDocumentPosition(detailLabel)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(detailLabel.compareDocumentPosition(note)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.queryByText(/Para quien mantiene la sede/)).not.toBeInTheDocument();
   });
@@ -241,6 +241,23 @@ describe("4 · outcome", () => {
     const { port } = scriptedFrom(story);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.getByRole("button", { name: "Cerrar" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: /^Cerrar/ })).toHaveFocus();
+  });
+
+  it("counts the seconds down on the Cerrar button", async () => {
+    const { port } = scriptedFrom(Signed);
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByRole("button", { name: "Cerrar (15)" })).toBeInTheDocument();
+
+    await elapse(1_000);
+    expect(screen.getByRole("button", { name: "Cerrar (14)" })).toBeInTheDocument();
+  });
+
+  it("stays a plain Cerrar on a refusal that stays open", () => {
+    const { port } = scriptedFrom(RefusedCloseOther);
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByRole("button", { name: "Cerrar" })).toBeInTheDocument();
   });
 });

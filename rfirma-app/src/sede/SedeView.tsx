@@ -3,16 +3,14 @@
 import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
-import type { Errand, MarkedArea } from "./errand";
-import { SedeConfirm } from "./SedeConfirm";
-import { SedeConsent } from "./SedeConsent";
-import { SedeMarking } from "./SedeMarking";
-import { SedeNoCertificate } from "./SedeNoCertificate";
-import { SedeOldWebClient } from "./SedeOldWebClient";
-import { SedeOutcome } from "./SedeOutcome";
-import { SedeSigning } from "./SedeSigning";
-import { SedeTransfer } from "./SedeTransfer";
-import { SedeWaiting } from "./SedeWaiting";
+import { consentActionKey, type Errand, type MarkedArea } from "./errand";
+import { receivedOf } from "./received";
+import { SedeAreaMarking } from "./SedeAreaMarking";
+import { SedeEnding } from "./SedeEnding";
+import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
+import { SedeMissingCertificate } from "./SedeMissingCertificate";
+import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
+import { SedeConsentCompact } from "./SedeReceivedConsent";
 import "./SedeWindow.css";
 
 export interface SedeViewProps {
@@ -58,6 +56,7 @@ export function SedeView({
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
+  const asks = consentActionKey(errand.operation) === "identify" ? "identity" : "signature";
 
   return (
     <div className="sede-window__frame">
@@ -68,58 +67,74 @@ export function SedeView({
         aria-label={t("app.name")}
         data-stage={stage.kind}
       >
-        {stage.kind === "waiting" && (
-          <SedeWaiting
-            moment="connecting"
-            onInstallLocalCa={onInstallLocalCa}
-            onCancel={onCancel}
-          />
-        )}
-        {(stage.kind === "unreachable" || stage.kind === "noChannel") && (
-          <SedeWaiting
-            moment="unreachable"
-            onInstallLocalCa={onInstallLocalCa}
-            onCancel={onCancel}
-          />
-        )}
-        {stage.kind === "oldWebClient" && <SedeOldWebClient onDismiss={onDismissWarning} />}
-        {stage.kind === "consent" && (
-          <SedeConsent
+        {(stage.kind === "waiting" ||
+          stage.kind === "unreachable" ||
+          stage.kind === "noChannel") && (
+          <SedeAwaiting
             origin={errand.origin}
-            terminalOrder={errand.terminalOrder ?? null}
-            operation={errand.operation}
-            stage={stage}
-            countdown={consentCountdown}
-            reader={reader}
+            asks={asks}
+            moment={stage.kind === "waiting" ? "waiting" : "unreachable"}
+            localCaMissing={stage.kind === "noChannel" && stage.reason === "localCaMissing"}
+            onInstallLocalCa={onInstallLocalCa}
+            onCancel={onCancel}
+          />
+        )}
+        {stage.kind === "oldWebClient" && (
+          <SedeOutdatedPage
+            origin={errand.origin}
+            asks={asks}
+            onDismiss={onDismissWarning}
+            onCancel={onCancel}
+          />
+        )}
+        {stage.kind === "consent" && (
+          <SedeConsentCompact
+            origin={errand.origin}
+            asks={asks}
+            terminalDocument={errand.terminalOrder?.documentPath}
+            received={receivedOf(stage)}
+            certificates={stage.certificates}
             liveCertificates={liveCertificates}
+            reader={reader}
+            narrowed={stage.narrowed}
+            sha1ToAllow={stage.sha1ToAllow}
+            countdown={consentCountdown}
             onConsent={onConsent}
             onCancel={onCancel}
           />
         )}
         {stage.kind === "marking" && (
-          <SedeMarking pdf={stage.pdf} onMark={onMarkArea} onCancel={() => void onMarkArea(null)} />
+          <SedeAreaMarking
+            pdf={stage.pdf}
+            origin={errand.origin}
+            asks={asks}
+            onMark={onMarkArea}
+            onCancel={() => void onMarkArea(null)}
+          />
         )}
         {stage.kind === "confirming" && (
-          <SedeConfirm
+          <SedeValidatorQuestion
+            origin={errand.origin}
+            asks={asks}
             messageCode={stage.messageCode}
             onConfirm={onConfirmSignatures}
             onCancel={onCancel}
           />
         )}
         {stage.kind === "signing" && (
-          <SedeSigning
+          <SedeSigningProgress
             origin={errand.origin}
-            certificate={stage.certificate}
+            asks={asks}
+            terminal={errand.terminalOrder !== undefined}
             phase={stage.phase}
             onCancel={onCancel}
           />
         )}
-        {/* Guardar y cargar **no preguntan en esta ventana**: la orden abre el
-            diálogo del portal en cuanto el momento llega, y aquí sólo se
-            nombra el fichero (ADR-0011). */}
-        {(stage.kind === "saving" || stage.kind === "loading") && <SedeTransfer transfer={stage} />}
+        {(stage.kind === "saving" || stage.kind === "loading") && (
+          <SedeFileTransfer origin={errand.origin} transfer={stage} />
+        )}
         {stage.kind === "outcome" && (
-          <SedeOutcome
+          <SedeEnding
             origin={errand.origin}
             outcome={stage.outcome}
             onClose={onClose}
@@ -127,8 +142,9 @@ export function SedeView({
           />
         )}
         {stage.kind === "noCertificate" && (
-          <SedeNoCertificate
+          <SedeMissingCertificate
             origin={errand.origin}
+            asks={asks}
             terminal={errand.terminalOrder !== undefined}
             reason={stage.reason}
             owned={stage.owned}

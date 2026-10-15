@@ -1,4 +1,4 @@
-//! El consentimiento de sede con lo que la sede manda a firmar, en sus dos formas: la compacta de 520 × 420 y la ampliada de 1080 × 660 con el visor; hoy solo lo pintan las historias.
+//! El consentimiento de sede con lo que la sede manda a firmar, en sus dos formas: la compacta de 520 × 420, la de la ventana real, y la ampliada de 1080 × 660 con el visor, que hoy solo pintan las historias.
 
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,8 @@ import { useDefaultButton } from "../design-system/useDefaultButton";
 import { CertificateSelect } from "../signing/CertificateSelect";
 import {
   type Certificate,
+  type CertificateState,
+  keptAcrossTheReader,
   type ReaderStatus,
   sitePreselection,
   UNAVAILABLE_READER,
@@ -20,12 +22,14 @@ import { ReceivedViewer } from "./ReceivedViewer";
 import type { Received, ReceivedActions, ReceivedDocument } from "./received";
 import { SedeBody, useConsentCountdown } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
+import { TerminalDocumentHeading } from "./TerminalDocumentHeading";
 import "./SedeReceivedConsent.css";
 
 interface ConsentBasics {
   origin: string | null;
-  actions: ReceivedActions;
   certificates: readonly Certificate[];
+  /** La lista que trajo un lector y sustituye a la de la sede, conservando lo elegido si sigue en ella. */
+  liveCertificates?: readonly Certificate[] | null;
   reader?: ReaderStatus;
   /** Qué pide: la firma o, con `selectcert`, los datos del certificado. */
   asks?: "signature" | "identity";
@@ -38,23 +42,29 @@ interface ConsentBasics {
   onCancel: () => void;
 }
 
-/** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento con su descarga, y con documentos de una sede, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
+/** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento, con su descarga si hay `onDownload`, y con documentos de una sede y `onExpand`, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
 export function SedeConsentCompact({
   received,
-  terminal = false,
+  terminalDocument,
+  onDownload,
   onExpand,
   ...basics
 }: ConsentBasics & {
-  received: Received;
-  /** La firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
-  terminal?: boolean;
+  /** `null` cuando la sede pide los datos y no hay nada que firmar. */
+  received: Received | null;
+  /** La ruta de `-i` cuando la firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
+  terminalDocument?: string;
+  onDownload?: () => void;
   onExpand?: () => void;
 }) {
   const { t } = useTranslation();
   const consent = useConsent(basics);
-  const identity = basics.asks === "identity";
+  const terminal = terminalDocument !== undefined;
+  const identity = basics.asks === "identity" || received === null;
   const documents =
-    received.kind === "documents" && !terminal && !identity ? received.documents.length : 0;
+    received?.kind === "documents" && !terminal && !identity && onExpand !== undefined
+      ? received.documents.length
+      : 0;
 
   return (
     <SedeBody
@@ -97,10 +107,11 @@ export function SedeConsentCompact({
                 certificate={consent.chosen}
                 sha1ToAllow={basics.sha1ToAllow}
               />
-              <ReceivedHeading
-                received={received}
-                onDownload={terminal ? undefined : basics.actions.onDownload}
-              />
+              {terminal ? (
+                <TerminalDocumentHeading documentPath={terminalDocument} />
+              ) : (
+                <ReceivedHeading received={received} onDownload={onDownload} />
+              )}
             </>
           )}
         </div>
@@ -112,12 +123,14 @@ export function SedeConsentCompact({
 /** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 400 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
 export function SedeConsentExpanded({
   documents,
+  actions,
   defaultDocument,
   defaultSignaturesOpen = false,
   onCollapse,
   ...basics
 }: ConsentBasics & {
   documents: readonly ReceivedDocument[];
+  actions: ReceivedActions;
   defaultDocument?: string;
   defaultSignaturesOpen?: boolean;
   onCollapse?: () => void;
@@ -139,7 +152,7 @@ export function SedeConsentExpanded({
           <ReceivedViewer
             document={shown}
             defaultSignaturesOpen={signaturesOpen}
-            onOpenWith={basics.actions.onOpenWith}
+            onOpenWith={actions.onOpenWith}
           />
         )}
       </div>
@@ -177,13 +190,13 @@ export function SedeConsentExpanded({
             >
               <ReceivedHeading
                 received={{ kind: "documents", documents }}
-                onDownload={basics.actions.onDownload}
+                onDownload={actions.onDownload}
                 withoutCount
               />
               {shown !== undefined && (
                 <ReceivedList
                   documents={documents}
-                  actions={basics.actions}
+                  actions={actions}
                   selected={shown.id}
                   onSelect={select}
                 />
@@ -223,16 +236,17 @@ function ReceivedColumn({
 function useConsent({
   origin,
   asks = "signature",
-  certificates,
+  certificates: initial,
+  liveCertificates = null,
   reader = UNAVAILABLE_READER,
   narrowed = false,
   sha1ToAllow = false,
   countdown = false,
   onConsent,
   onCancel,
-}: Omit<ConsentBasics, "actions">) {
+}: ConsentBasics) {
   const { t } = useTranslation();
-  const [chosen, setChosen] = useState(() => sitePreselection(certificates));
+  const { certificates, chosen, setChosen } = useChosenCertificate(initial, liveCertificates);
   const remaining = useConsentCountdown(countdown || sha1ToAllow);
   const ready = chosen !== null && remaining === 0;
   const button = useDefaultButton(ready);
@@ -280,4 +294,48 @@ function useConsent({
       </>
     ),
   };
+}
+
+/** Lo elegido y la última lista que trajo un lector, que decide si el cambio de lista pide recalcular. */
+interface Held {
+  live: readonly Certificate[] | null;
+  chosen: Certificate | null;
+}
+
+/** La lista vigente, la de la sede o la del lector, y lo elegido en ella, que sigue a la tarjeta que entra o sale. */
+function useChosenCertificate(
+  initial: readonly Certificate[],
+  liveCertificates: readonly Certificate[] | null,
+) {
+  const [held, setHeld] = useState<Held>(() => ({
+    live: null,
+    chosen: sitePreselection(initial),
+  }));
+  let current = held;
+  if (liveCertificates !== null && held.live !== liveCertificates) {
+    current = {
+      live: liveCertificates,
+      chosen: chosenAfterTheReader(held, initial, liveCertificates),
+    };
+    setHeld(current);
+  }
+  return {
+    certificates: liveCertificates ?? initial,
+    chosen: current.chosen,
+    setChosen: (certificate: Certificate) => setHeld({ ...current, chosen: certificate }),
+  };
+}
+
+function chosenAfterTheReader(
+  held: Held,
+  initial: readonly Certificate[],
+  arrived: readonly Certificate[],
+): Certificate | null {
+  const before = held.live ?? initial;
+  const previous: CertificateState =
+    held.chosen === null
+      ? { kind: "unchosen", certificates: before }
+      : { kind: "chosen", certificate: held.chosen, certificates: before };
+  const kept = keptAcrossTheReader(previous, arrived);
+  return kept.kind === "chosen" ? kept.certificate : null;
 }

@@ -1,11 +1,10 @@
-import { composeStories } from "@storybook/react-vite";
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import { CHROME_LOCAL_NETWORK_SETTINGS, noErrand } from "./errand";
-import * as oldWebClientModule from "./SedeOldWebClient.stories";
-import * as waitingModule from "./SedeWaiting.stories";
 import { SedeWindow } from "./SedeWindow";
+import { NoChannel, OldWebClient, Unreachable, Waiting } from "./testing/fixtures/sedeErrands";
+import { sedeErrand } from "./testing/fixtures/sedeView";
 import { scriptedFrom } from "./testing/fixtures/sedeWindow";
 
 /**
@@ -14,8 +13,10 @@ import { scriptedFrom } from "./testing/fixtures/sedeWindow";
  * en la pantalla; lo que enseña cada historia está en `SedeWindow.presentation.test.tsx`.
  */
 
-const { OldWebClient } = composeStories(oldWebClientModule);
-const { Waiting, Unreachable, NoChannel } = composeStories(waitingModule);
+const LocalCaMissing = {
+  args: {},
+  parameters: { errand: sedeErrand({ kind: "noChannel", reason: "localCaMissing" }) },
+};
 
 describe("SedeWindow", () => {
   it("does not mount at all when no site has called", () => {
@@ -25,7 +26,7 @@ describe("SedeWindow", () => {
   });
 
   describe("the old web client warning", () => {
-    it("is dismissed with its only button, without cancelling or closing the errand", () => {
+    it("is dismissed with Continuar, without cancelling or closing the errand", () => {
       const { port, calls } = scriptedFrom(OldWebClient);
       renderWithCatalog(<SedeWindow errands={port} />);
 
@@ -34,6 +35,17 @@ describe("SedeWindow", () => {
       expect(calls.dismissWarning).toHaveBeenCalledOnce();
       expect(calls.cancel).not.toHaveBeenCalled();
       expect(calls.close).not.toHaveBeenCalled();
+    });
+
+    it("says the risk in one sentence and offers Cancelar, which cancels the errand", () => {
+      const { port, calls } = scriptedFrom(OldWebClient);
+      renderWithCatalog(<SedeWindow errands={port} />);
+
+      expect(screen.getByText("Puede tener errores o no ser segura.")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+
+      expect(calls.cancel).toHaveBeenCalledOnce();
+      expect(calls.dismissWarning).not.toHaveBeenCalled();
     });
 
     it("focuses Continue, so Enter dismisses it", () => {
@@ -62,32 +74,44 @@ describe("SedeWindow", () => {
       expect(calls.cancel).not.toHaveBeenCalled();
     });
 
-    it("offers two recipes and never diagnoses which one is the problem", () => {
+    it("offers the two recipes as tabs, each with its panel, and never diagnoses which one is the problem", () => {
       const { port } = scriptedFrom(Unreachable);
       renderWithCatalog(<SedeWindow errands={port} />);
 
-      expect(screen.getByRole("button", { name: "Chrome" })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      expect(screen.getByRole("button", { name: "Firefox" })).toHaveAttribute(
-        "aria-pressed",
+      expect(screen.getByRole("tab", { name: "Chrome" })).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByRole("tab", { name: "Firefox" })).toHaveAttribute(
+        "aria-selected",
         "false",
       );
+      expect(screen.getByRole("tabpanel")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("tab", { name: "Firefox" }));
+
+      expect(screen.getByRole("tab", { name: "Firefox" })).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("says nothing about the local CA when rFirma does not know it is missing", () => {
+      const { port } = scriptedFrom(Unreachable);
+      renderWithCatalog(<SedeWindow errands={port} />);
+
+      expect(screen.queryByText("Falta la CA local")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Instalar" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Cerrar" })).toHaveClass("rf-btn--primary");
     });
 
     it("gives the local CA the screen's only main action, because nothing works without it", () => {
-      const { port, calls } = scriptedFrom(Unreachable);
+      const { port, calls } = scriptedFrom(LocalCaMissing);
       renderWithCatalog(<SedeWindow errands={port} />);
 
       const install = screen.getByRole("button", { name: "Instalar" });
       expect(install).toHaveClass("rf-btn--primary");
+      expect(screen.getByRole("button", { name: "Cerrar" })).not.toHaveClass("rf-btn--primary");
       fireEvent.click(install);
       expect(calls.installLocalCa).toHaveBeenCalledOnce();
     });
 
-    it("focuses the local CA's install once the channel will not open, so Enter installs it", () => {
-      const { port } = scriptedFrom(Unreachable);
+    it("focuses the local CA's install, so Enter installs it", () => {
+      const { port } = scriptedFrom(LocalCaMissing);
       renderWithCatalog(<SedeWindow errands={port} />);
 
       expect(screen.getByRole("button", { name: "Instalar" })).toHaveFocus();
