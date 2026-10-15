@@ -55,7 +55,7 @@ export async function contentOf(
       return { kind: "none" };
     }
   }
-  if (detected === "xml") return { kind: "xml", text: decodedXml(bytes) };
+  if (detected === "xml" || detected === "invoice") return { kind: "xml", text: decodedXml(bytes) };
   if (detected === "text") return { kind: "text", text: new TextDecoder().decode(bytes) };
   const mediaType = IMAGE_MEDIA_TYPES[detected];
   return mediaType === undefined ? { kind: "none" } : { kind: "image", mediaType, bytes };
@@ -71,6 +71,7 @@ function untitledKey(detected: DocumentType) {
     case "pdf":
       return "sede.consent.untitled";
     case "xml":
+    case "invoice":
       return "sede.consent.untitledXml";
     case "png":
     case "jpeg":

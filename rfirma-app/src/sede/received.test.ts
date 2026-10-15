@@ -68,6 +68,7 @@ describe("receivedName", () => {
   it.each([
     ["pdf", "sede.consent.untitled"],
     ["xml", "sede.consent.untitledXml"],
+    ["invoice", "sede.consent.untitledXml"],
     ["png", "sede.consent.untitledImage"],
     ["webp", "sede.consent.untitledImage"],
     ["xlsx", "sede.consent.untitledDocument"],
@@ -184,8 +185,8 @@ describe("contentOf", () => {
     });
   });
 
-  it("shows an XML as XML", async () => {
-    expect(await contentOf("xml", bytes, loadPdf)).toEqual({
+  it.each(["xml", "invoice"] as const)("shows %s as XML", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
       kind: "xml",
       text: "<baremo>Antigüedad</baremo>",
     });
