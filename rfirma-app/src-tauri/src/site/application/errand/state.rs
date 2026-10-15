@@ -49,6 +49,7 @@ pub struct LiveErrand {
     chosen_document: Mutex<Option<String>>,
     origin: Mutex<SiteOrigin>,
     sha1_once: std::sync::atomic::AtomicBool,
+    expanded: std::sync::atomic::AtomicBool,
 }
 
 /// Datos identificativos y de conexión de un trámite en curso.
@@ -237,6 +238,7 @@ impl LiveErrand {
         *crate::lock(&self.chosen_document) = None;
         self.sha1_once
             .store(false, std::sync::atomic::Ordering::SeqCst);
+        self.expand_the_window(false);
         self.forget_the_consent();
     }
 
@@ -244,6 +246,17 @@ impl LiveErrand {
     pub fn allow_sha1_once(&self) {
         self.sha1_once
             .store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Anota si la persona tiene ampliada la ventana del consentimiento.
+    pub fn expand_the_window(&self, expanded: bool) {
+        self.expanded
+            .store(expanded, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Si la persona tiene ampliada la ventana del consentimiento.
+    pub fn window_is_expanded(&self) -> bool {
+        self.expanded.load(std::sync::atomic::Ordering::SeqCst)
     }
 
     /// Si la persona permitió SHA-1 en la operación en curso.

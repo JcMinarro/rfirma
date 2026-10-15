@@ -87,6 +87,43 @@ pub fn site_mark_area(
     Ok(goes_on)
 }
 
+/// Amplía la ventana del consentimiento a la forma de ver los documentos, o la devuelve a su tamaño.
+#[tauri::command(async)]
+pub fn site_expand_window(expanded: bool, app_handle: tauri::AppHandle) {
+    site_window::expand_the_window(&app_handle, expanded);
+}
+
+/// Abre con la aplicación del sistema una copia temporal del documento de la sede, según el tipo que rFirma detecta en sus bytes (ADR-0050).
+#[tauri::command(async)]
+pub fn site_open_with(
+    document: String,
+    app_handle: tauri::AppHandle,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<(), Failure> {
+    use tauri_plugin_opener::OpenerExt;
+
+    let bytes = crate::documents::application::documents::bytes_of(
+        documents.files.as_ref(),
+        &documents.opened,
+        &document,
+    )?;
+    let copy = site_window::with_the_desk(&app_handle, |desk, live| {
+        crate::site::application::errand::copy_to_open(desk, live, &bytes)
+    })
+    .map_err(|error| match error {
+        crate::site::application::errand::CopyToOpenError::Unrecognised => {
+            Failure::new("unrecognisedType", "el tipo del documento no se reconoce")
+        }
+        crate::site::application::errand::CopyToOpenError::Unwritable(detail) => {
+            Failure::new("unknown", detail)
+        }
+    })?;
+    app_handle
+        .opener()
+        .open_path(copy.to_string_lossy(), None::<&str>)
+        .map_err(|error| Failure::new("unknown", error.to_string()))
+}
+
 /// Postfirma del trámite de sede y entrega del resultado a la sede, o el paso al guardado
 /// del portal si la firma venía de `signandsave`.
 #[tauri::command(async)]
