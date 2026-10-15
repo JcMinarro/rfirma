@@ -454,7 +454,12 @@ describe("los momentos que pone el adaptador", () => {
     const { push, port, calls, last } = watched();
     push({
       origin: "sede.ejemplo.gob.es",
-      stage: { kind: "askingForConsent", certificates: [certificate()] },
+      stage: {
+        kind: "askingForConsent",
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+      },
     });
 
     await port.consent("handle-1");
@@ -565,6 +570,8 @@ describe("la selección automática que pide la sede", () => {
       signing: "pdf",
       round: { kind: "sign" },
       certificates: [certificate()],
+      narrowed: false,
+      notAccepted: 0,
       alreadyChosen: "handle-1",
       withoutAsking,
     },
