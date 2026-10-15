@@ -38,8 +38,8 @@ interface ConfigurationView {
   allowSha1: boolean;
 }
 
-function readConfiguration(): Promise<ConfigurationView> {
-  return invoke<ConfigurationView>("read_configuration");
+function readConfiguration(terminal: boolean): Promise<ConfigurationView> {
+  return invoke<ConfigurationView>(terminal ? "read_terminal_configuration" : "read_configuration");
 }
 
 function writeConfiguration(configuration: ConfigurationView): Promise<void> {
@@ -62,10 +62,10 @@ function writeConfiguration(configuration: ConfigurationView): Promise<void> {
  * explícitamente las claves que sí son del
  * contrato de `ConfigurationView`, en vez de mandar `preferences` entero.
  */
-export function tauriPreferences(): PreferencesStore {
+export function tauriPreferences(terminal = false): PreferencesStore {
   return {
     read: async () => {
-      const configuration = await readConfiguration();
+      const configuration = await readConfiguration(terminal);
       return {
         theme: isTheme(configuration.theme) ? configuration.theme : DEFAULT_THEME,
         destination: configuration.destination,
@@ -82,7 +82,7 @@ export function tauriPreferences(): PreferencesStore {
       };
     },
     save: async (preferences) => {
-      const stored = await readConfiguration();
+      const stored = await readConfiguration(terminal);
       await writeConfiguration({
         ...stored,
         theme: preferences.theme,
@@ -109,14 +109,14 @@ export function tauriPreferences(): PreferencesStore {
  * —`createI18n` lo necesita para el primer pintado— y los ajustes solo se leen
  * al montar la aplicación. Debajo es el mismo fichero.
  */
-export function tauriLanguagePreference(): LanguagePreference {
+export function tauriLanguagePreference(terminal = false): LanguagePreference {
   return {
     read: async () => {
-      const { language } = await readConfiguration();
+      const { language } = await readConfiguration(terminal);
       return isLanguageTag(language) ? language : FALLBACK_LANGUAGE;
     },
     save: async (language) => {
-      const stored = await readConfiguration();
+      const stored = await readConfiguration(terminal);
       await writeConfiguration({ ...stored, language });
     },
   };

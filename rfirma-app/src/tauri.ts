@@ -28,7 +28,7 @@ export {
   tauriRecents,
 } from "./tauriDocuments";
 export { tauriLanguagePreference, tauriPreferences, tauriWindowTheme } from "./tauriPreferences";
-export { tauriSiteErrands } from "./tauriSede";
+export { tauriSiteErrands, tauriTerminalErrands } from "./tauriSede";
 export {
   tauriCertificateStore,
   tauriDestinations,

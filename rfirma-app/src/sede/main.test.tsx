@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SiteErrandView } from "./siteErrandView";
 import { certificate } from "./testing/fixtures/sedeWindow";
 
@@ -77,5 +78,52 @@ describe("el punto de entrada de la ventana de sede", () => {
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
 
     expect(invoke.mock.calls.map(([command]) => command)).not.toContain("check_for_new_version");
+  });
+
+  describe("opened by a terminal order", () => {
+    beforeEach(() => {
+      window.history.replaceState(null, "", "/sede.html?origin=terminal");
+      invoke.mockImplementation(async (command: string) => {
+        if (command === "read_terminal_configuration") return configuration;
+        if (command === "read_terminal_choice") {
+          return {
+            document: "/home/ada/contratos/convenio.pdf",
+            stage: { kind: "askingToSign", certificates: [certificate()] },
+          };
+        }
+        if (command === "terminal_choose_certificate") return { kind: "notNeeded" };
+        return null;
+      });
+    });
+
+    afterEach(() => {
+      window.history.replaceState(null, "", "/");
+    });
+
+    it("shows the consent of the terminal order", async () => {
+      await import("./main");
+
+      expect(await screen.findByText("Una orden de terminal")).toBeInTheDocument();
+      expect(screen.getByText("Firmar convenio.pdf")).toBeInTheDocument();
+      expect(invoke.mock.calls.map(([command]) => command)).not.toContain("read_configuration");
+    });
+
+    it("hands the chosen certificate to the terminal order", async () => {
+      await import("./main");
+
+      await userEvent.click(await screen.findByRole("button", { name: "Firmar" }));
+
+      expect(invoke).toHaveBeenCalledWith("terminal_choose_certificate", {
+        certificate: "handle-1",
+      });
+    });
+
+    it("cancels the terminal order", async () => {
+      await import("./main");
+
+      await userEvent.click(await screen.findByRole("button", { name: "Cancelar" }));
+
+      expect(invoke).toHaveBeenCalledWith("terminal_cancel");
+    });
   });
 });

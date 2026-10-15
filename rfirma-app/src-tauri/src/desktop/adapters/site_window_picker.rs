@@ -10,11 +10,16 @@ use crate::desktop::ports::{GraphicalPicker, WindowChoice, WindowOffer};
 use crate::identity::adapters::views::CertificateView;
 use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::error::{Situation, TokenError};
+use crate::identity::domain::holder::prompted_holder_of;
 use crate::identity::domain::protected_secret::ProtectedSecret;
-use crate::identity::domain::secret::StoreSecret;
+use crate::identity::domain::secret::{PinWarning, SecretName, StoreSecret};
+use crate::identity::ports::{SecretPromptError, SecretPromptRequest, SecretPrompter};
 use crate::identity::IdentityRoot;
 use crate::lock;
+use crate::signing::adapters::views::ConfigurationView;
+use crate::signing::domain::Language;
 use crate::signing::ports::Signer as _;
+use crate::Roots;
 
 /// La etiqueta de la ventana, la de sede, para que la cubran sus permisos.
 pub const TERMINAL_WINDOW: &str = "site";
@@ -24,14 +29,22 @@ const DIALOG_SIZE: (f64, f64) = (520.0, 420.0);
 /// La ventana de sede de `-certgui`, sobre la identidad de este proceso y el contexto de Tauri del crate.
 pub struct SiteWindowPicker<'a> {
     identity: Option<&'a IdentityRoot>,
+    configuration: Option<ConfigurationView>,
     context: Mutex<Option<tauri::Context<tauri::Wry>>>,
 }
 
 impl<'a> SiteWindowPicker<'a> {
     /// El elector de esa identidad, o uno que no abre nada si no se sabe dónde vive la memoria.
-    pub fn over(identity: Option<&'a IdentityRoot>, context: tauri::Context<tauri::Wry>) -> Self {
+    pub fn over(roots: Option<&'a Roots>, context: tauri::Context<tauri::Wry>) -> Self {
         Self {
-            identity,
+            identity: roots.map(|roots| &roots.identity),
+            configuration: roots.map(|roots| {
+                crate::signing::application::configuration::shown(
+                    &roots.signing.configuration(),
+                    &roots.documents.documents_folder,
+                )
+                .into()
+            }),
             context: Mutex::new(Some(context)),
         }
     }
@@ -52,7 +65,10 @@ impl GraphicalPicker for SiteWindowPicker<'_> {
         let choice = Arc::new(TerminalChoice::of(identity, document, offer));
         let app = tauri::Builder::default()
             .manage(Arc::clone(&choice))
+            .manage(self.configuration.clone())
+            .manage(SecretDialog(Arc::clone(&identity.prompter)))
             .invoke_handler(tauri::generate_handler![
+                super::tauri_certgui::read_terminal_configuration,
                 super::tauri_certgui::read_terminal_choice,
                 super::tauri_certgui::terminal_choose_certificate,
                 super::tauri_certgui::terminal_hand_the_secret,
@@ -104,6 +120,9 @@ fn open_the_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     .build()
     .map(|_| ())
 }
+
+/// El diálogo del PIN del sistema, el mismo que el resto de la aplicación, al alcance de las órdenes de la ventana.
+pub struct SecretDialog(pub Arc<dyn SecretPrompter + Send + Sync>);
 
 /// El asa de una fila de la ventana, y su certificado con el secreto que pide su almacén, o por qué no se puede elegir.
 pub type Choosable = (String, Result<(TokenCertificate, StoreSecret), Failure>);
@@ -201,6 +220,32 @@ impl TerminalChoice {
             secret: Some(secret),
         });
         Ok(())
+    }
+
+    /// Pide el PIN del certificado elegido con el diálogo del sistema y completa la elección; si la persona lo cancela, cancela la elección.
+    pub fn ask_the_secret(&self, dialog: &SecretDialog) -> Result<(), Failure> {
+        let Some(certificate) = lock(&self.pending).clone() else {
+            return Ok(());
+        };
+        let request = SecretPromptRequest {
+            secret: SecretName::of(certificate.reference().store().class()),
+            holder: prompted_holder_of(certificate.der()),
+            language: Language::Spanish,
+            incorrect_secret: false,
+            pin_warning: PinWarning::Quiet,
+            origin_window: None,
+        };
+        match dialog.0.prompt_secret(&request) {
+            Ok(secret) => self.hand_the_secret(secret),
+            Err(SecretPromptError::Cancelled) => {
+                self.cancel();
+                Ok(())
+            }
+            Err(SecretPromptError::Failed(reason)) => {
+                self.cancel();
+                Err(Failure::from(TokenError::new(Situation::Unknown, reason)))
+            }
+        }
     }
 
     /// La persona cancela, por el botón o cerrando la ventana.

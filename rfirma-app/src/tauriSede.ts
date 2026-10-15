@@ -5,6 +5,7 @@ import { listen } from "@tauri-apps/api/event";
 import type { SiteErrandPort } from "./sede/errand";
 import { contentOf } from "./sede/received";
 import { type SiteErrandView, siteErrands } from "./sede/siteErrands";
+import { type TerminalChoiceView, terminalErrands } from "./sede/terminalErrands";
 import {
   NO_PREVIOUS_SIGNATURES,
   type PreviousSignaturesReport,
@@ -121,5 +122,15 @@ export function tauriSiteErrands(): SiteErrandPort {
       await invoke<boolean>("site_download_all");
     },
     openWith: (document) => invoke<void>("site_open_with", { document }),
+  });
+}
+
+/** El trámite de la ventana que abre `-certgui`, sobre las órdenes de la terminal. */
+export function tauriTerminalErrands(): SiteErrandPort {
+  return terminalErrands({
+    readChoice: () => invoke<TerminalChoiceView>("read_terminal_choice"),
+    chooseCertificate: (certificate) =>
+      stage(() => invoke<StoreSecret>("terminal_choose_certificate", { certificate })),
+    cancel: () => invoke<void>("terminal_cancel"),
   });
 }

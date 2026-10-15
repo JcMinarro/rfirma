@@ -15,8 +15,10 @@ import {
   tauriLanguagePreference,
   tauriPreferences,
   tauriSiteErrands,
+  tauriTerminalErrands,
   tauriWindowTheme,
 } from "../tauri";
+import { openedByTerminal } from "../windowOrigin";
 import { SedeWindow } from "./SedeWindow";
 
 /**
@@ -49,10 +51,14 @@ if (!root) {
   throw new Error("no existe #root en sede.html");
 }
 
-const preference = tauriLanguagePreference();
+const terminal = openedByTerminal();
+const preference = tauriLanguagePreference(terminal);
 // Las dos lecturas van a la vez: son la misma configuración en el disco y
 // encadenarlas sólo retrasaría el primer pintado.
-const [language, settings] = await Promise.all([preference.read(), tauriPreferences().read()]);
+const [language, settings] = await Promise.all([
+  preference.read(),
+  tauriPreferences(terminal).read(),
+]);
 
 // Antes de montar nada: aplicarlo después dejaría ver un parpadeo del tema que
 // no es.
@@ -63,7 +69,7 @@ const i18n = createI18n(language);
 // Fuera del árbol: `SedeWindow` se resuscribe cuando el puerto cambia de
 // identidad, y uno nuevo en cada pintada lo suscribiría en bucle. Lo mismo
 // vale para `externalDestinations`, que aquí también usa el `RenderErrorBoundary`.
-const errands = tauriSiteErrands();
+const errands = terminal ? tauriTerminalErrands() : tauriSiteErrands();
 const externalDestinations = tauriExternalDestinationOpener();
 
 createRoot(root).render(
