@@ -12,6 +12,7 @@ pub mod desk;
 pub mod frontier;
 #[cfg(test)]
 mod header_probe;
+pub mod invoice_view;
 pub mod nss;
 pub mod readers;
 pub mod relay;

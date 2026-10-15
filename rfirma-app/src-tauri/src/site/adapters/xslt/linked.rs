@@ -1,9 +1,9 @@
 //! libxml2 y libxslt enlazadas al binario: estáticas desde vcpkg en Windows y las del sistema en macOS, según `build.rs`.
 
-use std::ffi::{c_char, c_int};
+use std::ffi::{c_char, c_int, c_void};
 use std::sync::OnceLock;
 
-use super::{Document, Functions, Stylesheet, XmlFree};
+use super::{Document, Functions, SecurityCheck, SecurityPrefs, Stylesheet, XmlFree};
 
 extern "C" {
     fn xmlReadMemory(
@@ -28,6 +28,14 @@ extern "C" {
         stylesheet: Stylesheet,
     ) -> c_int;
     fn xsltFreeStylesheet(stylesheet: Stylesheet);
+    fn xsltNewSecurityPrefs() -> SecurityPrefs;
+    fn xsltSetSecurityPrefs(prefs: SecurityPrefs, option: c_int, check: SecurityCheck) -> c_int;
+    fn xsltSecurityForbid(
+        prefs: SecurityPrefs,
+        context: *mut c_void,
+        value: *const c_char,
+    ) -> c_int;
+    fn xsltSetDefaultSecurityPrefs(prefs: SecurityPrefs);
 }
 
 pub(super) fn functions() -> Option<&'static Functions> {
@@ -41,5 +49,9 @@ pub(super) fn functions() -> Option<&'static Functions> {
         apply_stylesheet: xsltApplyStylesheet,
         save_result: xsltSaveResultToString,
         free_stylesheet: xsltFreeStylesheet,
+        new_security_prefs: xsltNewSecurityPrefs,
+        set_security_pref: xsltSetSecurityPrefs,
+        forbid: xsltSecurityForbid,
+        set_default_security_prefs: xsltSetDefaultSecurityPrefs,
     }))
 }

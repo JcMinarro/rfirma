@@ -24,5 +24,9 @@ unsafe fn load() -> Result<Functions, libloading::Error> {
         apply_stylesheet: *library.get(b"xsltApplyStylesheet\0")?,
         save_result: *library.get(b"xsltSaveResultToString\0")?,
         free_stylesheet: *library.get(b"xsltFreeStylesheet\0")?,
+        new_security_prefs: *library.get(b"xsltNewSecurityPrefs\0")?,
+        set_security_pref: *library.get(b"xsltSetSecurityPrefs\0")?,
+        forbid: *library.get(b"xsltSecurityForbid\0")?,
+        set_default_security_prefs: *library.get(b"xsltSetDefaultSecurityPrefs\0")?,
     })
 }
