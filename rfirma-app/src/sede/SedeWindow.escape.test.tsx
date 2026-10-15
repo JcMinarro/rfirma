@@ -79,14 +79,14 @@ describe("Escape", () => {
     expect(calls.cancel).not.toHaveBeenCalled();
   });
 
-  it("neither dismisses nor cancels the old web client warning, which has no Cancelar", () => {
+  it("cancels the errand from the old web client warning, without dismissing it", () => {
     const { port, calls } = scriptedFrom(OldWebClient);
     renderWithCatalog(<SedeWindow errands={port} />);
 
     pressEscape();
 
     expect(calls.dismissWarning).not.toHaveBeenCalled();
-    expect(calls.cancel).not.toHaveBeenCalled();
+    expect(calls.cancel).toHaveBeenCalledOnce();
   });
 
   it("closes the open certificate list without cancelling the errand", () => {
