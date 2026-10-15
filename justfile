@@ -570,6 +570,11 @@ bundle: check-native build-ts
     (cd "{{ tauri }}" && cargo build --release --features custom-protocol,console --bin rfirma-console)
     cp "$CARGO_TARGET_DIR/release/rfirma-console.exe" "$runtime/rfirma.com"
     (cd "{{ app }}" && pnpm exec tauri build --bundles nsis --config "{{ root }}/packaging/windows/tauri.windows.json")
+    dumpbin="$(ls "$vs"/VC/Tools/MSVC/*/bin/Hostx64/x64/dumpbin.exe | sort -V | tail -1)"
+    if "$dumpbin" -nologo -dependents "$CARGO_TARGET_DIR/release/rfirma.exe" | grep -i -E 'libxml2|libxslt|iconv|vcruntime|msvcp'; then
+        echo "rfirma.exe depende de una DLL que va estática: libxml2, libxslt y el CRT de Visual C++" >&2
+        exit 1
+    fi
     salida="$CARGO_TARGET_DIR/release/bundle/nsis"
     instalador="$(find "$salida" -maxdepth 1 -type f -name '*-setup.exe' | sort | tail -1)"
     if [ -z "$instalador" ]; then
