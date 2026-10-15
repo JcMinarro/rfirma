@@ -20,31 +20,36 @@ type Asks = "signature" | "identity";
 interface SedeAwaitingProps {
   origin: string | null;
   asks?: Asks;
-  moment: "connecting" | "unreachable" | "noChannel";
+  moment: "waiting" | "unreachable";
+  localCaMissing?: boolean;
   onInstallLocalCa: () => void;
   onCancel: () => void;
 }
 
-/** La espera del canal y, cuando ya no va a abrirse, la CA local como aviso y las dos recetas de navegador. */
+/** La espera del canal y, cuando no llega, las recetas del navegador y, si falta la CA local, su aviso. */
 export function SedeAwaiting({
   origin,
   asks = "signature",
   moment,
+  localCaMissing = false,
   onInstallLocalCa,
   onCancel,
 }: SedeAwaitingProps) {
   const { t } = useTranslation();
   const [browser, setBrowser] = useState<Browser>("chrome");
-  const repairing = moment !== "connecting";
-  const closeButton = useDefaultButton(repairing);
+  const repairing = moment === "unreachable";
+  const installing = repairing && localCaMissing;
+  const closing = repairing && !localCaMissing;
+  const installButton = useDefaultButton(installing);
+  const closeButton = useDefaultButton(closing);
 
-  const localCa = (
+  const localCa = installing && (
     <Admonition
       tone="warning"
       className="sede-ending__detail"
       title={t("sede.repair.caMissing")}
       action={
-        <Button variant="ghost" onClick={onInstallLocalCa}>
+        <Button ref={installButton} variant="primary" onClick={onInstallLocalCa}>
           {t("status.actions.install")}
         </Button>
       }
@@ -55,7 +60,7 @@ export function SedeAwaiting({
     <SedeBody
       flush
       steadyFooter
-      primary={repairing ? closeButton : undefined}
+      primary={installing ? installButton : closing ? closeButton : undefined}
       onEscape={onCancel}
       footer={
         repairing ? (
@@ -63,7 +68,7 @@ export function SedeAwaiting({
             <p className="rf-hint sede-passing__retry">{t("sede.repair.retry")}</p>
             <Button
               ref={closeButton}
-              variant="primary"
+              variant={closing ? "primary" : "ghost"}
               className="sede-passing__steady"
               onClick={onCancel}
             >

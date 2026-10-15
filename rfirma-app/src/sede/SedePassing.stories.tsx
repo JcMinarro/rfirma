@@ -9,7 +9,8 @@ import { sedeErrand, sedeViewActions } from "./testing/fixtures/sedeView";
 const ORIGIN = sedeErrand({ kind: "waiting" }).origin;
 
 interface PassingDesignProps {
-  moment: "connecting" | "unreachable" | "noChannel";
+  moment: "waiting" | "unreachable";
+  localCaMissing: boolean;
   asks: "signature" | "identity";
   phase: SigningPhase;
   kind: "saving" | "loading";
@@ -23,12 +24,13 @@ function originOf(withOrigin: boolean) {
   return withOrigin ? ORIGIN : null;
 }
 
-function AwaitingDesign({ moment, asks, withOrigin }: PassingDesignProps) {
+function AwaitingDesign({ moment, localCaMissing, asks, withOrigin }: PassingDesignProps) {
   return (
     <SedeAwaiting
       origin={originOf(withOrigin)}
       asks={asks}
       moment={moment}
+      localCaMissing={localCaMissing}
       onInstallLocalCa={sedeViewActions.onInstallLocalCa}
       onCancel={sedeViewActions.onCancel}
     />
@@ -63,7 +65,8 @@ const meta = {
   ...sedeMomentMeta,
   component: AwaitingDesign,
   args: {
-    moment: "connecting",
+    moment: "waiting",
+    localCaMissing: false,
     asks: "signature",
     phase: "signing",
     kind: "saving",
@@ -84,7 +87,7 @@ const meta = {
       description: {
         component: [
           "Provisional: el diseño de los momentos de paso con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir; en la espera y la firma, con lo que pide la sede; al guardar o cargar, solo su nombre. Debajo, alineado a la izquierda, solo el título.",
-          "Cuando la petición no llega, la falta de la CA local es el único aviso de la pantalla, con «Instalar» a su derecha: antes de la receta en Chrome y después en Firefox. El pie conserva las posiciones del consentimiento: a la izquierda, qué hacer tras permitir, que cede si no cabe; a la derecha, «Cerrar» como principal.",
+          "Cuando la petición no llega, la pantalla da las recetas del permiso del navegador. Si rFirma sabe que falta su CA local, lo dice en el único aviso de la pantalla, con «Instalar» a su derecha como principal: antes de la receta en Chrome y después en Firefox. El pie conserva las posiciones del consentimiento: a la izquierda, qué hacer tras permitir, que cede si no cabe; a la derecha, «Cerrar», que es el principal cuando no hay aviso.",
           "Mientras se espera o se firma, «Cancelar» queda a la derecha; mientras se envía la firma y mientras el diálogo del sistema guarda o carga, el pie queda vacío a la misma altura.",
         ].join("\n\n"),
       },
@@ -102,14 +105,14 @@ export const Waiting: Story = {
   argTypes: {
     moment: {
       description:
-        "En qué punto está el canal: todavía abriéndose, sin llegar en el plazo previsto o sin poder abrirse ya, que se sabe sin esperar el plazo",
+        "Si la petición de la sede todavía se espera o ya no ha llegado, por vencer el plazo o porque el canal no puede abrirse",
       control: "radio",
-      options: ["connecting", "unreachable", "noChannel"],
-      labels: {
-        connecting: "Esperando",
-        unreachable: "No ha llegado",
-        noChannel: "Sin canal",
-      },
+      options: ["waiting", "unreachable"],
+      labels: { waiting: "Esperando", unreachable: "No ha llegado" },
+    },
+    localCaMissing: {
+      description:
+        "Falta la CA local: rFirma sabe que no está instalada; solo cuenta cuando la petición no ha llegado",
     },
     asks: {
       description: "Qué pide la sede",
@@ -136,6 +139,7 @@ export const Signing: Story = {
       labels: { signing: "Firmando", returning: "Enviando" },
     },
     moment: hidden,
+    localCaMissing: hidden,
     asks: hidden,
     kind: hidden,
     named: hidden,
@@ -163,6 +167,7 @@ export const Transfer: Story = {
       description: "Al cargar, si la sede pide varios ficheros",
     },
     moment: hidden,
+    localCaMissing: hidden,
     asks: hidden,
     phase: hidden,
   },
