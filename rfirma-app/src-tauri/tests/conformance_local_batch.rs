@@ -5,15 +5,26 @@ mod support;
 
 use support::*;
 
-/// El trámite atendiendo el lote local: consiente con el certificado de pruebas y lo cierra con
-/// el secreto del token, firmando cada elemento por el ciclo de sede sin servlets (ADR-0014).
+use std::collections::BTreeMap;
+
+use rfirma_lib::documents::application::documents::bytes_of;
+use rfirma_lib::signing::application::session::previous_signatures_in;
+
+/// Los bytes de cada elemento del lote local leídos por su asa antes de firmar, por su `id`.
+type Downloaded = Arc<Mutex<BTreeMap<String, Vec<u8>>>>;
+
+/// El trámite atendiendo el lote local: lee cada elemento y sus firmas previas por su asa,
+/// consiente con el certificado de pruebas y lo cierra con el secreto del token, firmando cada
+/// elemento por el ciclo de sede sin servlets (ADR-0014).
 fn the_local_batch_errand_of(
     roots: &Arc<Roots>,
     signer: &Arc<Mutex<Option<Vec<u8>>>>,
+    downloaded: &Downloaded,
     items: usize,
 ) -> SiteOperations {
     let roots = Arc::clone(roots);
     let signer = Arc::clone(signer);
+    let downloaded = Arc::clone(downloaded);
 
     SiteOperations::for_operations(move |url, _origin, reply: ErrandReply| {
         let neighbourhood = the_neighbourhood_of(&roots);
@@ -27,6 +38,41 @@ fn the_local_batch_errand_of(
             return;
         };
         assert_eq!(consent.items.len(), items, "los elementos del guion");
+        for item in &consent.items {
+            let handle = &item.document.handle;
+            let bytes = bytes_of(
+                roots.documents.files.as_ref(),
+                &roots.documents.opened,
+                handle,
+            )
+            .unwrap_or_else(|error| {
+                panic!("el elemento '{}' se lee por su asa: {error:?}", item.id)
+            });
+            assert_eq!(
+                hex_of(&openssl::sha::sha256(&bytes)),
+                item.document.sha256,
+                "el SHA-256 del consentimiento es el de lo que se lee por el asa"
+            );
+            let document = roots
+                .documents
+                .opened_document(handle)
+                .expect("el asa del elemento sigue abierta");
+            previous_signatures_in(
+                roots.signing.files.as_ref(),
+                &roots.signing.isolate,
+                &document,
+            )
+            .unwrap_or_else(|error| {
+                panic!(
+                    "las firmas previas de '{}' se leen por su asa: {error:?}",
+                    item.id
+                )
+            });
+            downloaded
+                .lock()
+                .expect("nadie envenena lo descargado")
+                .insert(item.id.clone(), bytes);
+        }
 
         let chosen = consent
             .certificates
@@ -53,6 +99,20 @@ fn the_local_batch_errand_of(
 }
 
 /// Un elemento del resultado del lote local, por su `id`.
+fn hex_of(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+/// Lo que se leyó por el asa del elemento `id`.
+fn downloaded_item(downloaded: &Downloaded, id: &str) -> Vec<u8> {
+    downloaded
+        .lock()
+        .expect("nadie envenena lo descargado")
+        .get(id)
+        .unwrap_or_else(|| panic!("el elemento '{id}' no se leyó por su asa"))
+        .clone()
+}
+
 fn local_batch_item<'a>(result: &'a serde_json::Value, id: &str) -> &'a serde_json::Value {
     result["signs"]
         .as_array()
@@ -77,6 +137,7 @@ async fn the_local_batch_of(mode: BenchMode) {
         a_running_rfirma(home.path())
     }));
     let signer = Arc::new(Mutex::new(None));
+    let downloaded = Downloaded::default();
     let pdf_file = a_temp_file(".pdf", &a_one_page_pdf());
     let client = PublishedClient::running_the_script_over_the_pdf(
         &material,
@@ -89,7 +150,7 @@ async fn the_local_batch_of(mode: BenchMode) {
         &client,
         &material,
         &roots,
-        the_local_batch_errand_of(&roots, &signer, 3),
+        the_local_batch_errand_of(&roots, &signer, &downloaded, 3),
     )
     .await;
 
@@ -134,7 +195,12 @@ async fn the_local_batch_of(mode: BenchMode) {
                 .expect("el CAdES del binario llega en base64"),
         )
         .expect("el CAdES del binario es base64 valido");
-    let binary_file = a_temp_file(".bin", THE_LOCAL_BATCH_BINARY);
+    let bin = downloaded_item(&downloaded, "bin");
+    assert_eq!(
+        bin, THE_LOCAL_BATCH_BINARY,
+        "lo que se descarga es lo que mandó la sede"
+    );
+    let binary_file = a_temp_file(".bin", &bin);
     verified_by_openssl(&cms, binary_file.path());
     validated_by_the_reference_tool(&cms);
 
@@ -189,6 +255,7 @@ async fn the_local_batch_with_an_illegible_item_of(mode: BenchMode) {
         a_running_rfirma(home.path())
     }));
     let signer = Arc::new(Mutex::new(None));
+    let downloaded = Downloaded::default();
     let pdf_file = a_temp_file(".pdf", &a_one_page_pdf());
     let client = PublishedClient::running_the_script_over_the_pdf(
         &material,
@@ -201,7 +268,7 @@ async fn the_local_batch_with_an_illegible_item_of(mode: BenchMode) {
         &client,
         &material,
         &roots,
-        the_local_batch_errand_of(&roots, &signer, 3),
+        the_local_batch_errand_of(&roots, &signer, &downloaded, 3),
     )
     .await;
 
@@ -268,6 +335,7 @@ async fn the_published_client_signs_a_local_batch_in_format_none_as_bare_pkcs1()
         a_running_rfirma(home.path())
     }));
     let signer = Arc::new(Mutex::new(None));
+    let downloaded = Downloaded::default();
     let client = PublishedClient::running_the_script(
         &material,
         BenchMode::Fourth,
@@ -278,7 +346,7 @@ async fn the_published_client_signs_a_local_batch_in_format_none_as_bare_pkcs1()
         &client,
         &material,
         &roots,
-        the_local_batch_errand_of(&roots, &signer, 1),
+        the_local_batch_errand_of(&roots, &signer, &downloaded, 1),
     )
     .await;
 
@@ -311,7 +379,12 @@ async fn the_published_client_signs_a_local_batch_in_format_none_as_bare_pkcs1()
         .expect("nadie envenena el apunte del firmante")
         .clone()
         .expect("el tramite tenia que haber consentido con un certificado");
-    verified_as_a_bare_pkcs1(&pkcs1, THE_LOCAL_BATCH_BINARY, &signer_der);
+    let bin = downloaded_item(&downloaded, "bin");
+    assert_eq!(
+        bin, THE_LOCAL_BATCH_BINARY,
+        "lo que se descarga es lo que mandó la sede"
+    );
+    verified_as_a_bare_pkcs1(&pkcs1, &bin, &signer_der);
 
     channel.close();
 }

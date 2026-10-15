@@ -13,7 +13,7 @@ use confirmation::{
     asking_to_confirm, asks_to_check_signatures, the_previous_signatures_hold,
     SIGNING_CERTIFIED_PDF,
 };
-pub(in crate::site::application) use scratch::{keep_the_document, write_the_document};
+pub(in crate::site::application) use scratch::keep_the_document;
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -125,9 +125,7 @@ pub fn attend_operation<E: FilterEngine, P: PolicyEngine>(
         SiteRequest::Batch(request) => {
             consent_to_the_batch(desk.engine, request, ours, desk.neighbours, live)
         }
-        SiteRequest::LocalBatch(ask) => {
-            consent_to_the_local_batch(desk.engine, *ask, ours, desk.neighbours, live)
-        }
+        SiteRequest::LocalBatch(ask) => consent_to_the_local_batch(desk, *ask, ours, live),
         SiteRequest::Save(_)
         | SiteRequest::Load(_)
         | SiteRequest::SignWithoutDocument(_)

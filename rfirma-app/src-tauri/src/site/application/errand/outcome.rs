@@ -295,6 +295,8 @@ pub struct BatchConsent {
 pub struct LocalBatchItem {
     /// El identificador con el que la sede nombra el elemento.
     pub id: String,
+    /// El elemento como documento de paso, con su asa para la ventana.
+    pub document: ReceivedDocument,
     /// El formato con el que se firma, con `auto` ya resuelto por la cabecera.
     pub format: Format,
     /// La operación que el lote pide sobre el elemento.

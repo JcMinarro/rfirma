@@ -62,6 +62,8 @@ ORDENES DE TAURI                          (<contexto>/adapters/tauri*.rs)
   async site_allow_sha1_once()
   async site_save_file() -> Result<bool, Failure>
   async site_load_files() -> Result<Option<u32>, Failure>
+  async site_download_document(document: String) -> Result<bool, Failure>
+  async site_download_all() -> Result<bool, Failure>
   async install_local_ca()
         read_site_errand() -> Option<SiteErrandView>
 
@@ -423,11 +425,6 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Tree
       Leafs
 
-  pub struct LocalBatchItemView
-      id: String
-      signing: SigningKindView
-      round: SignatureRoundView
-
   pub enum SiteStageView   (serde: etiqueta "kind")
       Waiting
       AskingForConsent { certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize }
@@ -464,6 +461,15 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Zip
       Text
       Unknown
+
+  pub struct LocalBatchItemView
+      id: String
+      document: String
+      name: Option<String>
+      detected: DocumentTypeView
+      sha256: String
+      signing: SigningKindView
+      round: SignatureRoundView
 
   pub enum SiteOutcomeView   (serde: etiqueta "kind")
       Refused { situation: RefusalSituationView, detail: String }

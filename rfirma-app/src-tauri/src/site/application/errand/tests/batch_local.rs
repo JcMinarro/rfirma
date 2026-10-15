@@ -11,7 +11,7 @@ use crate::signing::domain::bridge::{Format, XadesVariant};
 use crate::site::adapters::frontier;
 use crate::site::application::errand::*;
 use crate::site::application::tests::InMemoryBatchServices;
-use crate::site::domain::protocol::{AfirmaUrl, ChannelMessage, SignatureRound};
+use crate::site::domain::protocol::{AfirmaUrl, ChannelMessage, DocumentType, SignatureRound};
 use base64::Engine as _;
 
 /// Un lote local de tres elementos donde el segundo pide un formato que el puente no atiende
@@ -113,8 +113,134 @@ fn a_local_batch_reaches_the_consent_with_a_summary_of_every_item() {
         std::fs::read_dir(&scratch)
             .map(|mut entries| entries.next().is_none())
             .unwrap_or(true),
-        "cada elemento borra su documento de paso al firmarlo"
+        "el trámite borra el documento de paso de cada elemento al cerrarse"
     );
+}
+
+#[test]
+fn every_item_of_a_local_batch_reaches_the_consent_as_a_passing_document_with_its_handle() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let opened = OpenedDocuments::new();
+    let live = a_live();
+    let engine = AnEngine::answering(&[&[0], &[0]]);
+    let policies = APolicyEngine::answering("");
+    let scratch = home.path().join("errand");
+    let neighbours = neighbours_for_the_local_batch(home.path(), &listed, &opened, &memory, &ours);
+    let desk = a_desk(&engine, &policies, &neighbours, &scratch);
+
+    let url = a_local_batch("");
+    let step = attend_operation(&desk, &url, decoded(&url), &live);
+    let ErrandStep::AskingToSignTheLocalBatch(asked) = remembered(&live, step) else {
+        panic!("un lote local pide consentimiento");
+    };
+
+    let expected = [
+        ("001", A_LOCAL_PDF, DocumentType::Pdf),
+        ("002", A_LOCAL_BINARY, DocumentType::Unknown),
+        ("003", A_LOCAL_XML, DocumentType::Xml),
+    ];
+    for (item, (id, bytes, detected)) in asked.items.iter().zip(expected) {
+        assert_eq!(
+            item.document.name.as_deref(),
+            Some(id),
+            "el nombre es el del lote"
+        );
+        assert_eq!(item.document.detected, detected, "{id}");
+        assert_eq!(
+            item.document.sha256,
+            hex_of(&openssl::sha::sha256(bytes)),
+            "{id}"
+        );
+        assert_eq!(
+            crate::documents::application::documents::bytes_of(
+                &crate::documents::adapters::files::RealFiles,
+                &opened,
+                &item.document.handle,
+            )
+            .expect("el asa del elemento se lee como la de cualquier documento"),
+            bytes,
+            "{id}"
+        );
+    }
+}
+
+#[test]
+fn signing_the_local_batch_signs_the_documents_of_the_consent_without_writing_them_again() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let opened = OpenedDocuments::new();
+    let live = a_live();
+    let (handle, mut wire) = the_wire();
+    live.answer_through(handle);
+    let engine = AnEngine::answering(&[&[0], &[0]]);
+    let policies = APolicyEngine::answering("");
+    let scratch = home.path().join("errand");
+    let neighbours = neighbours_for_the_local_batch(home.path(), &listed, &opened, &memory, &ours);
+    let mut desk = a_desk(&engine, &policies, &neighbours, &scratch);
+    let writes = Arc::new(CountingScratch::default());
+    desk.scratch = writes.clone();
+
+    let url = a_local_batch("");
+    let step = attend_operation(&desk, &url, decoded(&url), &live);
+    let ErrandStep::AskingToSignTheLocalBatch(asked) = remembered(&live, step) else {
+        panic!("un lote local pide consentimiento");
+    };
+    assert_eq!(writes.count(), 3, "el consentimiento escribe cada elemento");
+    consent(&desk, &asked.certificates[0].id, &live).expect("el certificado sirve");
+
+    finish_the_local_batch(&desk, &the_typed_secret(), &live).expect("el lote local contesta");
+
+    assert_eq!(
+        writes.count(),
+        3,
+        "firmar no vuelve a escribir ningún elemento"
+    );
+    assert_eq!(
+        the_batch_result(&mut wire)
+            .matches("\"result\":\"DONE_AND_SAVED\"")
+            .count(),
+        3
+    );
+}
+
+#[derive(Default)]
+struct CountingScratch {
+    writes: std::sync::atomic::AtomicUsize,
+}
+
+impl CountingScratch {
+    fn count(&self) -> usize {
+        self.writes.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
+impl crate::site::ports::Scratch for CountingScratch {
+    fn make_the_folder(&self, folder: &std::path::Path) -> Result<(), String> {
+        crate::site::adapters::scratch::RealScratch.make_the_folder(folder)
+    }
+
+    fn write(&self, path: &std::path::Path, bytes: &[u8]) -> Result<(), String> {
+        self.writes
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        crate::site::adapters::scratch::RealScratch.write(path, bytes)
+    }
+
+    fn read(&self, path: &std::path::Path) -> Result<Vec<u8>, String> {
+        crate::site::adapters::scratch::RealScratch.read(path)
+    }
+
+    fn erase(&self, path: &std::path::Path) {
+        crate::site::adapters::scratch::RealScratch.erase(path);
+    }
+}
+
+fn hex_of(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 #[test]
