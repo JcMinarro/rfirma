@@ -99,7 +99,7 @@ fn sign_one<E: FilterEngine, P: PolicyEngine>(
         .map_err(|refusal| SiteRefusal::LocalBatch(refusal.to_string()))?;
     let format = Format::from(sign.effective_format());
 
-    let path = write_the_document(desk, format, sign.document())?;
+    let path = write_the_document(desk, sign.document())?;
     let document = desk.neighbours.open_unrecorded(path.clone());
     let from_the_site: BTreeMap<String, String> = sign.extra_params().iter().cloned().collect();
 

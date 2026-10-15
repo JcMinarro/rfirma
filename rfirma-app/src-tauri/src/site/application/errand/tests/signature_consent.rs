@@ -314,6 +314,49 @@ fn choosing_the_document_for_sign_and_save_reaches_asking_to_sign_with_the_savin
     assert_eq!(saving.starting_folder.as_deref(), Some("/home/persona"));
 }
 
+#[test]
+fn the_name_the_site_proposes_reaches_the_consent_of_the_document_chosen_on_disk() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let opened = OpenedDocuments::new();
+    let live = a_live();
+    let engine = AnEngine::answering(&[&[0]]);
+    let policies = APolicyEngine::answering("");
+    let scratch = home.path().join("errand");
+    let neighbours = a_neighbourhood(home.path(), &listed, &opened, &memory);
+    let desk = a_desk(&engine, &policies, &neighbours, &scratch);
+    let properties =
+        base64::engine::general_purpose::URL_SAFE.encode("filenameActualName=acta.pdf\n");
+    let url = ChannelMessage::read(&format!(
+        "afirma://sign?op=sign&idsession={CREDENTIAL}&format=PAdES&\
+         algorithm=SHA256withRSA&properties={properties}"
+    ));
+    let ChannelMessage::Operation { url } = url else {
+        panic!("una URL del protocolo es una operacion");
+    };
+    let Ok(crate::site::domain::protocol::SiteOperation::SignWithoutDocument(request)) =
+        crate::site::application::tests::read_operation(&url)
+    else {
+        panic!("es una firma sin 'dat'");
+    };
+
+    let step = crate::site::application::errand::consent_to_sign_with_chosen_document(
+        &desk,
+        crate::site::application::errand::PendingSignature::Signing(request),
+        A_PDF.to_vec(),
+        None,
+        ours,
+        &live,
+    );
+
+    let ErrandStep::AskingToSign(consent) = step else {
+        panic!("con documento elegido y certificado aceptado se pide firma: {step:?}");
+    };
+    assert_eq!(consent.document.name.as_deref(), Some("acta.pdf"));
+}
+
 /// El contenedor ASiC-S de CAdES era el contraejemplo del formato sin puente, y
 /// ya no lo es: el trámite lo lleva al consentimiento como a cualquier otro.
 #[test]

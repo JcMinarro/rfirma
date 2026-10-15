@@ -1,6 +1,7 @@
 use super::{CounterTarget, Format, LocalBatchItem, Moment, SignatureRound, SignatureRoundView};
 use super::{NoCertificateView, NoChannelView, RefusalSituationView, SiteErrandView};
 use crate::signing::domain::bridge::XadesVariant;
+use crate::site::application::errand::ReceivedDocument;
 use crate::site::domain::batch_error::Situation as BatchSituation;
 use crate::site::domain::protocol::RefusalSituation;
 use crate::site::domain::site_origin::SiteOrigin;
@@ -100,10 +101,49 @@ fn the_old_web_client_warning_crosses_named() {
     );
 }
 
+fn a_received(name: Option<&str>, bytes: &[u8]) -> ReceivedDocument {
+    ReceivedDocument::kept_as("doc-1".to_owned(), name.map(str::to_owned), bytes)
+}
+
+fn consenting_to(document: ReceivedDocument) -> serde_json::Value {
+    let view = SiteErrandView::from(&Moment::AskingToSign {
+        document,
+        format: Format::Cades,
+        round: SignatureRound::First,
+        certificates: Vec::new(),
+        already_chosen: None,
+        without_asking: false,
+        sha1_allowed: false,
+        sha1_to_allow: false,
+    });
+    serde_json::to_value(&view).expect("serializa")["stage"].clone()
+}
+
+#[test]
+fn the_consent_crosses_the_handle_the_proposed_name_the_detected_type_and_the_sha256() {
+    let stage = consenting_to(a_received(Some("informe.pdf"), b"%PDF-1.7\n"));
+
+    assert_eq!(stage["document"], serde_json::json!("doc-1"));
+    assert_eq!(stage["name"], serde_json::json!("informe.pdf"));
+    assert_eq!(stage["detected"], serde_json::json!("pdf"));
+    assert_eq!(
+        stage["sha256"],
+        serde_json::json!("0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e")
+    );
+}
+
+#[test]
+fn a_document_without_a_proposed_name_or_a_known_type_crosses_as_such() {
+    let stage = consenting_to(a_received(None, &[0x00, 0x01, 0x02]));
+
+    assert_eq!(stage["name"], serde_json::Value::Null);
+    assert_eq!(stage["detected"], serde_json::json!("unknown"));
+}
+
 #[test]
 fn the_round_crosses_named_as_the_site_asked_for_it() {
     let view = SiteErrandView::from(&Moment::AskingToSign {
-        document: "doc-1".to_owned(),
+        document: a_received(None, b"%PDF-1.7\n"),
         format: Format::Pades,
         round: SignatureRound::Again,
         certificates: Vec::new(),
@@ -123,7 +163,7 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
 fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
     for allowed in [true, false] {
         let view = SiteErrandView::from(&Moment::AskingToSign {
-            document: "doc-1".to_owned(),
+            document: a_received(None, b"%PDF-1.7\n"),
             format: Format::Cades,
             round: SignatureRound::First,
             certificates: Vec::new(),
@@ -143,7 +183,7 @@ fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
 #[test]
 fn a_countersignature_crosses_with_its_own_label_and_target() {
     let view = SiteErrandView::from(&Moment::AskingToSign {
-        document: "doc-1".to_owned(),
+        document: a_received(None, b"%PDF-1.7\n"),
         format: Format::Cades,
         round: SignatureRound::Counter {
             target: CounterTarget::Leafs,
@@ -366,7 +406,7 @@ fn what_is_signed_crosses_named_after_the_format_the_site_asked_for() {
         (Format::FacturaE, "invoice"),
     ] {
         let view = SiteErrandView::from(&Moment::AskingToSign {
-            document: "doc-1".to_owned(),
+            document: a_received(None, b"%PDF-1.7\n"),
             format,
             round: SignatureRound::First,
             certificates: Vec::new(),

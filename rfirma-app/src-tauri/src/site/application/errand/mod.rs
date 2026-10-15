@@ -47,7 +47,7 @@ pub use desk::{
 pub use outcome::{
     BatchConsent, ConfirmationConsent, ErrandStep, ForTheSiteServer, LoadCompletion,
     LoadingConsent, LocalBatchConsent, LocalBatchItem, Moment, NoCertificate, NoChannel,
-    PendingSignature, ProtocolCodec, SavingConsent, SigningConsent, SiteOutcome,
+    PendingSignature, ProtocolCodec, ReceivedDocument, SavingConsent, SigningConsent, SiteOutcome,
 };
 pub use readers::{after_the_readers, AfterTheReaders};
 pub use replies::{
@@ -102,7 +102,7 @@ fn remembered(live: &LiveErrand, step: ErrandStep) -> ErrandStep {
             live.remember_identity(filter.clone(), *sticky)
         }
         ErrandStep::AskingToSign(asked) => live.remember_signature(state::PendingSignature {
-            document: asked.document.clone(),
+            document: asked.document.handle.clone(),
             sha1_of_the_data: asked.sha1_of_the_data.clone(),
             filter: asked.filter.clone(),
             format: asked.format,

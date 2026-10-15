@@ -79,6 +79,7 @@ pub(super) fn asking_to_confirm(
 ) -> ErrandStep {
     ErrandStep::AskingToConfirm(Box::new(ConfirmationConsent {
         document: ask.document.to_vec(),
+        name: ask.name.map(str::to_owned),
         requested: ask.format,
         algorithm: ask.algorithm,
         round: ask.round,
@@ -108,6 +109,7 @@ pub fn consent_to_the_confirmed_signature<E: FilterEngine, P: PolicyEngine>(
         desk,
         SignatureAsk {
             document: &pending.document,
+            name: pending.name.as_deref(),
             format: pending.requested,
             algorithm: pending.algorithm,
             round: pending.round,

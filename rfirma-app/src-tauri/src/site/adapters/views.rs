@@ -12,8 +12,10 @@ use crate::site::domain::site_origin::SiteOrigin;
 use crate::identity::adapters::views::CertificateView;
 use crate::identity::domain::certificate::ListedCertificate;
 
+mod document_type;
 mod outcome;
 
+pub use document_type::DocumentTypeView;
 pub use outcome::{NoCertificateView, RefusalSituationView, SiteOutcomeView};
 
 crossing! {
@@ -189,7 +191,10 @@ impl From<&Moment> for SiteErrandView {
                 sha1_allowed,
                 sha1_to_allow,
             } => Self::at(SiteStageView::AskingToSign {
-                document: document.clone(),
+                document: document.handle.clone(),
+                name: document.name.clone(),
+                detected: document.detected.into(),
+                sha256: document.sha256.clone(),
                 signing: (*format).into(),
                 round: (*round).into(),
                 certificates: rows_of(certificates),
@@ -375,6 +380,12 @@ crossing! {
         AskingToSign {
             /// Asa del documento que manda la sede.
             document: String,
+            /// El nombre que propone la sede para el documento, si lo propone.
+            name: Option<String>,
+            /// El tipo que rFirma detecta en los bytes del documento (ADR-0050).
+            detected: DocumentTypeView,
+            /// El SHA-256 del documento, en hexadecimal.
+            sha256: String,
             /// Qué es lo que se va a firmar.
             signing: SigningKindView,
             /// Tipo de firma solicitada.
