@@ -80,7 +80,12 @@ export function SedeView({
           />
         )}
         {stage.kind === "oldWebClient" && (
-          <SedeOutdatedPage origin={errand.origin} asks={asks} onDismiss={onDismissWarning} />
+          <SedeOutdatedPage
+            origin={errand.origin}
+            asks={asks}
+            onDismiss={onDismissWarning}
+            onCancel={onCancel}
+          />
         )}
         {stage.kind === "consent" && (
           <SedeConsentCompact

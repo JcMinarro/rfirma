@@ -1,6 +1,6 @@
-//! 1c · Marcar el área de la firma visible con el esqueleto de la ventana ampliada del consentimiento; diseño provisional que hoy solo pintan las historias.
+//! 1c · Marcar el área de la firma visible con el esqueleto de la ventana ampliada del consentimiento; el recuadro nace en la posición estándar.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
@@ -36,7 +36,12 @@ export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAre
     [pdf],
   );
   const placementState = usePlacement({ document, standardRectOn });
-  const { placement, rangeError, viewPage, moveBox, sealPage } = placementState;
+  const { placement, rangeError, viewPage, moveBox, sealPage, placeOnViewedPage } = placementState;
+  const hasDocument = pdf !== null;
+  const unplaced = placement === null;
+  useEffect(() => {
+    if (hasDocument && unplaced) placeOnViewedPage();
+  }, [hasDocument, unplaced, placeOnViewedPage]);
   const [handing, setHanding] = useState(false);
   const ready = placement !== null && rangeError === null && !handing;
   const continueButton = useDefaultButton(ready);

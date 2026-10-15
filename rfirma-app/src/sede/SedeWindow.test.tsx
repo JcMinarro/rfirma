@@ -31,7 +31,7 @@ describe("SedeWindow", () => {
   });
 
   describe("the old web client warning", () => {
-    it("is dismissed with its only button, without cancelling or closing the errand", () => {
+    it("is dismissed with Continuar, without cancelling or closing the errand", () => {
       const { port, calls } = scriptedFrom(OldWebClient);
       renderWithCatalog(<SedeWindow errands={port} />);
 
@@ -42,12 +42,15 @@ describe("SedeWindow", () => {
       expect(calls.close).not.toHaveBeenCalled();
     });
 
-    it("says the risk in one sentence, with no Cancelar of its own yet", () => {
-      const { port } = scriptedFrom(OldWebClient);
+    it("says the risk in one sentence and offers Cancelar, which cancels the errand", () => {
+      const { port, calls } = scriptedFrom(OldWebClient);
       renderWithCatalog(<SedeWindow errands={port} />);
 
       expect(screen.getByText("Puede tener errores o no ser segura.")).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+
+      expect(calls.cancel).toHaveBeenCalledOnce();
+      expect(calls.dismissWarning).not.toHaveBeenCalled();
     });
 
     it("focuses Continue, so Enter dismisses it", () => {
