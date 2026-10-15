@@ -19,6 +19,7 @@ fn signed_on_the_card_with_the_dialog(
     let input = home.join("documento.pdf");
     std::fs::write(&input, a_one_page_pdf()).expect("el PDF deberia escribirse");
     let output = home.join("firmado.pdf");
+    let _token = the_token_alone();
     let outcome = attended_with_the_roots(
         &[
             "sign",
