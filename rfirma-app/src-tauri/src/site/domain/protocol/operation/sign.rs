@@ -88,9 +88,15 @@ pub struct SignRequest {
     sticky: StickyCertificate,
     unattended: Unattended,
     through_the_site_server: Option<ServerFormat>,
+    actual_name: Option<String>,
 }
 
 impl SignRequest {
+    /// El nombre que la sede propone para el documento (`filenameActualName`), si lo propone.
+    pub fn actual_name(&self) -> Option<&str> {
+        self.actual_name.as_deref()
+    }
+
     /// `sign` o `cosign`.
     pub fn round(&self) -> SignatureRound {
         self.round
@@ -218,6 +224,7 @@ impl PendingSignRequest {
             sticky: self.sticky,
             unattended: self.unattended,
             through_the_site_server: self.through_the_site_server,
+            actual_name: self.load_filename,
         }
     }
 }
@@ -286,6 +293,7 @@ pub(super) fn sign_request(
         filter: site_filter(&declared).within(scope_named_by(url)),
         sticky,
         unattended: properties.unattended(),
+        actual_name: properties.actual_name().map(str::to_owned),
         declared,
         through_the_site_server,
     }))

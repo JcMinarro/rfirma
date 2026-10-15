@@ -34,8 +34,8 @@ use crate::site::domain::protocol::{
 use crate::site::domain::triphase_server::ServerFormat;
 
 use super::outcome::{
-    ErrandStep, ForTheSiteServer, LoadingConsent, PendingSignature, SavingConsent, SavingHints,
-    SigningConsent, SiteOutcome,
+    ErrandStep, ForTheSiteServer, LoadingConsent, PendingSignature, ReceivedDocument,
+    SavingConsent, SavingHints, SigningConsent, SiteOutcome,
 };
 use super::replies::answering;
 use super::request::SiteRequest;
@@ -227,6 +227,7 @@ pub fn consent_to_sign<E: FilterEngine, P: PolicyEngine>(
         desk,
         SignatureAsk {
             document: request.document(),
+            name: request.actual_name(),
             format: request.format(),
             algorithm: request.algorithm(),
             round: request.round(),
@@ -262,6 +263,7 @@ pub fn consent_to_sign_and_save<E: FilterEngine, P: PolicyEngine>(
         desk,
         SignatureAsk {
             document: request.document().unwrap_or_default(),
+            name: request.load_filename(),
             format: request.format(),
             algorithm: request.algorithm(),
             round: request.round(),
@@ -282,6 +284,7 @@ pub fn consent_to_sign_and_save<E: FilterEngine, P: PolicyEngine>(
 /// Lo que se firma, desacoplado de si vino de `sign` o de `signandsave`.
 struct SignatureAsk<'a> {
     document: &'a [u8],
+    name: Option<&'a str>,
     format: RequestedFormat,
     algorithm: AskedAlgorithm,
     round: SignatureRound,
@@ -400,8 +403,8 @@ fn consent_to_a_signature<E: FilterEngine, P: PolicyEngine>(
     let not_accepted = accepted.not_accepted;
     let accepted = accepted.certificates;
 
-    let document = match keep_the_document(desk, live, format, ask.document) {
-        Ok(document) => document,
+    let document = match keep_the_document(desk, live, ask.document) {
+        Ok(handle) => ReceivedDocument::kept_as(handle, ask.name.map(str::to_owned), ask.document),
         Err(refusal) => return answering(live, SiteOutcome::Refused(refusal)),
     };
     let sha1_of_the_data = match the_sha1_of_the_data_kept(desk, live, &ask, &mut from_the_site) {
@@ -464,8 +467,7 @@ fn the_sha1_of_the_data_kept<E: FilterEngine, P: PolicyEngine>(
         return Ok(None);
     }
     from_the_site.insert(MIME_TYPE_KEY.to_owned(), HASH_SHA1.to_owned());
-    let format = Format::from(ask.format);
-    keep_the_document(desk, live, format, &sha1_of_the_data(ask.document)).map(Some)
+    keep_the_document(desk, live, &sha1_of_the_data(ask.document)).map(Some)
 }
 
 fn sha1_still_to_allow<E: FilterEngine, P: PolicyEngine>(

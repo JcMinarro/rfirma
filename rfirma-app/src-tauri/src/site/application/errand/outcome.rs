@@ -7,8 +7,9 @@ use crate::signing::domain::bridge::Format;
 use crate::site::application::session::SiteRefusal;
 use crate::site::domain::batch::LocalBatch;
 use crate::site::domain::protocol::{
-    AfirmaUrl, AskedAlgorithm, BatchRequest, PendingSignRequest, Refusal, RequestedFormat,
-    SignAndSaveRequest, SignatureRound, SiteFilter, SiteVisibleSignature, StickyCertificate,
+    type_of, AfirmaUrl, AskedAlgorithm, BatchRequest, DocumentType, PendingSignRequest, Refusal,
+    RequestedFormat, SignAndSaveRequest, SignatureRound, SiteFilter, SiteVisibleSignature,
+    StickyCertificate,
 };
 use crate::site::domain::triphase_server::ServerFormat;
 
@@ -73,7 +74,7 @@ impl ErrandStep {
             }),
             Self::AskingToSign(consent) => Some(match consent.visible {
                 SiteVisibleSignature::MarkedByThePerson(_) => Moment::MarkingTheArea {
-                    document: consent.document.clone(),
+                    document: consent.document.handle.clone(),
                 },
                 SiteVisibleSignature::PlacedByTheSite | SiteVisibleSignature::Declined => {
                     consent.consenting()
@@ -135,11 +136,39 @@ pub enum NoCertificate {
     TheSiteExcludedThemAll,
 }
 
+/// Un documento que manda la sede, como se enseña en su consentimiento: sin sus bytes, que se leen por el asa.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReceivedDocument {
+    /// Asa del documento para la ventana (ADR-0011).
+    pub handle: String,
+    /// El nombre que propone la sede, si lo propone.
+    pub name: Option<String>,
+    /// El tipo que rFirma detecta en sus bytes (ADR-0050).
+    pub detected: DocumentType,
+    /// El SHA-256 de sus bytes, en hexadecimal.
+    pub sha256: String,
+}
+
+impl ReceivedDocument {
+    /// El documento guardado con el asa `handle`, descrito por sus bytes.
+    pub fn kept_as(handle: String, name: Option<String>, bytes: &[u8]) -> Self {
+        Self {
+            handle,
+            name,
+            detected: type_of(bytes),
+            sha256: openssl::sha::sha256(bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect(),
+        }
+    }
+}
+
 /// Datos necesarios para el consentimiento de firma.
 #[derive(Debug)]
 pub struct SigningConsent {
-    /// Identificador del documento para la ventana (ADR-0011).
-    pub document: String,
+    /// El documento que se firma, con su asa para la ventana.
+    pub document: ReceivedDocument,
     /// El asa de la huella SHA-1 que firma el puente en lugar del documento, en la XAdES explícita (ADR-0023).
     pub sha1_of_the_data: Option<String>,
     /// Formato de firma que la sede pidió, ya atendido por el puente.
@@ -210,6 +239,8 @@ pub struct ForTheSiteServer {
 pub struct ConfirmationConsent {
     /// El documento que se firma, tal y como llegó.
     pub document: Vec<u8>,
+    /// El nombre que propone la sede para el documento, si lo propone.
+    pub name: Option<String>,
     /// Formato que la sede pidió, sin resolver todavía.
     pub requested: RequestedFormat,
     /// Huella que la sede pidió para esta firma.
@@ -360,8 +391,8 @@ pub enum Moment {
     },
     /// Consentimiento de firma de documento con certificados cribados.
     AskingToSign {
-        /// Identificador del documento para la ventana.
-        document: String,
+        /// El documento que se firma.
+        document: ReceivedDocument,
         /// Formato de firma que la sede pidió.
         format: Format,
         /// Modalidad de firma solicitada.

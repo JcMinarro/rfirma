@@ -240,7 +240,7 @@ fn gzip_true_decompresses_the_document_before_consent_in_the_five_operations() {
     let ErrandStep::AskingToSign(consent) = step else {
         panic!("esperaba AskingToSign en sign");
     };
-    let path = documents::opened_document(&opened, &consent.document)
+    let path = documents::opened_document(&opened, &consent.document.handle)
         .expect("el documento esta en la mano")
         .reading_path()
         .to_path_buf();
@@ -257,7 +257,7 @@ fn gzip_true_decompresses_the_document_before_consent_in_the_five_operations() {
     let ErrandStep::AskingToSign(consent) = step else {
         panic!("esperaba AskingToSign en cosign");
     };
-    let path = documents::opened_document(&opened, &consent.document)
+    let path = documents::opened_document(&opened, &consent.document.handle)
         .expect("el documento esta en la mano")
         .reading_path()
         .to_path_buf();
@@ -283,7 +283,7 @@ fn gzip_true_decompresses_the_document_before_consent_in_the_five_operations() {
     let ErrandStep::AskingToSign(consent) = step else {
         panic!("esperaba AskingToSign en countersign");
     };
-    let path = documents::opened_document(&opened, &consent.document)
+    let path = documents::opened_document(&opened, &consent.document.handle)
         .expect("el documento esta en la mano")
         .reading_path()
         .to_path_buf();
@@ -310,7 +310,7 @@ fn gzip_true_decompresses_the_document_before_consent_in_the_five_operations() {
     let ErrandStep::AskingToSign(consent) = step else {
         panic!("esperaba AskingToSign en signandsave");
     };
-    let path = documents::opened_document(&opened, &consent.document)
+    let path = documents::opened_document(&opened, &consent.document.handle)
         .expect("el documento esta en la mano")
         .reading_path()
         .to_path_buf();

@@ -87,7 +87,7 @@ fn attended(url: AfirmaUrl, allowed: bool, allowed_once: bool) -> Attended {
     if let ErrandStep::AskingToSign(asking) = &step {
         shown = Some(
             std::fs::read(
-                documents::opened_document(&opened, &asking.document)
+                documents::opened_document(&opened, &asking.document.handle)
                     .expect("el documento esta en la mano")
                     .reading_path(),
             )

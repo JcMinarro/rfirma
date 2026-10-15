@@ -13,7 +13,8 @@ use crate::signing::domain::bridge::{Format, XadesVariant};
 use crate::site::application::errand::*;
 use crate::site::domain::channel::ArrivalMode;
 use crate::site::domain::protocol::{
-    AfirmaUrl, AskedAlgorithm, ChannelMessage, NegotiatedCredential, SafCode, SiteVisibleSignature,
+    AfirmaUrl, AskedAlgorithm, ChannelMessage, DocumentType, NegotiatedCredential, SafCode,
+    SiteVisibleSignature,
 };
 use base64::Engine as _;
 
@@ -317,6 +318,82 @@ fn an_invoice_under_format_auto_goes_out_as_a_facturae_signature() {
     );
 }
 
+/// El consentimiento de la firma que pide `url`, con el fichero de paso de su documento.
+fn consented(url: &AfirmaUrl) -> (Box<SigningConsent>, std::path::PathBuf) {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let opened = OpenedDocuments::new();
+    let live = a_live();
+    let engine = AnEngine::answering(&[&[0]]);
+    let policies = APolicyEngine::answering("");
+    let scratch = home.path().join("errand");
+
+    let step = consent_to_sign(
+        &a_desk(
+            &engine,
+            &policies,
+            &a_neighbourhood(home.path(), &listed, &opened, &memory),
+            &scratch,
+        ),
+        &signature_requested(url),
+        ours,
+        &live,
+    );
+
+    let ErrandStep::AskingToSign(asking) = step else {
+        panic!("hay un certificado que la sede acepta: {step:?}");
+    };
+    let path = documents::opened_document(&opened, &asking.document.handle)
+        .expect("el documento esta en la mano")
+        .reading_path()
+        .to_path_buf();
+    (asking, path)
+}
+
+#[test]
+fn the_document_passes_through_with_the_extension_of_its_bytes_and_not_of_the_format() {
+    let (_, path) = consented(&a_signature_asking_for("CAdES", A_PDF));
+
+    assert_eq!(
+        path.extension().and_then(std::ffi::OsStr::to_str),
+        Some("pdf"),
+        "un PDF que se firma en CAdES sigue siendo un PDF"
+    );
+}
+
+#[test]
+fn the_consent_carries_the_name_the_site_proposes_the_detected_type_and_the_sha256() {
+    let properties =
+        base64::engine::general_purpose::URL_SAFE.encode("filenameActualName=informe.pdf\n");
+    let url = a_signature_over(A_PDF, "sign", &format!("&properties={properties}"));
+
+    let (asking, _) = consented(&url);
+
+    let Moment::AskingToSign { document, .. } = asking.consenting() else {
+        panic!("el consentimiento de una firma es el de una firma");
+    };
+    assert_eq!(document.name.as_deref(), Some("informe.pdf"));
+    assert_eq!(document.detected, DocumentType::Pdf);
+    assert_eq!(
+        document.sha256,
+        "0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e"
+    );
+}
+
+#[test]
+fn without_a_proposed_name_the_consent_carries_none_and_the_type_of_the_bytes() {
+    let (asking, _) = consented(&a_signature_asking_for("CAdES", A_CHALLENGE));
+
+    let Moment::AskingToSign { document, .. } = asking.consenting() else {
+        panic!("el consentimiento de una firma es el de una firma");
+    };
+    assert_eq!(document.name, None);
+    assert_eq!(document.detected, DocumentType::Unknown);
+    assert_eq!(document.handle, asking.document.handle);
+}
+
 #[test]
 fn the_document_of_a_cades_errand_never_passes_through_as_a_pdf() {
     let home = tempfile::tempdir().expect("deberia haber directorio temporal");
@@ -344,7 +421,7 @@ fn the_document_of_a_cades_errand_never_passes_through_as_a_pdf() {
     let ErrandStep::AskingToSign(asking) = step else {
         panic!("hay un certificado que la sede acepta: {step:?}");
     };
-    let path = documents::opened_document(&opened, &asking.document)
+    let path = documents::opened_document(&opened, &asking.document.handle)
         .expect("el documento esta en la mano")
         .reading_path()
         .to_path_buf();
