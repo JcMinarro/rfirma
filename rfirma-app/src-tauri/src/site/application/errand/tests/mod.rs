@@ -14,6 +14,7 @@ mod chosen_document;
 mod countersignature_and_gzip;
 mod dialog_folder;
 mod document_and_save;
+mod download;
 mod headless;
 mod open_with;
 mod pdf_awaiting_the_person;

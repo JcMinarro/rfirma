@@ -383,6 +383,65 @@ pub fn site_load_files(
     Ok(delivered)
 }
 
+/// Las pistas del diálogo de guardado para lo que se descarga: su nombre y su extensión.
+fn dialog_clues_for_downloading(
+    download: &crate::site::domain::download::Download,
+) -> crate::documents::ports::DialogClues {
+    let clues = crate::documents::ports::DialogClues::new().with_filename(download.name.clone());
+    let clues = match download.name.rsplit_once('.') {
+        Some((_, extension)) => clues.with_filter(extension.to_uppercase(), &[extension]),
+        None => clues,
+    };
+    match this_home() {
+        Some(home) => clues.with_starting_folder(home),
+        None => clues,
+    }
+}
+
+/// Guarda tal cual, donde elija la persona, el documento del consentimiento tras el asa; `false` si cerró el diálogo.
+#[tauri::command(async)]
+pub fn site_download_document(
+    document: String,
+    site: State<'_, SiteRoot>,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<bool, Failure> {
+    Ok(crate::site::application::errand::download_one(
+        &site.errand,
+        &document,
+        &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        },
+        |download| {
+            site.portal
+                .save_file(&dialog_clues_for_downloading(download))
+        },
+        site.scratch.as_ref(),
+    )?)
+}
+
+/// Guarda donde elija la persona un `.zip` con los documentos del consentimiento y su `SHA256SUMS`; `false` si cerró el diálogo.
+#[tauri::command(async)]
+pub fn site_download_all(
+    site: State<'_, SiteRoot>,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<bool, Failure> {
+    Ok(crate::site::application::errand::download_all(
+        &site.errand,
+        &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        },
+        |download| {
+            site.portal
+                .save_file(&dialog_clues_for_downloading(download))
+        },
+        site.scratch.as_ref(),
+    )?)
+}
+
 /// Instala la CA local en los almacenes NSS del usuario (ADR-0005).
 #[tauri::command(async)]
 pub fn install_local_ca(app_handle: tauri::AppHandle, site: State<'_, SiteRoot>) {
