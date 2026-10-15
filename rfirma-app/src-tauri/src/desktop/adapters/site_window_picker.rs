@@ -1,12 +1,11 @@
 //! `SiteWindowPicker`, el elector gráfico de `-certgui`: levanta Tauri en el proceso de terminal solo para la ventana de sede con el origen «orden de terminal», y devuelve lo elegido en ella; no firma.
 
-use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use crate::crossing::Failure;
 use crate::desktop::adapters::paths::Platform;
 use crate::desktop::adapters::views::{TerminalChoiceView, TerminalStageView};
-use crate::desktop::ports::{GraphicalPicker, WindowChoice, WindowOffer};
+use crate::desktop::ports::{GraphicalPicker, WindowChoice, WindowDocument, WindowOffer};
 use crate::identity::adapters::views::CertificateView;
 use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::error::{Situation, TokenError};
@@ -59,7 +58,11 @@ impl GraphicalPicker for SiteWindowPicker<'_> {
         has_a_display(Platform::CURRENT, |name| std::env::var_os(name))
     }
 
-    fn chosen(&self, document: &Path, offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
         let identity = self
             .identity
             .ok_or_else(|| "no se sabe cuál es la carpeta personal".to_owned())?;
@@ -149,7 +152,11 @@ pub struct TerminalChoice {
 
 impl TerminalChoice {
     /// La elección que se ofrece para ese documento, con las asas que acuña la identidad.
-    pub fn of(identity: &IdentityRoot, document: &Path, offer: WindowOffer<'_>) -> Self {
+    pub fn of(
+        identity: &IdentityRoot,
+        document: WindowDocument<'_>,
+        offer: WindowOffer<'_>,
+    ) -> Self {
         let (stage, choosable) = match offer {
             WindowOffer::Nothing(nothing) => (TerminalStageView::from(nothing), Vec::new()),
             WindowOffer::Certificates(certificates) => {
@@ -233,6 +240,20 @@ impl TerminalChoice {
         Ok(())
     }
 
+    /// Elige el certificado del asa y, si pide PIN, lo pide con el diálogo del sistema; si algo falla, la elección queda fallida con su motivo.
+    pub fn settle(&self, handle: &str, dialog: &SecretDialog) -> Result<StoreSecret, Failure> {
+        let settled = self.choose(handle).and_then(|secret| {
+            if secret == StoreSecret::TypedOnScreen {
+                self.ask_the_secret(dialog)?;
+            }
+            Ok(secret)
+        });
+        if let Err(failure) = &settled {
+            self.decide(WindowChoice::Failed(failure.detail.clone()));
+        }
+        settled
+    }
+
     /// Pide el PIN del certificado elegido con el diálogo del sistema y completa la elección; si la persona lo cancela, cancela la elección.
     pub fn ask_the_secret(&self, dialog: &SecretDialog) -> Result<(), Failure> {
         let Some(certificate) = lock(&self.pending).clone() else {
@@ -253,7 +274,6 @@ impl TerminalChoice {
                 Ok(())
             }
             Err(SecretPromptError::Failed(reason)) => {
-                self.cancel();
                 Err(Failure::from(TokenError::new(Situation::Unknown, reason)))
             }
         }

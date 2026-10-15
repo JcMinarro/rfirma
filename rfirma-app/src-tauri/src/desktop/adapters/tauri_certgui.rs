@@ -8,7 +8,6 @@ use super::site_window_picker::{SecretDialog, TerminalChoice, TERMINAL_WINDOW};
 use super::views::TerminalChoiceView;
 use crate::crossing::Failure;
 use crate::identity::adapters::views::SecretView;
-use crate::identity::domain::secret::StoreSecret;
 use crate::signing::adapters::views::ConfigurationView;
 
 /// La configuración guardada, para el idioma y el tema; sin carpeta personal, la de por omisión.
@@ -31,7 +30,7 @@ pub fn read_terminal_choice(choice: State<'_, Arc<TerminalChoice>>) -> TerminalC
     choice.view()
 }
 
-/// Elige el certificado del asa y, si pide PIN, lo pide con el diálogo del sistema; con la elección hecha, cierra la ventana.
+/// Elige el certificado del asa y, si pide PIN, lo pide con el diálogo del sistema; con la elección hecha o fallida, cierra la ventana.
 #[tauri::command(async)]
 pub fn terminal_choose_certificate(
     certificate: String,
@@ -39,14 +38,11 @@ pub fn terminal_choose_certificate(
     dialog: State<'_, SecretDialog>,
     app_handle: tauri::AppHandle,
 ) -> Result<SecretView, Failure> {
-    let secret = choice.choose(&certificate)?;
-    if secret == StoreSecret::TypedOnScreen {
-        choice.ask_the_secret(&dialog)?;
-    }
+    let settled = choice.settle(&certificate, &dialog);
     if choice.is_decided() {
         close_the_window(&app_handle);
     }
-    Ok(secret.into())
+    settled.map(Into::into)
 }
 
 /// Cancela la elección y cierra la ventana.

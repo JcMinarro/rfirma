@@ -167,6 +167,8 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
 
   pub struct TerminalChoiceView
       document: String
+      detected: DocumentTypeView
+      signing: SigningKindView
       stage: TerminalStageView
 
   pub enum TerminalStageView   (serde: etiqueta "kind")

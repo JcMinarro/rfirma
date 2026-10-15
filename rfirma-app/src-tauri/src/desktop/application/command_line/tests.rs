@@ -10,7 +10,7 @@ use crate::desktop::domain::platform::Platform;
 use crate::desktop::domain::sign_arguments::Algorithm;
 use crate::desktop::ports::{
     AskedSecret, LocalTimeZone, OfferedCertificate, SecretDescriptor, SignatureReading,
-    WindowChoice, WindowOffer,
+    WindowChoice, WindowDocument, WindowOffer,
 };
 use crate::identity::domain::certificate::CertificateRef;
 use crate::identity::domain::error::{Situation, TokenError};
@@ -287,11 +287,12 @@ impl GraphicalPicker for Untouched {
         panic!("no debería abrir la ventana de sede")
     }
 
-    fn chosen(&self, document: &Path, _offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
-        panic!(
-            "no debería elegir en la ventana para {}",
-            document.display()
-        )
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        _offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
+        panic!("no debería elegir en la ventana para {:?}", document.path)
     }
 }
 

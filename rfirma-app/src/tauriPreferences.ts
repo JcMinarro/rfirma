@@ -2,10 +2,10 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { FALLBACK_LANGUAGE, isLanguageTag } from "./i18n/languages";
+import { FALLBACK_LANGUAGE, isLanguageTag, type LanguageTag } from "./i18n/languages";
 import type { LanguagePreference } from "./i18n/preference";
 import type { DestinationMode } from "./preferences/destinationMode";
-import type { PreferencesStore } from "./preferences/preferences";
+import type { Preferences, PreferencesStore } from "./preferences/preferences";
 import { DEFAULT_THEME, isTheme, type Theme, type WindowTheme } from "./preferences/theme";
 
 /**
@@ -38,8 +38,29 @@ interface ConfigurationView {
   allowSha1: boolean;
 }
 
-function readConfiguration(terminal: boolean): Promise<ConfigurationView> {
-  return invoke<ConfigurationView>(terminal ? "read_terminal_configuration" : "read_configuration");
+function readConfiguration(): Promise<ConfigurationView> {
+  return invoke<ConfigurationView>("read_configuration");
+}
+
+function preferencesOf(configuration: ConfigurationView): Preferences {
+  return {
+    theme: isTheme(configuration.theme) ? configuration.theme : DEFAULT_THEME,
+    destination: configuration.destination,
+    destinationMode: configuration.destinationMode,
+    offersOriginalFolder: configuration.offersTheOriginalFolder,
+    rememberVisibleSignature: configuration.rememberVisibleSignature,
+    rememberActivity: configuration.rememberActivity,
+    notifyNewVersion: configuration.notifyNewVersion,
+    setupWizardSeen: configuration.setupWizardSeen,
+    consentCountdown: configuration.consentCountdown,
+    showWelcome: configuration.showWelcome,
+    honourAutomaticSelection: configuration.honourAutomaticSelection,
+    allowSha1: configuration.allowSha1,
+  };
+}
+
+function languageOf({ language }: ConfigurationView): LanguageTag {
+  return isLanguageTag(language) ? language : FALLBACK_LANGUAGE;
 }
 
 function writeConfiguration(configuration: ConfigurationView): Promise<void> {
@@ -62,27 +83,11 @@ function writeConfiguration(configuration: ConfigurationView): Promise<void> {
  * explícitamente las claves que sí son del
  * contrato de `ConfigurationView`, en vez de mandar `preferences` entero.
  */
-export function tauriPreferences(terminal = false): PreferencesStore {
+export function tauriPreferences(): PreferencesStore {
   return {
-    read: async () => {
-      const configuration = await readConfiguration(terminal);
-      return {
-        theme: isTheme(configuration.theme) ? configuration.theme : DEFAULT_THEME,
-        destination: configuration.destination,
-        destinationMode: configuration.destinationMode,
-        offersOriginalFolder: configuration.offersTheOriginalFolder,
-        rememberVisibleSignature: configuration.rememberVisibleSignature,
-        rememberActivity: configuration.rememberActivity,
-        notifyNewVersion: configuration.notifyNewVersion,
-        setupWizardSeen: configuration.setupWizardSeen,
-        consentCountdown: configuration.consentCountdown,
-        showWelcome: configuration.showWelcome,
-        honourAutomaticSelection: configuration.honourAutomaticSelection,
-        allowSha1: configuration.allowSha1,
-      };
-    },
+    read: async () => preferencesOf(await readConfiguration()),
     save: async (preferences) => {
-      const stored = await readConfiguration(terminal);
+      const stored = await readConfiguration();
       await writeConfiguration({
         ...stored,
         theme: preferences.theme,
@@ -109,16 +114,31 @@ export function tauriPreferences(terminal = false): PreferencesStore {
  * —`createI18n` lo necesita para el primer pintado— y los ajustes solo se leen
  * al montar la aplicación. Debajo es el mismo fichero.
  */
-export function tauriLanguagePreference(terminal = false): LanguagePreference {
+export function tauriLanguagePreference(): LanguagePreference {
   return {
-    read: async () => {
-      const { language } = await readConfiguration(terminal);
-      return isLanguageTag(language) ? language : FALLBACK_LANGUAGE;
-    },
+    read: async () => languageOf(await readConfiguration()),
     save: async (language) => {
-      const stored = await readConfiguration(terminal);
+      const stored = await readConfiguration();
       await writeConfiguration({ ...stored, language });
     },
+  };
+}
+
+/** La configuración que lee la ventana de `-certgui`: el idioma y los ajustes, sin nada que guardar. */
+export interface TerminalPreferences {
+  language: LanguagePreference;
+  settings: Pick<PreferencesStore, "read">;
+}
+
+/** La configuración del proceso de terminal, que no registra `write_configuration`: el idioma no se guarda. */
+export function tauriTerminalPreferences(): TerminalPreferences {
+  const readTerminalConfiguration = () => invoke<ConfigurationView>("read_terminal_configuration");
+  return {
+    language: {
+      read: async () => languageOf(await readTerminalConfiguration()),
+      save: async () => {},
+    },
+    settings: { read: async () => preferencesOf(await readTerminalConfiguration()) },
   };
 }
 

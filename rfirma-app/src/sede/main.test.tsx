@@ -88,6 +88,8 @@ describe("el punto de entrada de la ventana de sede", () => {
         if (command === "read_terminal_choice") {
           return {
             document: "/home/ada/contratos/convenio.pdf",
+            detected: "pdf",
+            signing: "pdf",
             stage: { kind: "askingToSign", certificates: [certificate()] },
           };
         }

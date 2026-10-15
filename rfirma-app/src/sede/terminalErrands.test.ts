@@ -30,6 +30,8 @@ function firstErrand(port: ReturnType<typeof terminalErrands>): Promise<Errand |
 
 const asking: TerminalChoiceView = {
   document: "/home/ada/contratos/convenio.pdf",
+  detected: "pdf",
+  signing: "pdf",
   stage: { kind: "askingToSign", certificates: [certificate()] },
 };
 
@@ -59,12 +61,31 @@ describe("the terminal order as an errand", () => {
   ] as const)("shows no certificate when the order offers %s", async (reason, shown) => {
     const { port } = commandsFor({
       document: "/tmp/a.pdf",
+      detected: "pdf",
+      signing: "pdf",
       stage: { kind: "noCertificate", reason, owned: 2 },
     });
 
     const errand = await firstErrand(port);
 
     expect(errand?.stage).toEqual({ kind: "noCertificate", reason: shown, owned: 2 });
+  });
+
+  it("shows the consent with the type and the format of the order", async () => {
+    const { port } = commandsFor({
+      ...asking,
+      document: "/home/ada/facturas/factura.xml",
+      detected: "xml",
+      signing: "invoice",
+    });
+
+    const errand = await firstErrand(port);
+
+    expect(errand?.stage).toMatchObject({
+      kind: "consent",
+      document: { name: "factura.xml", detected: "xml" },
+      signing: "invoice",
+    });
   });
 
   it("hands the chosen certificate to the order", async () => {
@@ -91,7 +112,7 @@ describe("the terminal order as an errand", () => {
     expect(calls.cancel).toHaveBeenCalledOnce();
   });
 
-  it("shows the refusal and cancels the order when choosing the certificate fails", async () => {
+  it("shows the refusal and leaves the failure to the order when choosing the certificate fails", async () => {
     const { port, calls } = commandsFor(asking, {
       ok: false,
       failure: { situation: "tokenAbsent", detail: "sin tarjeta", attemptsLeft: null },
@@ -106,7 +127,7 @@ describe("the terminal order as an errand", () => {
       kind: "outcome",
       outcome: { kind: "refused", situation: "tokenAbsent", detail: "sin tarjeta" },
     });
-    expect(calls.cancel).toHaveBeenCalledOnce();
+    expect(calls.cancel).not.toHaveBeenCalled();
   });
 
   it("shows a refusal when the choice of the order cannot be read", async () => {

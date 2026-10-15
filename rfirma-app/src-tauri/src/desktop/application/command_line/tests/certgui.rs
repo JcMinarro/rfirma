@@ -1,6 +1,9 @@
+use super::invoice::AN_INVOICE;
 use super::*;
 use crate::desktop::ports::NoCertificateToOffer;
 use crate::identity::application::tests::{a_usable_certificate, an_expired_certificate};
+use crate::signing::domain::bridge::XadesVariant;
+use crate::site::domain::protocol::DocumentType;
 
 /// Lo que la ventana doblada ha enseñado: el documento y los certificados ofrecidos o la falta.
 #[derive(Debug, PartialEq, Eq)]
@@ -13,7 +16,9 @@ enum Shown {
 struct ScriptedWindow {
     display: bool,
     answer: Result<Option<(usize, Option<&'static str>)>, &'static str>,
+    failure: Option<&'static str>,
     shown: RefCell<Vec<Shown>>,
+    described: RefCell<Vec<(DocumentType, Format)>>,
 }
 
 impl ScriptedWindow {
@@ -21,7 +26,9 @@ impl ScriptedWindow {
         Self {
             display: true,
             answer: Ok(Some((position, pin))),
+            failure: None,
             shown: RefCell::new(Vec::new()),
+            described: RefCell::new(Vec::new()),
         }
     }
 
@@ -39,6 +46,13 @@ impl ScriptedWindow {
         }
     }
 
+    fn failing_to_choose(reason: &'static str) -> Self {
+        Self {
+            failure: Some(reason),
+            ..Self::choosing(0, None)
+        }
+    }
+
     fn without_a_display() -> Self {
         Self {
             display: false,
@@ -52,8 +66,15 @@ impl GraphicalPicker for ScriptedWindow {
         self.display
     }
 
-    fn chosen(&self, document: &Path, offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
-        let document = document.to_path_buf();
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
+        self.described
+            .borrow_mut()
+            .push((document.detected, document.format));
+        let document = document.path.to_path_buf();
         let offered = match offer {
             WindowOffer::Certificates(certificates) => {
                 let labels = certificates
@@ -72,6 +93,9 @@ impl GraphicalPicker for ScriptedWindow {
                 Vec::new()
             }
         };
+        if let Some(reason) = self.failure {
+            return Ok(WindowChoice::Failed(reason.to_owned()));
+        }
         let Some((position, pin)) = self.answer.map_err(str::to_owned)? else {
             return Ok(WindowChoice::Cancelled);
         };
@@ -119,14 +143,31 @@ fn chosen_with(
     window: &ScriptedWindow,
     signer: &RecordingSigner,
 ) -> Outcome {
-    let files = FilesInMemory::with("doc.pdf", A_PDF);
+    chosen_over(
+        &FilesInMemory::with("doc.pdf", A_PDF),
+        words,
+        certificates,
+        filter,
+        window,
+        signer,
+    )
+}
+
+fn chosen_over(
+    files: &FilesInMemory,
+    words: &[&str],
+    certificates: Vec<TokenCertificate>,
+    filter: &dyn CertificateFilter,
+    window: &ScriptedWindow,
+    signer: &RecordingSigner,
+) -> Outcome {
     let ports = CommandLinePorts {
         stores: &StoresHolding(certificates),
         terminal: &ScriptedTerminal,
         descriptor: &ScriptedDescriptor,
         desktop: &RecordingDesktop::default(),
         filter,
-        files: &files,
+        files,
         verifier: &Untouched,
         reader: &Untouched,
         time_zone: &Untouched,
@@ -253,6 +294,57 @@ fn certgui_cancelled_in_the_window_fails_without_signing_or_remembering() {
     assert!(said(&outcome).contains("cancelado"), "{}", said(&outcome));
     assert!(signer.asked.borrow().is_empty());
     assert!(signer.remembered.borrow().is_empty());
+}
+
+#[test]
+fn certgui_whose_choice_fails_in_the_window_fails_with_the_reason_and_not_as_cancelled() {
+    let window = ScriptedWindow::failing_to_choose("el diálogo del PIN no se abre");
+    let signer = RecordingSigner::default();
+
+    let outcome = chosen_among(vec![a_usable_certificate("uno")], &window, &signer);
+
+    assert_eq!(outcome.exit_code, FAILED);
+    assert!(
+        said(&outcome).contains("el diálogo del PIN no se abre"),
+        "{}",
+        said(&outcome)
+    );
+    assert!(!said(&outcome).contains("cancelado"), "{}", said(&outcome));
+    assert!(signer.asked.borrow().is_empty());
+}
+
+#[test]
+fn certgui_tells_the_window_what_the_document_is_and_the_format_it_is_signed_in() {
+    for (bytes, format, described) in [
+        (A_PDF, None, (DocumentType::Pdf, Format::Pades)),
+        (
+            AN_XML,
+            Some("xades"),
+            (DocumentType::Xml, Format::Xades(XadesVariant::Enveloping)),
+        ),
+        (
+            AN_INVOICE,
+            Some("facturae"),
+            (DocumentType::Xml, Format::FacturaE),
+        ),
+        (A_BINARY, None, (DocumentType::Unknown, Format::Cades)),
+    ] {
+        let window = ScriptedWindow::choosing(0, None);
+        let mut words = vec!["sign", "-i", "entrada", "-o", "salida", "-certgui"];
+        words.extend(format.map(|name| ["-format", name]).iter().flatten());
+
+        let outcome = chosen_over(
+            &FilesInMemory::with("entrada", bytes),
+            &words,
+            vec![a_usable_certificate("uno")],
+            &Untouched,
+            &window,
+            &RecordingSigner::default(),
+        );
+
+        assert_eq!(outcome.exit_code, SUCCEEDED, "{}", said(&outcome));
+        assert_eq!(*window.described.borrow(), vec![described]);
+    }
 }
 
 #[test]

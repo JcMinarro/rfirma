@@ -427,16 +427,21 @@ crossing! {
     }
 }
 
-use crate::desktop::ports::NoCertificateToOffer;
+use crate::desktop::ports::{NoCertificateToOffer, WindowDocument};
 use crate::identity::adapters::views::CertificateView;
+use crate::site::adapters::views::{DocumentTypeView, SigningKindView};
 
 crossing! {
-    /// La ventana de sede de `-certgui`: el nombre del documento de la orden y lo que se enseña.
+    /// La ventana de sede de `-certgui`: el nombre del documento de la orden, qué es, con qué formato se firma y lo que se enseña.
     #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub struct TerminalChoiceView {
         /// El nombre del fichero de `-i`, sin su carpeta.
         pub document: String,
+        /// Qué es el fichero de `-i` según sus bytes.
+        pub detected: DocumentTypeView,
+        /// Con qué formato se firma.
+        pub signing: SigningKindView,
         pub stage: TerminalStageView,
     }
 }
@@ -485,12 +490,15 @@ impl From<NoCertificateToOffer> for TerminalStageView {
 
 impl TerminalChoiceView {
     /// La vista de ese documento en ese momento, con el nombre y sin ninguna carpeta.
-    pub fn of(document: &std::path::Path, stage: TerminalStageView) -> Self {
+    pub fn of(document: WindowDocument<'_>, stage: TerminalStageView) -> Self {
         Self {
             document: document
+                .path
                 .file_name()
                 .map(|name| name.to_string_lossy().into_owned())
                 .unwrap_or_default(),
+            detected: document.detected.into(),
+            signing: document.format.into(),
             stage,
         }
     }

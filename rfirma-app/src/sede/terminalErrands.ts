@@ -5,9 +5,11 @@ import type { StageResult } from "../signing/flow";
 import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import type { StoreSecret } from "../signing/secret";
 import {
+  type DocumentType,
   type Errand,
   type NoCertificateReason,
   noErrand,
+  type SigningKind,
   type SiteDocument,
   type SiteErrandPort,
 } from "./errand";
@@ -16,9 +18,11 @@ import { refusedBy } from "./errandConversion";
 /** Por qué la orden no ofrece ningún certificado, tal como lo emite el backend. */
 type TerminalNoCertificate = "none" | "allExpired" | "excluded";
 
-/** `TerminalChoiceView`: el documento de `-i` y el momento de la elección. */
+/** `TerminalChoiceView`: el documento de `-i`, qué es según sus bytes, con qué formato se firma y el momento de la elección. */
 export interface TerminalChoiceView {
   document: string;
+  detected: DocumentType;
+  signing: SigningKind;
   stage:
     | { kind: "askingToSign"; certificates: readonly Certificate[] }
     | { kind: "noCertificate"; reason: TerminalNoCertificate; owned: number };
@@ -28,7 +32,7 @@ export interface TerminalChoiceView {
 export interface TerminalCommands {
   /** `read_terminal_choice`. */
   readChoice(): Promise<TerminalChoiceView>;
-  /** `terminal_choose_certificate`: dice qué secreto pide el almacén. */
+  /** `terminal_choose_certificate`: dice qué secreto pide el almacén; si falla, la orden ya sabe por qué y la ventana se cierra. */
   chooseCertificate(certificate: string): Promise<StageResult<StoreSecret>>;
   /** `terminal_cancel`: cancela la elección y cierra la ventana. */
   cancel(): Promise<void>;
@@ -41,11 +45,11 @@ const NO_CERTIFICATE_SHOWN_AS: Record<TerminalNoCertificate, NoCertificateReason
 };
 
 /** Lo único que la ventana sabe del documento de `-i`: la ruta; el fichero es de la terminal y no cruza. */
-function documentOfTheOrder(path: string): SiteDocument {
+function documentOfTheOrder(path: string, detected: DocumentType): SiteDocument {
   return {
     handle: "",
     name: path.split(/[\\/]/).pop() ?? path,
-    detected: "pdf",
+    detected,
     sha256: "",
     title: null,
     pages: 0,
@@ -77,9 +81,9 @@ function errandOf(choice: TerminalChoiceView): Errand {
     terminalOrder,
     stage: {
       kind: "consent",
-      document: documentOfTheOrder(choice.document),
+      document: documentOfTheOrder(choice.document, choice.detected),
       signs: null,
-      signing: "pdf",
+      signing: choice.signing,
       items: null,
       certificates: stage.certificates,
       narrowed: false,
@@ -125,7 +129,6 @@ export function terminalErrands(commands: TerminalCommands): SiteErrandPort {
         ...current,
         stage: { kind: "outcome", outcome: refusedBy(chosen.failure) },
       });
-      await commands.cancel();
     },
     cancel: () => commands.cancel(),
     close: () => commands.cancel(),

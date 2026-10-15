@@ -16,6 +16,7 @@ import {
   tauriPreferences,
   tauriSiteErrands,
   tauriTerminalErrands,
+  tauriTerminalPreferences,
   tauriWindowTheme,
 } from "../tauri";
 import { openedByTerminal } from "../windowOrigin";
@@ -52,13 +53,13 @@ if (!root) {
 }
 
 const terminal = openedByTerminal();
-const preference = tauriLanguagePreference(terminal);
+const configuration = terminal
+  ? tauriTerminalPreferences()
+  : { language: tauriLanguagePreference(), settings: tauriPreferences() };
+const preference = configuration.language;
 // Las dos lecturas van a la vez: son la misma configuración en el disco y
 // encadenarlas sólo retrasaría el primer pintado.
-const [language, settings] = await Promise.all([
-  preference.read(),
-  tauriPreferences(terminal).read(),
-]);
+const [language, settings] = await Promise.all([preference.read(), configuration.settings.read()]);
 
 // Antes de montar nada: aplicarlo después dejaría ver un parpadeo del tema que
 // no es.

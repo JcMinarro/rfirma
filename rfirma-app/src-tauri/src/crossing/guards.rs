@@ -368,7 +368,11 @@ fn crossings_from_a_portal_document() -> Vec<Serialised> {
         Serialised::of(
             "TerminalChoiceView",
             &crate::desktop::adapters::views::TerminalChoiceView::of(
-                Path::new(A_PORTAL_HANDLE),
+                crate::desktop::ports::WindowDocument {
+                    path: Path::new(A_PORTAL_HANDLE),
+                    detected: crate::site::domain::protocol::DocumentType::Pdf,
+                    format: crate::signing::domain::bridge::Format::Pades,
+                },
                 crate::desktop::ports::NoCertificateToOffer::None.into(),
             ),
         ),

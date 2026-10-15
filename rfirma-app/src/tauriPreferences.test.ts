@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const invoke = vi.hoisted(() => vi.fn());
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
-const { tauriLanguagePreference, tauriPreferences } = await import("./tauriPreferences");
+const { tauriLanguagePreference, tauriPreferences, tauriTerminalPreferences } = await import(
+  "./tauriPreferences"
+);
 
 const aConfiguration = {
   language: "es",
@@ -239,5 +241,29 @@ describe("los puertos de la configuración sobre Tauri", () => {
     invoke.mockResolvedValue(null);
 
     await expect(tauriPreferences().chooseFolder()).resolves.toBeNull();
+  });
+});
+
+describe("the configuration of the -certgui window", () => {
+  beforeEach(() => {
+    invoke.mockReset();
+  });
+
+  it("reads the language and the settings from the terminal process", async () => {
+    invoke.mockResolvedValue({ ...aConfiguration, language: "ca", consentCountdown: false });
+    const { language, settings } = tauriTerminalPreferences();
+
+    await expect(language.read()).resolves.toBe("ca");
+    await expect(settings.read()).resolves.toMatchObject({ consentCountdown: false });
+    expect(invoke.mock.calls.map(([command]) => command)).toEqual([
+      "read_terminal_configuration",
+      "read_terminal_configuration",
+    ]);
+  });
+
+  it("saves no language, because the terminal process does not write the configuration", async () => {
+    await tauriTerminalPreferences().language.save("ca");
+
+    expect(invoke).not.toHaveBeenCalled();
   });
 });

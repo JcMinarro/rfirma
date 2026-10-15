@@ -19,7 +19,7 @@ use crate::identity::domain::store::StoreClass;
 use crate::memory_error::MemoryError;
 use crate::signing::domain::bridge::{BridgeError, Format, SignatureOperation};
 use crate::signing::domain::DocumentSignatures;
-use crate::site::domain::protocol::SiteFilter;
+use crate::site::domain::protocol::{DocumentType, SiteFilter};
 
 /// Quién atiende un esquema según el escritorio, y cómo se elige (ADR-0015).
 pub trait HandlerRegistry {
@@ -191,13 +191,22 @@ pub enum WindowOffer<'a> {
     Nothing(NoCertificateToOffer),
 }
 
-/// Lo que devuelve la ventana de `-certgui`: el certificado y el PIN tecleado, o la cancelación.
+/// El documento de `-i` que enseña la ventana de `-certgui`: dónde está, qué es según sus bytes y con qué formato se firma.
+#[derive(Clone, Copy, Debug)]
+pub struct WindowDocument<'a> {
+    pub path: &'a Path,
+    pub detected: DocumentType,
+    pub format: Format,
+}
+
+/// Lo que devuelve la ventana de `-certgui`: el certificado y el PIN tecleado, la cancelación o por qué no se pudo elegir.
 pub enum WindowChoice {
     Chosen {
         certificate: Box<TokenCertificate>,
         secret: Option<ProtectedSecret>,
     },
     Cancelled,
+    Failed(String),
 }
 
 /// El elector gráfico: la ventana de sede con el origen «orden de terminal».
@@ -206,5 +215,9 @@ pub trait GraphicalPicker {
     fn has_a_display(&self) -> bool;
 
     /// Lo que la persona elige en la ventana para firmar ese documento, o por qué no se ha abierto.
-    fn chosen(&self, document: &Path, offer: WindowOffer<'_>) -> Result<WindowChoice, String>;
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String>;
 }
