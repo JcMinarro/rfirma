@@ -1572,6 +1572,9 @@ msgstr "rFirmaren akatsa dela uste duzu?"
 msgid "sede.outcome.autoClose"
 msgstr "Bere kabuz itxiko da {{seconds}} s barru."
 
+msgid "sede.outcome.closeIn"
+msgstr "Itxi ({{seconds}})"
+
 msgid "sede.oldWebClient.title"
 msgstr "Orri hau zaharkituta dago"
 
@@ -1791,8 +1794,10 @@ msgstr[2] "{{count}} dokumentuk zure sinadura daramate ziurtagiri honekin"
 msgid "sede.received.signedByYouOtherCertificateCount"
 msgid_plural "sede.received.signedByYouOtherCertificateCount"
 msgstr[0] "Dokumentu bat zeuk sinatu zenuen beste ziurtagiri batekin"
-msgstr[1] "{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
-msgstr[2] "{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
+msgstr[1] ""
+"{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
+msgstr[2] ""
+"{{count}} dokumentuk zure sinadura daramate beste ziurtagiri batekin"
 
 #. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
 msgid "sede.received.troubledOne"

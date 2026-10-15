@@ -154,7 +154,7 @@ export function SedeOutcome({ origin, outcome, onClose, onOpenHelp }: SedeOutcom
 }
 
 /** Los tres del artboard: visto, aspa y triángulo, uno por desenlace. */
-function OutcomeIcon({ kind }: { kind: SiteOutcome["kind"] }) {
+export function OutcomeIcon({ kind }: { kind: SiteOutcome["kind"] }) {
   switch (kind) {
     case "signed":
     case "batchSigned":
@@ -213,7 +213,7 @@ function RefusalSentence({ situation }: { situation: RefusalSituation }) {
 }
 
 /** Por qué rFirma no hace una firma que la sede pide de forma insegura o imposible; en otro rechazo, qué hacer. */
-function RefusalStatement({ situation }: { situation: RefusalSituation }) {
+export function RefusalStatement({ situation }: { situation: RefusalSituation }) {
   const { t } = useTranslation();
 
   switch (situation) {
@@ -229,7 +229,13 @@ function RefusalStatement({ situation }: { situation: RefusalSituation }) {
 }
 
 /** La caja que la persona copia y lleva a quien mantiene la sede: su nota, si la hay, y el detalle crudo. */
-function TechnicalDetail({ situation, detail }: { situation: RefusalSituation; detail: string }) {
+export function TechnicalDetail({
+  situation,
+  detail,
+}: {
+  situation: RefusalSituation;
+  detail: string;
+}) {
   const { t } = useTranslation();
   const note = siteNote(situation, t);
   const copiedDetail = note === null ? detail : `${note}\n\n${detail}`;
@@ -271,7 +277,7 @@ function siteNote(situation: RefusalSituation, t: TFunction): string | null {
 }
 
 /** El título ya dice lo que pasó; nada debajo lo repite. */
-function title(outcome: SiteOutcome, t: TFunction): string {
+export function title(outcome: SiteOutcome, t: TFunction): string {
   switch (outcome.kind) {
     case "signed":
     case "batchSigned":

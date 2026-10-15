@@ -1518,6 +1518,9 @@ msgstr ""
 msgid "sede.outcome.autoClose"
 msgstr ""
 
+msgid "sede.outcome.closeIn"
+msgstr ""
+
 msgid "sede.oldWebClient.title"
 msgstr ""
 

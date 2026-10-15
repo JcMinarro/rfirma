@@ -1556,6 +1556,9 @@ msgstr "Parécheche un fallo de rFirma?"
 msgid "sede.outcome.autoClose"
 msgstr "Pecharase soa dentro de {{seconds}} s."
 
+msgid "sede.outcome.closeIn"
+msgstr "Pechar ({{seconds}})"
+
 msgid "sede.oldWebClient.title"
 msgstr "Esta páxina está desactualizada"
 

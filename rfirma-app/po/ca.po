@@ -1564,6 +1564,9 @@ msgstr "Et sembla un error de rFirma?"
 msgid "sede.outcome.autoClose"
 msgstr "Es tancarà sola d'aquí a {{seconds}} s."
 
+msgid "sede.outcome.closeIn"
+msgstr "Tancar ({{seconds}})"
+
 msgid "sede.oldWebClient.title"
 msgstr "Aquesta pàgina està desactualitzada"
 

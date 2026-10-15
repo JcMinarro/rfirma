@@ -1,0 +1,100 @@
+//! 4 · El desenlace provisional con el esqueleto del consentimiento compacto: el origen, el icono y el título, y en el rechazo su frase y el detalle copiable; hoy solo lo pintan las historias.
+
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "../design-system/Button";
+import { Icon } from "../design-system/icons";
+import { Row } from "../design-system/Row";
+import { useDefaultButton } from "../design-system/useDefaultButton";
+import { isSedeRefusal, OUTCOME_CLOSE_MS, REFUSAL_ACTION_OF, type SiteOutcome } from "./errand";
+import { SedeBody, useOutcomeClock } from "./SedeFrame";
+import { SedeOrigin } from "./SedeOrigin";
+import {
+  OutcomeIcon,
+  title as outcomeTitle,
+  RefusalStatement,
+  TechnicalDetail,
+} from "./SedeOutcome";
+import "./SedeWindow.css";
+import "./SedeEnding.css";
+
+interface SedeEndingProps {
+  origin: string | null;
+  outcome: SiteOutcome;
+  onClose: () => void;
+  onOpenHelp?: () => void;
+}
+
+/** El desenlace: quién lo pidió arriba, lo que pasó en medio y «Cerrar» con su cuenta atrás donde estaba «Firmar». */
+export function SedeEnding({ origin, outcome, onClose, onOpenHelp }: SedeEndingProps) {
+  const { t } = useTranslation();
+  const carriesHelp = outcome.kind === "refused" && outcome.situation === "unknown";
+  const asksToAct =
+    outcome.kind === "refused" &&
+    isSedeRefusal(outcome.situation) &&
+    REFUSAL_ACTION_OF[outcome.situation] === "closeOther";
+  const staysOpen = carriesHelp || asksToAct;
+  useOutcomeClock(onClose, !staysOpen);
+  const seconds = useClosingSeconds(!staysOpen);
+  const closeButton = useDefaultButton();
+
+  return (
+    <SedeBody
+      flush
+      steadyFooter
+      primary={closeButton}
+      onEscape={onClose}
+      footer={
+        <Button
+          ref={closeButton}
+          variant="primary"
+          className="sede-ending__close"
+          onClick={onClose}
+        >
+          {!staysOpen && seconds > 0 ? t("sede.outcome.closeIn", { seconds }) : t("actions.close")}
+        </Button>
+      }
+    >
+      <div className="sede-ending">
+        <SedeOrigin origin={origin} />
+        <div className="sede-ending__body">
+          <div className="sede-ending__head">
+            <span className="sede-ending__icon">
+              <OutcomeIcon kind={outcome.kind} />
+            </span>
+            <p className="rf-title sede-ending__title">{outcomeTitle(outcome, t)}</p>
+            {outcome.kind === "refused" && (
+              <p className="rf-prose sede-ending__statement">
+                <RefusalStatement situation={outcome.situation} />
+              </p>
+            )}
+          </div>
+          {outcome.kind === "refused" && (
+            <TechnicalDetail situation={outcome.situation} detail={outcome.detail} />
+          )}
+          {carriesHelp && (
+            <Row gap="xs" className="sede-outcome__report">
+              <p className="rf-hint">{t("sede.outcome.reportHint")}</p>
+              <Button variant="ghost" className="sede-outcome__help" onClick={() => onOpenHelp?.()}>
+                <Icon name="externalLink" size={14} />
+                {t("header.help")}
+              </Button>
+            </Row>
+          )}
+        </div>
+      </div>
+    </SedeBody>
+  );
+}
+
+function useClosingSeconds(enabled: boolean): number {
+  const [remaining, setRemaining] = useState(OUTCOME_CLOSE_MS / 1000);
+
+  useEffect(() => {
+    if (!enabled || remaining === 0) return;
+    const timer = setTimeout(() => setRemaining((seconds) => seconds - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [enabled, remaining]);
+
+  return remaining;
+}
