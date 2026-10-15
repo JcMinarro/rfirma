@@ -268,7 +268,7 @@ CSS con `var(--rf-*)`.
 | Superficies | `.rf-card`, `.rf-card--elevated` |
 | Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill\|--sm\|--disabled` |
 | Formularios | `.rf-field`, `.rf-field--error`, `.rf-label`, `.rf-input`, `.rf-hint` |
-| Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-progress`, `.rf-progress--framed`, `.rf-admonition`, `.rf-admonition--error`, `.rf-dialog`, `.rf-scrim` |
+| Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-progress`, `.rf-progress--framed`, `.rf-admonition`, `.rf-dialog`, `.rf-scrim` |
 
 `.rf-root` es obligatoria en la raíz de toda pantalla: establece lienzo, familia
 tipográfica y color heredado.
@@ -399,16 +399,17 @@ Se maqueta con tokens; no hay clase propia en el bundle.
 ### Aviso
 
 `Admonition`: una caja sobre `--rf-surface` con borde de 1 px
-`--rf-border-subtle` y `--rf-radius-md`. El tono dice el icono y el rol:
-`info` y `warning`, con su icono y `role="status"`; `error`, con su icono,
-`role="alert"` y el borde de 2 px `--rf-border-strong`; `neutral`, sin icono ni
+`--rf-border-subtle` y `--rf-radius-md`, igual en todos los tonos. El tono
+solo dice el icono y el rol: `info` y `warning`, con su icono y
+`role="status"`; `error`, con el aspa y `role="alert"`; `neutral`, sin icono ni
 rol, para un bloque de consulta como el detalle técnico para la sede.
 
 Sin título, icono y texto van en una línea. Con título, este va en su propia
-fila en `.rf-label`, con el icono delante, y el contenido debajo, alineado con
-el texto del título. La `action`, un botón `--ghost` como «Copiar», va a la
-derecha de esa fila sin hacerla más alta. El texto suelto se pinta como
-`.rf-body`; los bloques —una nota en `.rf-hint`, un `<code>`— van tal cual.
+fila en `.rf-body`, en negrita y en `--rf-text`, con el icono delante, y el
+contenido debajo, alineado con el texto del título si hay icono. La `action`,
+un botón `--ghost` como «Copiar», va a la derecha de esa fila sin hacerla más
+alta. El contenido va en `.rf-body` y `--rf-text`: el texto suelto se pinta como
+un párrafo; los bloques —una nota, un `<code>`— van tal cual.
 
 Como mucho un aviso por pantalla: varios hechos van en uno, con el más
 importante como título.

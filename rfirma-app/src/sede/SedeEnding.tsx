@@ -106,7 +106,7 @@ function EndingDetail({ situation, detail }: { situation: RefusalSituation; deta
         </Button>
       }
     >
-      {note !== null && <p className="rf-hint">{note}</p>}
+      {note !== null && <p className="rf-body">{note}</p>}
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: la región con desplazamiento tiene que poder enfocarse para leerla con el teclado. */}
       <code className="rf-body sede-ending__detail-text" tabIndex={0}>
         {detail}

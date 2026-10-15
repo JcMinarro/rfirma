@@ -8,7 +8,6 @@ describe("Admonition", () => {
 
     const admonition = screen.getByRole("status");
     expect(admonition).toHaveClass("rf-admonition");
-    expect(admonition).not.toHaveClass("rf-admonition--error");
     expect(admonition).toHaveTextContent(/^Trae firmas de otras personas$/);
   });
 
@@ -30,16 +29,16 @@ describe("Admonition", () => {
     expect(screen.getByText("SAF_03").parentElement?.tagName).toBe("DIV");
   });
 
-  it("is an alert with the strong border when it tells an error", () => {
+  it("is an alert when it tells an error", () => {
     render(<Admonition tone="error">Tiene una firma que no es válida</Admonition>);
 
-    expect(screen.getByRole("alert")).toHaveClass("rf-admonition", "rf-admonition--error");
+    expect(screen.getByRole("alert")).toHaveClass("rf-admonition");
   });
 
-  it("warns as a status, without the error border", () => {
+  it("warns as a status", () => {
     render(<Admonition tone="warning">Esta sede usa un método de firma poco seguro</Admonition>);
 
-    expect(screen.getByRole("status")).not.toHaveClass("rf-admonition--error");
+    expect(screen.getByRole("status")).toHaveClass("rf-admonition");
   });
 
   it("stays neutral without a role or an icon", () => {
@@ -62,6 +61,7 @@ describe("Admonition", () => {
     const body = screen.getByText("Trae firmas de otras personas.");
     expect(title.closest(".rf-admonition__head")).not.toBeNull();
     expect(body.closest(".rf-admonition__head")).toBeNull();
+    expect(title).toHaveClass("rf-body", "rf-admonition__title");
     expect(admonition).toHaveTextContent(
       /^Tiene una firma que no es válida\.Trae firmas de otras personas\.$/,
     );

@@ -13,10 +13,6 @@
   align-items: stretch;
 }
 
-.rf-admonition--error {
-  border: 2px solid var(--rf-border-strong);
-}
-
 .rf-admonition__head {
   display: flex;
   align-items: flex-start;
@@ -30,13 +26,11 @@
   padding-top: 1px;
 }
 
-.rf-admonition__head .rf-admonition__icon {
-  padding-top: 2px;
-}
-
 .rf-admonition__title {
   flex: 1;
   min-width: 0;
+  font-weight: var(--rf-ui-strong-weight);
+  color: var(--rf-text);
 }
 
 .rf-admonition__action {
@@ -60,6 +54,7 @@
   flex-direction: column;
   gap: var(--rf-space-xs);
   min-width: 0;
+  color: var(--rf-text);
 }
 
 .rf-admonition__body--indented {

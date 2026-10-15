@@ -1,4 +1,4 @@
-//! El aviso `rf-admonition`: una caja informativa, de advertencia, de error o neutra, con un título opcional en su fila, una acción a su derecha y el contenido debajo.
+//! El aviso `rf-admonition`: una caja informativa, de advertencia, de error o neutra, con un título opcional en negrita en su fila, una acción a su derecha y el contenido debajo.
 
 import type { ComponentPropsWithRef, ReactNode } from "react";
 import { classNames } from "./classNames";
@@ -65,19 +65,14 @@ export function Admonition({
   return (
     <div
       role={role}
-      className={classNames(
-        "rf-admonition",
-        titled && "rf-admonition--titled",
-        tone === "error" && "rf-admonition--error",
-        className,
-      )}
+      className={classNames("rf-admonition", titled && "rf-admonition--titled", className)}
       {...rest}
     >
       {titled ? (
         <>
           <div className="rf-admonition__head">
             {iconBox}
-            <span className="rf-label rf-admonition__title">{title}</span>
+            <span className="rf-body rf-admonition__title">{title}</span>
             {actionBox}
           </div>
           {body}
