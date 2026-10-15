@@ -22,6 +22,7 @@ import { ReceivedViewer } from "./ReceivedViewer";
 import type { Received, ReceivedActions, ReceivedDocument } from "./received";
 import { SedeBody, useConsentCountdown } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
+import { TerminalDocumentHeading } from "./TerminalDocumentHeading";
 import "./SedeReceivedConsent.css";
 
 interface ConsentBasics {
@@ -44,20 +45,21 @@ interface ConsentBasics {
 /** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento, con su descarga si hay `onDownload`, y con documentos de una sede y `onExpand`, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
 export function SedeConsentCompact({
   received,
-  terminal = false,
+  terminalDocument,
   onDownload,
   onExpand,
   ...basics
 }: ConsentBasics & {
   /** `null` cuando la sede pide los datos y no hay nada que firmar. */
   received: Received | null;
-  /** La firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
-  terminal?: boolean;
+  /** La ruta de `-i` cuando la firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
+  terminalDocument?: string;
   onDownload?: () => void;
   onExpand?: () => void;
 }) {
   const { t } = useTranslation();
   const consent = useConsent(basics);
+  const terminal = terminalDocument !== undefined;
   const identity = basics.asks === "identity" || received === null;
   const documents =
     received?.kind === "documents" && !terminal && !identity && onExpand !== undefined
@@ -105,7 +107,11 @@ export function SedeConsentCompact({
                 certificate={consent.chosen}
                 sha1ToAllow={basics.sha1ToAllow}
               />
-              <ReceivedHeading received={received} onDownload={terminal ? undefined : onDownload} />
+              {terminal ? (
+                <TerminalDocumentHeading documentPath={terminalDocument} />
+              ) : (
+                <ReceivedHeading received={received} onDownload={onDownload} />
+              )}
             </>
           )}
         </div>

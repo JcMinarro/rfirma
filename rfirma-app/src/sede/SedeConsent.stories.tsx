@@ -32,6 +32,8 @@ const DOCUMENTS = {
 
 const WITHOUT_DOCUMENTS = { digest: ONE_DIGEST, challenge: CHALLENGE, remoteBatch: REMOTE_BATCH };
 
+const TERMINAL_DOCUMENT = "/home/ada/contratos/convenio.pdf";
+
 type DocumentsCase = keyof typeof DOCUMENTS;
 type ReceivedCase = DocumentsCase | keyof typeof WITHOUT_DOCUMENTS;
 
@@ -54,6 +56,7 @@ interface ExpandableConsentDesignProps {
   siteFiltersCertificates: boolean;
   sha1ToAllow: boolean;
   countdown: boolean;
+  pendingActions: boolean;
   defaultDocument?: string;
   defaultSignaturesOpen?: boolean;
 }
@@ -87,6 +90,7 @@ function ExpandableConsentDesign({
   siteFiltersCertificates,
   sha1ToAllow,
   countdown,
+  pendingActions,
   defaultDocument,
   defaultSignaturesOpen,
 }: ExpandableConsentDesignProps) {
@@ -110,9 +114,9 @@ function ExpandableConsentDesign({
       {...basics}
       received={shown}
       asks={errand === "identity" ? "identity" : "signature"}
-      terminal={errand === "terminal"}
-      onDownload={receivedActions.onDownload}
-      onExpand={onExpand}
+      terminalDocument={errand === "terminal" ? TERMINAL_DOCUMENT : undefined}
+      onDownload={pendingActions ? receivedActions.onDownload : undefined}
+      onExpand={pendingActions ? onExpand : undefined}
     />
   ) : (
     <SedeConsentExpanded
@@ -145,6 +149,7 @@ const meta = {
     siteFiltersCertificates: false,
     sha1ToAllow: false,
     countdown: false,
+    pendingActions: false,
   },
   argTypes: {
     view: hidden,
@@ -215,13 +220,17 @@ const meta = {
         "La sede pide SHA-1 sin permiso: el aviso, «Firmar igualmente» y la cuenta atrás",
     },
     countdown: { description: "El botón de firmar espera unos segundos antes de habilitarse" },
+    pendingActions: {
+      description:
+        "«Ver documentos» y la descarga en la compacta: diseño pendiente de #1920, que la ventana real todavía no tiene",
+    },
   },
   parameters: {
     ...sedeMomentMeta.parameters,
     docs: {
       description: {
         component: [
-          "El consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento con su descarga; En el diseño provisional de la vista ampliada, «Ver documentos» la amplía a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» solo con su icono. Lo que ya firmaste tú lo dice la franja del documento.",
+          "El consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento; desde una orden de terminal, el nombre del documento en vez del recuento. La compacta real no tiene todavía ni descarga ni «Ver documentos»: el control de #1920 los enseña como diseño pendiente. En el diseño provisional de la vista ampliada, que abriría «Ver documentos», la ventana pasa a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» solo con su icono. Lo que ya firmaste tú lo dice la franja del documento.",
           "Úsalo como referencia del momento 2 con documentos, huellas o un reto, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
           "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar igualmente», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
           "No enseñes del lote remoto más que su recuento, ni del reto más que qué es; no digas el tipo del documento ni si se firma, se cofirma o se contrafirma; no pongas ayuda bajo la tarjeta ilegible, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
@@ -244,7 +253,11 @@ const expanded = {
     },
   },
   decorators: sedeAreaMomentMeta.decorators,
-  argTypes: { errand: hidden, received: { control: "select", options: Object.keys(DOCUMENTS) } },
+  argTypes: {
+    errand: hidden,
+    pendingActions: hidden,
+    received: { control: "select", options: Object.keys(DOCUMENTS) },
+  },
 } satisfies Story;
 
 export const CompactDigest: Story = {

@@ -1323,6 +1323,10 @@ msgstr "Enviar les meves dades"
 msgid "sede.consent.countdown"
 msgstr "{{action}} ({{seconds}})"
 
+#. {{name}} es el nombre del documento de la orden, recortado por el medio.
+msgid "sede.consent.terminalTitle"
+msgstr "Signar {{name}}"
+
 msgid "sede.confirm.messages.pdfShadowAttackSuspect"
 msgstr "Sembla que el PDF s'ha modificat després de l'última signatura."
 

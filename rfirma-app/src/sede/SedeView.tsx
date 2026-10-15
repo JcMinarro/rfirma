@@ -91,7 +91,7 @@ export function SedeView({
           <SedeConsentCompact
             origin={errand.origin}
             asks={asks}
-            terminal={errand.terminalOrder !== undefined}
+            terminalDocument={errand.terminalOrder?.documentPath}
             received={receivedOf(stage)}
             certificates={stage.certificates}
             liveCertificates={liveCertificates}
@@ -144,6 +144,7 @@ export function SedeView({
         {stage.kind === "noCertificate" && (
           <SedeMissingCertificate
             origin={errand.origin}
+            asks={asks}
             terminal={errand.terminalOrder !== undefined}
             reason={stage.reason}
             owned={stage.owned}

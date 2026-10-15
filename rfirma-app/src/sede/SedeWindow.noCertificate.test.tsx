@@ -41,6 +41,17 @@ describe("5 · no usable certificate", () => {
     },
   );
 
+  it("says the site asks for your data when selectcert finds no usable certificate", () => {
+    const { port } = scriptedErrand(
+      { kind: "noCertificate", reason: "none", owned: 0 },
+      { operation: "selectcert" },
+    );
+    renderWithCatalog(<SedeWindow errands={port} />);
+
+    expect(screen.getByText("Te pide tus datos")).toBeInTheDocument();
+    expect(screen.queryByText("Te pide la firma")).not.toBeInTheDocument();
+  });
+
   it.each([
     ["none installed", NoneInstalled],
     ["excluded by the site", ExcludedBySite],

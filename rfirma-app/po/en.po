@@ -1322,6 +1322,10 @@ msgstr "Send my data"
 msgid "sede.consent.countdown"
 msgstr "{{action}} ({{seconds}})"
 
+#. {{name}} es el nombre del documento de la orden, recortado por el medio.
+msgid "sede.consent.terminalTitle"
+msgstr "Sign {{name}}"
+
 msgid "sede.confirm.messages.pdfShadowAttackSuspect"
 msgstr "It looks like the PDF was modified after its last signature."
 

@@ -398,12 +398,9 @@ de la ventana real; las decisiones de abajo son las de cada momento.
 
 ### Desenlace
 
-- **Tres tipos de final y en todos la sede ya tiene su respuesta.** Firmado y
-  cancelado llevan la fila del documento —es lo único que dice qué se acaba de
-  firmar—; el rechazo no, porque ahí nunca llegó a haber documento.
-- **Firmado dice que rFirma no guarda copia**, la única frase que no se deduce
-  mirando: la aplicación sí tiene recientes y aquí no entra nada. El cancelado no
-  añade nada, porque el título ya lo dice.
+- **Tres tipos de final y en todos la sede ya tiene su respuesta**: firmado,
+  cancelado y rechazado. Lo que lleva cada uno, en «El resto de momentos con el
+  esqueleto nuevo».
 - **El rechazo se enseña aunque la persona no pueda arreglarlo**: acaba de
   arrancarse un programa en su equipo a petición de una web, y un rFirma que
   aparece y desaparece en silencio es indistinguible de uno roto. Lo accionable es
@@ -417,8 +414,6 @@ de la ventana real; las decisiones de abajo son las de cada momento.
   contrafirma de factura, contrafirma fuera de CAdES, CMS y XAdES; ADR-0023) dicen
   que no es un fallo de quien firma, y esa causa ocupa el lugar de la acción. La
   nota para quien mantiene la sede va dentro de la caja del detalle y se copia con él.
-  El rechazo por SHA-1 añade, antes de la caja, la pista «Si confías en esta sede,
-  puedes permitir SHA-1 en Preferencias → Firma y volver a firmar desde la sede.»
 - **La caja del detalle es de la sede y solo de la sede.** El enlace a comentarios
   y ayuda, que solo aparece cuando ni se sabe qué se rechazó, va fuera: eso no se
   lleva a la sede, se reporta a rFirma.
@@ -441,8 +436,8 @@ de la ventana real; las decisiones de abajo son las de cada momento.
   ofrece lo mismo, porque el recién instalado quizá sí valga, y dice cuántos
   certificados tiene la persona —estado de su almacén—, sin decir qué rechazó la
   sede de cada uno. Los caducados no se entregan nunca (ADR-0023).
-- **Volver a buscar es una microacción del cuerpo**, por si se instaló un
-  certificado con la ventana abierta; cerrar está en el pie.
+- **Volver a buscar es la acción secundaria del pie**, a la izquierda, por si se
+  instaló un certificado con la ventana abierta.
 - **Salir abandona el trámite**, por el pie o por la cruz del sistema: la sede no
   ha recibido nada todavía. Solo el desenlace cierra sin cancelar.
 
@@ -451,9 +446,11 @@ de la ventana real; las decisiones de abajo son las de cada momento.
 La acción es de la persona, que acaba de escribir la orden: no hay frase de
 origen ni nada dirigido a la sede, y no se repite lo que la orden ya dice.
 
-- **Consentimiento**: el título nombra el documento de `-i`, recortado por el
-  medio conservando principio, final y extensión, con la ruta completa en el
-  tooltip. Sin rutas, destino ni nota de `-filter`.
+- **Consentimiento**: la cabecera dice solo «Una orden de terminal» y, donde la
+  compacta pone el recuento, «Firmar» con el nombre del documento de `-i`,
+  recortado por el medio conservando principio, final y extensión, con la ruta
+  completa en el tooltip. Sin descarga, «Ver documentos», destino ni nota de
+  `-filter`.
 - **La ventana solo elige**: se cierra al aceptar el secreto o al cancelar, y el
   resultado sale en la terminal; no hay firmando ni desenlace en ventana.
 - **Sin certificado utilizable** se abre la ventana aunque no haya terminal.
@@ -534,22 +531,8 @@ marcos —520 × 420, y 1080 × 660 al marcar el área— en
 
 ## Claves i18n
 
-Todos los textos salen del catálogo; el castellano está en `po/es.po`. Por
-momento:
-
-- **Cliente antiguo y espera**: `sede.oldWebClient.*`, `sede.waiting.*`,
-  `sede.unreachable.*` y `sede.repair.*`.
-- **Marcar el área**: `sede.marking.*`.
-- **Consentimiento**: `sede.consent.*` (origen según la operación y el formato en
-  `asksSignature*`, `asksIdentity` y las variantes `unknownOrigin*`; lo del
-  documento en `untitled`, `counterSignature*` y `signingKind.*`; el lote en
-  `batch*` y `localBatchRound*`; lo que se envía en `willSend`; la acotación en
-  `narrowed*`; la cuenta atrás en `countdown`; la terminal en `terminalTitle`).
-- **Confirmar**: `sede.confirm.messages.*`.
-- **Firmando y ficheros**: `sede.signing.with`, `sede.returning.*`,
-  `sede.saving.*` y `sede.loading.*`.
-- **Desenlace**: `sede.outcome.*`, y para los rechazos `sede.refusals.*`,
-  `sede.refusalCauses.*` y `sede.siteNotes.*`.
-- **Sin certificado**: `sede.noCertificate.*`.
-- **Acciones comunes**: `actions.sign`, `actions.cancel`, `actions.close`,
-  `actions.continue`, `actions.dismiss`, `actions.lookAgain` y `actions.copy`.
+Todos los textos salen del catálogo; el castellano está en `po/es.po`, bajo
+`sede.*`, con un espacio de nombres por momento (la cabecera en `sede.origin.*`;
+lo recibido y la vista ampliada en `sede.received.*` y `sede.signatures.*`), y
+las acciones comunes bajo `actions.*`. La lista de claves es la del catálogo,
+no se copia aquí.

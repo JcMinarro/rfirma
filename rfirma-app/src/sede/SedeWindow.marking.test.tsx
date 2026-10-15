@@ -144,6 +144,24 @@ describe("1c · marking the area of the visible signature", () => {
     expect(calls.markArea).not.toHaveBeenCalled();
   });
 
+  it("takes the box off the only page under Several without placing it again", async () => {
+    const { document, renders } = recordingDocument();
+    const { port } = scriptedErrand({ kind: "marking", pdf: document });
+    renderWithCatalog(<SedeWindow errands={port} />);
+    await waitFor(() => expect(renders).toHaveLength(1));
+    await waitFor(() => expect(box()).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole("radio", { name: "Varias" }));
+    await userEvent.click(screen.getByRole("button", { name: "Quitarla de aquí" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("application", { name: "Recuadro de la firma visible" }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: "Continuar" })).toBeDisabled();
+  });
+
   it("does nothing on Enter while the typed pages make no sense", async () => {
     const { document, renders } = recordingDocument();
     const { port, calls } = scriptedErrand({ kind: "marking", pdf: document });
