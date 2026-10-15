@@ -1,12 +1,10 @@
 use base64::Engine as _;
 use serde_json::{json, Value};
 
+use super::invoice::AN_INVOICE;
 use super::schema::conforming_json;
 use super::*;
 use crate::identity::application::tests::TestAuthority;
-
-const AN_XML: &[u8] = b"<?xml version=\"1.0\"?><raiz>datos</raiz>";
-const A_BINARY: &[u8] = b"\x00\x01 no es un PDF ni un XML";
 
 struct StoresHolding(Vec<TokenCertificate>);
 
@@ -75,10 +73,7 @@ fn sign_json_names_the_formats_asked_for_with_their_official_names() {
 
 #[test]
 fn sign_json_names_an_invoice_as_facturae() {
-    let invoice =
-        b"<?xml version=\"1.0\"?><fe:Facturae><FileHeader/><Parties/><Invoices/></fe:Facturae>";
-
-    let signed = signed_as_json("sign", invoice, &["-format", "facturae"]);
+    let signed = signed_as_json("sign", AN_INVOICE, &["-format", "facturae"]);
 
     assert_eq!(signed["format"], "FacturaE");
 }

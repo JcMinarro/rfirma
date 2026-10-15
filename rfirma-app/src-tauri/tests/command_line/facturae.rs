@@ -13,16 +13,31 @@ struct Run {
     output: PathBuf,
 }
 
-fn ran(command: &str, input: &[u8], extra: &[&str], roots_without_a_bridge: bool) -> Run {
+fn ran_with_the_bridge(command: &str, input: &[u8], extra: &[&str]) -> Run {
+    let (home, alias) = a_home_with_an_installed_certificate();
+    let roots = the_roots_under(home.path());
+    ran_in(home, alias, roots, command, input, extra)
+}
+
+fn ran_without_a_bridge(command: &str, input: &[u8], extra: &[&str]) -> Run {
     let (home, alias) = a_home_with_an_installed_certificate();
     let mut roots = the_roots_under(home.path());
-    if roots_without_a_bridge {
-        roots.signing.isolate = Isolate::start_with(|| {
-            Err(BridgeError::Failed(
-                "el puente no debe llegar a usarse".to_owned(),
-            ))
-        });
-    }
+    roots.signing.isolate = Isolate::start_with(|| {
+        Err(BridgeError::Failed(
+            "el puente no debe llegar a usarse".to_owned(),
+        ))
+    });
+    ran_in(home, alias, roots, command, input, extra)
+}
+
+fn ran_in(
+    home: tempfile::TempDir,
+    alias: String,
+    roots: Roots,
+    command: &str,
+    input: &[u8],
+    extra: &[&str],
+) -> Run {
     let input_path = home.path().join("factura.xml");
     std::fs::write(&input_path, input).expect("la factura deberia escribirse");
     let output = home.path().join("salida");
@@ -57,11 +72,11 @@ fn assert_refused_before_signing(run: &Run, reason: &str) {
     assert_eq!(run.roots.identity.remembered_certificate(), None);
 }
 
-fn the_signed_text_of(run: &Run) -> String {
+fn the_signed_text_of(run: &Run, format: Format) -> String {
     assert_eq!(run.outcome.exit_code, SUCCEEDED, "{:?}", run.outcome.stderr);
     let signed = std::fs::read(&run.output).expect("la firma deberia estar en -o");
     assert_eq!(
-        super::formats::verdict_in(&run.roots, &signed, Format::FacturaE),
+        super::formats::verdict_in(&run.roots, &signed, format),
         SignatureVerdict::Valid
     );
     String::from_utf8_lossy(&signed).into_owned()
@@ -70,9 +85,9 @@ fn the_signed_text_of(run: &Run) -> String {
 #[test]
 #[ignore = "grada C: necesita librfirma_crypto.so (just test-native)"]
 fn sign_facturae_signs_the_invoice_with_a_valid_facturae_signature_and_its_policy() {
-    let run = ran("sign", AN_INVOICE, &["-format", "facturae"], false);
+    let run = ran_with_the_bridge("sign", AN_INVOICE, &["-format", "facturae"]);
 
-    let signed = the_signed_text_of(&run);
+    let signed = the_signed_text_of(&run, Format::FacturaE);
 
     assert!(signed.contains(FACTURAE_POLICY), "{signed}");
 }
@@ -80,7 +95,7 @@ fn sign_facturae_signs_the_invoice_with_a_valid_facturae_signature_and_its_polic
 #[test]
 #[ignore = "grada C: necesita librfirma_crypto.so (just test-native)"]
 fn sign_facturae_carries_the_production_place_and_the_role_declared_in_config() {
-    let run = ran(
+    let run = ran_with_the_bridge(
         "sign",
         AN_INVOICE,
         &[
@@ -89,10 +104,9 @@ fn sign_facturae_carries_the_production_place_and_the_role_declared_in_config() 
             "-config",
             "signatureProductionCity=Córdoba\\nsignerClaimedRoles=tercero",
         ],
-        false,
     );
 
-    let signed = the_signed_text_of(&run);
+    let signed = the_signed_text_of(&run, Format::FacturaE);
 
     assert!(signed.contains("Córdoba"), "{signed}");
     assert!(signed.contains("tercero"), "{signed}");
@@ -101,34 +115,22 @@ fn sign_facturae_carries_the_production_place_and_the_role_declared_in_config() 
 #[test]
 #[ignore = "grada C: necesita librfirma_crypto.so (just test-native)"]
 fn sign_auto_keeps_signing_an_invoice_in_xades_enveloping() {
-    let run = ran("sign", AN_INVOICE, &["-format", "auto"], false);
+    let run = ran_with_the_bridge("sign", AN_INVOICE, &["-format", "auto"]);
 
-    let signed = the_signed_text_of_xades(&run);
+    let signed = the_signed_text_of(
+        &run,
+        Format::Xades(rfirma_lib::signing::domain::bridge::XadesVariant::Enveloping),
+    );
 
     assert!(!signed.contains(FACTURAE_POLICY), "{signed}");
 }
 
-fn the_signed_text_of_xades(run: &Run) -> String {
-    assert_eq!(run.outcome.exit_code, SUCCEEDED, "{:?}", run.outcome.stderr);
-    let signed = std::fs::read(&run.output).expect("la firma deberia estar en -o");
-    assert_eq!(
-        super::formats::verdict_in(
-            &run.roots,
-            &signed,
-            Format::Xades(rfirma_lib::signing::domain::bridge::XadesVariant::Enveloping)
-        ),
-        SignatureVerdict::Valid
-    );
-    String::from_utf8_lossy(&signed).into_owned()
-}
-
 #[test]
 fn sign_facturae_on_an_xml_that_is_not_an_invoice_is_refused_before_the_card() {
-    let run = ran(
+    let run = ran_without_a_bridge(
         "sign",
         b"<?xml version=\"1.0\"?><documento/>",
         &["-format", "facturae"],
-        true,
     );
 
     assert_refused_before_signing(&run, "no es una factura");
@@ -136,7 +138,7 @@ fn sign_facturae_on_an_xml_that_is_not_an_invoice_is_refused_before_the_card() {
 
 #[test]
 fn sign_facturae_on_a_pdf_is_refused_before_the_card() {
-    let run = ran("sign", &a_one_page_pdf(), &["-format", "facturae"], true);
+    let run = ran_without_a_bridge("sign", &a_one_page_pdf(), &["-format", "facturae"]);
 
     assert_refused_before_signing(&run, "no es una factura");
 }
@@ -144,7 +146,7 @@ fn sign_facturae_on_a_pdf_is_refused_before_the_card() {
 #[test]
 fn cosign_on_a_signed_invoice_is_refused_before_the_card_with_facturae_and_with_auto() {
     for extra in [&["-format", "facturae"][..], &["-format", "auto"][..]] {
-        let run = ran("cosign", A_SIGNED_INVOICE, extra, true);
+        let run = ran_without_a_bridge("cosign", A_SIGNED_INVOICE, extra);
 
         assert_refused_before_signing(&run, "FacturaE no admite cofirma ni contrafirma");
     }

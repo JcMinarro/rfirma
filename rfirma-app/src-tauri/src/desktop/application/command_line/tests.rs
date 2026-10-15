@@ -239,6 +239,8 @@ impl DocumentSigner for RecordingSigner {
 }
 
 const A_PDF: &[u8] = b"%PDF-1.4 cuerpo";
+const AN_XML: &[u8] = b"<?xml version=\"1.0\"?><raiz>datos</raiz>";
+const A_BINARY: &[u8] = b"\x00\x01 no es un PDF ni un XML";
 const SIGNED: &[u8] = b"%PDF-1.4 firmado";
 
 fn attended_with(words: &[&str], stores: &dyn CertificateStores) -> Outcome {

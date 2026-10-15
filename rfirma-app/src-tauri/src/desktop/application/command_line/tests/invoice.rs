@@ -1,9 +1,7 @@
 use super::*;
 use crate::signing::domain::bridge::XadesVariant;
 
-const AN_XML: &[u8] = b"<?xml version=\"1.0\"?><raiz>datos</raiz>";
-const A_BINARY: &[u8] = b"\x00\x01 no es un PDF ni un XML";
-const AN_INVOICE: &[u8] =
+pub(super) const AN_INVOICE: &[u8] =
     b"<?xml version=\"1.0\"?><fe:Facturae><FileHeader/><Parties/><Invoices/></fe:Facturae>";
 
 fn format_asked_for(words: &[&str]) -> SignatureFormat {
@@ -30,7 +28,7 @@ fn sign_facturae_signs_an_invoice_in_facturae_in_any_case() {
 }
 
 #[test]
-fn sign_auto_keeps_signing_an_invoice_in_xades_enveloping() {
+fn sign_auto_asks_the_signer_for_xades_enveloping_on_an_invoice() {
     assert_eq!(
         format_asked_for(&["-format", "auto"]),
         SignatureFormat::Xades(XadesVariant::Enveloping)
@@ -82,4 +80,93 @@ fn cosign_refuses_an_invoice_whatever_the_format_before_choosing_the_certificate
         assert!(signer.asked.borrow().is_empty());
         assert_eq!(files.at("salida"), None);
     }
+}
+
+#[test]
+fn sign_facturae_on_what_is_not_an_invoice_is_refused_before_any_way_of_choosing_the_certificate() {
+    for choosing in [
+        &["-filter", "nonexpired:"][..],
+        &["-certtui"][..],
+        &["-certgui"][..],
+    ] {
+        let files = FilesInMemory::with("entrada", AN_XML);
+        let signer = RecordingSigner::default();
+        let mut words = vec![
+            "sign", "-i", "entrada", "-o", "salida", "-format", "facturae",
+        ];
+        words.extend_from_slice(choosing);
+
+        let outcome = signed_over(&words, &files, &signer);
+
+        assert_eq!(
+            outcome.exit_code,
+            REFUSED,
+            "{choosing:?}: {}",
+            said(&outcome)
+        );
+        assert!(signer.asked.borrow().is_empty(), "{choosing:?}");
+        assert_eq!(files.at("salida"), None, "{choosing:?}");
+    }
+}
+
+#[test]
+fn cosign_refuses_an_invoice_before_any_way_of_choosing_the_certificate() {
+    for choosing in [
+        &["-filter", "nonexpired:"][..],
+        &["-certtui"][..],
+        &["-certgui"][..],
+    ] {
+        let files = FilesInMemory::with("entrada", AN_INVOICE);
+        let signer = RecordingSigner::default();
+        let mut words = vec!["cosign", "-i", "entrada", "-o", "salida"];
+        words.extend_from_slice(choosing);
+
+        let outcome = signed_over(&words, &files, &signer);
+
+        assert_eq!(
+            outcome.exit_code,
+            REFUSED,
+            "{choosing:?}: {}",
+            said(&outcome)
+        );
+        assert!(signer.asked.borrow().is_empty(), "{choosing:?}");
+        assert_eq!(files.at("salida"), None, "{choosing:?}");
+    }
+}
+
+#[test]
+fn a_failed_facturae_signature_writes_no_output_and_remembers_no_certificate() {
+    let files = FilesInMemory::with("entrada", AN_INVOICE);
+    let signer = RecordingSigner {
+        fails: true,
+        ..RecordingSigner::default()
+    };
+
+    let outcome = signed_over(
+        &[
+            "sign", "-i", "entrada", "-o", "salida", "-alias", "yo", "-format", "facturae",
+        ],
+        &files,
+        &signer,
+    );
+
+    assert_eq!(outcome.exit_code, FAILED, "{}", said(&outcome));
+    assert_eq!(files.at("salida"), None);
+    assert!(signer.remembered.borrow().is_empty());
+}
+
+#[test]
+fn sign_gui_with_facturae_still_hands_the_file_to_the_desktop() {
+    let desktop = RecordingDesktop::default();
+
+    let outcome = handed_over_with(
+        &desktop,
+        &["sign", "-gui", "-i", "doc.xml", "-format", "facturae"],
+    );
+
+    assert_eq!(outcome, Outcome::default(), "{}", said(&outcome));
+    assert_eq!(
+        *desktop.delivered.borrow(),
+        vec![(PathBuf::from("doc.xml"), WindowIntent::OpenTheDocument)]
+    );
 }
