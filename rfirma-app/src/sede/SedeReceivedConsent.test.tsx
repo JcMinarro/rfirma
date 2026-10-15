@@ -52,7 +52,7 @@ describe("the expandable site consent", () => {
   it("summarises the previous signatures of a batch without listing its documents", () => {
     renderWithCatalog(<CompactSeveralDocuments />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^1 tiene una firma que no es válida\. 3 traen firmas de otras personas\.$/,
+      /^1 tiene una firma que no es válida\.3 traen firmas de otras personas\.$/,
     );
     expect(screen.queryByText("Resolución 2026-0412.pdf")).not.toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe("the expandable site consent", () => {
   it("summarises the previous signatures of one document without numbers", () => {
     renderWithCatalog(<CompactOneDocument />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^Tiene una firma que no es válida\. Trae firmas de otras personas\.$/,
+      /^Tiene una firma que no es válida\.Trae firmas de otras personas\.$/,
     );
   });
 

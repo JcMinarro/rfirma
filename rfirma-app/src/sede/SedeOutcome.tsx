@@ -229,13 +229,7 @@ export function RefusalStatement({ situation }: { situation: RefusalSituation })
 }
 
 /** La caja que la persona copia y lleva a quien mantiene la sede: su nota, si la hay, y el detalle crudo. */
-export function TechnicalDetail({
-  situation,
-  detail,
-}: {
-  situation: RefusalSituation;
-  detail: string;
-}) {
+function TechnicalDetail({ situation, detail }: { situation: RefusalSituation; detail: string }) {
   const { t } = useTranslation();
   const note = siteNote(situation, t);
   const copiedDetail = note === null ? detail : `${note}\n\n${detail}`;
@@ -263,7 +257,7 @@ export function TechnicalDetail({
 }
 
 /** Lo que quien mantiene la sede puede cambiar para que rFirma firme, cuando rFirma se niega. */
-function siteNote(situation: RefusalSituation, t: TFunction): string | null {
+export function siteNote(situation: RefusalSituation, t: TFunction): string | null {
   switch (situation) {
     case "sha1":
       return t("sede.siteNotes.sha1");

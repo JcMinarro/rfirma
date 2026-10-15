@@ -219,8 +219,8 @@ que solo existía para ellas.
 - **Como mucho un aviso en pantalla, nunca dos apilados.** Todos los hechos van
   en un solo `Admonition`, por orden de importancia: la firma que no es válida,
   el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas.
-  El primero va en negrita y los demás le siguen en texto normal; con un solo
-  hecho, sin negrita. El tono es el del peor: error con una firma no válida,
+  El primero es el título del aviso, en su fila, y los demás van debajo; con un
+  solo hecho, sin título. El tono es el del peor: error con una firma no válida,
   advertencia con SHA-1 y, si no, información.
 - **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
   «Descargar…» y, si los hay, los hechos de las firmas previas: cuántos

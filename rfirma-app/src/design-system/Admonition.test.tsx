@@ -12,6 +12,24 @@ describe("Admonition", () => {
     expect(admonition).toHaveTextContent(/^Trae firmas de otras personas$/);
   });
 
+  it("wraps loose text in a body paragraph", () => {
+    render(<Admonition>Trae firmas de otras personas</Admonition>);
+
+    const paragraph = screen.getByText("Trae firmas de otras personas");
+    expect(paragraph.tagName).toBe("P");
+    expect(paragraph).toHaveClass("rf-body");
+  });
+
+  it("keeps blocks as they come", () => {
+    render(
+      <Admonition>
+        <code>SAF_03</code>
+      </Admonition>,
+    );
+
+    expect(screen.getByText("SAF_03").parentElement?.tagName).toBe("DIV");
+  });
+
   it("is an alert with the strong border when it tells an error", () => {
     render(<Admonition tone="error">Tiene una firma que no es válida</Admonition>);
 
@@ -24,23 +42,51 @@ describe("Admonition", () => {
     expect(screen.getByRole("status")).not.toHaveClass("rf-admonition--error");
   });
 
-  it("puts its title in bold before the text, separated by a space", () => {
+  it("stays neutral without a role or an icon", () => {
+    const { container } = render(<Admonition tone="neutral">SAF_03</Admonition>);
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeNull();
+  });
+
+  it("puts its title in a row of its own above the content", () => {
     render(
       <Admonition tone="error" title="Tiene una firma que no es válida.">
-        Trae firmas de otras personas
+        Trae firmas de otras personas.
       </Admonition>,
     );
 
     const admonition = screen.getByRole("alert");
+    const title = screen.getByText("Tiene una firma que no es válida.");
+    const body = screen.getByText("Trae firmas de otras personas.");
+    expect(title.closest(".rf-admonition__head")).not.toBeNull();
+    expect(body.closest(".rf-admonition__head")).toBeNull();
     expect(admonition).toHaveTextContent(
-      /^Tiene una firma que no es válida\. Trae firmas de otras personas$/,
+      /^Tiene una firma que no es válida\.Trae firmas de otras personas\.$/,
     );
-    expect(screen.getByText("Tiene una firma que no es válida.").tagName).toBe("STRONG");
   });
 
   it("can be only a title", () => {
     render(<Admonition tone="error" title="Tiene una firma que no es válida." />);
 
     expect(screen.getByRole("alert")).toHaveTextContent(/^Tiene una firma que no es válida\.$/);
+  });
+
+  it("paints its action in the title row", () => {
+    render(
+      <Admonition
+        tone="neutral"
+        title="Detalle técnico"
+        action={<button type="button">Copiar</button>}
+      >
+        SAF_03
+      </Admonition>,
+    );
+
+    const action = screen.getByRole("button", { name: "Copiar" });
+    expect(action.closest(".rf-admonition__head")).toContainElement(
+      screen.getByText("Detalle técnico"),
+    );
   });
 });

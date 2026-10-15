@@ -10,7 +10,7 @@ import {
   type ReceivedDocument,
 } from "./received";
 
-/** Un solo aviso, con el tono del peor hecho y el más importante en negrita delante; sin negrita si es el único, y nada si no hay ninguno. */
+/** Un solo aviso, con el tono del peor hecho y el más importante como título; sin título si es el único, y nada si no hay ninguno. */
 export function ReceivedSummary({
   documents,
   certificate = null,

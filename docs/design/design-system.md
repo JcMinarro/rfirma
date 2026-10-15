@@ -396,6 +396,23 @@ Una caja con **dos líneas**: arriba la carpeta, con icono de carpeta, a 12 px e
 
 Se maqueta con tokens; no hay clase propia en el bundle.
 
+### Aviso
+
+`Admonition`: una caja sobre `--rf-surface` con borde de 1 px
+`--rf-border-subtle` y `--rf-radius-md`. El tono dice el icono y el rol:
+`info` y `warning`, con su icono y `role="status"`; `error`, con su icono,
+`role="alert"` y el borde de 2 px `--rf-border-strong`; `neutral`, sin icono ni
+rol, para un bloque de consulta como el detalle técnico para la sede.
+
+Sin título, icono y texto van en una línea. Con título, este va en su propia
+fila en `.rf-label`, con el icono delante, y el contenido debajo, alineado con
+el texto del título. La `action`, un botón `--ghost` como «Copiar», va a la
+derecha de esa fila sin hacerla más alta. El texto suelto se pinta como
+`.rf-body`; los bloques —una nota en `.rf-hint`, un `<code>`— van tal cual.
+
+Como mucho un aviso por pantalla: varios hechos van en uno, con el más
+importante como título.
+
 ### Diálogo
 
 ```html

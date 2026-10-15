@@ -17,17 +17,17 @@ function admonitions() {
   return [...screen.queryAllByRole("status"), ...screen.queryAllByRole("alert")];
 }
 
-function bold() {
-  return document.querySelector("strong")?.textContent ?? null;
+function title() {
+  return document.querySelector(".rf-admonition__title")?.textContent ?? null;
 }
 
 describe("ReceivedSummary", () => {
-  it("leads a batch with the invalid signatures in bold, as an error", () => {
+  it("leads a batch with the invalid signatures as the title, as an error", () => {
     renderWithCatalog(<ReceivedSummary documents={BATCH_DOCUMENTS} />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^1 tiene una firma que no es válida\. 3 traen firmas de otras personas\.$/,
+      /^1 tiene una firma que no es válida\.3 traen firmas de otras personas\.$/,
     );
-    expect(bold()).toBe("1 tiene una firma que no es válida.");
+    expect(title()).toBe("1 tiene una firma que no es válida.");
   });
 
   it("puts the invalid signatures in the plural", () => {
@@ -36,17 +36,17 @@ describe("ReceivedSummary", () => {
     expect(screen.getByText("2 tienen una firma que no es válida.")).toBeInTheDocument();
   });
 
-  it("tells a single fact without bold, as information", () => {
+  it("tells a single fact without a title, as information", () => {
     const valid = BATCH_DOCUMENTS.filter((document) => document.id !== "resolution");
     renderWithCatalog(<ReceivedSummary documents={valid} />);
     expect(screen.getByRole("status")).toHaveTextContent(/^2 traen firmas de otras personas\.$/);
-    expect(bold()).toBeNull();
+    expect(title()).toBeNull();
   });
 
   it("speaks of a single document without numbers", () => {
     renderWithCatalog(<ReceivedSummary documents={[RESOLUTION_DOCUMENT]} />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^Tiene una firma que no es válida\. Trae firmas de otras personas\.$/,
+      /^Tiene una firma que no es válida\.Trae firmas de otras personas\.$/,
     );
   });
 
@@ -60,7 +60,7 @@ describe("ReceivedSummary", () => {
     const documents = withYourSignature(BATCH_DOCUMENTS, yourSignature("sameCertificate"));
     renderWithCatalog(<ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^1 tiene una firma que no es válida\. 2 llevan tu firma con este certificado\. 3 traen firmas de otras personas\.$/,
+      /^1 tiene una firma que no es válida\.2 llevan tu firma con este certificado\. 3 traen firmas de otras personas\.$/,
     );
   });
 
@@ -79,7 +79,7 @@ describe("ReceivedSummary", () => {
     );
     renderWithCatalog(<ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} />);
     expect(screen.getByRole("status")).toBeInTheDocument();
-    expect(bold()).toBe("2 llevan tu firma con este certificado.");
+    expect(title()).toBe("2 llevan tu firma con este certificado.");
   });
 
   it("says only that you signed a document whose signatures are all yours", () => {
@@ -106,7 +106,7 @@ describe("ReceivedSummary", () => {
     renderWithCatalog(<ReceivedSummary documents={[RESOLUTION_DOCUMENT]} sha1ToAllow />);
     expect(admonitions()).toHaveLength(1);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /^Tiene una firma que no es válida\. Esta sede usa un método de firma poco seguro\. Trae firmas de otras personas\.$/,
+      /^Tiene una firma que no es válida\.Esta sede usa un método de firma poco seguro\. Trae firmas de otras personas\.$/,
     );
   });
 

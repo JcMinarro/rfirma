@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { Row } from "../design-system/Row";
 import { useDefaultButton } from "../design-system/useDefaultButton";
-import { isSedeRefusal, OUTCOME_CLOSE_MS, REFUSAL_ACTION_OF, type SiteOutcome } from "./errand";
+import {
+  isSedeRefusal,
+  OUTCOME_CLOSE_MS,
+  REFUSAL_ACTION_OF,
+  type RefusalSituation,
+  type SiteOutcome,
+} from "./errand";
 import { SedeBody, useOutcomeClock } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
-import {
-  OutcomeIcon,
-  title as outcomeTitle,
-  RefusalStatement,
-  TechnicalDetail,
-} from "./SedeOutcome";
+import { OutcomeIcon, title as outcomeTitle, RefusalStatement, siteNote } from "./SedeOutcome";
 import "./SedeWindow.css";
 import "./SedeEnding.css";
 
@@ -70,7 +72,7 @@ export function SedeEnding({ origin, outcome, onClose, onOpenHelp }: SedeEndingP
             </p>
           )}
           {outcome.kind === "refused" && (
-            <TechnicalDetail situation={outcome.situation} detail={outcome.detail} />
+            <EndingDetail situation={outcome.situation} detail={outcome.detail} />
           )}
           {carriesHelp && (
             <Row gap="xs" className="sede-outcome__report">
@@ -84,6 +86,32 @@ export function SedeEnding({ origin, outcome, onClose, onOpenHelp }: SedeEndingP
         </div>
       </div>
     </SedeBody>
+  );
+}
+
+function EndingDetail({ situation, detail }: { situation: RefusalSituation; detail: string }) {
+  const { t } = useTranslation();
+  const note = siteNote(situation, t);
+  const copiedDetail = note === null ? detail : `${note}\n\n${detail}`;
+
+  return (
+    <Admonition
+      tone="neutral"
+      className="sede-ending__detail"
+      title={t("sede.outcome.technicalDetail")}
+      action={
+        <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(copiedDetail)}>
+          <Icon name="copy" size={14} />
+          {t("actions.copy")}
+        </Button>
+      }
+    >
+      {note !== null && <p className="rf-hint">{note}</p>}
+      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: la región con desplazamiento tiene que poder enfocarse para leerla con el teclado. */}
+      <code className="rf-body sede-ending__detail-text" tabIndex={0}>
+        {detail}
+      </code>
+    </Admonition>
   );
 }
 

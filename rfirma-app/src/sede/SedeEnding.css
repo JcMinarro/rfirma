@@ -21,6 +21,16 @@
   margin: 0;
 }
 
+.sede-ending__detail {
+  flex: none;
+}
+
+.sede-ending__detail-text {
+  max-height: 5.5em;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
 .sede-ending__close {
   flex: none;
   min-width: 120px;
