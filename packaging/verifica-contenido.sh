@@ -136,6 +136,18 @@ exige_relacion() {
     echo "OK  $tipo $nombre"
 }
 
+# La licencia de las hojas de FacturaE que van en el binario (ADR-0051), con las demás de terceros.
+case "$PAQUETE" in
+    *.deb | *.rpm)
+        licencia="$LAB/contenido/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
+        if [ ! -f "$licencia" ]; then
+            echo "FALTA la EUPL 1.1 de las hojas de FacturaE en /usr/share/doc/rfirma/licenses" >&2
+            exit 1
+        fi
+        echo "OK  la EUPL 1.1 de las hojas de FacturaE"
+        ;;
+esac
+
 case "$PAQUETE" in
     *.deb)
         obligatorias="$(dpkg-deb -f "$PAQUETE" Depends)"

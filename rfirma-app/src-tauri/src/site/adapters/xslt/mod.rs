@@ -2,7 +2,7 @@
 
 use std::ffi::{c_char, c_int, c_void};
 use std::ptr;
-use std::sync::{Mutex, PoisonError};
+use std::sync::{Mutex, OnceLock, PoisonError};
 
 #[cfg(target_os = "linux")]
 #[path = "loaded.rs"]
@@ -13,9 +13,24 @@ mod binding;
 
 type Document = *mut c_void;
 type Stylesheet = *mut c_void;
+type SecurityPrefs = *mut c_void;
 type XmlFree = unsafe extern "C" fn(*mut c_void);
+type SecurityCheck = unsafe extern "C" fn(SecurityPrefs, *mut c_void, *const c_char) -> c_int;
 
 const NO_NETWORK: c_int = 1 << 11;
+
+const READ_FILE: c_int = 1;
+const WRITE_FILE: c_int = 2;
+const CREATE_DIRECTORY: c_int = 3;
+const READ_NETWORK: c_int = 4;
+const WRITE_NETWORK: c_int = 5;
+const FORBIDDEN_ACCESSES: [c_int; 5] = [
+    READ_FILE,
+    WRITE_FILE,
+    CREATE_DIRECTORY,
+    READ_NETWORK,
+    WRITE_NETWORK,
+];
 
 /// Las funciones de libxml2 y libxslt que usa la transformación.
 struct Functions {
@@ -27,6 +42,10 @@ struct Functions {
     apply_stylesheet: unsafe extern "C" fn(Stylesheet, Document, *const *const c_char) -> Document,
     save_result: unsafe extern "C" fn(*mut *mut u8, *mut c_int, Document, Stylesheet) -> c_int,
     free_stylesheet: unsafe extern "C" fn(Stylesheet),
+    new_security_prefs: unsafe extern "C" fn() -> SecurityPrefs,
+    set_security_pref: unsafe extern "C" fn(SecurityPrefs, c_int, SecurityCheck) -> c_int,
+    forbid: SecurityCheck,
+    set_default_security_prefs: unsafe extern "C" fn(SecurityPrefs),
 }
 
 // La libxslt de Windows se compila sin hilos: una transformación a la vez.
@@ -36,6 +55,11 @@ static ONE_AT_A_TIME: Mutex<()> = Mutex::new(());
 pub fn transform(document: &[u8], stylesheet: &[u8]) -> Option<String> {
     let functions = binding::functions()?;
     let _turn = ONE_AT_A_TIME.lock().unwrap_or_else(PoisonError::into_inner);
+    static LOCKED_DOWN: OnceLock<bool> = OnceLock::new();
+    // SAFETY: las preferencias se crean una vez y libxslt las conserva mientras vive el proceso.
+    if !*LOCKED_DOWN.get_or_init(|| unsafe { functions.forbid_files_and_network() }) {
+        return None;
+    }
     // SAFETY: cada puntero que devuelve libxml2 o libxslt se comprueba y se libera una vez.
     unsafe { functions.transform(document, stylesheet) }
 }
@@ -59,6 +83,20 @@ impl Drop for Owned {
 }
 
 impl Functions {
+    unsafe fn forbid_files_and_network(&self) -> bool {
+        let prefs = (self.new_security_prefs)();
+        if prefs.is_null() {
+            return false;
+        }
+        let forbidden = FORBIDDEN_ACCESSES
+            .iter()
+            .all(|access| (self.set_security_pref)(prefs, *access, self.forbid) == 0);
+        if forbidden {
+            (self.set_default_security_prefs)(prefs);
+        }
+        forbidden
+    }
+
     unsafe fn transform(&self, document: &[u8], stylesheet: &[u8]) -> Option<String> {
         let style = self.compile(stylesheet)?;
         let source = Owned::new(self.parse(document)?, self.free_document)?;

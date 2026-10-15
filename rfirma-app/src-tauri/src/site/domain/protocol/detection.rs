@@ -153,21 +153,47 @@ pub fn type_of(document: &[u8]) -> DocumentType {
     }
     match shape_of(document) {
         DetectedShape::Pdf => DocumentType::Pdf,
-        DetectedShape::Invoice if has_a_stylesheet(document) => DocumentType::Invoice,
+        DetectedShape::Invoice if stylesheet_version(document).is_some() => DocumentType::Invoice,
         DetectedShape::Xml | DetectedShape::Invoice => DocumentType::Xml,
         DetectedShape::Binary if is_plain_text(document) => DocumentType::Text,
         DetectedShape::Binary => DocumentType::Unknown,
     }
 }
 
-const INVOICE_NAMESPACES_WITH_STYLESHEET: [&str; 2] = [
-    "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae",
-    "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml",
+/// La versión de una FacturaE que tiene hoja de estilos (ADR-0051).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InvoiceVersion {
+    /// FacturaE 3.2.1.
+    V3_2_1,
+    /// FacturaE 3.2.2.
+    V3_2_2,
+}
+
+const INVOICE_NAMESPACES_WITH_STYLESHEET: [(&str, InvoiceVersion); 2] = [
+    (
+        "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae",
+        InvoiceVersion::V3_2_1,
+    ),
+    (
+        "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml",
+        InvoiceVersion::V3_2_2,
+    ),
 ];
 
-fn has_a_stylesheet(document: &[u8]) -> bool {
-    root_namespace(document)
-        .is_some_and(|namespace| INVOICE_NAMESPACES_WITH_STYLESHEET.contains(&namespace.as_str()))
+/// La versión de la FacturaE, por el espacio de nombres de su raíz, o `None` si no es una factura con hoja.
+pub fn invoice_version(document: &[u8]) -> Option<InvoiceVersion> {
+    if shape_of(document) != DetectedShape::Invoice {
+        return None;
+    }
+    stylesheet_version(document)
+}
+
+fn stylesheet_version(document: &[u8]) -> Option<InvoiceVersion> {
+    let namespace = root_namespace(document)?;
+    INVOICE_NAMESPACES_WITH_STYLESHEET
+        .iter()
+        .find(|(known, _)| *known == namespace)
+        .map(|(_, version)| *version)
 }
 
 fn root_namespace(document: &[u8]) -> Option<String> {

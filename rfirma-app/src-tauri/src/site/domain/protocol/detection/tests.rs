@@ -309,6 +309,31 @@ fn an_invoice_with_a_default_namespace_is_told_by_it() {
     assert_eq!(type_of(document.as_bytes()), DocumentType::Invoice);
 }
 
+#[test]
+fn the_root_namespace_tells_the_version_of_an_invoice_with_stylesheet() {
+    assert_eq!(
+        invoice_version(&an_invoice_in(NAMESPACE_3_2_1)),
+        Some(InvoiceVersion::V3_2_1)
+    );
+    assert_eq!(
+        invoice_version(&an_invoice_in(NAMESPACE_3_2_2)),
+        Some(InvoiceVersion::V3_2_2)
+    );
+}
+
+#[test]
+fn an_invoice_without_stylesheet_or_a_document_that_is_no_invoice_has_no_version() {
+    let not_an_invoice = format!(
+        "<Factura xmlns=\"{NAMESPACE_3_2_2}\"><FileHeader/><Parties/><Invoices/></Factura>"
+    );
+    for document in [
+        an_invoice_in("http://www.facturae.es/Facturae/2009/v3.2/Facturae"),
+        not_an_invoice.into_bytes(),
+    ] {
+        assert_eq!(invoice_version(&document), None);
+    }
+}
+
 macro_rules! received {
     ($file:literal) => {
         include_bytes!(concat!("../../../../../../../testdata/", $file)).as_slice()
