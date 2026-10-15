@@ -117,7 +117,7 @@ function BrowserRecipes({
 
   return (
     <>
-      <Tabs className="sede-passing__tabs">
+      <Tabs variant="underline" className="sede-passing__tabs">
         {BROWSERS.map((each) => (
           <Tab
             key={each}

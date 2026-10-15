@@ -79,4 +79,20 @@ describe("Tabs", () => {
 
     expect(tab("tres")).toHaveFocus();
   });
+
+  it("marks the underline variant with its modifier class only when asked", () => {
+    const { rerender } = render(
+      <Tabs aria-label="x">
+        <Tab selected>uno</Tab>
+      </Tabs>,
+    );
+    expect(screen.getByRole("tablist")).not.toHaveClass("rf-tabs--underline");
+
+    rerender(
+      <Tabs aria-label="x" variant="underline">
+        <Tab selected>uno</Tab>
+      </Tabs>,
+    );
+    expect(screen.getByRole("tablist")).toHaveClass("rf-tabs", "rf-tabs--underline");
+  });
 });

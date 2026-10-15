@@ -33,3 +33,17 @@
   cursor: not-allowed;
   opacity: 0.45;
 }
+
+:where(.rf-tabs--underline .rf-tabs__tab) {
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+}
+
+:where(.rf-tabs--underline .rf-tabs__tab[aria-selected="true"]) {
+  border-bottom-color: var(--rf-text);
+}
+
+:where(.rf-tabs--underline .rf-tabs__tab[aria-selected="false"]:hover:not([disabled])) {
+  border-bottom-color: var(--rf-border-subtle);
+}
