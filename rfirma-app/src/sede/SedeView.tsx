@@ -9,9 +9,7 @@ import { SedeConsent } from "./SedeConsent";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
 import { SedeNoCertificate } from "./SedeNoCertificate";
 import { SedeOutcome } from "./SedeOutcome";
-import { SedeSigning } from "./SedeSigning";
-import { SedeTransfer } from "./SedeTransfer";
-import { SedeWaiting } from "./SedeWaiting";
+import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
 import "./SedeWindow.css";
 
 export interface SedeViewProps {
@@ -68,16 +66,14 @@ export function SedeView({
         aria-label={t("app.name")}
         data-stage={stage.kind}
       >
-        {stage.kind === "waiting" && (
-          <SedeWaiting
-            moment="connecting"
-            onInstallLocalCa={onInstallLocalCa}
-            onCancel={onCancel}
-          />
-        )}
-        {(stage.kind === "unreachable" || stage.kind === "noChannel") && (
-          <SedeWaiting
-            moment="unreachable"
+        {(stage.kind === "waiting" ||
+          stage.kind === "unreachable" ||
+          stage.kind === "noChannel") && (
+          <SedeAwaiting
+            origin={errand.origin}
+            asks={asks}
+            moment={stage.kind === "waiting" ? "waiting" : "unreachable"}
+            localCaMissing={stage.kind === "noChannel" && stage.reason === "localCaMissing"}
             onInstallLocalCa={onInstallLocalCa}
             onCancel={onCancel}
           />
@@ -117,17 +113,17 @@ export function SedeView({
           />
         )}
         {stage.kind === "signing" && (
-          <SedeSigning
+          <SedeSigningProgress
             origin={errand.origin}
-            certificate={stage.certificate}
+            asks={asks}
+            terminal={errand.terminalOrder !== undefined}
             phase={stage.phase}
             onCancel={onCancel}
           />
         )}
-        {/* Guardar y cargar **no preguntan en esta ventana**: la orden abre el
-            diálogo del portal en cuanto el momento llega, y aquí sólo se
-            nombra el fichero (ADR-0011). */}
-        {(stage.kind === "saving" || stage.kind === "loading") && <SedeTransfer transfer={stage} />}
+        {(stage.kind === "saving" || stage.kind === "loading") && (
+          <SedeFileTransfer origin={errand.origin} transfer={stage} />
+        )}
         {stage.kind === "outcome" && (
           <SedeOutcome
             origin={errand.origin}
