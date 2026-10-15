@@ -25,6 +25,8 @@ pub enum ErrandStep {
     AskingForConsent {
         /// Certificados aceptados por la sede, ya cribados.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// Filtro solicitado por la sede para volver a comprobarlo (ADR-0011).
         filter: SiteFilter,
         /// Si la sede pidió recordar el certificado que se elija.
@@ -61,8 +63,13 @@ impl ErrandStep {
     /// Momento que este paso deja delante de la persona, si deja alguno.
     pub fn moment(&self) -> Option<Moment> {
         match self {
-            Self::AskingForConsent { certificates, .. } => Some(Moment::AskingForConsent {
+            Self::AskingForConsent {
+                certificates,
+                not_accepted,
+                ..
+            } => Some(Moment::AskingForConsent {
                 certificates: certificates.clone(),
+                not_accepted: *not_accepted,
             }),
             Self::AskingToSign(consent) => Some(match consent.visible {
                 SiteVisibleSignature::MarkedByThePerson(_) => Moment::MarkingTheArea {
@@ -78,6 +85,7 @@ impl ErrandStep {
             Self::AskingToSignTheBatch(consent) => Some(Moment::AskingToSignTheBatch {
                 signs: consent.signs,
                 certificates: consent.certificates.clone(),
+                not_accepted: consent.not_accepted,
                 already_chosen: consent.already_chosen.clone(),
                 without_asking: consent.without_asking,
                 sha1_allowed: consent.sha1_allowed,
@@ -86,6 +94,7 @@ impl ErrandStep {
             Self::AskingToSignTheLocalBatch(consent) => Some(Moment::AskingToSignTheLocalBatch {
                 items: consent.items.clone(),
                 certificates: consent.certificates.clone(),
+                not_accepted: consent.not_accepted,
                 already_chosen: consent.already_chosen.clone(),
                 without_asking: consent.without_asking,
                 sha1_allowed: consent.sha1_allowed,
@@ -143,6 +152,8 @@ pub struct SigningConsent {
     pub round: SignatureRound,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// Parámetros adicionales de la sede, ya expandidos.
     pub from_the_site: BTreeMap<String, String>,
     /// Recuadro de firma visible decidido para la petición (ADR-0019).
@@ -176,6 +187,7 @@ impl SigningConsent {
             format: self.format,
             round: self.round,
             certificates: self.certificates.clone(),
+            not_accepted: self.not_accepted,
             already_chosen: self.already_chosen.clone(),
             without_asking: self.without_asking,
             sha1_allowed: self.asks_for_sha1() && !self.sha1_to_allow,
@@ -235,6 +247,8 @@ pub struct BatchConsent {
     pub signs: usize,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// El asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
     pub already_chosen: Option<String>,
     /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -267,6 +281,8 @@ pub struct LocalBatchConsent {
     pub items: Vec<LocalBatchItem>,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// El asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
     pub already_chosen: Option<String>,
     /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -339,6 +355,8 @@ pub enum Moment {
     AskingForConsent {
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
     },
     /// Consentimiento de firma de documento con certificados cribados.
     AskingToSign {
@@ -350,6 +368,8 @@ pub enum Moment {
         round: SignatureRound,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado que ya está resuelto, si lo está.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.
@@ -375,6 +395,8 @@ pub enum Moment {
         signs: usize,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado preseleccionado, si lo hay.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.
@@ -390,6 +412,8 @@ pub enum Moment {
         items: Vec<LocalBatchItem>,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado preseleccionado, si lo hay.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.

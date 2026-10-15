@@ -37,6 +37,8 @@ pub fn consent_for<E: FilterEngine>(
         Ok(accepted) => accepted,
         Err(step) => return step,
     };
+    let not_accepted = accepted.not_accepted;
+    let accepted = accepted.certificates;
 
     if request.waives_the_choice() && certificates.automatic_selection_honoured() {
         if let Some(only) = the_only_one_among(&accepted) {
@@ -50,6 +52,7 @@ pub fn consent_for<E: FilterEngine>(
     let (rows, _) = rows_preselecting_the_stuck(accepted, request.sticky(), certificates, live);
     ErrandStep::AskingForConsent {
         certificates: rows,
+        not_accepted,
         filter: request.filter().clone(),
         sticky: request.sticky().is_sticky(),
     }
@@ -73,6 +76,8 @@ pub fn consent_to_the_batch<E: FilterEngine>(
         Ok(accepted) => accepted,
         Err(step) => return step,
     };
+    let not_accepted = accepted.not_accepted;
+    let accepted = accepted.certificates;
 
     let (rows, stuck) = rows_preselecting_the_stuck(accepted, request.sticky(), certificates, live);
     let preselected = Preselected::among(&rows, stuck, request.waives_the_choice(), certificates);
@@ -85,6 +90,7 @@ pub fn consent_to_the_batch<E: FilterEngine>(
         signs: batch::how_many(&request),
         request,
         certificates: rows,
+        not_accepted,
         already_chosen: preselected.row,
         without_asking: preselected.without_asking && !sha1_to_allow,
         sha1_allowed,
@@ -112,6 +118,8 @@ pub fn consent_to_the_local_batch<E: FilterEngine>(
         Ok(accepted) => accepted,
         Err(step) => return step,
     };
+    let not_accepted = accepted.not_accepted;
+    let accepted = accepted.certificates;
 
     let (rows, stuck) = rows_preselecting_the_stuck(accepted, request.sticky(), certificates, live);
     let preselected = Preselected::among(&rows, stuck, request.waives_the_choice(), certificates);
@@ -130,6 +138,7 @@ pub fn consent_to_the_local_batch<E: FilterEngine>(
         request,
         batch,
         certificates: rows,
+        not_accepted,
         already_chosen: preselected.row,
         without_asking: preselected.without_asking && !sha1_to_allow,
         sha1_allowed,
@@ -154,13 +163,19 @@ pub(super) struct CertificateManners<'a> {
     pub(super) headless: bool,
 }
 
+/// Lo que la sede acepta de los certificados de la persona, y cuántos deja fuera.
+pub(super) struct Accepted {
+    pub(super) certificates: Vec<TokenCertificate>,
+    pub(super) not_accepted: usize,
+}
+
 pub(super) fn what_the_site_accepts<E: FilterEngine>(
     engine: &E,
     manners: &CertificateManners<'_>,
     ours: Vec<TokenCertificate>,
     certificates: &dyn Neighbours,
     live: &LiveErrand,
-) -> Result<Vec<TokenCertificate>, ErrandStep> {
+) -> Result<Accepted, ErrandStep> {
     if manners.sticky.resets() {
         live.unstick();
     }
@@ -193,7 +208,10 @@ pub(super) fn what_the_site_accepts<E: FilterEngine>(
         ));
     }
 
-    Ok(accepted)
+    Ok(Accepted {
+        not_accepted: owned.saturating_sub(accepted.len()),
+        certificates: accepted,
+    })
 }
 
 /// La fila que llega elegida a la ventana, y si la ventana consiente sola con ella.

@@ -107,6 +107,7 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
         format: Format::Pades,
         round: SignatureRound::Again,
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -127,6 +128,7 @@ fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
             format: Format::Cades,
             round: SignatureRound::First,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: allowed,
@@ -149,6 +151,7 @@ fn a_countersignature_crosses_with_its_own_label_and_target() {
             target: CounterTarget::Leafs,
         },
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -237,6 +240,7 @@ fn both_batch_consents_cross_whether_sha1_is_signed_because_the_person_allows_it
             Moment::AskingToSignTheBatch {
                 signs: 1,
                 certificates: Vec::new(),
+                not_accepted: 0,
                 already_chosen: None,
                 without_asking: false,
                 sha1_allowed: allowed,
@@ -245,6 +249,7 @@ fn both_batch_consents_cross_whether_sha1_is_signed_because_the_person_allows_it
             Moment::AskingToSignTheLocalBatch {
                 items: Vec::new(),
                 certificates: Vec::new(),
+                not_accepted: 0,
                 already_chosen: None,
                 without_asking: false,
                 sha1_allowed: allowed,
@@ -267,6 +272,7 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheBatch {
             signs: 3,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: Some("una-asa".to_owned()),
             without_asking: true,
             sha1_allowed: false,
@@ -279,6 +285,8 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
                 "kind": "askingToSignTheBatch",
                 "signs": 3,
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": "una-asa",
                 "withoutAsking": true,
                 "sha1Allowed": false,
@@ -290,6 +298,7 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheBatch {
             signs: 1,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -302,6 +311,8 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
                 "kind": "askingToSignTheBatch",
                 "signs": 1,
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": null,
                 "withoutAsking": false,
                 "sha1Allowed": false,
@@ -328,6 +339,7 @@ fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content(
                 },
             ],
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -343,6 +355,8 @@ fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content(
                     { "id": "002", "signing": "challenge", "round": { "kind": "cosign" } },
                 ],
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": null,
                 "withoutAsking": false,
                 "sha1Allowed": false,
@@ -370,6 +384,7 @@ fn what_is_signed_crosses_named_after_the_format_the_site_asked_for() {
             format,
             round: SignatureRound::First,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -452,4 +467,55 @@ fn an_absent_origin_crosses_null_through_the_same_conversion() {
         serde_json::to_value(view).expect("el momento cruza"),
         serde_json::json!({ "origin": null, "stage": { "kind": "waiting" } })
     );
+}
+
+#[test]
+fn the_four_consents_cross_whether_the_site_narrowed_the_list_and_how_many_it_does_not_accept() {
+    for (not_accepted, narrowed) in [(0_usize, false), (2, true)] {
+        for moment in [
+            Moment::AskingForConsent {
+                certificates: Vec::new(),
+                not_accepted,
+            },
+            Moment::AskingToSign {
+                document: "doc-1".to_owned(),
+                format: Format::Cades,
+                round: SignatureRound::First,
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+            Moment::AskingToSignTheBatch {
+                signs: 1,
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+            Moment::AskingToSignTheLocalBatch {
+                items: Vec::new(),
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+        ] {
+            let stage =
+                &serde_json::to_value(SiteErrandView::from(&moment)).expect("serializa")["stage"];
+
+            assert_eq!(stage["narrowed"], serde_json::json!(narrowed), "{moment:?}");
+            assert_eq!(
+                stage["notAccepted"],
+                serde_json::json!(not_accepted),
+                "{moment:?}"
+            );
+        }
+    }
 }
