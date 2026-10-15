@@ -269,7 +269,7 @@ que solo existía para ellas.
   siempre: no se reinicia al ampliar ni al cambiar de documento.
 - **La columna de la ampliada mide 400 px y «Ocultar» es solo su icono**, con
   «Ocultar» como nombre accesible y como `title`, siempre y no solo con SHA-1:
-  así el pie cabe en una línea con «Firmar solo esta vez» y su cuenta atrás, y
+  así el pie cabe en una línea con «Firmar igualmente» y su cuenta atrás, y
   no cambia de forma. El visor se queda con el resto de los 1080 px.
 
 Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
@@ -279,7 +279,10 @@ previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
 en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
 motivo), que cambia también la ventana principal. Y el nombre por defecto del
 documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
-tiene que depender del tipo o ser neutro. Cuando se implemente, la
+tiene que depender del tipo o ser neutro. Y el botón de firmar con SHA-1 por
+permitir deja de decir «Firmar solo esta vez» también en la ventana de sede
+actual y pasa a «Firmar igualmente»: el «solo esta vez» se refería al permiso de
+Preferencias, que la persona no ve desde ahí. Cuando se implemente, la
 invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
 firmas previas como aviso compacto dejan de ser ciertas.
 

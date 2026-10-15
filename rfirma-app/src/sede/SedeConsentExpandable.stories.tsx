@@ -50,7 +50,7 @@ interface ExpandableConsentDesignProps {
   certificates: "one" | "several";
   reader: keyof typeof READERS;
   withOrigin: boolean;
-  narrowed: boolean;
+  siteFiltersCertificates: boolean;
   sha1ToAllow: boolean;
   countdown: boolean;
   defaultDocument?: string;
@@ -83,7 +83,7 @@ function ExpandableConsentDesign({
   certificates,
   reader,
   withOrigin,
-  narrowed,
+  siteFiltersCertificates,
   sha1ToAllow,
   countdown,
   defaultDocument,
@@ -95,15 +95,18 @@ function ExpandableConsentDesign({
     actions: receivedActions,
     certificates: certificates === "one" ? DESIGN_CERTIFICATES.slice(0, 1) : DESIGN_CERTIFICATES,
     reader: READERS[reader],
-    narrowed,
+    narrowed: siteFiltersCertificates,
     sha1ToAllow,
     countdown,
     onConsent: sedeViewActions.onConsent,
     onCancel: sedeViewActions.onCancel,
   };
 
+  const countdownStart = `${countdown}-${sha1ToAllow}`;
+
   return view === "compact" ? (
     <SedeConsentCompact
+      key={countdownStart}
       {...basics}
       received={shown}
       asks={errand === "identity" ? "identity" : "signature"}
@@ -111,6 +114,7 @@ function ExpandableConsentDesign({
     />
   ) : (
     <SedeConsentExpanded
+      key={countdownStart}
       {...basics}
       documents={shown.kind === "documents" ? shown.documents : []}
       defaultDocument={defaultDocument}
@@ -133,7 +137,7 @@ const meta = {
     certificates: "several",
     reader: "none",
     withOrigin: true,
-    narrowed: false,
+    siteFiltersCertificates: false,
     sha1ToAllow: false,
     countdown: false,
   },
@@ -142,11 +146,14 @@ const meta = {
     defaultDocument: hidden,
     defaultSignaturesOpen: hidden,
     errand: {
+      description:
+        "Qué trámite abre la ventana: una firma de sede, la petición de datos o una orden de terminal",
       control: "inline-radio",
       options: ["site", "identity", "terminal"],
       labels: { site: "Firma de una sede", identity: "Datos", terminal: "Orden de terminal" },
     },
     received: {
+      description: "Qué ha enviado la sede para firmar",
       control: "select",
       options: [...Object.keys(DOCUMENTS), ...Object.keys(WITHOUT_DOCUMENTS)],
       labels: {
@@ -160,11 +167,13 @@ const meta = {
       },
     },
     previousSignatures: {
+      description: "Las firmas que ya traen los documentos y si alguna tiene problemas",
       control: "inline-radio",
       options: ["none", "signed", "troubled"],
       labels: { none: "Sin firmas", signed: "Todas válidas", troubled: "Con problema" },
     },
     yourSignature: {
+      description: "Si alguno de los documentos ya lleva una firma tuya",
       control: "inline-radio",
       options: ["none", "sameCertificate", "otherCertificate"],
       labels: {
@@ -174,11 +183,13 @@ const meta = {
       },
     },
     certificates: {
+      description: "Cuántos certificados ofrece el selector",
       control: "inline-radio",
       options: ["one", "several"],
       labels: { one: "Uno", several: "Varios" },
     },
     reader: {
+      description: "El estado del lector de tarjetas bajo el selector",
       control: "inline-radio",
       options: Object.keys(READERS),
       labels: {
@@ -188,6 +199,17 @@ const meta = {
         unreadable: "Ilegible",
       },
     },
+    withOrigin: {
+      description: "Si se sabe qué sede lo pide; sin origen, la ventana la nombra sin identificar",
+    },
+    siteFiltersCertificates: {
+      description: "La sede solo admite algunos certificados (se ve abriendo el selector)",
+    },
+    sha1ToAllow: {
+      description:
+        "La sede pide SHA-1 sin permiso: el aviso, «Firmar igualmente» y la cuenta atrás",
+    },
+    countdown: { description: "El botón de firmar espera unos segundos antes de habilitarse" },
   },
   parameters: {
     ...sedeMomentMeta.parameters,
@@ -196,7 +218,7 @@ const meta = {
         component: [
           "Provisional: el diseño del consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento con su descarga; «Ver documentos» la amplía a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» solo con su icono. Lo que ya firmaste tú lo dice la franja del documento.",
           "Úsalo como referencia del momento 2 con documentos, huellas o un reto, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
-          "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar solo esta vez», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
+          "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar igualmente», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
           "No enseñes del lote remoto más que su recuento, ni del reto más que qué es; no digas el tipo del documento ni si se firma, se cofirma o se contrafirma; no pongas ayuda bajo la tarjeta ilegible, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
         ].join("\n\n"),
       },

@@ -171,7 +171,7 @@ describe("the expandable site consent", () => {
   });
 
   it("says that the site narrowed the certificates at the foot of the open list", async () => {
-    renderWithCatalog(<CompactSeveralDocuments narrowed />);
+    renderWithCatalog(<CompactSeveralDocuments siteFiltersCertificates />);
     await userEvent.click(screen.getByRole("combobox", { name: "Certificado" }));
     expect(
       screen.getByText("sede.villaejemplo.es solo admite algunos certificados"),
@@ -179,18 +179,32 @@ describe("the expandable site consent", () => {
   });
 
   it("says that an unidentified site narrowed the certificates", async () => {
-    renderWithCatalog(<CompactSeveralDocuments narrowed withOrigin={false} />);
+    renderWithCatalog(<CompactSeveralDocuments siteFiltersCertificates withOrigin={false} />);
     await userEvent.click(screen.getByRole("combobox", { name: "Certificado" }));
     expect(screen.getByText("La sede solo admite algunos certificados")).toBeInTheDocument();
   });
 
   it.each([
+    ["the compact", CompactOneDocument],
+    ["the expanded", ExpandedOneDocument],
+  ])("starts the countdown in %s view when the control turns it on", (_, Story) => {
+    const { rerender } = renderWithCatalog(<Story />);
+    expect(screen.getByRole("button", { name: "Firmar" })).toBeEnabled();
+
+    rerender(<Story countdown />);
+
+    const sign = screen.getByRole("button", { name: /^Firmar/ });
+    expect(sign).toBeDisabled();
+    expect(within(sign).getByText(/\d/)).toBeInTheDocument();
+  });
+
+  it.each([
     ["the compact", CompactSeveralDocuments],
     ["the expanded", ExpandedSeveralDocuments],
-  ])("warns of SHA-1 and signs only this once after the countdown in %s view", (_, Story) => {
+  ])("warns of SHA-1 and signs anyway after the countdown in %s view", (_, Story) => {
     renderWithCatalog(<Story sha1ToAllow />);
     expect(screen.getByText(/Esta sede usa un método de firma poco seguro\./)).toBeInTheDocument();
-    const sign = screen.getByRole("button", { name: /^Firmar solo esta vez/ });
+    const sign = screen.getByRole("button", { name: /^Firmar igualmente/ });
     expect(sign).toBeDisabled();
     expect(within(sign).getByText(/\d/)).toBeInTheDocument();
   });

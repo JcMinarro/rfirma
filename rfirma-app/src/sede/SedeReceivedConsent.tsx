@@ -31,7 +31,7 @@ interface ConsentBasics {
   asks?: "signature" | "identity";
   /** La sede acotó los certificados: lo dice al pie de la lista abierta. */
   narrowed?: boolean;
-  /** La sede pide SHA-1 sin permiso en Preferencias: el aviso, «Firmar solo esta vez» y la cuenta atrás obligada. */
+  /** La sede pide SHA-1 sin permiso en Preferencias: el aviso, «Firmar igualmente» y la cuenta atrás obligada. */
   sha1ToAllow?: boolean;
   countdown?: boolean;
   onConsent: (certificateId: string) => void;
@@ -233,7 +233,7 @@ function useConsent({
     asks === "identity"
       ? t("sede.consent.identify")
       : sha1ToAllow
-        ? t("sede.consent.signOnce")
+        ? t("sede.received.signAnyway")
         : t("actions.sign");
   const narrowedNote = !narrowed
     ? undefined

@@ -1683,9 +1683,13 @@ msgstr "{{origin}} only accepts some certificates"
 msgid "sede.received.narrowedUnknownOrigin"
 msgstr "The site only accepts some certificates"
 
-#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar solo esta vez».
+#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar igualmente».
 msgid "sede.received.sha1ToAllow"
 msgstr "This site uses an insecure signing method"
+
+#. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
+msgid "sede.received.signAnyway"
+msgstr "Sign anyway"
 
 #. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
 msgid "sede.received.challenge"
