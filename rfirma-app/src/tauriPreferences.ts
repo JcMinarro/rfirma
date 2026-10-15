@@ -2,10 +2,10 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { FALLBACK_LANGUAGE, isLanguageTag } from "./i18n/languages";
+import { FALLBACK_LANGUAGE, isLanguageTag, type LanguageTag } from "./i18n/languages";
 import type { LanguagePreference } from "./i18n/preference";
 import type { DestinationMode } from "./preferences/destinationMode";
-import type { PreferencesStore } from "./preferences/preferences";
+import type { Preferences, PreferencesStore } from "./preferences/preferences";
 import { DEFAULT_THEME, isTheme, type Theme, type WindowTheme } from "./preferences/theme";
 
 /**
@@ -42,6 +42,27 @@ function readConfiguration(): Promise<ConfigurationView> {
   return invoke<ConfigurationView>("read_configuration");
 }
 
+function preferencesOf(configuration: ConfigurationView): Preferences {
+  return {
+    theme: isTheme(configuration.theme) ? configuration.theme : DEFAULT_THEME,
+    destination: configuration.destination,
+    destinationMode: configuration.destinationMode,
+    offersOriginalFolder: configuration.offersTheOriginalFolder,
+    rememberVisibleSignature: configuration.rememberVisibleSignature,
+    rememberActivity: configuration.rememberActivity,
+    notifyNewVersion: configuration.notifyNewVersion,
+    setupWizardSeen: configuration.setupWizardSeen,
+    consentCountdown: configuration.consentCountdown,
+    showWelcome: configuration.showWelcome,
+    honourAutomaticSelection: configuration.honourAutomaticSelection,
+    allowSha1: configuration.allowSha1,
+  };
+}
+
+function languageOf({ language }: ConfigurationView): LanguageTag {
+  return isLanguageTag(language) ? language : FALLBACK_LANGUAGE;
+}
+
 function writeConfiguration(configuration: ConfigurationView): Promise<void> {
   return invoke<void>("write_configuration", { configuration });
 }
@@ -64,23 +85,7 @@ function writeConfiguration(configuration: ConfigurationView): Promise<void> {
  */
 export function tauriPreferences(): PreferencesStore {
   return {
-    read: async () => {
-      const configuration = await readConfiguration();
-      return {
-        theme: isTheme(configuration.theme) ? configuration.theme : DEFAULT_THEME,
-        destination: configuration.destination,
-        destinationMode: configuration.destinationMode,
-        offersOriginalFolder: configuration.offersTheOriginalFolder,
-        rememberVisibleSignature: configuration.rememberVisibleSignature,
-        rememberActivity: configuration.rememberActivity,
-        notifyNewVersion: configuration.notifyNewVersion,
-        setupWizardSeen: configuration.setupWizardSeen,
-        consentCountdown: configuration.consentCountdown,
-        showWelcome: configuration.showWelcome,
-        honourAutomaticSelection: configuration.honourAutomaticSelection,
-        allowSha1: configuration.allowSha1,
-      };
-    },
+    read: async () => preferencesOf(await readConfiguration()),
     save: async (preferences) => {
       const stored = await readConfiguration();
       await writeConfiguration({
@@ -111,14 +116,29 @@ export function tauriPreferences(): PreferencesStore {
  */
 export function tauriLanguagePreference(): LanguagePreference {
   return {
-    read: async () => {
-      const { language } = await readConfiguration();
-      return isLanguageTag(language) ? language : FALLBACK_LANGUAGE;
-    },
+    read: async () => languageOf(await readConfiguration()),
     save: async (language) => {
       const stored = await readConfiguration();
       await writeConfiguration({ ...stored, language });
     },
+  };
+}
+
+/** La configuración que lee la ventana de `-certgui`: el idioma y los ajustes, sin nada que guardar. */
+export interface TerminalPreferences {
+  language: LanguagePreference;
+  settings: Pick<PreferencesStore, "read">;
+}
+
+/** La configuración del proceso de terminal, que no registra `write_configuration`: el idioma no se guarda. */
+export function tauriTerminalPreferences(): TerminalPreferences {
+  const readTerminalConfiguration = () => invoke<ConfigurationView>("read_terminal_configuration");
+  return {
+    language: {
+      read: async () => languageOf(await readTerminalConfiguration()),
+      save: async () => {},
+    },
+    settings: { read: async () => preferencesOf(await readTerminalConfiguration()) },
   };
 }
 

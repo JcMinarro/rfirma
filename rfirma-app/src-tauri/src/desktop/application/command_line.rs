@@ -15,14 +15,15 @@ use crate::desktop::domain::store_scope::scope_named_by;
 use crate::desktop::ports::{
     CertificateFilter, CertificateStores, CommandLineFiles, CommandLineSigning, DesktopHandover,
     DocumentSigner, GraphicalPicker, LocalTimeZone, SecretDescriptor, SignatureReading,
-    SignatureVerifier, Terminal,
+    SignatureVerifier, Terminal, WindowDocument,
 };
 use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::store::StoreClass;
 use crate::signing::domain::bridge::{Format as SignatureFormat, SignatureOperation, XadesVariant};
 use crate::signing::domain::Language;
-use crate::site::domain::protocol::detection::{shape_of, DetectedShape};
+use crate::site::domain::protocol::detection::{shape_of, type_of, DetectedShape};
+use crate::site::domain::protocol::operation::INVOICE_MULTISIGNATURE_REASON;
 use crate::site::domain::protocol::{site_filter, SiteFilter};
 
 mod certgui;
@@ -95,6 +96,14 @@ impl Outcome {
                 format!("rfirma: {refusal}"),
                 "rfirma: «rfirma --help» describe las órdenes y sus parámetros".to_owned(),
             ],
+        }
+    }
+
+    fn refused_with(reason: &str) -> Self {
+        Self {
+            exit_code: REFUSED,
+            stdout: Vec::new(),
+            stderr: vec![format!("rfirma: {reason}")],
         }
     }
 
@@ -274,7 +283,7 @@ fn aliases_response(certificates: &[TokenCertificate]) -> Response {
 
 fn the_certificate_chosen_by(
     selection: &Selection,
-    input: &Path,
+    document: WindowDocument<'_>,
     arguments: &[String],
     ports: &CommandLinePorts,
 ) -> Result<(TokenCertificate, Option<ProtectedSecret>), Outcome> {
@@ -292,7 +301,7 @@ fn the_certificate_chosen_by(
         }
         Selection::Window { filter } => certgui::the_certificate_chosen_in_the_window(
             filter.as_deref(),
-            input,
+            document,
             arguments,
             ports,
         ),

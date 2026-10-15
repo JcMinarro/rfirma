@@ -344,7 +344,7 @@ impl DocumentSigner for Homeless {
 pub fn run_the_command_line(argv: &[String], context: tauri::Context<tauri::Wry>) -> i32 {
     let roots = Paths::from_environment().ok().map(crate::roots);
     let signer = roots.as_ref().map(RootsSigner::of);
-    let window = SiteWindowPicker::over(roots.as_ref().map(|roots| &roots.identity), context);
+    let window = SiteWindowPicker::over(roots.as_ref(), context);
     let ports = CommandLinePorts {
         stores: &SeenStores::of_this_machine(),
         terminal: &ProcessTerminal,

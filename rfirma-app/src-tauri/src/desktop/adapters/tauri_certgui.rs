@@ -4,11 +4,25 @@ use std::sync::Arc;
 
 use tauri::{Manager as _, State};
 
-use super::site_window_picker::{TerminalChoice, TERMINAL_WINDOW};
+use super::site_window_picker::{SecretDialog, TerminalChoice, TERMINAL_WINDOW};
 use super::views::TerminalChoiceView;
 use crate::crossing::Failure;
 use crate::identity::adapters::views::SecretView;
-use crate::identity::domain::protected_secret::ProtectedSecret;
+use crate::signing::adapters::views::ConfigurationView;
+
+/// La configuración guardada, para el idioma y el tema; sin carpeta personal, la de por omisión.
+#[tauri::command]
+pub fn read_terminal_configuration(
+    configuration: State<'_, Option<ConfigurationView>>,
+) -> ConfigurationView {
+    configuration.inner().clone().unwrap_or_else(|| {
+        crate::signing::application::configuration::shown(
+            &Default::default(),
+            std::path::Path::new(""),
+        )
+        .into()
+    })
+}
 
 /// El documento de la orden y lo que la ventana enseña.
 #[tauri::command(async)]
@@ -16,30 +30,19 @@ pub fn read_terminal_choice(choice: State<'_, Arc<TerminalChoice>>) -> TerminalC
     choice.view()
 }
 
-/// Elige el certificado del asa y dice qué secreto pide; si no pide ninguno, cierra la ventana.
+/// Elige el certificado del asa y, si pide PIN, lo pide con el diálogo del sistema; con la elección hecha o fallida, cierra la ventana.
 #[tauri::command(async)]
 pub fn terminal_choose_certificate(
     certificate: String,
     choice: State<'_, Arc<TerminalChoice>>,
+    dialog: State<'_, SecretDialog>,
     app_handle: tauri::AppHandle,
 ) -> Result<SecretView, Failure> {
-    let secret = choice.choose(&certificate)?;
+    let settled = choice.settle(&certificate, &dialog);
     if choice.is_decided() {
         close_the_window(&app_handle);
     }
-    Ok(secret.into())
-}
-
-/// Devuelve a la orden el PIN del certificado elegido y cierra la ventana.
-#[tauri::command(async)]
-pub fn terminal_hand_the_secret(
-    pin: String,
-    choice: State<'_, Arc<TerminalChoice>>,
-    app_handle: tauri::AppHandle,
-) -> Result<(), Failure> {
-    choice.hand_the_secret(ProtectedSecret::new(pin))?;
-    close_the_window(&app_handle);
-    Ok(())
+    settled.map(Into::into)
 }
 
 /// Cancela la elección y cierra la ventana.

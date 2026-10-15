@@ -32,6 +32,9 @@ pub(super) fn resolve_auto_format(
     }
 }
 
+/// El motivo con el que se rechaza cofirmar o contrafirmar una factura.
+pub const INVOICE_MULTISIGNATURE_REASON: &str = "FacturaE no admite cofirma ni contrafirma";
+
 /// Una factura ni se cofirma ni se contrafirma: `AOFacturaESigner` lanza una
 /// `UnsupportedOperationException` en las dos, y aquí es un `SAF_04`.
 pub fn refuse_a_multisignature_of_an_invoice(
@@ -40,11 +43,10 @@ pub fn refuse_a_multisignature_of_an_invoice(
 ) -> Result<(), Refusal> {
     let first = matches!(round, SignatureRound::First);
     if !first && matches!(format, RequestedFormat::FacturaE) {
-        return Err(Refusal::new(
-            SafCode::UnsupportedOperation,
-            "FacturaE no admite cofirma ni contrafirma",
-        )
-        .because(RefusalSituation::InvoiceMultisignature));
+        return Err(
+            Refusal::new(SafCode::UnsupportedOperation, INVOICE_MULTISIGNATURE_REASON)
+                .because(RefusalSituation::InvoiceMultisignature),
+        );
     }
     Ok(())
 }

@@ -27,8 +27,13 @@ export {
   tauriPdfSource,
   tauriRecents,
 } from "./tauriDocuments";
-export { tauriLanguagePreference, tauriPreferences, tauriWindowTheme } from "./tauriPreferences";
-export { tauriSiteErrands } from "./tauriSede";
+export {
+  tauriLanguagePreference,
+  tauriPreferences,
+  tauriTerminalPreferences,
+  tauriWindowTheme,
+} from "./tauriPreferences";
+export { tauriSiteErrands, tauriTerminalErrands } from "./tauriSede";
 export {
   tauriCertificateStore,
   tauriDestinations,

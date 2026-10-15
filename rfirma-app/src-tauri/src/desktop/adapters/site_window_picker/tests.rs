@@ -1,16 +1,28 @@
 use std::ffi::OsString;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use super::*;
 use crate::desktop::adapters::paths::Platform;
 use crate::desktop::adapters::views::TerminalNoCertificateView;
-use crate::desktop::ports::NoCertificateToOffer;
+use crate::desktop::ports::{NoCertificateToOffer, WindowDocument};
 use crate::identity::application::tests::a_usable_certificate;
+use crate::signing::domain::bridge::Format;
+use crate::site::adapters::views::{DocumentTypeView, SigningKindView};
+use crate::site::domain::protocol::DocumentType;
+
+fn a_pdf_at(path: &str) -> WindowDocument<'_> {
+    WindowDocument {
+        path: Path::new(path),
+        detected: DocumentType::Pdf,
+        format: Format::Pades,
+    }
+}
 
 fn a_choice_of(rows: Vec<Choosable>) -> TerminalChoice {
     TerminalChoice::over(
         TerminalChoiceView::of(
-            Path::new("/home/ada/contrato.pdf"),
+            a_pdf_at("/home/ada/contrato.pdf"),
             TerminalStageView::AskingToSign {
                 certificates: Vec::new(),
             },
@@ -28,8 +40,52 @@ fn label_of(choice: &WindowChoice) -> Option<String> {
         WindowChoice::Chosen { certificate, .. } => {
             Some(certificate.reference().label().to_owned())
         }
-        WindowChoice::Cancelled => None,
+        WindowChoice::Cancelled | WindowChoice::Failed(_) => None,
     }
+}
+
+fn failure_of(choice: Result<WindowChoice, String>) -> Option<String> {
+    match choice {
+        Ok(WindowChoice::Failed(reason)) => Some(reason),
+        _ => None,
+    }
+}
+
+struct AnsweringDialog {
+    answer: Mutex<Option<Result<ProtectedSecret, SecretPromptError>>>,
+    asked_in: Mutex<Option<Language>>,
+}
+
+impl SecretPrompter for AnsweringDialog {
+    fn prompt_secret(
+        &self,
+        request: &SecretPromptRequest,
+    ) -> Result<ProtectedSecret, SecretPromptError> {
+        *lock(&self.asked_in) = Some(request.language);
+        lock(&self.answer)
+            .take()
+            .expect("el diálogo se abre una vez")
+    }
+}
+
+fn a_dialog_answering(
+    answer: Result<ProtectedSecret, SecretPromptError>,
+) -> (SecretDialog, Arc<AnsweringDialog>) {
+    let prompter = Arc::new(AnsweringDialog {
+        answer: Mutex::new(Some(answer)),
+        asked_in: Mutex::new(None),
+    });
+    let dialog = SecretDialog {
+        prompter: Arc::clone(&prompter) as Arc<dyn SecretPrompter + Send + Sync>,
+        language: Language::Catalan,
+    };
+    (dialog, prompter)
+}
+
+fn a_choice_waiting_for_the_pin() -> TerminalChoice {
+    let choice = a_choice_of(vec![a_row("0", "uno", StoreSecret::TypedOnScreen)]);
+    choice.choose("0").expect("se puede elegir");
+    choice
 }
 
 fn secret_of(choice: &WindowChoice) -> Option<Vec<u8>> {
@@ -37,7 +93,7 @@ fn secret_of(choice: &WindowChoice) -> Option<Vec<u8>> {
         WindowChoice::Chosen { secret, .. } => {
             secret.as_ref().map(|secret| secret.as_bytes().to_vec())
         }
-        WindowChoice::Cancelled => None,
+        WindowChoice::Cancelled | WindowChoice::Failed(_) => None,
     }
 }
 
@@ -59,6 +115,66 @@ fn a_certificate_whose_store_asks_for_a_pin_waits_for_it_before_deciding() {
     let taken = choice.taken().expect("la ventana se abrió");
     assert_eq!(label_of(&taken), Some("dos".to_owned()));
     assert_eq!(secret_of(&taken), Some(b"1234".to_vec()));
+}
+
+#[test]
+fn the_pin_typed_in_the_system_dialog_completes_the_choice_in_the_saved_language() {
+    let choice = a_choice_waiting_for_the_pin();
+    let (dialog, prompter) = a_dialog_answering(Ok(ProtectedSecret::from("1234")));
+
+    choice.ask_the_secret(&dialog).expect("el diálogo contesta");
+
+    assert_eq!(*lock(&prompter.asked_in), Some(Language::Catalan));
+    let taken = choice.taken().expect("la ventana se abrió");
+    assert_eq!(label_of(&taken), Some("uno".to_owned()));
+    assert_eq!(secret_of(&taken), Some(b"1234".to_vec()));
+}
+
+#[test]
+fn cancelling_the_system_dialog_cancels_the_choice_without_an_error() {
+    let choice = a_choice_waiting_for_the_pin();
+    let (dialog, _) = a_dialog_answering(Err(SecretPromptError::Cancelled));
+
+    assert!(choice.ask_the_secret(&dialog).is_ok());
+    assert!(choice.is_decided());
+    assert!(matches!(choice.taken(), Ok(WindowChoice::Cancelled)));
+}
+
+#[test]
+fn a_system_dialog_that_fails_leaves_the_choice_failed_with_its_reason() {
+    let choice = a_choice_of(vec![a_row("0", "uno", StoreSecret::TypedOnScreen)]);
+    let (dialog, _) = a_dialog_answering(Err(SecretPromptError::Failed("sin pinentry".to_owned())));
+
+    assert!(choice.settle("0", &dialog).is_err());
+    assert!(choice.is_decided());
+    assert_eq!(failure_of(choice.taken()), Some("sin pinentry".to_owned()));
+}
+
+#[test]
+fn settling_on_a_certificate_that_asks_for_a_pin_asks_the_system_dialog() {
+    let choice = a_choice_of(vec![a_row("0", "uno", StoreSecret::TypedOnScreen)]);
+    let (dialog, _) = a_dialog_answering(Ok(ProtectedSecret::from("1234")));
+
+    let asked = choice.settle("0", &dialog).expect("el diálogo contesta");
+
+    assert_eq!(asked, StoreSecret::TypedOnScreen);
+    assert_eq!(
+        secret_of(&choice.taken().expect("la ventana se abrió")),
+        Some(b"1234".to_vec())
+    );
+}
+
+#[test]
+fn settling_on_an_unusable_row_leaves_the_choice_failed_with_its_reason() {
+    let choice = a_choice_of(vec![(
+        "0".to_owned(),
+        Err(Failure::new("certificateNotFound", "caducado")),
+    )]);
+    let (dialog, _) = a_dialog_answering(Err(SecretPromptError::Cancelled));
+
+    assert!(choice.settle("0", &dialog).is_err());
+    assert!(choice.is_decided());
+    assert_eq!(failure_of(choice.taken()), Some("caducado".to_owned()));
 }
 
 #[test]
@@ -123,7 +239,7 @@ fn a_window_that_could_not_open_gives_back_the_reason() {
 #[test]
 fn the_view_names_the_document_without_its_folder_and_says_why_nothing_is_offered() {
     let view = TerminalChoiceView::of(
-        Path::new("/home/ada/contratos/contrato.pdf"),
+        a_pdf_at("/home/ada/contratos/contrato.pdf"),
         TerminalStageView::from(NoCertificateToOffer::Excluded { owned: 3 }),
     );
 
@@ -135,6 +251,23 @@ fn the_view_names_the_document_without_its_folder_and_says_why_nothing_is_offere
             owned: 3
         }
     );
+}
+
+#[test]
+fn the_view_says_what_the_document_is_and_the_format_it_is_signed_in() {
+    let view = TerminalChoiceView::of(
+        WindowDocument {
+            path: Path::new("/home/ada/facturas/factura.xml"),
+            detected: DocumentType::Xml,
+            format: Format::FacturaE,
+        },
+        TerminalStageView::AskingToSign {
+            certificates: Vec::new(),
+        },
+    );
+
+    assert_eq!(view.detected, DocumentTypeView::Xml);
+    assert_eq!(view.signing, SigningKindView::Invoice);
 }
 
 #[test]

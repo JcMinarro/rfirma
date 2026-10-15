@@ -1,15 +1,13 @@
 //! El certificado de `-certgui`: lo elige la persona, con el PIN, en la ventana de sede con el origen «orden de terminal»; no abre la ventana.
 
-use std::path::Path;
-
 use super::{accepted_by, listed_within_the_store, the_site_filter_of, CommandLinePorts, Outcome};
-use crate::desktop::ports::{NoCertificateToOffer, WindowChoice, WindowOffer};
+use crate::desktop::ports::{NoCertificateToOffer, WindowChoice, WindowDocument, WindowOffer};
 use crate::identity::domain::certificate::{CertificateStatus, TokenCertificate};
 use crate::identity::domain::protected_secret::ProtectedSecret;
 
 pub(super) fn the_certificate_chosen_in_the_window(
     filter: Option<&str>,
-    document: &Path,
+    document: WindowDocument<'_>,
     arguments: &[String],
     ports: &CommandLinePorts,
 ) -> Result<(TokenCertificate, Option<ProtectedSecret>), Outcome> {
@@ -41,6 +39,9 @@ pub(super) fn the_certificate_chosen_in_the_window(
         WindowChoice::Cancelled => Err(Outcome::failed(
             "rfirma: se ha cancelado la firma en la ventana".to_owned(),
         )),
+        WindowChoice::Failed(reason) => Err(Outcome::failed(format!(
+            "rfirma: no se ha podido elegir el certificado en la ventana ({reason})"
+        ))),
     }
 }
 

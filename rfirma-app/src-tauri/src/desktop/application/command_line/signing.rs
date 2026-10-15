@@ -89,9 +89,17 @@ fn signed(
             parsed.input
         ))
     })?;
-    let format = signature_format_of(parsed.format, &bytes);
+    let shape = shape_of(&bytes);
+    refuse_cosigning_an_invoice(operation, shape)?;
+    refuse_facturae_on_what_is_not_an_invoice(parsed.format, shape)?;
+    let format = signature_format_of(parsed.format, shape);
+    let document = WindowDocument {
+        path: input,
+        detected: type_of(&bytes),
+        format,
+    };
     let (certificate, typed_in_the_window) =
-        the_certificate_chosen_by(selection, input, arguments, ports)?;
+        the_certificate_chosen_by(selection, document, arguments, ports)?;
     let document = ports
         .signer
         .sign(&CommandLineSigning {
@@ -159,12 +167,35 @@ fn response_of(outcome: &Outcome, signature: Option<&[u8]>) -> Response {
     Response::new(result, fields)
 }
 
-fn signature_format_of(asked: Format, bytes: &[u8]) -> SignatureFormat {
+fn refuse_cosigning_an_invoice(
+    operation: SignatureOperation,
+    shape: DetectedShape,
+) -> Result<(), Outcome> {
+    if operation == SignatureOperation::Cosign && shape == DetectedShape::Invoice {
+        return Err(Outcome::refused_with(INVOICE_MULTISIGNATURE_REASON));
+    }
+    Ok(())
+}
+
+fn refuse_facturae_on_what_is_not_an_invoice(
+    asked: Format,
+    shape: DetectedShape,
+) -> Result<(), Outcome> {
+    if asked == Format::FacturaE && shape != DetectedShape::Invoice {
+        return Err(Outcome::refused_with(
+            "el fichero de -i no es una factura electrónica (FacturaE)",
+        ));
+    }
+    Ok(())
+}
+
+fn signature_format_of(asked: Format, shape: DetectedShape) -> SignatureFormat {
     match asked {
         Format::Pades => SignatureFormat::Pades,
         Format::Cades => SignatureFormat::Cades,
         Format::Xades => SignatureFormat::Xades(XadesVariant::Enveloping),
-        Format::Auto => match shape_of(bytes) {
+        Format::FacturaE => SignatureFormat::FacturaE,
+        Format::Auto => match shape {
             DetectedShape::Pdf => SignatureFormat::Pades,
             DetectedShape::Xml | DetectedShape::Invoice => {
                 SignatureFormat::Xades(XadesVariant::Enveloping)

@@ -1,9 +1,6 @@
 use super::*;
 use crate::signing::domain::bridge::XadesVariant;
 
-const AN_XML: &[u8] = b"<?xml version=\"1.0\"?><raiz>datos</raiz>";
-const A_BINARY: &[u8] = b"\x00\x01 no es un PDF ni un XML";
-
 fn format_asked_for(words: &[&str], input: &[u8]) -> SignatureFormat {
     let files = FilesInMemory::with("entrada", input);
     let signer = RecordingSigner::default();

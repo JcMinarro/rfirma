@@ -12,9 +12,9 @@ ORDENES DE TAURI                          (<contexto>/adapters/tauri*.rs)
   async choose_site_signature_handler(handler: String) -> Result<Vec<SignalRowView>, Failure>
   async read_status(recheck: bool) -> Vec<SignalRowView>
   async withdraw_rfirma(previous: Option<WithdrawalReportView>) -> WithdrawalReportView
+        read_terminal_configuration() -> ConfigurationView
   async read_terminal_choice() -> TerminalChoiceView
   async terminal_choose_certificate(certificate: String) -> Result<SecretView, Failure>
-  async terminal_hand_the_secret(pin: String) -> Result<(), Failure>
   async terminal_cancel()
   async open_document() -> Result<Option<OpenedDocumentView>, Failure>
   async read_document(id: String) -> Result<tauri::ipc::Response, Failure>
@@ -168,6 +168,8 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
 
   pub struct TerminalChoiceView
       document: String
+      detected: DocumentTypeView
+      signing: SigningKindView
       stage: TerminalStageView
 
   pub enum TerminalStageView   (serde: etiqueta "kind")

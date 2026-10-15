@@ -10,7 +10,7 @@ use crate::desktop::domain::platform::Platform;
 use crate::desktop::domain::sign_arguments::Algorithm;
 use crate::desktop::ports::{
     AskedSecret, LocalTimeZone, OfferedCertificate, SecretDescriptor, SignatureReading,
-    WindowChoice, WindowOffer,
+    WindowChoice, WindowDocument, WindowOffer,
 };
 use crate::identity::domain::certificate::CertificateRef;
 use crate::identity::domain::error::{Situation, TokenError};
@@ -239,6 +239,8 @@ impl DocumentSigner for RecordingSigner {
 }
 
 const A_PDF: &[u8] = b"%PDF-1.4 cuerpo";
+const AN_XML: &[u8] = b"<?xml version=\"1.0\"?><raiz>datos</raiz>";
+const A_BINARY: &[u8] = b"\x00\x01 no es un PDF ni un XML";
 const SIGNED: &[u8] = b"%PDF-1.4 firmado";
 
 fn attended_with(words: &[&str], stores: &dyn CertificateStores) -> Outcome {
@@ -285,11 +287,12 @@ impl GraphicalPicker for Untouched {
         panic!("no debería abrir la ventana de sede")
     }
 
-    fn chosen(&self, document: &Path, _offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
-        panic!(
-            "no debería elegir en la ventana para {}",
-            document.display()
-        )
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        _offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
+        panic!("no debería elegir en la ventana para {:?}", document.path)
     }
 }
 
@@ -315,6 +318,7 @@ mod certgui;
 mod certtui;
 mod cosign;
 mod filter_and_xml;
+mod invoice;
 mod json;
 mod listaliases;
 mod listaliases_json;
@@ -402,7 +406,7 @@ fn invalid_sign_arguments_are_refused_before_anything_else_with_a_nonzero_code()
             "sha1",
         ][..],
         &[
-            "sign", "-i", "a.pdf", "-o", "b.pdf", "-alias", "yo", "-format", "facturae",
+            "sign", "-i", "a.pdf", "-o", "b.pdf", "-alias", "yo", "-format", "ooxml",
         ][..],
         &["sign", "-i", "a.pdf", "-o", "b.pdf"][..],
         &[

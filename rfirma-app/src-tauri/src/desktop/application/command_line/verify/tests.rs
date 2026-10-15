@@ -9,7 +9,7 @@ use crate::desktop::adapters::command_line_ports::EngineReading;
 use crate::desktop::ports::{
     AskedSecret, CertificateFilter, CertificateStores, CommandLineFiles, CommandLineSigning,
     DesktopHandover, DocumentSigner, GraphicalPicker, LocalTimeZone, OfferedCertificate,
-    SecretDescriptor, SignatureVerifier, Terminal, WindowChoice, WindowOffer,
+    SecretDescriptor, SignatureVerifier, Terminal, WindowChoice, WindowDocument, WindowOffer,
 };
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::error::TokenError;
@@ -174,8 +174,15 @@ impl GraphicalPicker for Untouched {
         panic!("verify no abre la ventana de sede")
     }
 
-    fn chosen(&self, document: &Path, _offer: WindowOffer<'_>) -> Result<WindowChoice, String> {
-        panic!("verify no elige certificado para {}", document.display())
+    fn chosen(
+        &self,
+        document: WindowDocument<'_>,
+        _offer: WindowOffer<'_>,
+    ) -> Result<WindowChoice, String> {
+        panic!(
+            "verify no elige certificado para {}",
+            document.path.display()
+        )
     }
 }
 
