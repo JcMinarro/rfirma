@@ -6,6 +6,7 @@ import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import { sameSignerNotice } from "../signing/sameSignerNotice";
 import type { PdfDocument } from "../viewer/pdf";
 import type { DocumentType, ErrandStage, SiteDocument } from "./errand";
+import { decodedXml } from "./xml";
 
 /** Lo que se va a firmar: documentos o un lote remoto, del que solo se sabe cuántos son. */
 export type Received =
@@ -26,9 +27,10 @@ export interface ReceivedDocument {
   previousSignatures: PreviousSignaturesReport;
 }
 
-/** Lo que el visor pinta: el PDF paginado, el texto literal, la imagen o nada, porque no hay vista previa. */
+/** Lo que el visor pinta: el PDF paginado, el XML indentado, el texto literal, la imagen o nada, porque no hay vista previa. */
 export type DocumentContent =
   | { kind: "pdf"; pdf: PdfDocument }
+  | { kind: "xml"; text: string }
   | { kind: "text"; text: string }
   | { kind: "image"; mediaType: string; bytes: Uint8Array }
   | { kind: "none" };
@@ -53,9 +55,8 @@ export async function contentOf(
       return { kind: "none" };
     }
   }
-  if (detected === "xml" || detected === "text") {
-    return { kind: "text", text: new TextDecoder().decode(bytes) };
-  }
+  if (detected === "xml" || detected === "invoice") return { kind: "xml", text: decodedXml(bytes) };
+  if (detected === "text") return { kind: "text", text: new TextDecoder().decode(bytes) };
   const mediaType = IMAGE_MEDIA_TYPES[detected];
   return mediaType === undefined ? { kind: "none" } : { kind: "image", mediaType, bytes };
 }
@@ -70,6 +71,7 @@ function untitledKey(detected: DocumentType) {
     case "pdf":
       return "sede.consent.untitled";
     case "xml":
+    case "invoice":
       return "sede.consent.untitledXml";
     case "png":
     case "jpeg":

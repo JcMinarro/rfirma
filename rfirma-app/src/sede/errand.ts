@@ -30,6 +30,7 @@ export type SiteOperation =
 export type DocumentType =
   | "pdf"
   | "xml"
+  | "invoice"
   | "png"
   | "jpeg"
   | "gif"

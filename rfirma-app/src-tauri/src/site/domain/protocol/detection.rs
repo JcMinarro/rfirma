@@ -80,8 +80,10 @@ pub fn shape_of(document: &[u8]) -> DetectedShape {
 pub enum DocumentType {
     /// Un PDF.
     Pdf,
-    /// Un XML, factura electrónica incluida.
+    /// Un XML que no es una factura con hoja de estilos.
     Xml,
+    /// Una FacturaE de una versión con hoja de estilos.
+    Invoice,
     /// Una imagen PNG.
     Png,
     /// Una imagen JPEG.
@@ -115,7 +117,7 @@ impl DocumentType {
     pub fn extension(self) -> &'static str {
         match self {
             Self::Pdf => "pdf",
-            Self::Xml => "xml",
+            Self::Xml | Self::Invoice => "xml",
             Self::Png => "png",
             Self::Jpeg => "jpg",
             Self::Gif => "gif",
@@ -151,9 +153,44 @@ pub fn type_of(document: &[u8]) -> DocumentType {
     }
     match shape_of(document) {
         DetectedShape::Pdf => DocumentType::Pdf,
+        DetectedShape::Invoice if has_a_stylesheet(document) => DocumentType::Invoice,
         DetectedShape::Xml | DetectedShape::Invoice => DocumentType::Xml,
         DetectedShape::Binary if is_plain_text(document) => DocumentType::Text,
         DetectedShape::Binary => DocumentType::Unknown,
+    }
+}
+
+const INVOICE_NAMESPACES_WITH_STYLESHEET: [&str; 2] = [
+    "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae",
+    "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml",
+];
+
+fn has_a_stylesheet(document: &[u8]) -> bool {
+    root_namespace(document)
+        .is_some_and(|namespace| INVOICE_NAMESPACES_WITH_STYLESHEET.contains(&namespace.as_str()))
+}
+
+fn root_namespace(document: &[u8]) -> Option<String> {
+    let mut reader = Reader::from_reader(document);
+    let mut buffer = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buffer).ok()? {
+            Event::Start(tag) | Event::Empty(tag) => {
+                let wanted = match tag.name().prefix() {
+                    Some(prefix) => format!("xmlns:{}", String::from_utf8_lossy(prefix.as_ref())),
+                    None => "xmlns".to_owned(),
+                };
+                return tag
+                    .attributes()
+                    .flatten()
+                    .find(|attribute| attribute.key.as_ref() == wanted.as_bytes())
+                    .and_then(|attribute| attribute.normalized_value().ok())
+                    .map(|value| value.into_owned());
+            }
+            Event::Eof => return None,
+            _ => {}
+        }
+        buffer.clear();
     }
 }
 

@@ -235,8 +235,13 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
 - **En la lista, el sello del documento dice cómo vienen sus firmas**: `sealed`
   si se validan sin incidencias y `sealedWarning` con el mismo criterio que
   separa una firma no válida en el aviso; sin firmas, ningún sello.
-- **El visor enseña lo que puede del documento**: el PDF paginado, el texto
-  literal del XML o la imagen, centrada en una hoja de 600 px como mucho. Un
+- **El visor enseña lo que puede del documento**: el PDF paginado, el XML
+  indentado o la imagen, centrada en una hoja de 600 px como mucho. El XML se
+  ve un elemento por línea, con la sangría de su profundidad, y nunca se
+  desplaza en horizontal: una línea larga se corta dentro de la hoja y lo
+  cortado conserva su sangría. El contenido mixto, los comentarios, el CDATA y
+  los atributos se quedan como vienen; el XML que no se puede analizar se ve
+  tal cual, cortado igual. Un
   tipo sin vista previa ocupa esa hoja con el icono, el nombre y «Este tipo de
   archivo no se puede mostrar aquí.», y debajo «Abrir con…» si el tipo se
   reconoce.
