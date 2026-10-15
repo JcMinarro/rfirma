@@ -185,6 +185,7 @@ impl SiteErrandView {
 }
 
 impl From<&Moment> for SiteErrandView {
+    #[expect(clippy::too_many_lines)]
     fn from(moment: &Moment) -> Self {
         match moment {
             Moment::Waiting => Self::waiting(),
