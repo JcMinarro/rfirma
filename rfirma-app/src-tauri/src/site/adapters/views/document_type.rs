@@ -12,8 +12,10 @@ crossing! {
     pub enum DocumentTypeView {
         /// Un PDF.
         Pdf,
-        /// Un XML, factura electrónica incluida.
+        /// Un XML que no es una factura con hoja de estilos.
         Xml,
+        /// Una FacturaE de una versión con hoja de estilos.
+        Invoice,
         /// Una imagen PNG.
         Png,
         /// Una imagen JPEG.
@@ -48,6 +50,7 @@ impl From<DocumentType> for DocumentTypeView {
         match detected {
             DocumentType::Pdf => Self::Pdf,
             DocumentType::Xml => Self::Xml,
+            DocumentType::Invoice => Self::Invoice,
             DocumentType::Png => Self::Png,
             DocumentType::Jpeg => Self::Jpeg,
             DocumentType::Gif => Self::Gif,

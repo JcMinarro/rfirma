@@ -281,6 +281,7 @@ fn each_detected_type_crosses_with_its_own_camel_case_name() {
     for (detected, expected) in [
         (DocumentType::Pdf, "pdf"),
         (DocumentType::Xml, "xml"),
+        (DocumentType::Invoice, "invoice"),
         (DocumentType::Png, "png"),
         (DocumentType::Jpeg, "jpeg"),
         (DocumentType::Gif, "gif"),
