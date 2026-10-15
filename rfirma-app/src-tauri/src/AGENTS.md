@@ -119,6 +119,8 @@ Leen el código **como texto**: `signing/application/cycle/tests.rs`,
 `site/application/errand/tests/token_and_launch.rs`,
 `tests/site_frontier_guards.rs`, `crossing/guards.rs`,
 `tests/module_directions.rs`, `tests/single_cfg_os_site.rs`,
+`tests/invoice_scheme_lives_in_the_site_process.rs` (lee `lib.rs` y la CSP de
+`tauri.conf.json`),
 `tests/flatpak_manifest_matches_browser_table.rs` (lee el manifiesto de
 Flatpak, no código) y
 `tests/adr_citations_resolve.rs`. Mover un fichero que una lee obliga a

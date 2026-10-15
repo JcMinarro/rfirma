@@ -16,6 +16,7 @@ mod dialog_folder;
 mod document_and_save;
 mod download;
 mod headless;
+mod invoice_view;
 mod open_with;
 mod pdf_awaiting_the_person;
 mod pdf_password;
