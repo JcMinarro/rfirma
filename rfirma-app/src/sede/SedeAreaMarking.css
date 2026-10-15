@@ -1,0 +1,18 @@
+.sede-area-marking__viewer {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--rf-surface);
+}
+
+.sede-area-marking__body {
+  overflow-y: auto;
+}
+
+.sede-area-marking__title {
+  margin: 0;
+}
+
+.sede-area-marking__label {
+  margin: 0;
+}

@@ -2,13 +2,19 @@
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { Tab, Tabs } from "./Tabs";
+import { Tab, Tabs, type TabsProps } from "./Tabs";
 
-function TabsDemo({ withDisabled }: { withDisabled: boolean }) {
+function TabsDemo({
+  withDisabled,
+  variant,
+}: {
+  withDisabled: boolean;
+  variant: NonNullable<TabsProps["variant"]>;
+}) {
   const [active, setActive] = useState("solicitud");
   const names = ["solicitud", "memoria", "anexo"];
   return (
-    <Tabs aria-label="Documentos abiertos">
+    <Tabs aria-label="Documentos abiertos" variant={variant}>
       {names.map((name) => (
         <Tab
           key={name}
@@ -32,16 +38,34 @@ const meta = {
         component: [
           'Las pestañas del sistema de diseño: un `role="tablist"` con sus `Tab`, recorridas con las flechas.',
           "Úsalas para alternar entre vistas hermanas de un mismo contenido. Para acciones, `Button` o `Menu`.",
+          "La variante `underline` marca la elegida con una raya debajo, sin fondo: para pestañas dentro de un panel, no sobre él.",
           "No les pongas `role`, `tabIndex` ni `aria-selected`: los fijan ellas. No marques más de una `Tab` como `selected`.",
         ].join("\n\n"),
       },
     },
   },
-  args: { withDisabled: false },
-  argTypes: { withDisabled: { control: "boolean" } },
+  args: { withDisabled: false, variant: "default" },
+  argTypes: {
+    withDisabled: { control: "boolean" },
+    variant: {
+      control: "inline-radio",
+      options: ["default", "underline"],
+      description: "`default`, con fondo en la elegida; `underline`, con raya debajo y sin fondo.",
+    },
+  },
 } satisfies Meta<typeof TabsDemo>;
 
 export default meta;
 
 export const Default: StoryObj<typeof meta> = {};
 export const WithDisabledTab: StoryObj<typeof meta> = { args: { withDisabled: true } };
+export const Underline: StoryObj<typeof meta> = {
+  args: { variant: "underline" },
+  parameters: {
+    docs: {
+      description: {
+        story: "La elegida lleva una raya debajo y ninguna lleva fondo.",
+      },
+    },
+  },
+};

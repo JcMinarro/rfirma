@@ -23,12 +23,12 @@ const offices: ComboboxOption<Office>[] = [
   disabled: office.name === "León",
 }));
 
-function ComboboxDemo({ defaultOpen }: { defaultOpen: boolean }) {
+function ComboboxDemo({ defaultOpen, opens }: { defaultOpen: boolean; opens: "down" | "up" }) {
   const [chosen, setChosen] = useState<Office | null>(offices[1]?.item ?? null);
   return (
-    <div style={{ minWidth: 320 }}>
+    <div style={{ minWidth: 320, paddingTop: opens === "up" ? 360 : 0 }}>
       <Combobox
-        key={String(defaultOpen)}
+        key={`${defaultOpen}-${opens}`}
         label="Oficina"
         options={offices}
         value={chosen?.name ?? null}
@@ -43,6 +43,7 @@ function ComboboxDemo({ defaultOpen }: { defaultOpen: boolean }) {
         emptyMessage="Ninguna oficina coincide"
         countLabel={(shown, total) => `${shown} de ${total}`}
         defaultOpen={defaultOpen}
+        opens={opens}
       >
         {chosen === null ? <span className="rf-text-muted">Elige una oficina</span> : chosen.name}
       </Combobox>
@@ -64,11 +65,15 @@ const meta = {
       },
     },
   },
-  args: { defaultOpen: false },
-  argTypes: { defaultOpen: { control: "boolean" } },
+  args: { defaultOpen: false, opens: "down" },
+  argTypes: {
+    defaultOpen: { control: "boolean" },
+    opens: { control: "inline-radio", options: ["down", "up"] },
+  },
 } satisfies Meta<typeof ComboboxDemo>;
 
 export default meta;
 
 export const Closed: StoryObj<typeof meta> = {};
 export const Open: StoryObj<typeof meta> = { args: { defaultOpen: true } };
+export const OpenUp: StoryObj<typeof meta> = { args: { defaultOpen: true, opens: "up" } };

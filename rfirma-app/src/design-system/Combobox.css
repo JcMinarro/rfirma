@@ -91,6 +91,15 @@
   line-height: var(--rf-body-leading);
 }
 
+.combobox__footer {
+  position: sticky;
+  bottom: -6px;
+  margin: 4px -6px -6px;
+  padding: 8px 16px 10px;
+  border-top: 1px solid var(--rf-border-subtle);
+  background: var(--rf-bg);
+}
+
 .combobox__list,
 .combobox__group {
   display: flex;

@@ -154,7 +154,7 @@ export function SedeOutcome({ origin, outcome, onClose, onOpenHelp }: SedeOutcom
 }
 
 /** Los tres del artboard: visto, aspa y triángulo, uno por desenlace. */
-function OutcomeIcon({ kind }: { kind: SiteOutcome["kind"] }) {
+export function OutcomeIcon({ kind }: { kind: SiteOutcome["kind"] }) {
   switch (kind) {
     case "signed":
     case "batchSigned":
@@ -213,7 +213,7 @@ function RefusalSentence({ situation }: { situation: RefusalSituation }) {
 }
 
 /** Por qué rFirma no hace una firma que la sede pide de forma insegura o imposible; en otro rechazo, qué hacer. */
-function RefusalStatement({ situation }: { situation: RefusalSituation }) {
+export function RefusalStatement({ situation }: { situation: RefusalSituation }) {
   const { t } = useTranslation();
 
   switch (situation) {
@@ -257,7 +257,7 @@ function TechnicalDetail({ situation, detail }: { situation: RefusalSituation; d
 }
 
 /** Lo que quien mantiene la sede puede cambiar para que rFirma firme, cuando rFirma se niega. */
-function siteNote(situation: RefusalSituation, t: TFunction): string | null {
+export function siteNote(situation: RefusalSituation, t: TFunction): string | null {
   switch (situation) {
     case "sha1":
       return t("sede.siteNotes.sha1");
@@ -271,7 +271,7 @@ function siteNote(situation: RefusalSituation, t: TFunction): string | null {
 }
 
 /** El título ya dice lo que pasó; nada debajo lo repite. */
-function title(outcome: SiteOutcome, t: TFunction): string {
+export function title(outcome: SiteOutcome, t: TFunction): string {
   switch (outcome.kind) {
     case "signed":
     case "batchSigned":

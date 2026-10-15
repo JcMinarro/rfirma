@@ -5,9 +5,20 @@ import { OWN } from "../origins";
 import { SHARED_GLYPHS } from "./shared";
 
 const chevronRight = stroked(OWN, <path d="M9 6l6 6-6 6" />);
+const chevronLeft = stroked(OWN, <path d="M15 6l-6 6 6 6" />);
 const chevronDown = stroked(OWN, <path d="M6 9l6 6 6-6" />);
 const check = stroked(OWN, <path d="M4 12.5 9.5 18 20 6" />, 3);
 const plus = stroked(OWN, <path d="M12 5v14M5 12h14" />);
+
+function sidePanel(chevron: string) {
+  return stroked(
+    OWN,
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2.5" />
+      <path d={`M8 4v16${chevron}`} />
+    </>,
+  );
+}
 
 export const RFIRMA_ICONS: IconFamily = {
   name: "rFirma",
@@ -15,6 +26,7 @@ export const RFIRMA_ICONS: IconFamily = {
     ...SHARED_GLYPHS,
     add: plus,
     close: stroked(OWN, <path d="M6 6l12 12M18 6 6 18" />, 1.8),
+    collapseSide: sidePanel("M13 8l4 4-4 4"),
     collapsed: chevronRight,
     copy: stroked(
       OWN,
@@ -39,6 +51,7 @@ export const RFIRMA_ICONS: IconFamily = {
         <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
       </>,
     ),
+    expandSide: sidePanel("M17 8l-4 4 4 4"),
     expanded: chevronDown,
     externalLink: stroked(
       OWN,
@@ -71,6 +84,14 @@ export const RFIRMA_ICONS: IconFamily = {
     ),
     lastPage: stroked(OWN, <path d="M7 6l6 6-6 6M15 6l6 6-6 6" />),
     menu: stroked(OWN, <path d="M4 7h16M4 12h16M4 17h16" />),
+    moreActions: stroked(
+      OWN,
+      <g fill="currentColor" stroke="none">
+        <circle cx="5" cy="12" r="1.75" />
+        <circle cx="12" cy="12" r="1.75" />
+        <circle cx="19" cy="12" r="1.75" />
+      </g>,
+    ),
     move: stroked(
       OWN,
       <path d="M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3" />,
@@ -92,7 +113,7 @@ export const RFIRMA_ICONS: IconFamily = {
       </>,
       1.8,
     ),
-    previousPage: stroked(OWN, <path d="M15 6l-6 6 6 6" />),
+    previousPage: chevronLeft,
     revoked: stroked(
       OWN,
       <>

@@ -199,6 +199,165 @@ de las cabeceras de los componentes.
   salir y para las microacciones, y `--secondary` no se usa en ningún momento de
   esta ventana.
 
+### Consentimiento ampliable (diseño pendiente de implementar)
+
+Quien no se fía de la sede puede ver lo que firma sin cargar la ventana a quien
+sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consentimiento
+ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
+enseña. **Son provisionales**: documentan el diseño sobre componentes que solo
+usan ellas (`SedeConsentCompact`, `SedeConsentExpanded`, `SedeSignatureCards`),
+sin cambiar el consentimiento real. La spec que lo implemente lleva la vista
+nueva a `SedeConsent`, sustituye estas historias por las de siempre y borra lo
+que solo existía para ellas.
+
+- **Primero con qué se firma, y después qué.** En las dos formas el selector
+  va bajo la cabecera. En la compacta, lo que se firma va pegado al pie: primero
+  el aviso (`Admonition`) y después «Vas a firmar…» con su descarga; en la
+  ampliada, bajo el selector va el aviso y, debajo, la lista de documentos,
+  sin «Vas a firmar…», porque los documentos ya se ven: su fila solo lleva la
+  descarga, a la derecha, y la frase queda como nombre accesible de la lista.
+- **Como mucho un aviso en pantalla, nunca dos apilados.** Todos los hechos van
+  en un solo `Admonition`, por orden de importancia: la firma que no es válida,
+  el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas.
+  El primero es el título del aviso, en su fila, y los demás van debajo; con un
+  solo hecho, sin título. El tono es el del peor: error con una firma no válida,
+  advertencia con SHA-1 y, si no, información.
+- **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
+  «Descargar…» y, si los hay, los hechos de las firmas previas: cuántos
+  documentos traen firmas de otras personas, cuántos firmaste tú, con el
+  certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
+  válida. En la ampliada, el aviso dice lo que ya firmaste tú y el SHA-1 por
+  permitir, y cambia con el certificado elegido como en la compacta; las firmas
+  no válidas y las de otras personas las cuenta la franja de cada documento.
+  La lista es de la ampliada, que abre «Ver documentos». Con huellas no hay nada
+  que ver ni vista ampliada. El lote remoto solo da el recuento: sus documentos y
+  sus prefirmas no llegan hasta después de elegir certificado, así que no hay
+  huellas, ni «Descargar», ni «Ver documentos».
+- **En la lista, el icono de cada fila dice su tipo** (`documentPdf`,
+  `documentXml`, `documentImage` y, para el resto, `document`), con el mismo
+  criterio con que el visor decide cómo pintarlo, nunca por la extensión del
+  nombre.
+- **En la lista, el sello del documento dice cómo vienen sus firmas**: `sealed`
+  si se validan sin incidencias y `sealedWarning` con el mismo criterio que
+  separa una firma no válida en el aviso; sin firmas, ningún sello.
+- **El visor enseña lo que puede del documento**: el PDF paginado, el texto
+  literal del XML o la imagen, centrada en una hoja de 600 px como mucho. Un
+  tipo sin vista previa ocupa esa hoja con el icono, el nombre y «Este tipo de
+  archivo no se puede mostrar aquí.», y debajo «Abrir con…» si el tipo se
+  reconoce.
+- **La franja de firmas no lleva avisos**: solo el recuento, la validez y «Ver
+  firmas», en una línea.
+- **«Descargar»** guarda el documento tal cual; con varios, «Descargar todo» es
+  un `.zip` con los documentos y un `SHA256SUMS`; con huellas, un `.txt` con el
+  algoritmo que manda la sede y el valor.
+- **«Abrir con…»** sale del tipo que rFirma detecta en los bytes, nunca de lo
+  que diga la sede: el tipo da la extensión y, con ella, el sistema operativo
+  elige la aplicación. Que no haya vista previa no lo quita; solo un tipo que no
+  se reconoce sale como `.bin` y se queda sin «Abrir con…», ni en el visor ni en
+  el menú «⋯».
+- **Las firmas previas son de cada documento**: el resumen de la compacta cuenta
+  documentos, no firmas, y el detalle es el panel de la ampliada, que flota sobre
+  el visor sin cambiar su ancho. **Escape cierra el panel y no cancela el
+  trámite.**
+- **La ampliada es la misma ventana a 1080 × 660**, el tamaño de marcar el área,
+  y se centra al crecer como en ese momento: ni Wayland ni el compositor dejan
+  colocarla, así que la columna no puede quedarse quieta mientras crece.
+- **Los desplegables se abren hacia abajo**, el selector y el menú «⋯» de la
+  lista, porque los dos viven arriba de su columna.
+- **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en
+  la ampliada ocupan el mismo sitio, y la cuenta atrás de Firmar es la de
+  siempre: no se reinicia al ampliar ni al cambiar de documento.
+- **La columna de la ampliada mide 400 px y «Ocultar» es solo su icono**, con
+  «Ocultar» como nombre accesible y como `title`, siempre y no solo con SHA-1:
+  así el pie cabe en una línea con «Firmar igualmente» y su cuenta atrás, y
+  no cambia de forma. El visor se queda con el resto de los 1080 px.
+- **En el pie, la acción principal y «Cancelar» no ceden**: si no cabe todo,
+  cede «Ver documentos», que se corta con puntos suspensivos y conserva su icono
+  y el texto entero en el `title`.
+
+Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
+huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
+previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
+`SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
+en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
+motivo), que cambia también la ventana principal. Y el nombre por defecto del
+documento sin nombre ni título: «Un PDF sin título» mentiría con un XML, así que
+tiene que depender del tipo o ser neutro. Y el botón de firmar con SHA-1 por
+permitir deja de decir «Firmar solo esta vez» también en la ventana de sede
+actual y pasa a «Firmar igualmente»: el «solo esta vez» se refería al permiso de
+Preferencias, que la persona no ve desde ahí. Cuando se implemente, la
+invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
+firmas previas como aviso compacto dejan de ser ciertas.
+
+- **Antes de implementar, una persona nativa revisa las traducciones** de las
+  cadenas `sede.received.*` del consentimiento ampliable al catalán, al gallego,
+  al euskera y al inglés: nadie que hable esos idiomas las ha revisado.
+
+### El resto de momentos con el esqueleto nuevo (diseño pendiente de implementar)
+
+Los demás momentos se rehacen sobre el esqueleto del consentimiento ampliable.
+Como él, las historias son provisionales y no cambian la ventana real; las
+decisiones de abajo sustituyen a las de su momento cuando se implementen.
+
+- **Un solo esqueleto en todos los momentos**: arriba la cabecera `SedeOrigin` de
+  56 px; el cuerpo, alineado a la izquierda, con el icono a la izquierda del
+  título, y abajo el pie fijo de 56 px. Las acciones ocupan los sitios del
+  consentimiento: «Cancelar» y la principal a la derecha, sin ceder, y a la
+  izquierda, donde va «Ver documentos», la secundaria, que cede con puntos
+  suspensivos. Nada va centrado, para que pasar de un momento a otro no mueva
+  la vista.
+- **La cabecera dice «Te pide la firma» o «Te pide tus datos» solo cuando es
+  verdad**: en el desenlace y al guardar o cargar lleva solo el nombre de la
+  sede, y con una orden de terminal, solo «Una orden de terminal», porque la
+  orden la escribe la propia persona.
+- **Los títulos ya no nombran la sede**: ya la nombra la cabecera.
+- **Ninguna frase explica lo obvio**: la interfaz no es un manual. Sobra lo que
+  repiten la cabecera, los botones o lo que se ve, como «La firma ya está en…»,
+  «rFirma no guarda copia», «Elige en el diálogo del sistema…», «Necesitas uno
+  instalado…» o «Consíguelo en la FNMT…».
+- **El desenlace es solo icono y título**, sin la fila del documento ni el
+  recuento, que ya se enseñaron al consentir. El cierre automático se ve en el
+  botón, «Cerrar (15)», que baja cada segundo, y no en la frase «Se cerrará
+  sola…».
+- **El rechazo lleva su frase y el detalle copiable en un `Admonition` neutro
+  con «Copiar»**. Desaparece la pista de permitir SHA-1 en Preferencias: en el
+  uso normal ya no se llega a ese rechazo, porque el consentimiento ofrece
+  «Firmar igualmente».
+- **Sin certificado, el título no nombra la sede**: «No acepta ninguno de tus
+  {{count}} certificados». El pie lleva «Volver a buscar» a la izquierda y
+  «Cancelar» e «Instalar un certificado…» a la derecha; con una orden de
+  terminal y todos excluidos, solo «Cerrar».
+- **El fallo al instalar es un `Admonition` de error sin «Copiar»**, porque
+  ese detalle no se lleva a ninguna sede.
+- **En la espera, «no ha llegado» y «sin canal» son una sola pantalla**: para
+  la persona la situación es la misma.
+- **El aviso «Falta la CA local» sale solo cuando rFirma sabe que falta**, y
+  siempre encima de las pestañas. Entonces «Instalar» es la acción principal y
+  «Cerrar» queda discreto, porque instalarla es lo que desbloquea el trámite.
+- **Las recetas de Chrome y Firefox van en las pestañas del sistema de diseño**,
+  en la variante con raya, y cada receta es el panel de su pestaña. La frase de
+  reintentar va en el pie, a la izquierda.
+- **Firmando y guardar o cargar enseñan solo el título**, y la barra al firmar.
+  Un destino donde no se puede escribir es un `Admonition` de error.
+- **Marcar el área tiene la geometría de la ampliada**: el visor a la izquierda
+  y la columna de 400 px con cabecera y pie, sin frase de ayuda. El recuadro
+  aparece ya en su posición estándar y «Continuar» está habilitado desde el
+  principio, porque la posición estándar ya es una respuesta válida.
+- **«En qué páginas» lleva el estilo del rótulo «Certificado»**, y un documento
+  ilegible es un `Admonition` de error.
+- **La página desactualizada es una sola frase**, «Puede tener errores o no ser
+  segura.», con «Cancelar»: si se avisa de que puede no ser segura, tiene que
+  poder pararse.
+- **Confirmar lo que señala el validador conserva sus textos y su flujo**: solo
+  cambia el esqueleto.
+- **Como mucho un `Admonition` por pantalla, con un solo estilo para todos los
+  tonos**: el tono solo cambia el icono.
+- **Las historias provisionales sustituyen a las de hoy al implementarse.** Cada
+  grupo «… nuevo», «Consentimiento ampliable», «Momentos de paso nuevos» y
+  «Avisos previos nuevos» de «Pantallas/Ventana de sede» reemplaza al de su
+  momento y pierde el «nuevo» del nombre, y «Ventana» queda en una sola
+  composición con el consentimiento nuevo.
+
 ### Marcar el área
 
 - **Es el único momento en que la ventana crece**, porque en la caja útil no cabe
@@ -368,11 +527,17 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 1 · espera | `SedeWaiting.stories.tsx`: `Waiting`, `Unreachable`, `NoChannel` |
 | 1c · marcar el área | `SedeMarking.stories.tsx`: `Marking`, `UnreadableDocument` |
 | 2 · consentimiento | `SedeConsent.stories.tsx`: una por certificado, varios, acotado, sin título, cofirma, contrafirma sobre todas o sobre las últimas, firmas previas válidas o con problema, lote remoto y local, cesión de identidad, sin origen, cuenta atrás y orden de terminal |
+| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 2b · confirmar | `SedeConfirm.stories.tsx`: `ShadowAttackSuspect`, `ModifiedForm`, `CertifiedPdf`, `UnknownMessage` |
 | 3 · firmando | `SedeSigning.stories.tsx`: `Signing`, `Returning` |
 | 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |
 | 4 · desenlace | `SedeOutcome.stories.tsx`: un final por tipo y un rechazo por cada acción, el desconocido, el del escritorio y el de sin origen |
 | 5 · sin certificado | `SedeNoCertificate.stories.tsx`: `NoneInstalled`, `ExcludedBySite`, `InstallFailed` y las dos de terminal |
+| 0 y 2b · avisos previos (diseño pendiente) | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador con el esqueleto nuevo |
+| 1 y 3 · espera, firmando, guardar y cargar (diseño pendiente) | `SedePassing.stories.tsx`: los momentos de paso con el esqueleto nuevo |
+| 1c · marcar el área (diseño pendiente) | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
+| 4 · desenlace (diseño pendiente) | `SedeEnding.stories.tsx`: los finales y los rechazos con el esqueleto nuevo |
+| 5 · sin certificado (diseño pendiente) | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar con el esqueleto nuevo |
 
 `src/stories.test.tsx` las pinta todas con axe, así que una historia nueva queda
 revisada sin escribir otro test. El momento de consentimiento, que comparten las

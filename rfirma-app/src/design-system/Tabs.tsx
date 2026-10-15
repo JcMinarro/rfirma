@@ -4,7 +4,10 @@ import type { ComponentPropsWithRef, KeyboardEvent } from "react";
 import { classNames } from "./classNames";
 import "./Tabs.css";
 
-export type TabsProps = Omit<ComponentPropsWithRef<"div">, "role">;
+export type TabsProps = Omit<ComponentPropsWithRef<"div">, "role"> & {
+  /** `underline` marca la elegida con una raya debajo, sin fondo. */
+  variant?: "default" | "underline";
+};
 
 export type TabProps = Omit<
   ComponentPropsWithRef<"button">,
@@ -16,7 +19,7 @@ export type TabProps = Omit<
 const TABS = '[role="tab"]:not([disabled])';
 
 /** La tira de pestañas; sus hijas son `Tab`, que la persona activa por interfaz con un clic o Intro. */
-export function Tabs({ onKeyDown, className, ...rest }: TabsProps) {
+export function Tabs({ onKeyDown, className, variant = "default", ...rest }: TabsProps) {
   const moveFocus = (event: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
     const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(TABS));
@@ -30,7 +33,7 @@ export function Tabs({ onKeyDown, className, ...rest }: TabsProps) {
     <div
       role="tablist"
       onKeyDown={moveFocus}
-      className={classNames("rf-tabs", className)}
+      className={classNames("rf-tabs", variant === "underline" && "rf-tabs--underline", className)}
       {...rest}
     />
   );

@@ -1562,6 +1562,9 @@ msgstr "¿Te parece un fallo de rFirma?"
 msgid "sede.outcome.autoClose"
 msgstr "Se cerrará sola dentro de {{seconds}} s."
 
+msgid "sede.outcome.closeIn"
+msgstr "Cerrar ({{seconds}})"
+
 msgid "sede.oldWebClient.title"
 msgstr "Esta página está desactualizada"
 
@@ -1570,6 +1573,9 @@ msgstr ""
 "La página usa una versión antigua de la pieza que habla con rFirma, y puede "
 "tener errores o no ser segura. Pulsa Continuar para seguir; si algo falla, "
 "avisa a quien mantiene la página."
+
+msgid "sede.oldWebClient.risk"
+msgstr "Puede tener errores o no ser segura."
 
 msgid "sede.refusals.retry"
 msgstr "Vuelve a la sede e inténtalo de nuevo."
@@ -1644,6 +1650,12 @@ msgstr[0] "No se acepta tu certificado"
 msgstr[1] "No se acepta ninguno de tus {{count}} certificados"
 msgstr[2] "No se acepta ninguno de tus {{count}} certificados"
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] "No acepta tu certificado"
+msgstr[1] "No acepta ninguno de tus {{count}} certificados"
+msgstr[2] "No acepta ninguno de tus {{count}} certificados"
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] "Tu --filter no deja tu certificado"
@@ -1652,3 +1664,179 @@ msgstr[2] "Tu --filter no deja ninguno de tus {{count}} certificados"
 
 msgid "sede.noCertificate.excludedBody"
 msgstr "Instala otro certificado, o cierra y continúa desde la sede."
+
+#. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
+msgid "sede.origin.asks"
+msgstr "Te pide la firma"
+
+#. Rótulo de la cabecera cuando la sede pide los datos del certificado, no una firma.
+msgid "sede.origin.asksIdentity"
+msgstr "Te pide tus datos"
+
+#. La cabecera de la ventana de sede cuando la firma la pide una orden de terminal.
+msgid "sede.origin.terminal"
+msgstr "Una orden de terminal"
+
+#. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
+msgid "sede.origin.unknown"
+msgstr "Una página sin identificar"
+
+msgid "sede.received.documents"
+msgid_plural "sede.received.documents"
+msgstr[0] "Vas a firmar 1 documento"
+msgstr[1] "Vas a firmar {{count}} documentos"
+msgstr[2] "Vas a firmar {{count}} documentos"
+
+#. Al pie de la lista abierta de certificados: la sede la acotó. Dice que acotó, nunca con qué criterio.
+msgid "sede.received.narrowed"
+msgstr "{{origin}} solo admite algunos certificados"
+
+#. La misma nota cuando no hay un origen válido que nombrar.
+msgid "sede.received.narrowedUnknownOrigin"
+msgstr "La sede solo admite algunos certificados"
+
+#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar igualmente».
+msgid "sede.received.sha1ToAllow"
+msgstr "Esta sede usa un método de firma poco seguro"
+
+#. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
+msgid "sede.received.signAnyway"
+msgstr "Firmar igualmente"
+
+#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
+msgid "sede.received.challenge"
+msgstr "Vas a firmar un reto de autenticación"
+
+#. Huellas que calculó la sede: se firma la referencia, no un documento.
+msgid "sede.received.digests"
+msgid_plural "sede.received.digests"
+msgstr[0] "Vas a firmar 1 referencia"
+msgstr[1] "Vas a firmar {{count}} referencias"
+msgstr[2] "Vas a firmar {{count}} referencias"
+
+msgid "sede.received.download"
+msgstr "Descargar"
+
+msgid "sede.received.downloadAll"
+msgstr "Descargar todo"
+
+#. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
+msgid "sede.received.downloadAllTitle"
+msgid_plural "sede.received.downloadAllTitle"
+msgstr[0] "El documento y su huella SHA-256, en un .zip"
+msgstr[1] "Los {{count}} documentos y sus huellas SHA-256, en un .zip"
+msgstr[2] "Los {{count}} documentos y sus huellas SHA-256, en un .zip"
+
+msgid "sede.received.downloadDigests"
+msgstr "Descargar huellas"
+
+msgid "sede.received.downloadDigestsTitle"
+msgstr "Las huellas y su algoritmo, en un .txt"
+
+#. {{name}} es el nombre del documento.
+msgid "sede.received.actionsOf"
+msgstr "Acciones de {{name}}"
+
+msgid "sede.received.openWith"
+msgstr "Abrir con…"
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que ya trae firmas.
+msgid "sede.received.withSignatures"
+msgstr "Con firmas"
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que trae alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.withTroubledSignatures"
+msgstr "Con firmas con incidencias"
+
+msgid "sede.received.saveCopy"
+msgstr "Guardar copia"
+
+msgid "sede.received.copySha256"
+msgstr "Copiar SHA-256"
+
+#. El visor de la vista ampliada, en vez del documento, cuando su tipo no tiene vista previa.
+msgid "sede.received.noPreview"
+msgstr "Este tipo de archivo no se puede mostrar aquí."
+
+#. Un solo documento que la persona ya firmó con el certificado elegido.
+msgid "sede.received.signedByYouOne"
+msgstr "Lo firmaste tú con este certificado"
+
+#. Un solo documento que la persona ya firmó con otro certificado suyo, del mismo titular y entidad.
+msgid "sede.received.signedByYouOtherCertificateOne"
+msgstr "Lo firmaste tú con otro certificado tuyo"
+
+#. Un solo documento, que ya trae firmas de otras personas.
+msgid "sede.received.signedOne"
+msgstr "Trae firmas de otras personas"
+
+#. Cuántos documentos del lote ya traen firmas de otras personas, válidas o no.
+msgid "sede.received.signedCount"
+msgid_plural "sede.received.signedCount"
+msgstr[0] "{{count}} trae firmas de otras personas"
+msgstr[1] "{{count}} traen firmas de otras personas"
+msgstr[2] "{{count}} traen firmas de otras personas"
+
+#. Cuántos documentos del lote ya firmó la persona con el certificado elegido.
+msgid "sede.received.signedByYouCount"
+msgid_plural "sede.received.signedByYouCount"
+msgstr[0] "{{count}} lo firmaste tú con este certificado"
+msgstr[1] "{{count}} llevan tu firma con este certificado"
+msgstr[2] "{{count}} llevan tu firma con este certificado"
+
+#. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
+msgid "sede.received.signedByYouOtherCertificateCount"
+msgid_plural "sede.received.signedByYouOtherCertificateCount"
+msgstr[0] "{{count}} lo firmaste tú con otro certificado tuyo"
+msgstr[1] "{{count}} llevan tu firma con otro certificado tuyo"
+msgstr[2] "{{count}} llevan tu firma con otro certificado tuyo"
+
+#. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledOne"
+msgstr "Tiene una firma que no es válida"
+
+#. Cuántos documentos del lote tienen alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledCount"
+msgid_plural "sede.received.troubledCount"
+msgstr[0] "{{count}} tiene una firma que no es válida"
+msgstr[1] "{{count}} tienen una firma que no es válida"
+msgstr[2] "{{count}} tienen una firma que no es válida"
+
+#. El nombre accesible de la franja de firmas que ya trae el documento, sobre el visor.
+msgid "sede.signatures.region"
+msgstr "Firmas que ya tiene"
+
+msgid "sede.signatures.valid"
+msgid_plural "sede.signatures.valid"
+msgstr[0] "1 válida"
+msgstr[1] "{{count}} válidas"
+msgstr[2] "{{count}} válidas"
+
+msgid "sede.signatures.expired"
+msgid_plural "sede.signatures.expired"
+msgstr[0] "1 caducada"
+msgstr[1] "{{count}} caducadas"
+msgstr[2] "{{count}} caducadas"
+
+msgid "sede.signatures.invalid"
+msgid_plural "sede.signatures.invalid"
+msgstr[0] "1 no válida"
+msgstr[1] "{{count}} no válidas"
+msgstr[2] "{{count}} no válidas"
+
+msgid "sede.signatures.show"
+msgstr "Ver firmas"
+
+msgid "sede.signatures.hide"
+msgstr "Ocultar firmas"
+
+#. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
+msgid "sede.consent.viewDocuments"
+msgid_plural "sede.consent.viewDocuments"
+msgstr[0] "Ver documento"
+msgstr[1] "Ver documentos"
+msgstr[2] "Ver documentos"
+
+#. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
+msgid "sede.consent.hideDocuments"
+msgstr "Ocultar"

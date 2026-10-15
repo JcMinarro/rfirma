@@ -33,6 +33,10 @@ interface ComboboxProps<T> {
   listMaxHeight?: number;
   /** Pinta las cabeceras con más de una opción aunque todas sean de un mismo grupo. */
   alwaysGroupHeaders?: boolean;
+  /** Hacia dónde se despliega la lista: arriba cuando la caja vive al pie de la ventana. */
+  opens?: "down" | "up";
+  /** Una nota al pie de la lista abierta, fuera del `listbox`. */
+  footer?: ReactNode;
   disabled?: boolean;
   defaultOpen?: boolean;
 }
@@ -55,6 +59,8 @@ export function Combobox<T>({
   countLabel,
   listMaxHeight = 480,
   alwaysGroupHeaders = false,
+  opens = "down",
+  footer,
   disabled = false,
   defaultOpen = false,
 }: ComboboxProps<T>) {
@@ -224,7 +230,7 @@ export function Combobox<T>({
         initialFocus={search}
         returnFocusRef={box}
         restoreFocus="always"
-        portal={{ maxHeight: listMaxHeight }}
+        portal={{ maxHeight: listMaxHeight, opens }}
         className="combobox__layer"
       >
         {wanted !== "" && ordered.length > 0 && (
@@ -238,6 +244,9 @@ export function Combobox<T>({
         <div className="combobox__list" id={listId} role="listbox" aria-labelledby={labelId}>
           {renderGroups()}
         </div>
+        {footer !== undefined && (
+          <span className="rf-caption rf-text-muted combobox__footer">{footer}</span>
+        )}
       </Popover>
     </Stack>
   );

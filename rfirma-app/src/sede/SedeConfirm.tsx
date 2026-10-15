@@ -72,8 +72,8 @@ export function SedeConfirm({ messageCode, onConfirm, onCancel }: SedeConfirmPro
   );
 }
 
-// Lo que pregunta el original, ya traducido: `t()` no admite una clave armada.
-function confirmationMessage(t: TFunction, messageCode: string): string {
+/** Lo que pregunta el original, ya traducido: `t()` no admite una clave armada. */
+export function confirmationMessage(t: TFunction, messageCode: string): string {
   switch (messageCode) {
     case "pdfShadowAttackSuspect":
       return t("sede.confirm.messages.pdfShadowAttackSuspect");

@@ -54,7 +54,17 @@ describe("icon families", () => {
     const own = Object.entries(heroicons?.glyphs ?? {})
       .filter(([, glyph]) => glyph.origin.family !== "Heroicons")
       .map(([name]) => name);
-    expect(own.sort()).toEqual(["loading", "rubric"]);
+    expect(own.sort()).toEqual([
+      "collapseSide",
+      "documentImage",
+      "documentPdf",
+      "documentXml",
+      "expandSide",
+      "loading",
+      "rubric",
+      "sealed",
+      "sealedWarning",
+    ]);
   });
 
   it("paints every role of every family side by side in the catalogue story", () => {

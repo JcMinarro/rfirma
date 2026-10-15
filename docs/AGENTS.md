@@ -53,6 +53,7 @@ Busca en este índice, y si aun así necesitas el fichero, entra con
 | 0047 | El PIN de una tarjeta nunca se envía a ciegas: las reglas del PIN, sin contador exacto de intentos y sin el DNIe real en ninguna grada automática |
 | 0048 | Una sola lista de certificados, sin almacén activo ni pregunta modal: la tarjeta entra y sale en caliente por PC/SC, con el estado del lector como vista y el PIN solo al firmar |
 | 0049 | El flatpak trae su OpenSC y usa el `pcscd` del anfitrión por `--socket=pcsc`: solo OpenSC, sin módulos de fabricante ni `opensc.conf` del anfitrión |
+| 0050 | El tipo de un documento de la sede lo detecta rFirma en sus bytes: de ahí la extensión con que se abre o se guarda, y sin «Abrir con…» si no se reconoce |
 
 Los ADR que solo afectan a la suite de conformidad viven en `rfirma-conformance/docs/adr/` y
 comparten la numeración: el siguiente ADR, esté donde esté, toma el número libre más alto.

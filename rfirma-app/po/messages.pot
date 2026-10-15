@@ -1518,10 +1518,16 @@ msgstr ""
 msgid "sede.outcome.autoClose"
 msgstr ""
 
+msgid "sede.outcome.closeIn"
+msgstr ""
+
 msgid "sede.oldWebClient.title"
 msgstr ""
 
 msgid "sede.oldWebClient.body"
+msgstr ""
+
+msgid "sede.oldWebClient.risk"
 msgstr ""
 
 msgid "sede.refusals.retry"
@@ -1587,6 +1593,12 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
+msgid "sede.noCertificate.notAcceptedTitle"
+msgid_plural "sede.noCertificate.notAcceptedTitle"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
 msgid "sede.noCertificate.terminalExcludedTitle"
 msgid_plural "sede.noCertificate.terminalExcludedTitle"
 msgstr[0] ""
@@ -1594,4 +1606,180 @@ msgstr[1] ""
 msgstr[2] ""
 
 msgid "sede.noCertificate.excludedBody"
+msgstr ""
+
+#. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
+msgid "sede.origin.asks"
+msgstr ""
+
+#. Rótulo de la cabecera cuando la sede pide los datos del certificado, no una firma.
+msgid "sede.origin.asksIdentity"
+msgstr ""
+
+#. La cabecera de la ventana de sede cuando la firma la pide una orden de terminal.
+msgid "sede.origin.terminal"
+msgstr ""
+
+#. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
+msgid "sede.origin.unknown"
+msgstr ""
+
+msgid "sede.received.documents"
+msgid_plural "sede.received.documents"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Al pie de la lista abierta de certificados: la sede la acotó. Dice que acotó, nunca con qué criterio.
+msgid "sede.received.narrowed"
+msgstr ""
+
+#. La misma nota cuando no hay un origen válido que nombrar.
+msgid "sede.received.narrowedUnknownOrigin"
+msgstr ""
+
+#. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar igualmente».
+msgid "sede.received.sha1ToAllow"
+msgstr ""
+
+#. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
+msgid "sede.received.signAnyway"
+msgstr ""
+
+#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
+msgid "sede.received.challenge"
+msgstr ""
+
+#. Huellas que calculó la sede: se firma la referencia, no un documento.
+msgid "sede.received.digests"
+msgid_plural "sede.received.digests"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.received.download"
+msgstr ""
+
+msgid "sede.received.downloadAll"
+msgstr ""
+
+#. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
+msgid "sede.received.downloadAllTitle"
+msgid_plural "sede.received.downloadAllTitle"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.received.downloadDigests"
+msgstr ""
+
+msgid "sede.received.downloadDigestsTitle"
+msgstr ""
+
+#. {{name}} es el nombre del documento.
+msgid "sede.received.actionsOf"
+msgstr ""
+
+msgid "sede.received.openWith"
+msgstr ""
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que ya trae firmas.
+msgid "sede.received.withSignatures"
+msgstr ""
+
+#. Texto oculto para lectores de pantalla junto al sello de un documento de la lista que trae alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.withTroubledSignatures"
+msgstr ""
+
+msgid "sede.received.saveCopy"
+msgstr ""
+
+msgid "sede.received.copySha256"
+msgstr ""
+
+#. El visor de la vista ampliada, en vez del documento, cuando su tipo no tiene vista previa.
+msgid "sede.received.noPreview"
+msgstr ""
+
+#. Un solo documento que la persona ya firmó con el certificado elegido.
+msgid "sede.received.signedByYouOne"
+msgstr ""
+
+#. Un solo documento que la persona ya firmó con otro certificado suyo, del mismo titular y entidad.
+msgid "sede.received.signedByYouOtherCertificateOne"
+msgstr ""
+
+#. Un solo documento, que ya trae firmas de otras personas.
+msgid "sede.received.signedOne"
+msgstr ""
+
+#. Cuántos documentos del lote ya traen firmas de otras personas, válidas o no.
+msgid "sede.received.signedCount"
+msgid_plural "sede.received.signedCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Cuántos documentos del lote ya firmó la persona con el certificado elegido.
+msgid "sede.received.signedByYouCount"
+msgid_plural "sede.received.signedByYouCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Cuántos documentos del lote ya firmó la persona con otro certificado suyo: mismo titular y misma entidad representada.
+msgid "sede.received.signedByYouOtherCertificateCount"
+msgid_plural "sede.received.signedByYouOtherCertificateCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledOne"
+msgstr ""
+
+#. Cuántos documentos del lote tienen alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledCount"
+msgid_plural "sede.received.troubledCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El nombre accesible de la franja de firmas que ya trae el documento, sobre el visor.
+msgid "sede.signatures.region"
+msgstr ""
+
+msgid "sede.signatures.valid"
+msgid_plural "sede.signatures.valid"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.expired"
+msgid_plural "sede.signatures.expired"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.invalid"
+msgid_plural "sede.signatures.invalid"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.show"
+msgstr ""
+
+msgid "sede.signatures.hide"
+msgstr ""
+
+#. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
+msgid "sede.consent.viewDocuments"
+msgid_plural "sede.consent.viewDocuments"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
+msgid "sede.consent.hideDocuments"
 msgstr ""

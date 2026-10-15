@@ -1,10 +1,16 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRef, useState } from "react";
-import { describe, expect, it, vi } from "vitest";
-import { Menu, MenuItem } from "./Menu";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Menu, MenuItem, type MenuProps } from "./Menu";
 
-function Harness({ onPick = () => {} }: { onPick?: (entry: string) => void }) {
+function Harness({
+  onPick = () => {},
+  portal,
+}: {
+  onPick?: (entry: string) => void;
+  portal?: MenuProps["portal"];
+}) {
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -25,6 +31,7 @@ function Harness({ onPick = () => {} }: { onPick?: (entry: string) => void }) {
           anchorRef={anchor}
           returnFocusRef={trigger}
           aria-label="Acciones"
+          portal={portal}
         >
           <MenuItem onClick={pick("primera")}>
             <strong>Primera</strong> <em>con detalle</em>
@@ -48,6 +55,10 @@ async function openMenu(ui = <Harness />) {
 const item = (name: string) => screen.getByRole("menuitem", { name: new RegExp(name) });
 
 describe("Menu", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("opens as a menu with the focus on its first item", async () => {
     await openMenu();
 
@@ -124,5 +135,19 @@ describe("Menu", () => {
 
     expect(item("Primera").querySelector("strong")).toHaveTextContent("Primera");
     expect(item("Primera").querySelector("em")).toHaveTextContent("con detalle");
+  });
+
+  it("hangs above its button in a portal, right-aligned and as wide as its items", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      DOMRect.fromRect({ x: 300, y: 400, width: 32, height: 32 }),
+    );
+    await openMenu(<Harness portal={{ opens: "up" }} />);
+
+    const menu = screen.getByRole("menu");
+
+    expect(menu.parentElement).toBe(document.body);
+    expect(menu.style.bottom).toBe(`${window.innerHeight - 400 + 4}px`);
+    expect(menu.style.right).toBe(`${window.innerWidth - 332}px`);
+    expect(menu.style.width).toBe("");
   });
 });

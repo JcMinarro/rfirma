@@ -7,6 +7,7 @@
   "storybookStatic": ".design-sync/sb-reference",
   "entry": "rfirma-app/design-sync.entry.ts",
   "titleMap": {
+    "Admonition": "Admonition",
     "Badge": "Badge",
     "Button": "Button",
     "Card": "Card",
@@ -27,10 +28,15 @@
     "PlacementBlock": "PlacementBlock",
     "Popover": "Popover",
     "ProgressBar": "ProgressBar",
+    "ReceivedHeading": "ReceivedHeading",
+    "ReceivedList": "ReceivedList",
+    "ReceivedSummary": "ReceivedSummary",
     "RecentsSection": "RecentsSection",
     "Row": "Row",
     "SedeBody": "SedeBody",
+    "SedeOrigin": "SedeOrigin",
     "Select": "Select",
+    "SignaturesStrip": "SignaturesStrip",
     "SplitButton": "SplitButton",
     "Stack": "Stack",
     "Switch": "Switch",
@@ -71,6 +77,9 @@
     },
     "RecentsSection": {
       "cardMode": "column"
+    },
+    "SignaturesStrip": {
+      "viewport": "720x604"
     }
   },
   "readmeHeader": ".design-sync/conventions.md"

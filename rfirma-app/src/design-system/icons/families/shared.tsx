@@ -1,5 +1,6 @@
-//! Los iconos que comparten todas las familias: los veredictos macizos y la tarjeta, de Heroicons, y la rúbrica y el indicador de carga, propios.
+//! Los iconos que comparten todas las familias: los veredictos macizos y la tarjeta, de Heroicons, y la rúbrica, los sellos, los documentos por tipo y el indicador de carga, propios.
 
+import type { ReactNode } from "react";
 import { type IconGlyph, stroked } from "../glyph";
 import { HEROICONS, OWN } from "../origins";
 
@@ -89,14 +90,82 @@ const rubric: IconGlyph = {
   ),
 };
 
+/** Una roseta maciza con `mark` calado encima, en el color del fondo. */
+function rosette(mark: ReactNode): IconGlyph {
+  return {
+    origin: OWN,
+    Glyph: ({ size }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M12.00 1.00 L14.38 3.11 L17.50 2.47 L18.51 5.49 L21.53 6.50 L20.89 9.62 L23.00 12.00 L20.89 14.38 L21.53 17.50 L18.51 18.51 L17.50 21.53 L14.38 20.89 L12.00 23.00 L9.62 20.89 L6.50 21.53 L5.49 18.51 L2.47 17.50 L3.11 14.38 L1.00 12.00 L3.11 9.62 L2.47 6.50 L5.49 5.49 L6.50 2.47 L9.62 3.11Z"
+          fill="currentColor"
+        />
+        {mark}
+      </svg>
+    ),
+  };
+}
+
+const sealed = rosette(
+  <path
+    d="M8 12.2 10.8 15 16 9.2"
+    fill="none"
+    stroke="var(--rf-bg)"
+    strokeWidth={2.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />,
+);
+
+const sealedWarning = rosette(
+  <>
+    <path
+      d="M12 6.8V13"
+      fill="none"
+      stroke="var(--rf-bg)"
+      strokeWidth={2.6}
+      strokeLinecap="round"
+    />
+    <circle cx="12" cy="17" r="1.6" fill="var(--rf-bg)" />
+  </>,
+);
+
 const loading = stroked(OWN, <path d="M12 3a9 9 0 1 0 9 9" />, 2);
+
+/** El contorno de la hoja con la esquina doblada y `mark` dentro, que dice el tipo del documento. */
+function documentWith(mark: ReactNode): IconGlyph {
+  return stroked(
+    OWN,
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      {mark}
+    </>,
+  );
+}
+
+const documentPdf = documentWith(<path d="M8.5 12.5h7M8.5 15.5h7M8.5 18h4" />);
+
+const documentXml = documentWith(<path d="M10 12.5 8 15l2 2.5M14 12.5l2 2.5-2 2.5" />);
+
+const documentImage = documentWith(
+  <>
+    <circle cx="9.5" cy="12" r="1.2" />
+    <path d="M7.5 18.5l3-3 2 2 2.5-3 1.5 2" />
+  </>,
+);
 
 export const SHARED_GLYPHS = {
   checking,
+  documentImage,
+  documentPdf,
+  documentXml,
   failure,
   loading,
   notApplicable,
   rubric,
+  sealed,
+  sealedWarning,
   smartCard,
   success,
   warning,

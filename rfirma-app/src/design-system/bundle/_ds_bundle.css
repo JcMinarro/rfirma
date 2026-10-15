@@ -123,6 +123,16 @@
 }
 .rf-btn--ghost:hover { color: var(--rf-text); }
 .rf-btn--pill { border-radius: var(--rf-radius-pill); }
+.rf-btn--sm {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: var(--rf-radius-pill);
+  color: var(--rf-text-muted);
+}
+.rf-btn--sm:hover:not([disabled]) { background: var(--rf-border-subtle); color: var(--rf-text); }
 .rf-btn[disabled], .rf-btn--disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* --------------------------------------------------------------- 6. Forms */

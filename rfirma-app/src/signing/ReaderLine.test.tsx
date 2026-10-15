@@ -40,6 +40,16 @@ describe("the reader line under the certificate selector", () => {
       );
     });
 
+    it("leaves the help out when asked to", () => {
+      renderWithCatalog(
+        <ReaderLine reader={{ kind: "unreadable" }} platform="linux" withoutHelp />,
+      );
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^rFirma no puede leer la tarjeta del lector$/,
+      );
+    });
+
     for (const kind of ["noCard", "reading", "dnieReady", "cardReady"] as const) {
       it(`offers nothing when the status is ${kind}`, () => {
         renderWithCatalog(<ReaderLine reader={{ kind }} platform="windows" />);

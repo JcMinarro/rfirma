@@ -21,6 +21,22 @@ describe("primitives", () => {
     expect(button).toHaveClass("rf-btn", "rf-btn--primary", "about__close");
   });
 
+  it("renders a small round button with size sm, and a regular one without it", () => {
+    render(
+      <>
+        <Button variant="ghost" size="sm" aria-label="Acciones de informe.pdf" />
+        <Button variant="ghost">Descargar</Button>
+      </>,
+    );
+
+    expect(screen.getByRole("button", { name: "Acciones de informe.pdf" })).toHaveClass(
+      "rf-btn",
+      "rf-btn--ghost",
+      "rf-btn--sm",
+    );
+    expect(screen.getByRole("button", { name: "Descargar" })).not.toHaveClass("rf-btn--sm");
+  });
+
   it("lets a button be a submit and hands its ref over", () => {
     const ref = createRef<HTMLButtonElement>();
     render(

@@ -1,0 +1,39 @@
+.sede-ending {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.sede-ending__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--rf-space-sm);
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px var(--rf-space-md);
+}
+
+.sede-ending__title,
+.sede-ending__statement {
+  flex: none;
+  margin: 0;
+}
+
+.sede-ending__detail {
+  flex: none;
+}
+
+.sede-ending__detail-text {
+  max-height: 5.5em;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
+.sede-ending__close {
+  flex: none;
+  min-width: 120px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

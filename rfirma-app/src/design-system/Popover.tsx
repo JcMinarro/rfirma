@@ -24,14 +24,23 @@ export type PopoverProps = Omit<ComponentPropsWithRef<"div">, "style"> & {
   returnFocusRef?: ElementRef;
   /** `"escape"`: solo al descartar con Escape; `"always"`: también al elegir. Pulsar fuera o tabular nunca lo devuelven. */
   restoreFocus?: "escape" | "always";
-  /** Pinta el panel en `body`, bajo el ancla, con el ancho de esta y recortado a la ventana. */
-  portal?: { maxHeight: number };
+  /** Pinta el panel en `body`, junto al ancla y recortado a la ventana. */
+  portal?: PortalPlacement;
 };
 
+/** Dónde cuelga el panel en el portal: debajo o encima del ancla, con su ancho o a la medida de su contenido y pegado a su borde derecho. */
+export interface PortalPlacement {
+  maxHeight?: number;
+  opens?: "down" | "up";
+  align?: "stretch" | "end";
+}
+
 interface Placement {
-  top: number;
-  left: number;
-  width: number;
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  width?: number;
   maxHeight: number;
 }
 
@@ -54,7 +63,7 @@ export function Popover({
   const own = useRef<HTMLDivElement | null>(null);
   const skipRestore = useRef(false);
   const dismissedByEscape = useRef(false);
-  const placement = usePlacement(open && portal !== undefined, anchorRef, own, portal?.maxHeight);
+  const placement = usePlacement(open && portal !== undefined, anchorRef, own, portal);
 
   const setPanel = useCallback(
     (node: HTMLDivElement | null) => {
@@ -126,20 +135,17 @@ function usePlacement(
   active: boolean,
   anchorRef: ElementRef,
   panel: ElementRef,
-  maxHeight = Number.POSITIVE_INFINITY,
+  { maxHeight = Number.POSITIVE_INFINITY, opens = "down", align = "stretch" }: PortalPlacement = {},
 ): Placement | null {
   const [placement, setPlacement] = useState<Placement | null>(null);
   const place = useCallback(() => {
     const rect = anchorRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const top = rect.bottom + ANCHOR_GAP;
     setPlacement({
-      top,
-      left: rect.left,
-      width: rect.width,
-      maxHeight: Math.min(maxHeight, window.innerHeight - top - WINDOW_MARGIN),
+      ...verticalPlacement(rect, opens, maxHeight),
+      ...horizontalPlacement(rect, align),
     });
-  }, [anchorRef, maxHeight]);
+  }, [anchorRef, maxHeight, opens, align]);
 
   useEffect(() => {
     if (!active) {
@@ -160,4 +166,27 @@ function usePlacement(
   }, [active, place, panel]);
 
   return placement;
+}
+
+function verticalPlacement(
+  rect: DOMRect,
+  opens: "down" | "up",
+  maxHeight: number,
+): Pick<Placement, "top" | "bottom" | "maxHeight"> {
+  if (opens === "up") {
+    return {
+      bottom: window.innerHeight - rect.top + ANCHOR_GAP,
+      maxHeight: Math.min(maxHeight, rect.top - ANCHOR_GAP - WINDOW_MARGIN),
+    };
+  }
+  const top = rect.bottom + ANCHOR_GAP;
+  return { top, maxHeight: Math.min(maxHeight, window.innerHeight - top - WINDOW_MARGIN) };
+}
+
+function horizontalPlacement(
+  rect: DOMRect,
+  align: "stretch" | "end",
+): Pick<Placement, "left" | "right" | "width"> {
+  if (align === "end") return { right: window.innerWidth - rect.right };
+  return { left: rect.left, width: rect.width };
 }

@@ -12,6 +12,10 @@
   text-align: left;
 }
 
+:where(.rf-menu--floating) {
+  z-index: 6;
+}
+
 :where(.rf-menu) > .rf-divider {
   margin: 4px 0;
 }

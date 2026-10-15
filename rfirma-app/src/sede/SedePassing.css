@@ -1,0 +1,25 @@
+.sede-passing__retry {
+  display: -webkit-box;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 auto 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.sede-passing__steady {
+  flex: none;
+  white-space: nowrap;
+}
+
+.sede-passing__tabs,
+.sede-passing__recipe,
+.sede-passing__progress {
+  flex: none;
+}
+
+.sede-passing__file {
+  overflow-wrap: anywhere;
+}

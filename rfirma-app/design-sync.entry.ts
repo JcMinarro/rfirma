@@ -3,6 +3,7 @@
 import "./src/design-system/index.css";
 import "./src/app.css";
 
+export { Admonition } from "./src/design-system/Admonition";
 export { Badge } from "./src/design-system/Badge";
 export { Button } from "./src/design-system/Button";
 export { Card } from "./src/design-system/Card";
@@ -26,7 +27,12 @@ export { DropZone } from "./src/documents/DropZone";
 export { RecentRows, RecentsSection } from "./src/documents/RecentRows";
 export { ErrorNotice } from "./src/errors/ErrorNotice";
 export { PlacementBlock } from "./src/placement/PlacementBlock";
+export { ReceivedHeading } from "./src/sede/ReceivedHeading";
+export { ReceivedList } from "./src/sede/ReceivedList";
+export { ReceivedSummary } from "./src/sede/ReceivedSummary";
 export { SedeBody } from "./src/sede/SedeFrame";
+export { SedeOrigin } from "./src/sede/SedeOrigin";
+export { SignaturesStrip } from "./src/sede/SignaturesStrip";
 export { CertificateCard } from "./src/signing/CertificateCard";
 export { CertificateSelect } from "./src/signing/CertificateSelect";
 export { NewVersionStrip } from "./src/updates/NewVersionStrip";
