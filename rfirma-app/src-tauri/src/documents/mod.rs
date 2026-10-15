@@ -46,6 +46,11 @@ impl DocumentsRoot {
         application::documents::opened_document(&self.opened, handle)
     }
 
+    /// Los bytes del documento tras el asa.
+    pub fn bytes_of(&self, handle: &str) -> Result<Vec<u8>, DocumentError> {
+        application::documents::bytes_of(self.files.as_ref(), &self.opened, handle)
+    }
+
     /// Si del documento tras el asa se guarda rastro en la bandeja.
     pub fn is_remembered(&self, handle: &str) -> bool {
         self.opened_document(handle)
