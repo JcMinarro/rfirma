@@ -5,6 +5,7 @@ import type { Certificate, ReaderNews } from "../signing/certificate";
 import type { SigningOrder } from "../signing/flow";
 import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import type { PdfDocument } from "../viewer/pdf";
+import type { DocumentContent, ReceivedDocument } from "./received";
 
 /**
  * El trámite que abre una sede electrónica por `afirma://`, en el lado de la
@@ -25,6 +26,24 @@ export type SiteOperation =
   /** Sólo entregar la identidad: `selectcert`. No hay firma de por medio. */
   | "selectcert";
 
+/** El tipo de un documento según sus bytes; `unknown` se guarda como `.bin` y no se abre fuera. */
+export type DocumentType =
+  | "pdf"
+  | "xml"
+  | "png"
+  | "jpeg"
+  | "gif"
+  | "webp"
+  | "odt"
+  | "ods"
+  | "odp"
+  | "docx"
+  | "xlsx"
+  | "pptx"
+  | "zip"
+  | "text"
+  | "unknown";
+
 /**
  * Lo que el PDF dice **de sí mismo**, que es lo único que hay para nombrarlo.
  *
@@ -33,6 +52,14 @@ export type SiteOperation =
  * hay nombre de fichero ni ruta que enseñar, y fabricar uno sería inventarlo.
  */
 export interface SiteDocument {
+  /** El asa con que el backend guarda los bytes: por ella se leen, se descargan y se abren. */
+  handle: string;
+  /** El nombre que propone la sede, o `null` si no propone ninguno. */
+  name: string | null;
+  /** El tipo que rFirma detecta en los bytes, nunca el que diga la sede (ADR-0050). */
+  detected: DocumentType;
+  /** La huella SHA-256 de los bytes, en hexadecimal. */
+  sha256: string;
   /** El título de los metadatos del PDF, o `null` si no lo trae. */
   title: string | null;
   /** Cuántas páginas tiene. */
@@ -47,6 +74,8 @@ export interface SiteDocument {
   round: SignatureRound;
   /** Las firmas que ya trae el documento, calculadas sobre el PDF real. */
   previousSignatures: PreviousSignaturesReport;
+  /** Lo que el visor de la ampliada pinta de sus bytes. */
+  content: DocumentContent;
 }
 
 /** Lo que puede hacer la persona tras un rechazo de la sede. */
@@ -83,6 +112,7 @@ export const REFUSAL_ACTION_OF = {
   invalidSignature: "contactSite",
   confirmationNeeded: "contactSite",
   localBatchSign: "contactSite",
+  unrecognisedType: "retry",
   siteErrandNotLive: "retry",
   pdfHasUnregisteredSignatures: "contactSite",
   secretOnTheReaderKeypad: "otherCertificate",
@@ -184,10 +214,18 @@ export type SignatureRound =
   | { kind: "cosign" }
   | { kind: "counter"; target: "tree" | "leafs" };
 
-/** Un elemento del lote local, tal como lo resume el backend: sin ruta ni contenido. */
+/** Un elemento del lote local, tal como lo resume el backend: con el asa de su documento y sin ruta ni contenido. */
 export interface LocalBatchItem {
   /** El identificador con el que la sede nombra el elemento. */
   id: string;
+  /** El asa del documento de paso del elemento, con la que se leen sus bytes y sus firmas previas. */
+  document: string;
+  /** El nombre del elemento, o `null` si no tiene. */
+  name: string | null;
+  /** El tipo que rFirma detecta en los bytes del elemento (ADR-0050). */
+  detected: DocumentType;
+  /** La huella SHA-256 de los bytes, en hexadecimal. */
+  sha256: string;
   /** Qué es lo que se va a firmar. */
   signing: SigningKind;
   /** Si sobre el elemento se pide una firma inicial o una cofirma. */
@@ -233,8 +271,8 @@ export type ErrandStage =
       signs: number | null;
       /** Qué se pide firmar, o `null` cuando el momento no lo dice. */
       signing: SigningKind | null;
-      /** Los elementos del lote local, o `null` cuando no lo es. */
-      items: readonly LocalBatchItem[] | null;
+      /** Los elementos del lote local como documentos, o `null` cuando no lo es. */
+      items: readonly ReceivedDocument[] | null;
       /** Los que la sede acepta, ya filtrados por el backend. */
       certificates: readonly Certificate[];
       /**
@@ -367,6 +405,14 @@ export interface SiteErrandPort {
   installLocalCa(): Promise<void>;
   /** Descarta el aviso del cliente web antiguo; el trámite sigue esperando. */
   dismissWarning(): Promise<void>;
+  /** Amplía la ventana del consentimiento a 1080 × 660 para ver los documentos, o la devuelve a su tamaño. */
+  expandWindow(expanded: boolean): Promise<void>;
+  /** Guarda tal cual el documento, donde elija la persona con el diálogo del sistema. */
+  downloadDocument(handle: string): Promise<void>;
+  /** Guarda un `.zip` con los documentos del consentimiento y su `SHA256SUMS`. */
+  downloadAll(): Promise<void>;
+  /** Abre una copia temporal del documento con la aplicación del sistema; el backend se niega si no reconoce el tipo. */
+  openWith(handle: string): Promise<void>;
 }
 
 /**
@@ -388,6 +434,10 @@ export function noErrand(): SiteErrandPort {
     installCertificate: async () => {},
     installLocalCa: async () => {},
     dismissWarning: async () => {},
+    expandWindow: async () => {},
+    downloadDocument: async () => {},
+    downloadAll: async () => {},
+    openWith: async () => {},
   };
 }
 

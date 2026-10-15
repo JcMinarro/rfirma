@@ -6,20 +6,24 @@ import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import type { StoreSecret } from "../signing/secret";
 import type { PdfDocument } from "../viewer/pdf";
 import type {
+  DocumentType,
   Errand,
   ErrandStage,
+  LocalBatchItem,
   MarkedArea,
   SiteDocument,
   SiteErrandPort,
   SiteOutcome,
 } from "./errand";
 import {
+  batchDocumentOf,
   documentInPlay,
   documentOf,
   errandOf,
   refusedBy,
   refusedByTheBatch,
 } from "./errandConversion";
+import type { DocumentContent } from "./received";
 import type {
   DescribedDocument,
   PortalResult,
@@ -128,6 +132,16 @@ export interface SiteCommands {
   openDocument(id: string): Promise<PdfDocument | null>;
   /** Las firmas que ya trae el documento, igual que pide `journey/usePreviousSignatures.ts` en escritorio. */
   previousSignatures(id: string): Promise<PreviousSignaturesReport>;
+  /** Lo que el visor de la ampliada pinta del documento, leído por su asa según el tipo detectado. */
+  readContent(id: string, detected: DocumentType): Promise<DocumentContent>;
+  /** `site_expand_window`: amplía la ventana del consentimiento o la devuelve a su tamaño. */
+  expandWindow(expanded: boolean): Promise<void>;
+  /** `site_download_document`: guarda el documento tal cual donde elija la persona. */
+  downloadDocument(handle: string): Promise<void>;
+  /** `site_download_all`: guarda un `.zip` con los documentos y su `SHA256SUMS`. */
+  downloadAll(): Promise<void>;
+  /** `site_open_with`: abre una copia del documento con la aplicación del sistema. */
+  openWith(handle: string): Promise<void>;
 }
 
 /**
@@ -245,6 +259,14 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
     await sign("");
   };
 
+  const readBatchItem = async (item: LocalBatchItem) => {
+    const [previousSignatures, content] = await Promise.all([
+      commands.previousSignatures(item.document),
+      commands.readContent(item.document, item.detected),
+    ]);
+    return batchDocumentOf(item, previousSignatures, content);
+  };
+
   const receive = async (view: SiteErrandView) => {
     const arrival = ++arrivals;
     // Un momento del backend manda sobre cualquier momento local: la sede ya
@@ -256,18 +278,26 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
       publish({ ...errandOf(view), stage: { kind: "marking", pdf } });
       return;
     }
+    if (view.stage.kind === "askingToSignTheLocalBatch") {
+      const documents = await Promise.all(view.stage.items.map(readBatchItem));
+      if (arrival !== arrivals) return;
+      publish(errandOf(view, null, documents));
+      consentWithoutAsking(view.stage);
+      return;
+    }
     if (view.stage.kind !== "askingToSign") {
       publish(errandOf(view));
       void openPortal(view.stage, arrival);
       consentWithoutAsking(view.stage);
       return;
     }
-    const [described, previousSignatures] = await Promise.all([
+    const [described, previousSignatures, content] = await Promise.all([
       commands.describeDocument(view.stage.document),
       commands.previousSignatures(view.stage.document),
+      commands.readContent(view.stage.document, view.stage.detected),
     ]);
     if (arrival !== arrivals) return;
-    publish(errandOf(view, documentOf(described, view.stage.round, previousSignatures)));
+    publish(errandOf(view, documentOf(described, view.stage, previousSignatures, content)));
     consentWithoutAsking(view.stage);
   };
 
@@ -384,5 +414,13 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
     installLocalCa: () => commands.installLocalCa(),
 
     dismissWarning: () => commands.dismissWarning(),
+
+    expandWindow: (expanded) => commands.expandWindow(expanded),
+
+    downloadDocument: (handle) => commands.downloadDocument(handle),
+
+    downloadAll: () => commands.downloadAll(),
+
+    openWith: (handle) => commands.openWith(handle),
   };
 }

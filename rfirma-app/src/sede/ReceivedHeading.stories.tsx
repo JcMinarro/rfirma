@@ -1,8 +1,8 @@
-//! Las historias de `ReceivedHeading`, el recuento de lo que la sede manda a firmar con su descarga: documentos, referencias, reto y lote remoto.
+//! Las historias de `ReceivedHeading`, el recuento de lo que la sede manda a firmar con su descarga: documentos y lote remoto.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReceivedHeading } from "./ReceivedHeading";
-import { BATCH, ONE_DIGEST, REMOTE_BATCH, receivedActions } from "./testing/fixtures/received";
+import { BATCH, REMOTE_BATCH, receivedActions } from "./testing/fixtures/received";
 
 const meta = {
   title: "Dominio/Sede/ReceivedHeading",
@@ -34,7 +34,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Documents: Story = {};
-
-export const Digests: Story = { args: { received: ONE_DIGEST } };
 
 export const RemoteBatch: Story = { args: { received: REMOTE_BATCH } };

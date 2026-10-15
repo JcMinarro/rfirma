@@ -38,6 +38,7 @@ fn asking_with(label: &str) -> Moment {
             status: CertificateStatus::Valid { not_after: 0 },
             remembered: false,
         }],
+        not_accepted: 0,
     }
 }
 

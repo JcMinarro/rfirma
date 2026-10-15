@@ -1,4 +1,4 @@
-//! Detector puro por cabecera: «PDF / factura / XML / binario», sin nombrar formatos de firma.
+//! Detector puro por cabecera: la forma que decide el formato de firma y el tipo de un documento de la sede, sin fiarse de su nombre (ADR-0050).
 
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -73,6 +73,166 @@ pub fn shape_of(document: &[u8]) -> DetectedShape {
         Some(b'<') => DetectedShape::Xml,
         _ => DetectedShape::Binary,
     }
+}
+
+/// El tipo de un documento según sus bytes, del que salen su extensión y si se abre fuera (ADR-0050).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DocumentType {
+    /// Un PDF.
+    Pdf,
+    /// Un XML, factura electrónica incluida.
+    Xml,
+    /// Una imagen PNG.
+    Png,
+    /// Una imagen JPEG.
+    Jpeg,
+    /// Una imagen GIF.
+    Gif,
+    /// Una imagen WebP.
+    Webp,
+    /// Un texto de OpenDocument.
+    Odt,
+    /// Una hoja de cálculo de OpenDocument.
+    Ods,
+    /// Una presentación de OpenDocument.
+    Odp,
+    /// Un documento de Word.
+    Docx,
+    /// Una hoja de cálculo de Excel.
+    Xlsx,
+    /// Una presentación de PowerPoint.
+    Pptx,
+    /// Un `.zip` que no es ninguno de los anteriores.
+    Zip,
+    /// Texto UTF-8 sin caracteres de control.
+    Text,
+    /// Nada que rFirma reconozca.
+    Unknown,
+}
+
+impl DocumentType {
+    /// La extensión con la que el sistema recibe el documento.
+    pub fn extension(self) -> &'static str {
+        match self {
+            Self::Pdf => "pdf",
+            Self::Xml => "xml",
+            Self::Png => "png",
+            Self::Jpeg => "jpg",
+            Self::Gif => "gif",
+            Self::Webp => "webp",
+            Self::Odt => "odt",
+            Self::Ods => "ods",
+            Self::Odp => "odp",
+            Self::Docx => "docx",
+            Self::Xlsx => "xlsx",
+            Self::Pptx => "pptx",
+            Self::Zip => "zip",
+            Self::Text => "txt",
+            Self::Unknown => "bin",
+        }
+    }
+
+    /// Si rFirma reconoce el tipo: lo que no, no se abre con otra aplicación.
+    pub fn is_recognised(self) -> bool {
+        self != Self::Unknown
+    }
+}
+
+const ZIP_HEADER: &[u8] = b"PK\x03\x04";
+const ODF_MIMETYPE: &[u8] = b"mimetypeapplication/vnd.oasis.opendocument.";
+
+/// El tipo del documento, mirando solo sus bytes.
+pub fn type_of(document: &[u8]) -> DocumentType {
+    if let Some(image) = image_type_of(document) {
+        return image;
+    }
+    if document.starts_with(ZIP_HEADER) {
+        return zip_type_of(document);
+    }
+    match shape_of(document) {
+        DetectedShape::Pdf => DocumentType::Pdf,
+        DetectedShape::Xml | DetectedShape::Invoice => DocumentType::Xml,
+        DetectedShape::Binary if is_plain_text(document) => DocumentType::Text,
+        DetectedShape::Binary => DocumentType::Unknown,
+    }
+}
+
+fn image_type_of(document: &[u8]) -> Option<DocumentType> {
+    if document.starts_with(b"\x89PNG\r\n\x1a\n") {
+        Some(DocumentType::Png)
+    } else if document.starts_with(&[0xff, 0xd8, 0xff]) {
+        Some(DocumentType::Jpeg)
+    } else if document.starts_with(b"GIF87a") || document.starts_with(b"GIF89a") {
+        Some(DocumentType::Gif)
+    } else if document.starts_with(b"RIFF") && document.get(8..12) == Some(b"WEBP") {
+        Some(DocumentType::Webp)
+    } else {
+        None
+    }
+}
+
+/// Un ODF abre con su `mimetype` sin comprimir; un OOXML se reconoce por la carpeta de su parte principal.
+fn zip_type_of(document: &[u8]) -> DocumentType {
+    if let Some(kind) = document
+        .get(30..)
+        .and_then(|rest| rest.strip_prefix(ODF_MIMETYPE))
+    {
+        if kind.starts_with(b"text") {
+            return DocumentType::Odt;
+        }
+        if kind.starts_with(b"spreadsheet") {
+            return DocumentType::Ods;
+        }
+        if kind.starts_with(b"presentation") {
+            return DocumentType::Odp;
+        }
+    }
+    let names = zip_entry_names(document);
+    let has_folder = |folder: &[u8]| names.iter().any(|name| name.starts_with(folder));
+    if !names.contains(&b"[Content_Types].xml".as_slice()) {
+        DocumentType::Zip
+    } else if has_folder(b"word/") {
+        DocumentType::Docx
+    } else if has_folder(b"xl/") {
+        DocumentType::Xlsx
+    } else if has_folder(b"ppt/") {
+        DocumentType::Pptx
+    } else {
+        DocumentType::Zip
+    }
+}
+
+fn zip_entry_names(document: &[u8]) -> Vec<&[u8]> {
+    let mut names = Vec::new();
+    let mut rest = document;
+    while let Some(start) = find(rest, ZIP_HEADER) {
+        let header = &rest[start..];
+        let Some(length) = header
+            .get(26..28)
+            .map(|bytes| usize::from(u16::from_le_bytes([bytes[0], bytes[1]])))
+        else {
+            break;
+        };
+        if let Some(name) = header.get(30..30 + length) {
+            names.push(name);
+        }
+        rest = &header[ZIP_HEADER.len()..];
+    }
+    names
+}
+
+fn find(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    haystack
+        .windows(needle.len())
+        .position(|window| window == needle)
+}
+
+fn is_plain_text(document: &[u8]) -> bool {
+    !document.is_empty()
+        && std::str::from_utf8(document).is_ok_and(|text| {
+            text.chars()
+                .all(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r' | '\u{c}'))
+        })
 }
 
 /// Comprueba si los datos contienen una estructura de firma previa reconocible.

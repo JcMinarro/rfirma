@@ -1303,6 +1303,15 @@ msgstr "Tras permitir, volve á sede e preme Reintentar."
 msgid "sede.consent.untitled"
 msgstr "Un PDF sen título"
 
+msgid "sede.consent.untitledXml"
+msgstr "Un XML sen título"
+
+msgid "sede.consent.untitledImage"
+msgstr "Unha imaxe sen título"
+
+msgid "sede.consent.untitledDocument"
+msgstr "Un documento sen título"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Enviaranse o teu nome, o teu NIF, o emisor do certificado e o seu número de "
@@ -1490,22 +1499,15 @@ msgstr "Esta sede usa un método de sinatura pouco seguro"
 msgid "sede.received.signAnyway"
 msgstr "Asinar igualmente"
 
-#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
-msgid "sede.received.challenge"
-msgstr "Vas asinar un reto de autenticación"
-
-#. Huellas que calculó la sede: se firma la referencia, no un documento.
-msgid "sede.received.digests"
-msgid_plural "sede.received.digests"
-msgstr[0] "Vas asinar 1 referencia"
-msgstr[1] "Vas asinar {{count}} referencias"
-msgstr[2] "Vas asinar {{count}} referencias"
-
 msgid "sede.received.download"
 msgstr "Descargar"
 
 msgid "sede.received.downloadAll"
 msgstr "Descargar todo"
+
+#. La ayuda de «Descargar» con un solo documento: se guarda tal cual, sin .zip.
+msgid "sede.received.downloadTitle"
+msgstr "O documento tal cal, sen cambios"
 
 #. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
 msgid "sede.received.downloadAllTitle"
@@ -1513,12 +1515,6 @@ msgid_plural "sede.received.downloadAllTitle"
 msgstr[0] "O documento e a súa pegada SHA-256, nun .zip"
 msgstr[1] "Os {{count}} documentos e as súas pegadas SHA-256, nun .zip"
 msgstr[2] "Os {{count}} documentos e as súas pegadas SHA-256, nun .zip"
-
-msgid "sede.received.downloadDigests"
-msgstr "Descargar pegadas"
-
-msgid "sede.received.downloadDigestsTitle"
-msgstr "As pegadas e o seu algoritmo, nun .txt"
 
 #. {{name}} es el nombre del documento.
 msgid "sede.received.actionsOf"

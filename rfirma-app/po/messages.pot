@@ -1283,6 +1283,15 @@ msgstr ""
 msgid "sede.consent.untitled"
 msgstr ""
 
+msgid "sede.consent.untitledXml"
+msgstr ""
+
+msgid "sede.consent.untitledImage"
+msgstr ""
+
+msgid "sede.consent.untitledDocument"
+msgstr ""
+
 msgid "sede.consent.willSend"
 msgstr ""
 
@@ -1453,21 +1462,14 @@ msgstr ""
 msgid "sede.received.signAnyway"
 msgstr ""
 
-#. La sede pide firmar un reto de autenticación: no hay documento que ver ni descargar.
-msgid "sede.received.challenge"
-msgstr ""
-
-#. Huellas que calculó la sede: se firma la referencia, no un documento.
-msgid "sede.received.digests"
-msgid_plural "sede.received.digests"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
 msgid "sede.received.download"
 msgstr ""
 
 msgid "sede.received.downloadAll"
+msgstr ""
+
+#. La ayuda de «Descargar» con un solo documento: se guarda tal cual, sin .zip.
+msgid "sede.received.downloadTitle"
 msgstr ""
 
 #. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
@@ -1476,12 +1478,6 @@ msgid_plural "sede.received.downloadAllTitle"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-
-msgid "sede.received.downloadDigests"
-msgstr ""
-
-msgid "sede.received.downloadDigestsTitle"
-msgstr ""
 
 #. {{name}} es el nombre del documento.
 msgid "sede.received.actionsOf"

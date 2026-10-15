@@ -82,7 +82,7 @@ fn the_whole_signature_errand_over(
     );
     assert_eq!(
         std::fs::read(
-            documents::opened_document(&opened, &consent.document)
+            documents::opened_document(&opened, &consent.document.handle)
                 .expect("el documento esta en la mano")
                 .reading_path()
         )
@@ -320,7 +320,7 @@ fn the_document_a_site_sends_leaves_no_trace_at_all() {
     };
     assert_eq!(consent.round, SignatureRound::Again);
     assert!(
-        !documents::opened_document(&opened, &consent.document)
+        !documents::opened_document(&opened, &consent.document.handle)
             .expect("el documento esta en la mano")
             .is_remembered(),
         "el documento de la sede entra por la puerta que no recuerda"

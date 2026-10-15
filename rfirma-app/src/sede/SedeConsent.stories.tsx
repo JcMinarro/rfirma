@@ -1,4 +1,4 @@
-//! Las historias del consentimiento de sede: la ventana compacta con lo recibido, que es la real, y la ampliada con el visor, que sigue como diseño provisional.
+//! Las historias del consentimiento de sede: la ventana compacta con lo recibido y la ampliada con el visor, que abre «Ver documentos».
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
@@ -6,13 +6,11 @@ import { sedeAreaMomentMeta, sedeMomentMeta } from "../../.storybook/decorators/
 import type { ReaderStatus } from "../signing/certificate";
 import type { SameSignerNotice } from "../signing/sameSignerNotice";
 import type { PreviousSignaturesState, Received } from "./received";
-import { SedeConsentCompact, SedeConsentExpanded } from "./SedeReceivedConsent";
+import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import {
   BATCH_DOCUMENTS,
-  CHALLENGE,
   DESIGN_CERTIFICATES,
   LOCAL_BATCH_DOCUMENTS,
-  ONE_DIGEST,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   receivedActions,
@@ -30,7 +28,7 @@ const DOCUMENTS = {
   localBatch: LOCAL_BATCH_DOCUMENTS,
 };
 
-const WITHOUT_DOCUMENTS = { digest: ONE_DIGEST, challenge: CHALLENGE, remoteBatch: REMOTE_BATCH };
+const WITHOUT_DOCUMENTS = { remoteBatch: REMOTE_BATCH };
 
 const TERMINAL_DOCUMENT = "/home/ada/contratos/convenio.pdf";
 
@@ -108,29 +106,23 @@ function ExpandableConsentDesign({
 
   const countdownStart = `${countdown}-${sha1ToAllow}`;
 
-  return view === "compact" ? (
-    <SedeConsentCompact
-      key={countdownStart}
+  return (
+    <SedeReceivedConsent
+      key={`${view}-${countdownStart}`}
       {...basics}
       received={shown}
       asks={errand === "identity" ? "identity" : "signature"}
       terminalDocument={errand === "terminal" ? TERMINAL_DOCUMENT : undefined}
-      onDownload={pendingActions ? receivedActions.onDownload : undefined}
-      onExpand={pendingActions ? onExpand : undefined}
-    />
-  ) : (
-    <SedeConsentExpanded
-      key={countdownStart}
-      {...basics}
-      documents={shown.kind === "documents" ? shown.documents : []}
-      actions={receivedActions}
+      actions={pendingActions ? receivedActions : { onCopy: receivedActions.onCopy }}
+      onExpandWindow={onExpandWindow}
+      defaultExpanded={view === "expanded"}
       defaultDocument={defaultDocument}
       defaultSignaturesOpen={defaultSignaturesOpen}
     />
   );
 }
 
-const onExpand = fn();
+const onExpandWindow = fn();
 
 const hidden = { table: { disable: true } };
 
@@ -171,8 +163,6 @@ const meta = {
         one: "Un documento",
         untitled: "Un documento sin título",
         localBatch: "Lote local",
-        digest: "Una huella",
-        challenge: "Un reto de autenticación",
         remoteBatch: "Lote remoto",
       },
     },
@@ -222,7 +212,7 @@ const meta = {
     countdown: { description: "El botón de firmar espera unos segundos antes de habilitarse" },
     pendingActions: {
       description:
-        "«Ver documentos» y la descarga en la compacta: diseño pendiente de #1920, que la ventana real todavía no tiene",
+        "«Descargar», «Abrir con…» y «Guardar copia»: diseño pendiente que la ventana real todavía no tiene",
     },
   },
   parameters: {
@@ -230,8 +220,8 @@ const meta = {
     docs: {
       description: {
         component: [
-          "El consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento; desde una orden de terminal, el nombre del documento en vez del recuento. La compacta real no tiene todavía ni descarga ni «Ver documentos»: el control de #1920 los enseña como diseño pendiente. En el diseño provisional de la vista ampliada, que abriría «Ver documentos», la ventana pasa a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» solo con su icono. Lo que ya firmaste tú lo dice la franja del documento.",
-          "Úsalo como referencia del momento 2 con documentos, huellas o un reto, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
+          "El consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento; desde una orden de terminal, el nombre del documento en vez del recuento. «Ver documentos», en el hueco izquierdo del pie, lleva la ventana a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» en el mismo sitio, solo con su icono. Lo que ya firmaste tú lo dice la franja del documento. La descarga y «Abrir con…» son diseño pendiente: los enseña el control de acciones pendientes.",
+          "Úsalo como referencia del momento 2 con documentos, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
           "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar igualmente», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
           "No enseñes del lote remoto más que su recuento, ni del reto más que qué es; no digas el tipo del documento ni si se firma, se cofirma o se contrafirma; no pongas ayuda bajo la tarjeta ilegible, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
         ].join("\n\n"),
@@ -247,23 +237,12 @@ type Story = StoryObj<typeof meta>;
 const compact = sedeMomentMeta.decorators;
 
 const expanded = {
-  parameters: {
-    docs: {
-      description: { story: "Diseño provisional de la vista ampliada, que no es la ventana real." },
-    },
-  },
   decorators: sedeAreaMomentMeta.decorators,
   argTypes: {
     errand: hidden,
-    pendingActions: hidden,
     received: { control: "select", options: Object.keys(DOCUMENTS) },
   },
 } satisfies Story;
-
-export const CompactDigest: Story = {
-  decorators: compact,
-  args: { withOrigin: false, received: "digest" },
-};
 
 export const CompactRemoteBatch: Story = { decorators: compact, args: { received: "remoteBatch" } };
 
@@ -273,34 +252,42 @@ export const CompactSeveralDocuments: Story = { decorators: compact };
 
 export const CompactCountdown: Story = { decorators: compact, args: { countdown: true } };
 
-export const ExpandedSeveralDocuments: Story = { ...expanded, args: { view: "expanded" } };
+export const ExpandedSeveralDocuments: Story = {
+  ...expanded,
+  args: { view: "expanded", pendingActions: true },
+};
 
 export const ExpandedOneDocument: Story = {
   ...expanded,
-  args: { view: "expanded", received: "one" },
+  args: { view: "expanded", pendingActions: true, received: "one" },
 };
 
 export const ExpandedXmlDocument: Story = {
   ...expanded,
-  args: { view: "expanded", defaultDocument: "baremo" },
+  args: { view: "expanded", pendingActions: true, defaultDocument: "baremo" },
 };
 
 export const ExpandedImageDocument: Story = {
   ...expanded,
-  args: { view: "expanded", defaultDocument: "poster" },
+  args: { view: "expanded", pendingActions: true, defaultDocument: "poster" },
 };
 
 export const ExpandedOtherDocument: Story = {
   ...expanded,
-  args: { view: "expanded", defaultDocument: "beneficiaries" },
+  args: { view: "expanded", pendingActions: true, defaultDocument: "beneficiaries" },
 };
 
 export const ExpandedPadesSignatures: Story = {
   ...expanded,
-  args: { view: "expanded", defaultSignaturesOpen: true },
+  args: { view: "expanded", pendingActions: true, defaultSignaturesOpen: true },
 };
 
 export const ExpandedXadesSignatures: Story = {
   ...expanded,
-  args: { view: "expanded", defaultDocument: "baremo", defaultSignaturesOpen: true },
+  args: {
+    view: "expanded",
+    pendingActions: true,
+    defaultDocument: "baremo",
+    defaultSignaturesOpen: true,
+  },
 };

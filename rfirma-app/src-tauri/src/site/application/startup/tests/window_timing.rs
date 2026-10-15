@@ -66,6 +66,7 @@ fn immediate_delivery_of_the_operation_preserves_its_moment_when_opening_the_win
 
     let delivered_moment = Moment::AskingForConsent {
         certificates: Vec::new(),
+        not_accepted: 0,
     };
 
     let live_for_delivery = Arc::clone(&live);
@@ -103,10 +104,15 @@ fn a_relay_launch_with_fileid_and_stservlet_in_url_preserves_the_delivered_momen
     let relay_url = "afirma://sign?id=TX1&fileid=FID1&rtservlet=https://example.com/retrieve&key=12345678&stservlet=https://example.com/store";
 
     let delivered_moment = Moment::AskingToSign {
-        document: "doc.pdf".to_owned(),
+        document: crate::site::application::errand::ReceivedDocument::kept_as(
+            "doc.pdf".to_owned(),
+            None,
+            b"%PDF-1.7\n",
+        ),
         format: crate::signing::domain::bridge::Format::Pades,
         round: crate::site::domain::protocol::SignatureRound::First,
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -156,10 +162,15 @@ fn a_relay_launch_with_fileid_and_parameters_xml_preserves_the_delivered_moment(
     let relay_url = "afirma://sign?fileid=FID2&rtservlet=https://example.com/retrieve&key=12345678";
 
     let delivered_moment = Moment::AskingToSign {
-        document: "doc.pdf".to_owned(),
+        document: crate::site::application::errand::ReceivedDocument::kept_as(
+            "doc.pdf".to_owned(),
+            None,
+            b"%PDF-1.7\n",
+        ),
         format: crate::signing::domain::bridge::Format::Pades,
         round: crate::site::domain::protocol::SignatureRound::First,
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -210,6 +221,7 @@ fn a_relay_launch_is_attended_even_without_a_local_ca() {
 
     let delivered_moment = Moment::AskingForConsent {
         certificates: Vec::new(),
+        not_accepted: 0,
     };
 
     let live_for_delivery = Arc::clone(&live);

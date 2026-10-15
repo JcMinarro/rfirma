@@ -4,19 +4,20 @@ import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
 import { consentActionKey, type Errand, type MarkedArea } from "./errand";
-import { receivedOf } from "./received";
+import { receivedActions, receivedOf } from "./received";
 import { SedeAreaMarking } from "./SedeAreaMarking";
 import { SedeEnding } from "./SedeEnding";
 import { SedeOutdatedPage, SedeValidatorQuestion } from "./SedeGuards";
 import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
-import { SedeConsentCompact } from "./SedeReceivedConsent";
+import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import "./SedeWindow.css";
 
 export interface SedeViewProps {
   errand: Errand;
   consentCountdown?: boolean;
   installFailure?: NamedFailure | null;
+  receivedFailure?: NamedFailure | null;
   reader?: ReaderStatus;
   liveCertificates?: readonly Certificate[] | null;
   onConsent: (certificateId: string) => void;
@@ -29,6 +30,10 @@ export interface SedeViewProps {
   onInstallLocalCa: () => void;
   onDismissWarning: () => void;
   onOpenHelp?: () => void;
+  onExpandWindow: (expanded: boolean) => void;
+  onDownloadDocument: (handle: string) => void;
+  onDownloadAll: () => void;
+  onOpenWith: (handle: string) => void;
 }
 
 /**
@@ -41,6 +46,7 @@ export function SedeView({
   errand,
   consentCountdown = true,
   installFailure = null,
+  receivedFailure = null,
   reader = UNAVAILABLE_READER,
   liveCertificates = null,
   onConsent,
@@ -53,10 +59,20 @@ export function SedeView({
   onInstallLocalCa,
   onDismissWarning,
   onOpenHelp,
+  onExpandWindow,
+  onDownloadDocument,
+  onDownloadAll,
+  onOpenWith,
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
   const asks = consentActionKey(errand.operation) === "identify" ? "identity" : "signature";
+  const received = stage.kind === "consent" ? receivedOf(stage) : null;
+  const actions = receivedActions(received, {
+    downloadDocument: onDownloadDocument,
+    downloadAll: onDownloadAll,
+    openWith: onOpenWith,
+  });
 
   return (
     <div className="sede-window__frame">
@@ -88,17 +104,20 @@ export function SedeView({
           />
         )}
         {stage.kind === "consent" && (
-          <SedeConsentCompact
+          <SedeReceivedConsent
             origin={errand.origin}
             asks={asks}
             terminalDocument={errand.terminalOrder?.documentPath}
-            received={receivedOf(stage)}
+            received={received}
             certificates={stage.certificates}
             liveCertificates={liveCertificates}
             reader={reader}
             narrowed={stage.narrowed}
             sha1ToAllow={stage.sha1ToAllow}
             countdown={consentCountdown}
+            actions={actions}
+            failure={receivedFailure}
+            onExpandWindow={onExpandWindow}
             onConsent={onConsent}
             onCancel={onCancel}
           />

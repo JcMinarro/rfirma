@@ -4,8 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import type { Errand } from "./errand";
 import { errandOf, refusedBy } from "./errandConversion";
-import type { SiteErrandView } from "./siteErrandView";
-import { ASKING_TO_SIGN, certificate, watched } from "./testing/fixtures/siteErrands";
+import type { ReceivedDocument } from "./received";
+import type { SiteErrandView, SiteStageView } from "./siteErrandView";
+import {
+  ASKING_TO_SIGN,
+  certificate,
+  DOCUMENT_SHA256,
+  opened,
+  watched,
+} from "./testing/fixtures/siteErrands";
 
 /**
  * Grada A: la conversión pura del momento del backend al `Errand` que la
@@ -25,7 +32,12 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
   it("turns an identity request into a consent with no document", () => {
     const view: SiteErrandView = {
       origin: "sede.ejemplo.gob.es",
-      stage: { kind: "askingForConsent", certificates: [certificate()] },
+      stage: {
+        kind: "askingForConsent",
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+      },
     };
 
     expect(errandOf(view)).toEqual<Errand>({
@@ -52,6 +64,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         kind: "askingToSignTheBatch",
         signs: 3,
         certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
         alreadyChosen: null,
         withoutAsking: false,
         sha1Allowed: false,
@@ -188,6 +202,49 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     expect(errandOf(view).stage).toEqual({ kind: "saving", filename: null });
   });
 
+  it.each<[string, SiteStageView]>([
+    [
+      "an identity request",
+      { kind: "askingForConsent", certificates: [certificate()], narrowed: true, notAccepted: 2 },
+    ],
+    [
+      "a signature request",
+      { ...ASKING_TO_SIGN.stage, narrowed: true, notAccepted: 2 } as SiteStageView,
+    ],
+    [
+      "a remote batch",
+      {
+        kind: "askingToSignTheBatch",
+        signs: 3,
+        certificates: [certificate()],
+        narrowed: true,
+        notAccepted: 2,
+        alreadyChosen: null,
+        withoutAsking: false,
+        sha1Allowed: false,
+        sha1ToAllow: false,
+      },
+    ],
+    [
+      "a local batch",
+      {
+        kind: "askingToSignTheLocalBatch",
+        items: [],
+        certificates: [certificate()],
+        narrowed: true,
+        notAccepted: 2,
+        alreadyChosen: null,
+        withoutAsking: false,
+        sha1Allowed: false,
+        sha1ToAllow: false,
+      },
+    ],
+  ])("carries that the site narrowed the certificates in %s", (_name, stage) => {
+    const errand = errandOf({ origin: "sede.ejemplo.gob.es", stage });
+
+    expect(errand.stage).toMatchObject({ kind: "consent", narrowed: true });
+  });
+
   it("turns a load request into one file or several", () => {
     const one: SiteErrandView = {
       origin: "sede.ejemplo.gob.es",
@@ -211,11 +268,16 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "consent",
           document: {
+            handle: "asa-opaca-1",
+            name: "Solicitud.pdf",
+            detected: "pdf",
+            sha256: DOCUMENT_SHA256,
             title: "Solicitud",
             pages: 3,
             sizeBytes: 4096,
             round: { kind: "cosign" },
             previousSignatures: NO_PREVIOUS_SIGNATURES,
+            content: { kind: "pdf", pdf: opened },
           },
           signs: null,
           signing: "pdf",
@@ -229,6 +291,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     );
     expect(calls.describeDocument).toHaveBeenCalledWith("asa-opaca-1");
     expect(calls.previousSignatures).toHaveBeenCalledWith("asa-opaca-1");
+    expect(calls.readContent).toHaveBeenCalledWith("asa-opaca-1", "pdf");
   });
 
   it("turns the confirmation the original asks for into the confirming stage", async () => {
@@ -256,9 +319,14 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "askingToSign",
           document: "asa-opaca-1",
+          name: null,
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           signing,
           round: { kind: "cosign" },
           certificates: [certificate()],
+          narrowed: false,
+          notAccepted: 0,
           alreadyChosen: null,
           withoutAsking: false,
           sha1Allowed: false,
@@ -293,9 +361,14 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         stage: {
           kind: "askingToSign",
           document: "asa-opaca-1",
+          name: null,
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           signing: "pdf",
           round: { kind: "counter", target },
           certificates: [certificate()],
+          narrowed: false,
+          notAccepted: 0,
           alreadyChosen: null,
           withoutAsking: false,
           sha1Allowed: false,
@@ -314,47 +387,64 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     },
   );
 
-  it("consents without a card when the document cannot be read", async () => {
+  it("consents with the name, type and hash when the document cannot be read", async () => {
     const { push, last } = watched({ describeDocument: async () => null });
 
     push(ASKING_TO_SIGN);
 
-    await vi.waitFor(() => expect(last()?.stage).toMatchObject({ document: null }));
+    await vi.waitFor(() =>
+      expect(last()?.stage).toMatchObject({
+        document: { name: "Solicitud.pdf", detected: "pdf", sha256: DOCUMENT_SHA256, title: null },
+      }),
+    );
   });
 });
 
-describe("el lote local: el resumen de cada elemento", () => {
-  it("turns the local batch moment into a consent with the summary of each element", () => {
-    const view: SiteErrandView = {
-      origin: "sede.ejemplo.gob.es",
-      stage: {
-        kind: "askingToSignTheLocalBatch",
-        items: [
-          { id: "001", signing: "pdf", round: { kind: "sign" } },
-          { id: "002", signing: "challenge", round: { kind: "cosign" } },
-          { id: "003", signing: "xml", round: { kind: "sign" } },
-        ],
-        certificates: [certificate()],
-        alreadyChosen: null,
-        withoutAsking: false,
-        sha1Allowed: false,
-        sha1ToAllow: false,
-      },
-    };
+describe("el lote local: cada elemento como documento", () => {
+  const receivedDocument = (overrides: Partial<ReceivedDocument>): ReceivedDocument => ({
+    id: "001",
+    handle: "handle-001",
+    name: null,
+    content: { kind: "none" },
+    sha256: DOCUMENT_SHA256,
+    detected: "pdf",
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+    ...overrides,
+  });
+  const item = { signing: "pdf", round: { kind: "sign" }, sha256: DOCUMENT_SHA256 } as const;
+  const view: SiteErrandView = {
+    origin: "sede.ejemplo.gob.es",
+    stage: {
+      kind: "askingToSignTheLocalBatch",
+      items: [
+        { id: "001", document: "handle-001", name: "001", detected: "pdf", ...item },
+        { id: "002", document: "handle-002", name: null, detected: "unknown", ...item },
+      ],
+      certificates: [certificate()],
+      narrowed: false,
+      notAccepted: 0,
+      alreadyChosen: null,
+      withoutAsking: false,
+      sha1Allowed: false,
+      sha1ToAllow: false,
+    },
+  };
 
-    expect(errandOf(view)).toEqual<Errand>({
+  it("turns the local batch moment into a consent whose items are the documents it was given", () => {
+    const documents = [
+      receivedDocument({ id: "001", name: "001", detected: "pdf" }),
+      receivedDocument({ id: "002", handle: "handle-002", name: null, detected: "unknown" }),
+    ];
+
+    expect(errandOf(view, null, documents)).toEqual<Errand>({
       origin: "sede.ejemplo.gob.es",
       operation: "sign",
       stage: {
         kind: "consent",
         document: null,
-        signs: 3,
+        signs: 2,
         signing: null,
-        items: [
-          { id: "001", signing: "pdf", round: { kind: "sign" } },
-          { id: "002", signing: "challenge", round: { kind: "cosign" } },
-          { id: "003", signing: "xml", round: { kind: "sign" } },
-        ],
+        items: documents,
         certificates: [certificate()],
         narrowed: false,
         sha1Allowed: false,

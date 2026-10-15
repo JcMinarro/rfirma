@@ -1,10 +1,13 @@
-//! El consentimiento de sede con lo que la sede manda a firmar, en sus dos formas: la compacta de 520 × 420, la de la ventana real, y la ampliada de 1080 × 660 con el visor, que hoy solo pintan las historias.
+//! El consentimiento de sede con lo que la sede manda a firmar, en sus dos formas: la compacta de 520 × 420 y la ampliada de 1080 × 660 con el visor, que abre «Ver documentos».
 
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Admonition } from "../design-system/Admonition";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { useDefaultButton } from "../design-system/useDefaultButton";
+import type { NamedFailure } from "../errors/classify";
+import { errorText } from "../errors/errorMessage";
 import { CertificateSelect } from "../signing/CertificateSelect";
 import {
   type Certificate,
@@ -42,36 +45,126 @@ interface ConsentBasics {
   onCancel: () => void;
 }
 
-/** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento, con su descarga si hay `onDownload`, y con documentos de una sede y `onExpand`, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
-export function SedeConsentCompact({
+/** El consentimiento con lo recibido: la compacta y, con documentos de una sede, la ampliada que abre «Ver documentos»; las dos comparten lo elegido y la cuenta atrás. */
+export function SedeReceivedConsent({
   received,
   terminalDocument,
-  onDownload,
-  onExpand,
+  actions,
+  failure = null,
+  onExpandWindow,
+  defaultExpanded = false,
+  defaultDocument,
+  defaultSignaturesOpen,
   ...basics
 }: ConsentBasics & {
   /** `null` cuando la sede pide los datos y no hay nada que firmar. */
   received: Received | null;
   /** La ruta de `-i` cuando la firma la pide una orden de terminal: sin descarga ni vista ampliada, porque el fichero ya es suyo. */
   terminalDocument?: string;
+  actions: ReceivedActions;
+  /** Por qué no se descargó o no se abrió lo recibido la última vez que se pidió. */
+  failure?: NamedFailure | null;
+  /** Pide a la ventana ampliarse a 1080 × 660 o volver a su tamaño. */
+  onExpandWindow: (expanded: boolean) => void;
+  defaultExpanded?: boolean;
+  defaultDocument?: string;
+  defaultSignaturesOpen?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const viewable = viewableDocuments(received, terminalDocument, basics.asks);
+  const shownExpanded = expanded && viewable.length > 0;
+  const giveTheWindowBack = () => {
+    if (shownExpanded) onExpandWindow(false);
+  };
+  const consent = useConsent({
+    ...basics,
+    onConsent: (certificateId) => {
+      giveTheWindowBack();
+      basics.onConsent(certificateId);
+    },
+    onCancel: () => {
+      giveTheWindowBack();
+      basics.onCancel();
+    },
+  });
+  const expand = (next: boolean) => {
+    setExpanded(next);
+    onExpandWindow(next);
+  };
+
+  return shownExpanded ? (
+    <SedeConsentExpanded
+      origin={basics.origin}
+      sha1ToAllow={basics.sha1ToAllow}
+      consent={consent}
+      documents={viewable}
+      actions={actions}
+      failure={failure}
+      defaultDocument={defaultDocument}
+      defaultSignaturesOpen={defaultSignaturesOpen}
+      onCollapse={() => expand(false)}
+    />
+  ) : (
+    <SedeConsentCompact
+      origin={basics.origin}
+      asks={basics.asks}
+      sha1ToAllow={basics.sha1ToAllow}
+      consent={consent}
+      received={received}
+      terminalDocument={terminalDocument}
+      onDownload={actions.onDownload}
+      failure={failure}
+      documents={viewable.length}
+      onExpand={() => expand(true)}
+    />
+  );
+}
+
+/** Los documentos que se pueden ver en la ampliada: los de una sede que pide la firma, nunca los de una orden de terminal. */
+function viewableDocuments(
+  received: Received | null,
+  terminalDocument: string | undefined,
+  asks: ConsentBasics["asks"],
+): readonly ReceivedDocument[] {
+  if (received?.kind !== "documents" || terminalDocument !== undefined || asks === "identity") {
+    return [];
+  }
+  return received.documents;
+}
+
+type Consent = ReturnType<typeof useConsent>;
+
+/** La ventana compacta: el origen, el desplegable bajo él y, pegados al pie, el aviso y el recuento, con su descarga si hay `onDownload`, y con `documents`, «Ver documentos»; si pide los datos, lo que se envía en vez de lo recibido. */
+function SedeConsentCompact({
+  origin,
+  asks,
+  sha1ToAllow,
+  consent,
+  received,
+  terminalDocument,
+  onDownload,
+  failure,
+  documents,
+  onExpand,
+}: Pick<ConsentBasics, "origin" | "asks" | "sha1ToAllow"> & {
+  consent: Consent;
+  received: Received | null;
+  terminalDocument?: string;
   onDownload?: () => void;
-  onExpand?: () => void;
+  failure: NamedFailure | null;
+  documents: number;
+  onExpand: () => void;
 }) {
   const { t } = useTranslation();
-  const consent = useConsent(basics);
   const terminal = terminalDocument !== undefined;
-  const identity = basics.asks === "identity" || received === null;
-  const documents =
-    received?.kind === "documents" && !terminal && !identity && onExpand !== undefined
-      ? received.documents.length
-      : 0;
+  const identity = asks === "identity" || received === null;
 
   return (
     <SedeBody
       flush
       steadyFooter
       primary={consent.button}
-      onEscape={basics.onCancel}
+      onEscape={consent.onCancel}
       footer={
         <>
           {documents > 0 && (
@@ -91,12 +184,7 @@ export function SedeConsentCompact({
         </>
       }
     >
-      <ReceivedColumn
-        origin={basics.origin}
-        asks={basics.asks}
-        terminal={terminal}
-        certificate={consent.select}
-      >
+      <ReceivedColumn origin={origin} asks={asks} terminal={terminal} certificate={consent.select}>
         <div className="sede-received__overview">
           {identity ? (
             <p className="rf-prose sede-received__sends">{t("sede.consent.willSend")}</p>
@@ -105,13 +193,14 @@ export function SedeConsentCompact({
               <ReceivedSummary
                 documents={received.kind === "documents" ? received.documents : []}
                 certificate={consent.chosen}
-                sha1ToAllow={basics.sha1ToAllow}
+                sha1ToAllow={sha1ToAllow}
               />
               {terminal ? (
                 <TerminalDocumentHeading documentPath={terminalDocument} />
               ) : (
                 <ReceivedHeading received={received} onDownload={onDownload} />
               )}
+              {failure !== null && <ReceivedFailure failure={failure} />}
             </>
           )}
         </div>
@@ -121,22 +210,26 @@ export function SedeConsentCompact({
 }
 
 /** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 400 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
-export function SedeConsentExpanded({
+function SedeConsentExpanded({
+  origin,
+  sha1ToAllow,
+  consent,
   documents,
   actions,
+  failure,
   defaultDocument,
   defaultSignaturesOpen = false,
   onCollapse,
-  ...basics
-}: ConsentBasics & {
+}: Pick<ConsentBasics, "origin" | "sha1ToAllow"> & {
+  consent: Consent;
   documents: readonly ReceivedDocument[];
   actions: ReceivedActions;
+  failure: NamedFailure | null;
   defaultDocument?: string;
   defaultSignaturesOpen?: boolean;
-  onCollapse?: () => void;
+  onCollapse: () => void;
 }) {
   const { t } = useTranslation();
-  const consent = useConsent(basics);
   const [selected, setSelected] = useState(defaultDocument);
   const [signaturesOpen, setSignaturesOpen] = useState(defaultSignaturesOpen);
   const shown = documents.find((document) => document.id === selected) ?? documents[0];
@@ -161,7 +254,7 @@ export function SedeConsentExpanded({
           flush
           steadyFooter
           primary={consent.button}
-          onEscape={basics.onCancel}
+          onEscape={consent.onCancel}
           footer={
             <>
               <Button
@@ -177,11 +270,11 @@ export function SedeConsentExpanded({
             </>
           }
         >
-          <ReceivedColumn origin={basics.origin} certificate={consent.select}>
+          <ReceivedColumn origin={origin} certificate={consent.select}>
             <ReceivedSummary
               documents={documents}
               certificate={consent.chosen}
-              sha1ToAllow={basics.sha1ToAllow}
+              sha1ToAllow={sha1ToAllow}
               yoursOnly
             />
             <nav
@@ -193,6 +286,7 @@ export function SedeConsentExpanded({
                 onDownload={actions.onDownload}
                 withoutCount
               />
+              {failure !== null && <ReceivedFailure failure={failure} />}
               {shown !== undefined && (
                 <ReceivedList
                   documents={documents}
@@ -206,6 +300,18 @@ export function SedeConsentExpanded({
         </SedeBody>
       </div>
     </div>
+  );
+}
+
+/** El aviso en línea de lo recibido que no se pudo descargar ni abrir. */
+function ReceivedFailure({ failure }: { failure: NamedFailure }) {
+  const { t } = useTranslation();
+  const message = errorText(failure.situation, t);
+
+  return (
+    <Admonition tone="error" title={message.title}>
+      {message.body !== undefined && <p className="rf-body">{message.body}</p>}
+    </Admonition>
   );
 }
 
@@ -265,6 +371,7 @@ function useConsent({
   return {
     chosen,
     button,
+    onCancel,
     select: (
       <>
         <CertificateSelect

@@ -3,6 +3,8 @@
 mod area;
 mod closing;
 pub mod desk;
+mod download;
+mod open_with;
 pub mod outcome;
 mod pdf_password;
 pub mod readers;
@@ -44,10 +46,12 @@ pub use desk::{
     consent_to_sign_with_chosen_document, consent_to_the_batch, consent_to_the_confirmed_signature,
     consent_to_the_local_batch, ErrandDesk, Neighbours,
 };
+pub use download::{download_all, download_one, DownloadError};
+pub use open_with::{copy_to_open, CopyToOpenError};
 pub use outcome::{
     BatchConsent, ConfirmationConsent, ErrandStep, ForTheSiteServer, LoadCompletion,
     LoadingConsent, LocalBatchConsent, LocalBatchItem, Moment, NoCertificate, NoChannel,
-    PendingSignature, ProtocolCodec, SavingConsent, SigningConsent, SiteOutcome,
+    PendingSignature, ProtocolCodec, ReceivedDocument, SavingConsent, SigningConsent, SiteOutcome,
 };
 pub use readers::{after_the_readers, AfterTheReaders};
 pub use replies::{
@@ -102,7 +106,7 @@ fn remembered(live: &LiveErrand, step: ErrandStep) -> ErrandStep {
             live.remember_identity(filter.clone(), *sticky)
         }
         ErrandStep::AskingToSign(asked) => live.remember_signature(state::PendingSignature {
-            document: asked.document.clone(),
+            document: asked.document.handle.clone(),
             sha1_of_the_data: asked.sha1_of_the_data.clone(),
             filter: asked.filter.clone(),
             format: asked.format,
@@ -132,6 +136,11 @@ fn remembered(live: &LiveErrand, step: ErrandStep) -> ErrandStep {
             live.remember_the_local_batch(state::PendingLocalBatch {
                 request: consent.request.clone(),
                 batch: consent.batch.clone(),
+                documents: consent
+                    .items
+                    .iter()
+                    .map(|item| item.document.handle.clone())
+                    .collect(),
                 chosen: None,
             })
         }
@@ -356,6 +365,7 @@ pub fn finish_the_local_batch<E: FilterEngine, P: PolicyEngine>(
                 &chosen,
                 secret,
                 batch,
+                &pending.documents,
                 desk.neighbours.sha1_allowed() || live.sha1_allowed_once(),
             )
         })

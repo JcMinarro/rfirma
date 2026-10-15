@@ -66,7 +66,12 @@ describe("el punto de entrada de la ventana de sede", () => {
 
     pushErrand?.({
       origin: "sede.ejemplo.gob.es",
-      stage: { kind: "askingForConsent", certificates: [certificate()] },
+      stage: {
+        kind: "askingForConsent",
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+      },
     });
 
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());

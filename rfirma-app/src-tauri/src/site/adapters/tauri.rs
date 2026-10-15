@@ -87,6 +87,34 @@ pub fn site_mark_area(
     Ok(goes_on)
 }
 
+/// Amplía la ventana del consentimiento a la forma de ver los documentos, o la devuelve a su tamaño.
+#[tauri::command(async)]
+pub fn site_expand_window(expanded: bool, app_handle: tauri::AppHandle) {
+    site_window::expand_the_window(&app_handle, expanded);
+}
+
+/// Abre con la aplicación del sistema una copia temporal del documento de la sede, según el tipo que rFirma detecta en sus bytes (ADR-0050).
+#[tauri::command(async)]
+pub fn site_open_with(
+    document: String,
+    app_handle: tauri::AppHandle,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<(), Failure> {
+    use tauri_plugin_opener::OpenerExt;
+
+    let copy = site_window::with_the_desk(&app_handle, |desk, live| {
+        crate::site::application::errand::copy_to_open(desk, live, &document, &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        })
+    })?;
+    app_handle
+        .opener()
+        .open_path(copy.to_string_lossy(), None::<&str>)
+        .map_err(|error| Failure::new("unknown", error.to_string()))
+}
+
 /// Postfirma del trámite de sede y entrega del resultado a la sede, o el paso al guardado
 /// del portal si la firma venía de `signandsave`.
 #[tauri::command(async)]
@@ -344,6 +372,65 @@ pub fn site_load_files(
     })?;
     site_window::publish_what_moved(&app_handle, moved);
     Ok(delivered)
+}
+
+/// Las pistas del diálogo de guardado para lo que se descarga: su nombre y su extensión.
+fn dialog_clues_for_downloading(
+    download: &crate::site::domain::download::Download,
+) -> crate::documents::ports::DialogClues {
+    let clues = crate::documents::ports::DialogClues::new().with_filename(download.name.clone());
+    let clues = match download.name.rsplit_once('.') {
+        Some((_, extension)) => clues.with_filter(extension.to_uppercase(), &[extension]),
+        None => clues,
+    };
+    match this_home() {
+        Some(home) => clues.with_starting_folder(home),
+        None => clues,
+    }
+}
+
+/// Guarda tal cual, donde elija la persona, el documento del consentimiento tras el asa; `false` si cerró el diálogo.
+#[tauri::command(async)]
+pub fn site_download_document(
+    document: String,
+    site: State<'_, SiteRoot>,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<bool, Failure> {
+    Ok(crate::site::application::errand::download_one(
+        &site.errand,
+        &document,
+        &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        },
+        |download| {
+            site.portal
+                .save_file(&dialog_clues_for_downloading(download))
+        },
+        site.scratch.as_ref(),
+    )?)
+}
+
+/// Guarda donde elija la persona un `.zip` con los documentos del consentimiento y su `SHA256SUMS`; `false` si cerró el diálogo.
+#[tauri::command(async)]
+pub fn site_download_all(
+    site: State<'_, SiteRoot>,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> Result<bool, Failure> {
+    Ok(crate::site::application::errand::download_all(
+        &site.errand,
+        &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        },
+        |download| {
+            site.portal
+                .save_file(&dialog_clues_for_downloading(download))
+        },
+        site.scratch.as_ref(),
+    )?)
 }
 
 /// Instala la CA local en los almacenes NSS del usuario (ADR-0005).

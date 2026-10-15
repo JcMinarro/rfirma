@@ -5,6 +5,7 @@ import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import { SedeWindow } from "./SedeWindow";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
+import { LOCAL_BATCH_DOCUMENTS } from "./testing/fixtures/received";
 import {
   Batch,
   Consent,
@@ -71,12 +72,12 @@ describe("2 · consent", () => {
     expect(screen.queryByText("001")).not.toBeInTheDocument();
   });
 
-  it("offers neither the documents nor their download", () => {
+  it("offers the document and its download", () => {
     const { port } = scriptedFrom(Consent);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar" })).toBeInTheDocument();
   });
 
   it("labels the selector «Certificado» also when handing over identity data", () => {
@@ -122,7 +123,7 @@ describe("2 · consent", () => {
           signs: 1,
           signing: null,
           sha1ToAllow: true,
-          items: [{ id: "001", signing: "pdf", round: { kind: "sign" } }],
+          items: LOCAL_BATCH_DOCUMENTS.slice(1, 2),
         }),
       ],
     ])("signs anyway for %s, with the countdown even when it is turned off", (_, stage) => {

@@ -1,4 +1,4 @@
-//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, el lote local, sus firmas PAdES y XAdES, las huellas, un PDF que pinta su texto y un cartel en imagen.
+//! Lo recibido de ejemplo que comparten las historias y las pruebas del consentimiento de sede: el lote de la resolución, el lote local, sus firmas PAdES y XAdES, un PDF que pinta su texto y un cartel en imagen.
 
 import { fn } from "storybook/test";
 import type { Certificate } from "../../../signing/certificate";
@@ -239,13 +239,17 @@ const POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420
   <text x="40" y="404" fill="#64748b" font-family="Inter, sans-serif" font-size="14">Presupuesto: 84.250,00 €</text>
 </svg>`;
 
+const DETECTED_BY_CONTENT = { pdf: "pdf", text: "xml", image: "jpeg", none: "xlsx" } as const;
+
 function document(overrides: Partial<ReceivedDocument> & Pick<ReceivedDocument, "id" | "name">) {
+  const content = overrides.content ?? { kind: "none" };
   return {
-    content: { kind: "none" },
+    content,
     sha256: "3e7d1a90c4b25f8e06d9a3c7b1f4e2d85a0c6b9f3e1d7a42c8b5f0e9d3a6c71b",
-    knownType: true,
+    detected: DETECTED_BY_CONTENT[content.kind],
     previousSignatures: NO_PREVIOUS_SIGNATURES,
     ...overrides,
+    handle: overrides.handle ?? `${overrides.id}-handle`,
   } satisfies ReceivedDocument;
 }
 
@@ -273,7 +277,7 @@ const BENEFICIARIES_DOCUMENT = document({
 export const UNKNOWN_TYPE_DOCUMENT = document({
   id: "unknown",
   name: "Expediente 2026-0412.bin",
-  knownType: false,
+  detected: "unknown",
 });
 
 const POSTER_DOCUMENT = document({
@@ -353,18 +357,6 @@ export function withPreviousSignatures(
 }
 
 export const ONE_DOCUMENT: Received = { kind: "documents", documents: [RESOLUTION_DOCUMENT] };
-
-export const ONE_DIGEST: Received = {
-  kind: "digests",
-  digests: [
-    {
-      algorithm: "SHA-256",
-      value: "9f2c4b1e7a03d58c61e0b2f4a9d7c3e815b6f0a2c94e7d3b1a8f6c2e0d5b7a49",
-    },
-  ],
-};
-
-export const CHALLENGE: Received = { kind: "challenge" };
 
 export const REMOTE_BATCH: Received = { kind: "remoteBatch", count: 4 };
 

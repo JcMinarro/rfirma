@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::signing::domain::bridge::Format;
-use crate::site::application::errand::desk::{write_the_document, ErrandDesk};
+use crate::site::application::errand::desk::ErrandDesk;
 use crate::site::application::session::SiteRefusal;
 use crate::site::domain::batch::{sha1_detail, LocalBatch, LocalBatchResult, LocalSingleSign};
 use crate::site::domain::protocol::{
@@ -14,12 +14,13 @@ use crate::site::domain::protocol::{
 use crate::site::domain::signing::SigningRefusal;
 use crate::site::ports::{FilterEngine, PolicyEngine, SiteSigningRequest};
 
-/// Caso de uso: firma cada elemento del lote local con el ciclo de sede, aplicando `stoponerror`.
+/// Caso de uso: firma cada elemento del lote local, por el asa de su documento de paso, con el ciclo de sede y `stoponerror`.
 pub fn signed_local_batch<E: FilterEngine, P: PolicyEngine>(
     desk: &ErrandDesk<'_, E, P>,
     certificate: &TokenCertificate,
     secret: &ProtectedSecret,
     batch: &LocalBatch,
+    documents: &[String],
     sha1_allowed: bool,
 ) -> Result<Vec<LocalBatchResult>, SiteRefusal> {
     if batch.signs().is_empty() {
@@ -50,13 +51,13 @@ pub fn signed_local_batch<E: FilterEngine, P: PolicyEngine>(
     let mut results = Vec::with_capacity(batch.signs().len());
     let mut stopped = false;
 
-    for sign in batch.signs() {
+    for (sign, document) in batch.signs().iter().zip(documents) {
         if stopped {
             results.push(LocalBatchResult::skipped(sign.id()));
             continue;
         }
 
-        match sign_one(desk, certificate, algorithm, secret, sign) {
+        match sign_one(desk, certificate, algorithm, secret, sign, document) {
             Ok(signature) => results.push(LocalBatchResult::signed(sign.id(), signature)),
             Err(ItemFailure::OfTheCard(refusal)) => return Err(SiteRefusal::Signing(refusal)),
             Err(ItemFailure::OfTheItem(refusal)) => {
@@ -87,45 +88,39 @@ impl From<SiteRefusal> for ItemFailure {
     }
 }
 
-/// El ciclo de una firma para un elemento: abre, firma con el secreto ya conocido y cierra, borrando su documento de paso al terminar, salga bien o mal.
+/// El ciclo de una firma para un elemento: abre, firma con el secreto ya conocido y cierra.
 fn sign_one<E: FilterEngine, P: PolicyEngine>(
     desk: &ErrandDesk<'_, E, P>,
     certificate: &TokenCertificate,
     algorithm: AskedAlgorithm,
     secret: &ProtectedSecret,
     sign: &LocalSingleSign,
+    document: &str,
 ) -> Result<Vec<u8>, ItemFailure> {
     refuse_a_countersignature_outside_cades_and_xades(sign.round(), sign.effective_format())
         .map_err(|refusal| SiteRefusal::LocalBatch(refusal.to_string()))?;
     let format = Format::from(sign.effective_format());
 
-    let path = write_the_document(desk, format, sign.document())?;
-    let document = desk.neighbours.open_unrecorded(path.clone());
     let from_the_site: BTreeMap<String, String> = sign.extra_params().iter().cloned().collect();
 
-    let result = (|| {
-        desk.neighbours
-            .begin(SiteSigningRequest {
-                document: &document,
-                certificate,
-                format,
-                algorithm,
-                operation: sign.round().into(),
-                from_the_site: &from_the_site,
-                allow_unregistered_signatures: false,
-            })
-            .map_err(SiteRefusal::from)?;
+    desk.neighbours
+        .begin(SiteSigningRequest {
+            document,
+            certificate,
+            format,
+            algorithm,
+            operation: sign.round().into(),
+            from_the_site: &from_the_site,
+            allow_unregistered_signatures: false,
+        })
+        .map_err(SiteRefusal::from)?;
 
-        desk.neighbours
-            .sign_on_token(secret)
-            .map_err(ItemFailure::OfTheCard)?;
+    desk.neighbours
+        .sign_on_token(secret)
+        .map_err(ItemFailure::OfTheCard)?;
 
-        let signed = desk.neighbours.finish().map_err(SiteRefusal::from)?;
-        Ok(signed.signature)
-    })();
-
-    desk.scratch.erase(&path);
-    result
+    let signed = desk.neighbours.finish().map_err(SiteRefusal::from)?;
+    Ok(signed.signature)
 }
 
 #[cfg(test)]

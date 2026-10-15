@@ -8,6 +8,7 @@ import { Icon } from "../design-system/icons";
 import type { IconName } from "../design-system/icons/names";
 import { Menu, MenuItem } from "../design-system/Menu";
 import {
+  hasKnownType,
   previousSignaturesState,
   type ReceivedActions,
   type ReceivedDocument,
@@ -114,14 +115,18 @@ function DocumentRow({
 }
 
 function documentIcon(document: ReceivedDocument): IconName {
-  switch (document.content.kind) {
+  switch (document.detected) {
     case "pdf":
       return "documentPdf";
+    case "xml":
     case "text":
       return "documentXml";
-    case "image":
+    case "png":
+    case "jpeg":
+    case "gif":
+    case "webp":
       return "documentImage";
-    case "none":
+    default:
       return "document";
   }
 }
@@ -137,21 +142,26 @@ function documentActions(
   document: ReceivedDocument,
   actions: ReceivedActions,
 ): RowAction[] {
+  const { onOpenWith, onSaveCopy } = actions;
   return [
-    ...(document.knownType
+    ...(hasKnownType(document) && onOpenWith
       ? [
           {
             icon: "externalLink" as const,
             label: t("sede.received.openWith"),
-            onSelect: () => actions.onOpenWith(document),
+            onSelect: () => onOpenWith(document),
           },
         ]
       : []),
-    {
-      icon: "folder",
-      label: t("sede.received.saveCopy"),
-      onSelect: () => actions.onSaveCopy(document),
-    },
+    ...(onSaveCopy
+      ? [
+          {
+            icon: "folder" as const,
+            label: t("sede.received.saveCopy"),
+            onSelect: () => onSaveCopy(document),
+          },
+        ]
+      : []),
     {
       icon: "copy",
       label: t("sede.received.copySha256"),

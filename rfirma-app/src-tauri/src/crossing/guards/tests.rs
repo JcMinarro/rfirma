@@ -212,7 +212,7 @@ fn the_list_of_commands_is_closed_and_this_is_how_long_it_is() {
         .map(|(_, source)| production_half(source).matches("#[tauri::command").count())
         .sum();
 
-    assert_eq!(orders, 61, "la lista de ordenes es cerrada a proposito");
+    assert_eq!(orders, 65, "la lista de ordenes es cerrada a proposito");
 }
 
 #[test]
@@ -277,7 +277,7 @@ fn every_command_that_touches_the_portal_runs_off_the_main_thread() {
 fn every_command_of_the_site_errand_runs_off_the_main_thread() {
     let source = production_half(source_of("site/adapters/tauri.rs"));
 
-    const OF_THE_ERRAND: [&str; 8] = [
+    const OF_THE_ERRAND: [&str; 10] = [
         "pub fn close_site_window(",
         "pub fn site_identify(",
         "pub fn site_decline(",
@@ -286,6 +286,8 @@ fn every_command_of_the_site_errand_runs_off_the_main_thread() {
         "pub fn site_look_again(",
         "pub fn site_allow_sha1_once(",
         "pub fn site_mark_area(",
+        "pub fn site_expand_window(",
+        "pub fn site_open_with(",
     ];
 
     for command in OF_THE_ERRAND {

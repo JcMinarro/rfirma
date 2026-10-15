@@ -1,7 +1,7 @@
 //! Los tipos de lo que empuja el backend (`SiteErrandView`, `SiteStageView`) y de cómo acaban sus órdenes. Sin React.
 
 import type { Certificate } from "../signing/certificate";
-import type { LocalBatchItem, SignatureRound, SigningKind } from "./errand";
+import type { DocumentType, LocalBatchItem, SignatureRound, SigningKind } from "./errand";
 
 /**
  * **El trámite tal como lo emite el backend**: `commands::SiteErrandView`,
@@ -18,17 +18,32 @@ export interface SiteErrandView {
 /** El momento de la secuencia, tal como lo emite el backend. */
 export type SiteStageView =
   | { kind: "waiting" }
-  | { kind: "askingForConsent"; certificates: readonly Certificate[] }
+  | {
+      kind: "askingForConsent";
+      certificates: readonly Certificate[];
+      narrowed: boolean;
+      notAccepted: number;
+    }
   /** La sede pide `visibleSignature`: el área se marca sobre el PDF antes del consentimiento. */
   | { kind: "markingTheArea"; document: string }
   | {
       kind: "askingToSign";
       /** El asa opaca con la que se lee el documento, nunca su ruta. */
       document: string;
+      /** El nombre que propone la sede, si propone alguno. */
+      name: string | null;
+      /** El tipo que rFirma detecta en los bytes. */
+      detected: DocumentType;
+      /** La huella SHA-256 de los bytes, en hexadecimal. */
+      sha256: string;
       /** Qué es lo que se pide firmar, según el formato de la petición. */
       signing: SigningKind;
       round: SignatureRound;
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */
@@ -48,6 +63,10 @@ export type SiteStageView =
       /** Cuántas firmas lleva el lote. */
       signs: number;
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */
@@ -62,6 +81,10 @@ export type SiteStageView =
       /** Los elementos del lote, en el orden en que la sede los declaró. */
       items: readonly LocalBatchItem[];
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */

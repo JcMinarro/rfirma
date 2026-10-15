@@ -1,8 +1,11 @@
 use super::{CounterTarget, Format, LocalBatchItem, Moment, SignatureRound, SignatureRoundView};
-use super::{NoCertificateView, NoChannelView, RefusalSituationView, SiteErrandView};
+use super::{
+    DocumentTypeView, NoCertificateView, NoChannelView, RefusalSituationView, SiteErrandView,
+};
 use crate::signing::domain::bridge::XadesVariant;
+use crate::site::application::errand::ReceivedDocument;
 use crate::site::domain::batch_error::Situation as BatchSituation;
-use crate::site::domain::protocol::RefusalSituation;
+use crate::site::domain::protocol::{DocumentType, RefusalSituation};
 use crate::site::domain::site_origin::SiteOrigin;
 
 #[test]
@@ -100,13 +103,54 @@ fn the_old_web_client_warning_crosses_named() {
     );
 }
 
+fn a_received(name: Option<&str>, bytes: &[u8]) -> ReceivedDocument {
+    ReceivedDocument::kept_as("doc-1".to_owned(), name.map(str::to_owned), bytes)
+}
+
+fn consenting_to(document: ReceivedDocument) -> serde_json::Value {
+    let view = SiteErrandView::from(&Moment::AskingToSign {
+        document,
+        format: Format::Cades,
+        round: SignatureRound::First,
+        certificates: Vec::new(),
+        not_accepted: 0,
+        already_chosen: None,
+        without_asking: false,
+        sha1_allowed: false,
+        sha1_to_allow: false,
+    });
+    serde_json::to_value(&view).expect("serializa")["stage"].clone()
+}
+
+#[test]
+fn the_consent_crosses_the_handle_the_proposed_name_the_detected_type_and_the_sha256() {
+    let stage = consenting_to(a_received(Some("informe.pdf"), b"%PDF-1.7\n"));
+
+    assert_eq!(stage["document"], serde_json::json!("doc-1"));
+    assert_eq!(stage["name"], serde_json::json!("informe.pdf"));
+    assert_eq!(stage["detected"], serde_json::json!("pdf"));
+    assert_eq!(
+        stage["sha256"],
+        serde_json::json!("0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e")
+    );
+}
+
+#[test]
+fn a_document_without_a_proposed_name_or_a_known_type_crosses_as_such() {
+    let stage = consenting_to(a_received(None, &[0x00, 0x01, 0x02]));
+
+    assert_eq!(stage["name"], serde_json::Value::Null);
+    assert_eq!(stage["detected"], serde_json::json!("unknown"));
+}
+
 #[test]
 fn the_round_crosses_named_as_the_site_asked_for_it() {
     let view = SiteErrandView::from(&Moment::AskingToSign {
-        document: "doc-1".to_owned(),
+        document: a_received(None, b"%PDF-1.7\n"),
         format: Format::Pades,
         round: SignatureRound::Again,
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -123,10 +167,11 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
 fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
     for allowed in [true, false] {
         let view = SiteErrandView::from(&Moment::AskingToSign {
-            document: "doc-1".to_owned(),
+            document: a_received(None, b"%PDF-1.7\n"),
             format: Format::Cades,
             round: SignatureRound::First,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: allowed,
@@ -143,12 +188,13 @@ fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
 #[test]
 fn a_countersignature_crosses_with_its_own_label_and_target() {
     let view = SiteErrandView::from(&Moment::AskingToSign {
-        document: "doc-1".to_owned(),
+        document: a_received(None, b"%PDF-1.7\n"),
         format: Format::Cades,
         round: SignatureRound::Counter {
             target: CounterTarget::Leafs,
         },
         certificates: Vec::new(),
+        not_accepted: 0,
         already_chosen: None,
         without_asking: false,
         sha1_allowed: false,
@@ -231,12 +277,39 @@ fn each_refusal_situation_crosses_as_its_own_view() {
 }
 
 #[test]
+fn each_detected_type_crosses_with_its_own_camel_case_name() {
+    for (detected, expected) in [
+        (DocumentType::Pdf, "pdf"),
+        (DocumentType::Xml, "xml"),
+        (DocumentType::Png, "png"),
+        (DocumentType::Jpeg, "jpeg"),
+        (DocumentType::Gif, "gif"),
+        (DocumentType::Webp, "webp"),
+        (DocumentType::Odt, "odt"),
+        (DocumentType::Ods, "ods"),
+        (DocumentType::Odp, "odp"),
+        (DocumentType::Docx, "docx"),
+        (DocumentType::Xlsx, "xlsx"),
+        (DocumentType::Pptx, "pptx"),
+        (DocumentType::Zip, "zip"),
+        (DocumentType::Text, "text"),
+        (DocumentType::Unknown, "unknown"),
+    ] {
+        assert_eq!(
+            serde_json::to_value(DocumentTypeView::from(detected)).unwrap(),
+            expected
+        );
+    }
+}
+
+#[test]
 fn both_batch_consents_cross_whether_sha1_is_signed_because_the_person_allows_it() {
     for allowed in [true, false] {
         for moment in [
             Moment::AskingToSignTheBatch {
                 signs: 1,
                 certificates: Vec::new(),
+                not_accepted: 0,
                 already_chosen: None,
                 without_asking: false,
                 sha1_allowed: allowed,
@@ -245,6 +318,7 @@ fn both_batch_consents_cross_whether_sha1_is_signed_because_the_person_allows_it
             Moment::AskingToSignTheLocalBatch {
                 items: Vec::new(),
                 certificates: Vec::new(),
+                not_accepted: 0,
                 already_chosen: None,
                 without_asking: false,
                 sha1_allowed: allowed,
@@ -267,6 +341,7 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheBatch {
             signs: 3,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: Some("una-asa".to_owned()),
             without_asking: true,
             sha1_allowed: false,
@@ -279,6 +354,8 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
                 "kind": "askingToSignTheBatch",
                 "signs": 3,
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": "una-asa",
                 "withoutAsking": true,
                 "sha1Allowed": false,
@@ -290,6 +367,7 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheBatch {
             signs: 1,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -302,6 +380,8 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
                 "kind": "askingToSignTheBatch",
                 "signs": 1,
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": null,
                 "withoutAsking": false,
                 "sha1Allowed": false,
@@ -312,22 +392,33 @@ fn the_batch_consent_crosses_with_how_many_signs_it_has_and_who_is_already_chose
 }
 
 #[test]
-fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content() {
+fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha256() {
     assert_eq!(
         serde_json::to_value(SiteErrandView::from(&Moment::AskingToSignTheLocalBatch {
             items: vec![
                 LocalBatchItem {
                     id: "001".to_owned(),
+                    document: ReceivedDocument::kept_as(
+                        "doc-1".to_owned(),
+                        Some("001".to_owned()),
+                        b"%PDF-1.7\n",
+                    ),
                     format: Format::Pades,
                     round: SignatureRound::First,
                 },
                 LocalBatchItem {
                     id: "002".to_owned(),
+                    document: ReceivedDocument::kept_as(
+                        "doc-2".to_owned(),
+                        Some("002".to_owned()),
+                        &[0x00, 0x01, 0x02],
+                    ),
                     format: Format::Cades,
                     round: SignatureRound::Again,
                 },
             ],
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -339,10 +430,28 @@ fn the_local_batch_consent_crosses_with_what_each_item_is_and_never_its_content(
             "stage": {
                 "kind": "askingToSignTheLocalBatch",
                 "items": [
-                    { "id": "001", "signing": "pdf", "round": { "kind": "sign" } },
-                    { "id": "002", "signing": "challenge", "round": { "kind": "cosign" } },
+                    {
+                        "id": "001",
+                        "document": "doc-1",
+                        "name": "001",
+                        "detected": "pdf",
+                        "sha256": "0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e",
+                        "signing": "pdf",
+                        "round": { "kind": "sign" },
+                    },
+                    {
+                        "id": "002",
+                        "document": "doc-2",
+                        "name": "002",
+                        "detected": "unknown",
+                        "sha256": "ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc",
+                        "signing": "challenge",
+                        "round": { "kind": "cosign" },
+                    },
                 ],
                 "certificates": [],
+                "narrowed": false,
+                "notAccepted": 0,
                 "alreadyChosen": null,
                 "withoutAsking": false,
                 "sha1Allowed": false,
@@ -366,10 +475,11 @@ fn what_is_signed_crosses_named_after_the_format_the_site_asked_for() {
         (Format::FacturaE, "invoice"),
     ] {
         let view = SiteErrandView::from(&Moment::AskingToSign {
-            document: "doc-1".to_owned(),
+            document: a_received(None, b"%PDF-1.7\n"),
             format,
             round: SignatureRound::First,
             certificates: Vec::new(),
+            not_accepted: 0,
             already_chosen: None,
             without_asking: false,
             sha1_allowed: false,
@@ -452,4 +562,55 @@ fn an_absent_origin_crosses_null_through_the_same_conversion() {
         serde_json::to_value(view).expect("el momento cruza"),
         serde_json::json!({ "origin": null, "stage": { "kind": "waiting" } })
     );
+}
+
+#[test]
+fn the_four_consents_cross_whether_the_site_narrowed_the_list_and_how_many_it_does_not_accept() {
+    for (not_accepted, narrowed) in [(0_usize, false), (2, true)] {
+        for moment in [
+            Moment::AskingForConsent {
+                certificates: Vec::new(),
+                not_accepted,
+            },
+            Moment::AskingToSign {
+                document: a_received(None, b"%PDF-1.7\n"),
+                format: Format::Cades,
+                round: SignatureRound::First,
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+            Moment::AskingToSignTheBatch {
+                signs: 1,
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+            Moment::AskingToSignTheLocalBatch {
+                items: Vec::new(),
+                certificates: Vec::new(),
+                not_accepted,
+                already_chosen: None,
+                without_asking: false,
+                sha1_allowed: false,
+                sha1_to_allow: false,
+            },
+        ] {
+            let stage =
+                &serde_json::to_value(SiteErrandView::from(&moment)).expect("serializa")["stage"];
+
+            assert_eq!(stage["narrowed"], serde_json::json!(narrowed), "{moment:?}");
+            assert_eq!(
+                stage["notAccepted"],
+                serde_json::json!(not_accepted),
+                "{moment:?}"
+            );
+        }
+    }
 }

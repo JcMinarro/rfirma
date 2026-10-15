@@ -3,6 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { SiteErrandPort } from "./sede/errand";
+import { contentOf } from "./sede/received";
 import { type SiteErrandView, siteErrands } from "./sede/siteErrands";
 import {
   NO_PREVIOUS_SIGNATURES,
@@ -102,5 +103,23 @@ export function tauriSiteErrands(): SiteErrandPort {
       invoke<PreviousSignaturesReport>("previous_signatures", { document }).catch(
         () => NO_PREVIOUS_SIGNATURES,
       ),
+    // Unos bytes que no se pueden leer no son un fallo que enseñar: el visor
+    // dice que no tiene vista previa.
+    readContent: async (id, detected) => {
+      try {
+        const bytes = new Uint8Array(await invoke<ArrayBuffer>("read_document", { id }));
+        return await contentOf(detected, bytes, (pdf) => loader.load(pdf));
+      } catch {
+        return { kind: "none" };
+      }
+    },
+    expandWindow: (expanded) => invoke<void>("site_expand_window", { expanded }),
+    downloadDocument: async (document) => {
+      await invoke<boolean>("site_download_document", { document });
+    },
+    downloadAll: async () => {
+      await invoke<boolean>("site_download_all");
+    },
+    openWith: (document) => invoke<void>("site_open_with", { document }),
   });
 }

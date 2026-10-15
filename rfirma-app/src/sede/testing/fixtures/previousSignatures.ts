@@ -12,6 +12,7 @@ export function previousSignature(overrides: Partial<PreviousSignature> = {}): P
     name: "Ada Lovelace Byron",
     idNumber: "99999999R",
     organizationIdentifier: null,
+    entityName: null,
     issuer: "AC FNMT Usuarios",
     certificateSerialNumber: "1",
     signingTime: "2024-01-01T10:00:00Z",

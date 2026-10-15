@@ -1,14 +1,23 @@
-import { describe, expect, it } from "vitest";
+import type { TFunction } from "i18next";
+import { describe, expect, it, vi } from "vitest";
+import type { DocumentType } from "./errand";
 import {
+  contentOf,
   previousSignaturesState,
   previousSignaturesTally,
+  receivedActions,
   receivedCount,
+  receivedName,
   receivedOf,
 } from "./received";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
 import {
+  BATCH,
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  LOCAL_BATCH_DOCUMENTS,
+  ONE_DOCUMENT,
+  REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   withYourSignature,
   yourSignature,
@@ -47,6 +56,27 @@ describe("previousSignaturesState", () => {
   });
 });
 
+describe("receivedName", () => {
+  const t = ((key: string) => key) as unknown as TFunction;
+  const named = (detected: DocumentType) =>
+    receivedName(t, { ...RESOLUTION_DOCUMENT, name: null, detected });
+
+  it("keeps the name the document has", () => {
+    expect(receivedName(t, { ...RESOLUTION_DOCUMENT, name: "Acta.pdf" })).toBe("Acta.pdf");
+  });
+
+  it.each([
+    ["pdf", "sede.consent.untitled"],
+    ["xml", "sede.consent.untitledXml"],
+    ["png", "sede.consent.untitledImage"],
+    ["webp", "sede.consent.untitledImage"],
+    ["xlsx", "sede.consent.untitledDocument"],
+    ["unknown", "sede.consent.untitledDocument"],
+  ] as const)("names an untitled %s by what it is", (detected, key) => {
+    expect(named(detected)).toBe(key);
+  });
+});
+
 describe("receivedCount", () => {
   it("counts the remote batch by its number", () => {
     expect(receivedCount({ kind: "remoteBatch", count: 4 })).toBe(4);
@@ -76,22 +106,32 @@ describe("receivedOf", () => {
     expect(document?.name).toBeNull();
   });
 
-  it.each(["xml", "invoice"] as const)("gives one unnamed document for %s", (signing) => {
-    const [document, ...rest] = documentsOf(consentStage({ document: null, signing }));
+  it("prefers the name the site proposes to the title of the PDF", () => {
+    const [document] = documentsOf(
+      consentStage({ document: { ...signedDocument, name: "Solicitud.pdf" } }),
+    );
 
-    expect(rest).toEqual([]);
-    expect(document?.name).toBeNull();
-    expect(document?.previousSignatures.signatures).toEqual([]);
+    expect(document?.name).toBe("Solicitud.pdf");
   });
 
-  it("gives one unnamed document for a PDF that could not be read", () => {
-    expect(documentsOf(consentStage({ document: null, signing: "pdf" }))).toHaveLength(1);
+  it("carries the detected type and the SHA-256 of the document", () => {
+    const [document] = documentsOf(
+      consentStage({ document: { ...signedDocument, detected: "xml", sha256: "ab12" } }),
+    );
+
+    expect(document?.detected).toBe("xml");
+    expect(document?.sha256).toBe("ab12");
   });
 
-  it("gives the challenge for whatever the window counts as one", () => {
-    expect(receivedOf(consentStage({ document: null, signing: "challenge" }))).toEqual({
-      kind: "challenge",
-    });
+  it("carries what the viewer paints of the document", () => {
+    const content = { kind: "text", text: "<baremo/>" } as const;
+    const [document] = documentsOf(consentStage({ document: { ...signedDocument, content } }));
+
+    expect(document?.content).toEqual(content);
+  });
+
+  it("gives nothing to show when the document does not travel", () => {
+    expect(receivedOf(consentStage({ document: null, signing: null }))).toBeNull();
   });
 
   it("gives only the count of a remote batch", () => {
@@ -100,23 +140,61 @@ describe("receivedOf", () => {
     expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 4 });
   });
 
-  it("gives only the count of a local batch, like the remote one", () => {
-    const item = { signing: "pdf", round: { kind: "sign" } } as const;
+  it("gives the elements of a local batch as documents, like any other", () => {
     const stage = consentStage({
       document: null,
       signing: null,
       signs: 2,
-      items: [
-        { id: "001", ...item },
-        { id: "002", ...item },
-      ],
+      items: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
     });
 
-    expect(receivedOf(stage)).toEqual({ kind: "remoteBatch", count: 2 });
+    expect(receivedOf(stage)).toEqual({
+      kind: "documents",
+      documents: LOCAL_BATCH_DOCUMENTS.slice(0, 2),
+    });
   });
 
   it("gives nothing when the site asks for your data", () => {
     expect(receivedOf(consentStage({ document: null, signing: null }))).toBeNull();
+  });
+});
+
+describe("contentOf", () => {
+  const bytes = new TextEncoder().encode("<baremo>Antigüedad</baremo>");
+  const pdf = { pageCount: 1, getPage: () => Promise.reject(new Error("sin páginas")) };
+  const loadPdf = vi.fn(async () => pdf);
+
+  it("opens a PDF to page through it", async () => {
+    expect(await contentOf("pdf", bytes, loadPdf)).toEqual({ kind: "pdf", pdf });
+    expect(loadPdf).toHaveBeenCalledWith(bytes);
+  });
+
+  it("gives nothing to show of a PDF that cannot be opened", async () => {
+    const broken = async () => {
+      throw new Error("no es un PDF");
+    };
+
+    expect(await contentOf("pdf", bytes, broken)).toEqual({ kind: "none" });
+  });
+
+  it.each(["xml", "text"] as const)("shows %s as its literal text", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
+      kind: "text",
+      text: "<baremo>Antigüedad</baremo>",
+    });
+  });
+
+  it.each([
+    ["png", "image/png"],
+    ["jpeg", "image/jpeg"],
+    ["gif", "image/gif"],
+    ["webp", "image/webp"],
+  ] as const)("shows a %s as an image of %s", async (detected, mediaType) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "image", mediaType, bytes });
+  });
+
+  it.each(["xlsx", "zip", "unknown"] as const)("has no preview of %s", async (detected) => {
+    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "none" });
   });
 });
 
@@ -168,5 +246,55 @@ describe("previousSignaturesTally", () => {
       ...nobody,
       troubled: 1,
     });
+  });
+});
+
+describe("receivedActions", () => {
+  const commands = () => ({ downloadDocument: vi.fn(), downloadAll: vi.fn(), openWith: vi.fn() });
+
+  it("downloads a single document as it is", () => {
+    const orders = commands();
+    receivedActions(ONE_DOCUMENT, orders).onDownload?.();
+
+    expect(orders.downloadDocument).toHaveBeenCalledWith(RESOLUTION_DOCUMENT.handle);
+    expect(orders.downloadAll).not.toHaveBeenCalled();
+  });
+
+  it("downloads several documents all together", () => {
+    const orders = commands();
+    receivedActions(BATCH, orders).onDownload?.();
+
+    expect(orders.downloadAll).toHaveBeenCalledOnce();
+    expect(orders.downloadDocument).not.toHaveBeenCalled();
+  });
+
+  it("saves and opens the document of the row it is asked about", () => {
+    const orders = commands();
+    const [, second] = BATCH_DOCUMENTS;
+    if (second === undefined) throw new Error("the batch has a second document");
+    const actions = receivedActions(BATCH, orders);
+
+    actions.onSaveCopy?.(second);
+    actions.onOpenWith?.(second);
+
+    expect(orders.downloadDocument).toHaveBeenCalledWith(second.handle);
+    expect(orders.openWith).toHaveBeenCalledWith(second.handle);
+  });
+
+  it.each([
+    ["a remote batch", REMOTE_BATCH],
+    ["nothing received", null],
+  ])("offers no download for %s", (_, received) => {
+    const actions = receivedActions(received, commands());
+
+    expect(actions.onDownload).toBeUndefined();
+    expect(actions.onSaveCopy).toBeUndefined();
+    expect(actions.onOpenWith).toBeUndefined();
+  });
+
+  it("offers no download of a local batch that could not be read", () => {
+    const actions = receivedActions({ kind: "documents", documents: [] }, commands());
+
+    expect(actions.onDownload).toBeUndefined();
   });
 });

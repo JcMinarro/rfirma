@@ -7,7 +7,9 @@ import {
   ASKING_TO_CONFIRM,
   ASKING_TO_SIGN,
   certificate,
+  DOCUMENT_SHA256,
   described,
+  opened,
   watched,
 } from "./testing/fixtures/siteErrands";
 
@@ -344,11 +346,16 @@ describe("los momentos que pone el adaptador", () => {
       outcome: {
         kind: "signed",
         document: {
+          handle: "asa-opaca-1",
+          name: "Solicitud.pdf",
+          detected: "pdf",
+          sha256: DOCUMENT_SHA256,
           title: "Solicitud",
           pages: 3,
           sizeBytes: 4096,
           round: { kind: "cosign" },
           previousSignatures: NO_PREVIOUS_SIGNATURES,
+          content: { kind: "pdf", pdf: opened },
         },
       },
     });
@@ -454,7 +461,12 @@ describe("los momentos que pone el adaptador", () => {
     const { push, port, calls, last } = watched();
     push({
       origin: "sede.ejemplo.gob.es",
-      stage: { kind: "askingForConsent", certificates: [certificate()] },
+      stage: {
+        kind: "askingForConsent",
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+      },
     });
 
     await port.consent("handle-1");
@@ -562,9 +574,14 @@ describe("la selección automática que pide la sede", () => {
       sha1ToAllow: false,
       kind: "askingToSign",
       document: "asa-opaca-1",
+      name: null,
+      detected: "pdf",
+      sha256: DOCUMENT_SHA256,
       signing: "pdf",
       round: { kind: "sign" },
       certificates: [certificate()],
+      narrowed: false,
+      notAccepted: 0,
       alreadyChosen: "handle-1",
       withoutAsking,
     },
@@ -625,10 +642,18 @@ describe("las salidas de la pantalla sin certificado", () => {
     await port.installLocalCa();
     await port.close();
     await port.dismissWarning();
+    await port.expandWindow(true);
+    await port.downloadDocument("doc-7");
+    await port.downloadAll();
+    await port.openWith("doc-8");
 
     expect(calls.lookAgain).toHaveBeenCalledOnce();
     expect(calls.installLocalCa).toHaveBeenCalledOnce();
     expect(calls.closeWindow).toHaveBeenCalledOnce();
     expect(calls.dismissWarning).toHaveBeenCalledOnce();
+    expect(calls.expandWindow).toHaveBeenCalledWith(true);
+    expect(calls.downloadDocument).toHaveBeenCalledWith("doc-7");
+    expect(calls.downloadAll).toHaveBeenCalledOnce();
+    expect(calls.openWith).toHaveBeenCalledWith("doc-8");
   });
 });

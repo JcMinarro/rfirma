@@ -58,7 +58,7 @@ pub use algorithm::{AlgorithmReading, AskedAlgorithm};
 pub use cipher::{cipher as encrypt, decipher as decrypt, CipherKey};
 pub use codes::{Parameter, SafCode, WireAnswer, CANCELLED, NOTHING, OUT_OF_MEMORY};
 pub use data_source::{download_url, DataSource};
-pub use detection::{shape_of, DetectedShape};
+pub use detection::{shape_of, type_of, DetectedShape, DocumentType};
 pub use filters::{site_filter, SiteFilter, ACCEPTED_CRITERIA};
 pub use format::{format_of, RequestedFormat, XadesEnvelope};
 pub use framing::{

@@ -10,11 +10,50 @@ import { Row } from "../design-system/Row";
 import type {
   DocumentFinding,
   PreviousSignature,
+  PreviousSignaturesReport,
+  SignatureFormat,
   SigningDate,
   Validity,
 } from "./previousSignatures";
 import { findingText, validityReasonText } from "./validityReasons";
 import "./SignatureCards.css";
+
+const FORMAT_NAMES = { pades: "PAdES", cades: "CAdES", xades: "XAdES" } as const;
+
+/** «PAdES · 3 firmas · 1 contrafirma»: el formato, si se reconoce, y los recuentos. */
+export function signaturesOverview(
+  t: TFunction,
+  report: Pick<PreviousSignaturesReport, "signatures"> & { format?: SignatureFormat },
+): string {
+  const format: SignatureFormat = report.format ?? "pades";
+  return [format === "unrecognized" ? null : FORMAT_NAMES[format], signaturesTally(t, report)]
+    .filter((part) => part !== null)
+    .join(" · ");
+}
+
+/** Cuántas firmas y contrafirmas trae, sin el formato: «2 firmas · 1 contrafirma». */
+export function signaturesTally(
+  t: TFunction,
+  report: Pick<PreviousSignaturesReport, "signatures">,
+): string {
+  const countersignatures = countersignaturesIn(report.signatures);
+  return [
+    t("panel.signed.count", { count: report.signatures.length }),
+    countersignatures === 0
+      ? null
+      : t("panel.signed.countersignatureCount", { count: countersignatures }),
+  ]
+    .filter((part) => part !== null)
+    .join(" · ");
+}
+
+function countersignaturesIn(signatures: readonly PreviousSignature[]): number {
+  return signatures.reduce(
+    (total, signature) =>
+      total + signature.countersignatures.length + countersignaturesIn(signature.countersignatures),
+    0,
+  );
+}
 
 interface SignatureCardsProps {
   signatures: readonly PreviousSignature[];
@@ -149,8 +188,12 @@ function Countersignatures({
 function SignatureRows({ signature, locale }: { signature: PreviousSignature; locale: string }) {
   const { t } = useTranslation();
   const rows: [string, string, boolean][] = [
-    [t("panel.signed.field.signer"), signerOf(signature), true],
-    [t("panel.signed.field.onBehalfOf"), signature.organizationIdentifier ?? "", false],
+    [t("panel.signed.field.signer"), signature.name, true],
+    [
+      t("panel.signed.field.onBehalfOf"),
+      signature.entityName ?? signature.organizationIdentifier ?? "",
+      false,
+    ],
     [t("panel.signed.field.issuer"), signature.issuer, false],
     ...dateRows(t, signature.signingDate, locale),
   ];
@@ -166,11 +209,11 @@ function SignatureRows({ signature, locale }: { signature: PreviousSignature; lo
         .map(([label, value, strong]) => (
           <SignatureField key={label} label={label} value={value} strong={strong} />
         ))}
-      {signature.closesDocument && (
-        <span className="rf-body signature-cards__closes">{t("panel.signed.closesDocument")}</span>
-      )}
       {reason !== "" && (
         <SignatureField label={t("panel.signed.field.reason")} value={reason} strong={false} />
+      )}
+      {signature.closesDocument && (
+        <span className="rf-body signature-cards__closes">{t("panel.signed.closesDocument")}</span>
       )}
     </>
   );
@@ -206,15 +249,11 @@ function dateRows(
   const at = formatCardDate(date.at, locale);
   return date.kind === "declared"
     ? [[t("panel.signed.field.date"), at, false]]
-    : [[t("panel.signed.field.sealed"), `${at} · ${date.tsa}`, false]];
+    : [[t("panel.signed.field.sealed"), at, false]];
 }
 
 function formatCardDate(instant: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(
     new Date(instant),
   );
-}
-
-function signerOf(signature: PreviousSignature): string {
-  return signature.idNumber === "" ? signature.name : `${signature.name} (${signature.idNumber})`;
 }

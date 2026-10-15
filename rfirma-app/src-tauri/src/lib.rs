@@ -289,6 +289,8 @@ fn with_the_five_roots(
             site::adapters::tauri::site_begin_signing,
             site::adapters::tauri::site_confirm_signatures,
             site::adapters::tauri::site_mark_area,
+            site::adapters::tauri::site_expand_window,
+            site::adapters::tauri::site_open_with,
             site::adapters::tauri::site_finish_signing,
             site::adapters::tauri::site_install_certificate,
             site::adapters::tauri::site_look_again,
@@ -296,6 +298,8 @@ fn with_the_five_roots(
             site::adapters::tauri::site_dismiss_the_warning,
             site::adapters::tauri::site_save_file,
             site::adapters::tauri::site_load_files,
+            site::adapters::tauri::site_download_document,
+            site::adapters::tauri::site_download_all,
             site::adapters::tauri::install_local_ca,
             site::adapters::tauri::read_site_errand,
         ])

@@ -31,6 +31,8 @@ export function certificate(overrides: Partial<Certificate> = {}): Certificate {
   };
 }
 
+export const DOCUMENT_SHA256 = "3e7d1a90c4b25f8e06d9a3c7b1f4e2d85a0c6b9f3e1d7a42c8b5f0e9d3a6c71b";
+
 export const described: DescribedDocument = { title: "Solicitud", pages: 3, sizeBytes: 4096 };
 
 /** El PDF abierto para marcar el área, sin nada que pintar. */
@@ -62,6 +64,11 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
     describeDocument: fn(),
     openDocument: fn(),
     previousSignatures: fn(),
+    readContent: fn(),
+    expandWindow: fn(),
+    downloadDocument: fn(),
+    downloadAll: fn(),
+    openWith: fn(),
   };
   const commands: SiteCommands = {
     watch: (onView) => {
@@ -128,6 +135,14 @@ function doubled(overrides: Partial<SiteCommands> = {}) {
       calls.previousSignatures(id);
       return NO_PREVIOUS_SIGNATURES;
     },
+    readContent: async (id, detected) => {
+      calls.readContent(id, detected);
+      return { kind: "pdf", pdf: opened };
+    },
+    expandWindow: async (expanded) => calls.expandWindow(expanded),
+    downloadDocument: async (handle) => calls.downloadDocument(handle),
+    downloadAll: async () => calls.downloadAll(),
+    openWith: async (handle) => calls.openWith(handle),
     ...overrides,
   };
 
@@ -148,9 +163,14 @@ export const ASKING_TO_SIGN: SiteErrandView = {
   stage: {
     kind: "askingToSign",
     document: "asa-opaca-1",
+    name: "Solicitud.pdf",
+    detected: "pdf",
+    sha256: DOCUMENT_SHA256,
     signing: "pdf",
     round: { kind: "cosign" },
     certificates: [certificate()],
+    narrowed: false,
+    notAccepted: 0,
     alreadyChosen: null,
     withoutAsking: false,
     sha1Allowed: false,

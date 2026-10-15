@@ -90,6 +90,39 @@ fn headless_with_an_expired_candidate_the_filter_admits_and_a_usable_one_still_a
 }
 
 #[test]
+fn a_selection_counts_the_certificates_the_site_does_not_accept() {
+    let step = a_headless_selection(
+        vec![
+            a_usable_certificate("FIRMA"),
+            a_usable_certificate("OTRA FIRMA"),
+            a_usable_certificate("AUTENTICACION"),
+        ],
+        &[0, 1],
+    );
+
+    let ErrandStep::AskingForConsent { not_accepted, .. } = step else {
+        panic!("con dos certificados admitidos se pregunta: {step:?}");
+    };
+    assert_eq!(not_accepted, 1);
+}
+
+#[test]
+fn a_selection_that_accepts_everything_does_not_count_any_as_not_accepted() {
+    let step = a_headless_selection(
+        vec![
+            a_usable_certificate("FIRMA"),
+            a_usable_certificate("OTRA FIRMA"),
+        ],
+        &[0, 1],
+    );
+
+    let ErrandStep::AskingForConsent { not_accepted, .. } = step else {
+        panic!("con dos certificados admitidos se pregunta: {step:?}");
+    };
+    assert_eq!(not_accepted, 0);
+}
+
+#[test]
 fn headless_with_two_accepted_certificates_still_asks() {
     let step = a_headless_selection(
         vec![

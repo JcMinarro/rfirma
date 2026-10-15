@@ -7,8 +7,9 @@ use crate::signing::domain::bridge::Format;
 use crate::site::application::session::SiteRefusal;
 use crate::site::domain::batch::LocalBatch;
 use crate::site::domain::protocol::{
-    AfirmaUrl, AskedAlgorithm, BatchRequest, PendingSignRequest, Refusal, RequestedFormat,
-    SignAndSaveRequest, SignatureRound, SiteFilter, SiteVisibleSignature, StickyCertificate,
+    type_of, AfirmaUrl, AskedAlgorithm, BatchRequest, DocumentType, PendingSignRequest, Refusal,
+    RequestedFormat, SignAndSaveRequest, SignatureRound, SiteFilter, SiteVisibleSignature,
+    StickyCertificate,
 };
 use crate::site::domain::triphase_server::ServerFormat;
 
@@ -25,6 +26,8 @@ pub enum ErrandStep {
     AskingForConsent {
         /// Certificados aceptados por la sede, ya cribados.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// Filtro solicitado por la sede para volver a comprobarlo (ADR-0011).
         filter: SiteFilter,
         /// Si la sede pidió recordar el certificado que se elija.
@@ -61,12 +64,17 @@ impl ErrandStep {
     /// Momento que este paso deja delante de la persona, si deja alguno.
     pub fn moment(&self) -> Option<Moment> {
         match self {
-            Self::AskingForConsent { certificates, .. } => Some(Moment::AskingForConsent {
+            Self::AskingForConsent {
+                certificates,
+                not_accepted,
+                ..
+            } => Some(Moment::AskingForConsent {
                 certificates: certificates.clone(),
+                not_accepted: *not_accepted,
             }),
             Self::AskingToSign(consent) => Some(match consent.visible {
                 SiteVisibleSignature::MarkedByThePerson(_) => Moment::MarkingTheArea {
-                    document: consent.document.clone(),
+                    document: consent.document.handle.clone(),
                 },
                 SiteVisibleSignature::PlacedByTheSite | SiteVisibleSignature::Declined => {
                     consent.consenting()
@@ -78,6 +86,7 @@ impl ErrandStep {
             Self::AskingToSignTheBatch(consent) => Some(Moment::AskingToSignTheBatch {
                 signs: consent.signs,
                 certificates: consent.certificates.clone(),
+                not_accepted: consent.not_accepted,
                 already_chosen: consent.already_chosen.clone(),
                 without_asking: consent.without_asking,
                 sha1_allowed: consent.sha1_allowed,
@@ -86,6 +95,7 @@ impl ErrandStep {
             Self::AskingToSignTheLocalBatch(consent) => Some(Moment::AskingToSignTheLocalBatch {
                 items: consent.items.clone(),
                 certificates: consent.certificates.clone(),
+                not_accepted: consent.not_accepted,
                 already_chosen: consent.already_chosen.clone(),
                 without_asking: consent.without_asking,
                 sha1_allowed: consent.sha1_allowed,
@@ -126,11 +136,39 @@ pub enum NoCertificate {
     TheSiteExcludedThemAll,
 }
 
+/// Un documento que manda la sede, como se enseña en su consentimiento: sin sus bytes, que se leen por el asa.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReceivedDocument {
+    /// Asa del documento para la ventana (ADR-0011).
+    pub handle: String,
+    /// El nombre que propone la sede, si lo propone.
+    pub name: Option<String>,
+    /// El tipo que rFirma detecta en sus bytes (ADR-0050).
+    pub detected: DocumentType,
+    /// El SHA-256 de sus bytes, en hexadecimal.
+    pub sha256: String,
+}
+
+impl ReceivedDocument {
+    /// El documento guardado con el asa `handle`, descrito por sus bytes.
+    pub fn kept_as(handle: String, name: Option<String>, bytes: &[u8]) -> Self {
+        Self {
+            handle,
+            name,
+            detected: type_of(bytes),
+            sha256: openssl::sha::sha256(bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect(),
+        }
+    }
+}
+
 /// Datos necesarios para el consentimiento de firma.
 #[derive(Debug)]
 pub struct SigningConsent {
-    /// Identificador del documento para la ventana (ADR-0011).
-    pub document: String,
+    /// El documento que se firma, con su asa para la ventana.
+    pub document: ReceivedDocument,
     /// El asa de la huella SHA-1 que firma el puente en lugar del documento, en la XAdES explícita (ADR-0023).
     pub sha1_of_the_data: Option<String>,
     /// Formato de firma que la sede pidió, ya atendido por el puente.
@@ -143,6 +181,8 @@ pub struct SigningConsent {
     pub round: SignatureRound,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// Parámetros adicionales de la sede, ya expandidos.
     pub from_the_site: BTreeMap<String, String>,
     /// Recuadro de firma visible decidido para la petición (ADR-0019).
@@ -176,6 +216,7 @@ impl SigningConsent {
             format: self.format,
             round: self.round,
             certificates: self.certificates.clone(),
+            not_accepted: self.not_accepted,
             already_chosen: self.already_chosen.clone(),
             without_asking: self.without_asking,
             sha1_allowed: self.asks_for_sha1() && !self.sha1_to_allow,
@@ -198,6 +239,8 @@ pub struct ForTheSiteServer {
 pub struct ConfirmationConsent {
     /// El documento que se firma, tal y como llegó.
     pub document: Vec<u8>,
+    /// El nombre que propone la sede para el documento, si lo propone.
+    pub name: Option<String>,
     /// Formato que la sede pidió, sin resolver todavía.
     pub requested: RequestedFormat,
     /// Huella que la sede pidió para esta firma.
@@ -235,6 +278,8 @@ pub struct BatchConsent {
     pub signs: usize,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// El asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
     pub already_chosen: Option<String>,
     /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -250,6 +295,8 @@ pub struct BatchConsent {
 pub struct LocalBatchItem {
     /// El identificador con el que la sede nombra el elemento.
     pub id: String,
+    /// El elemento como documento de paso, con su asa para la ventana.
+    pub document: ReceivedDocument,
     /// El formato con el que se firma, con `auto` ya resuelto por la cabecera.
     pub format: Format,
     /// La operación que el lote pide sobre el elemento.
@@ -267,6 +314,8 @@ pub struct LocalBatchConsent {
     pub items: Vec<LocalBatchItem>,
     /// Certificados aceptados por la sede, ya cribados.
     pub certificates: Vec<ListedCertificate>,
+    /// Cuántos certificados de la persona no acepta la sede.
+    pub not_accepted: usize,
     /// El asa del certificado preseleccionado: el fijado en la sesión o el único candidato.
     pub already_chosen: Option<String>,
     /// Si la ventana consiente sola con `already_chosen`, sin esperar a la persona.
@@ -339,17 +388,21 @@ pub enum Moment {
     AskingForConsent {
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
     },
     /// Consentimiento de firma de documento con certificados cribados.
     AskingToSign {
-        /// Identificador del documento para la ventana.
-        document: String,
+        /// El documento que se firma.
+        document: ReceivedDocument,
         /// Formato de firma que la sede pidió.
         format: Format,
         /// Modalidad de firma solicitada.
         round: SignatureRound,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado que ya está resuelto, si lo está.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.
@@ -375,6 +428,8 @@ pub enum Moment {
         signs: usize,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado preseleccionado, si lo hay.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.
@@ -390,6 +445,8 @@ pub enum Moment {
         items: Vec<LocalBatchItem>,
         /// Filas ya cribadas en orden de presentación.
         certificates: Vec<ListedCertificate>,
+        /// Cuántos certificados de la persona no acepta la sede.
+        not_accepted: usize,
         /// El asa del certificado preseleccionado, si lo hay.
         already_chosen: Option<String>,
         /// Si la ventana consiente sola con `already_chosen`.

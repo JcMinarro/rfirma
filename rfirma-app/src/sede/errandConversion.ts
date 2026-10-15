@@ -5,13 +5,14 @@ import {
   type Errand,
   type ErrandStage,
   isSedeRefusal,
+  type LocalBatchItem,
   NAMED_BY_THE_DESK,
   type NamedByTheDesk,
   type RefusalSituation,
-  type SignatureRound,
   type SiteDocument,
   type SiteOutcome,
 } from "./errand";
+import type { DocumentContent, ReceivedDocument } from "./received";
 import type { DescribedDocument, SiteErrandView, SiteStageView } from "./siteErrandView";
 
 /** Las etiquetas del backend que la tabla de rechazos ya nombra de otro modo: las del lote, sin su prefijo. */
@@ -67,13 +68,21 @@ export function refusedByTheBatch(failure: { situation: string; detail: string }
  * `document` llega aparte porque leerlo por su asa es una ida y vuelta al
  * backend, y esta función es pura.
  */
-export function errandOf(view: SiteErrandView, document: SiteDocument | null = null): Errand {
+export function errandOf(
+  view: SiteErrandView,
+  document: SiteDocument | null = null,
+  batchDocuments: readonly ReceivedDocument[] = [],
+): Errand {
   const stage = view.stage;
   const operation = stage.kind === "askingForConsent" ? "selectcert" : "sign";
-  return { origin: view.origin, operation, stage: stageOf(stage, document) };
+  return { origin: view.origin, operation, stage: stageOf(stage, document, batchDocuments) };
 }
 
-function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandStage {
+function stageOf(
+  stage: SiteStageView,
+  document: SiteDocument | null,
+  batchDocuments: readonly ReceivedDocument[],
+): ErrandStage {
   switch (stage.kind) {
     case "waiting":
       return { kind: "waiting" };
@@ -99,9 +108,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         },
       };
     case "askingForConsent":
-      // Sin documento porque no lo hay: `selectcert` no manda ninguno. Y
-      // `narrowed` es `false` porque el backend no dice si la sede acotó la
-      // lista: lo que cruza son las filas ya cribadas y nunca el criterio.
+      // Sin documento porque no lo hay: `selectcert` no manda ninguno.
       return {
         kind: "consent",
         document: null,
@@ -109,7 +116,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: null,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: false,
         sha1ToAllow: false,
       };
@@ -121,7 +128,7 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: stage.signing,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };
@@ -139,21 +146,21 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
         signing: null,
         items: null,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };
     case "askingToSignTheLocalBatch":
-      // Igual que el lote remoto, y además con el resumen de cada elemento:
-      // sin él, un lote podría colar un documento que nadie consintió.
+      // Igual que el lote remoto, y además con cada elemento como documento:
+      // sin ellos, un lote podría colar un documento que nadie consintió.
       return {
         kind: "consent",
         document: null,
         signs: stage.items.length,
         signing: null,
-        items: stage.items,
+        items: batchDocuments,
         certificates: stage.certificates,
-        narrowed: false,
+        narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
       };
@@ -161,8 +168,8 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
 }
 
 /**
- * El documento del consentimiento, con lo que dice de sí mismo y lo que la
- * sede pide firmar sobre lo que ya trae.
+ * El documento del consentimiento, con lo que dice de sí mismo, lo que la
+ * sede propone y lo que rFirma detecta en sus bytes.
  *
  * La ronda cruza entera y sin recuento: cuántas firmas lleva el PDF no lo
  * cuenta nadie, y lo que la ficha pide enseñar es qué será la firma de la
@@ -170,13 +177,37 @@ function stageOf(stage: SiteStageView, document: SiteDocument | null): ErrandSta
  */
 export function documentOf(
   described: DescribedDocument | null,
-  round: SignatureRound,
+  stage: Extract<SiteStageView, { kind: "askingToSign" }>,
   previousSignatures: PreviousSignaturesReport,
-): SiteDocument | null {
-  if (described === null) return null;
+  content: DocumentContent,
+): SiteDocument {
   return {
-    ...described,
-    round,
+    handle: stage.document,
+    name: stage.name,
+    detected: stage.detected,
+    sha256: stage.sha256,
+    title: described?.title ?? null,
+    pages: described?.pages ?? 0,
+    sizeBytes: described?.sizeBytes ?? 0,
+    round: stage.round,
+    previousSignatures,
+    content,
+  };
+}
+
+/** Un elemento del lote local como documento, con lo que se leyó de él por su asa. */
+export function batchDocumentOf(
+  item: LocalBatchItem,
+  previousSignatures: PreviousSignaturesReport,
+  content: DocumentContent,
+): ReceivedDocument {
+  return {
+    id: item.id,
+    handle: item.document,
+    name: item.name,
+    content,
+    sha256: item.sha256,
+    detected: item.detected,
     previousSignatures,
   };
 }

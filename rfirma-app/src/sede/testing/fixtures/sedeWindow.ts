@@ -48,7 +48,11 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     | "lookAgain"
     | "installCertificate"
     | "installLocalCa"
-    | "dismissWarning",
+    | "dismissWarning"
+    | "expandWindow"
+    | "downloadDocument"
+    | "downloadAll"
+    | "openWith",
     Mock
   > = {
     consent: fn(),
@@ -60,6 +64,10 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     installCertificate: fn(),
     installLocalCa: fn(),
     dismissWarning: fn(),
+    expandWindow: fn(),
+    downloadDocument: fn(),
+    downloadAll: fn(),
+    openWith: fn(),
   };
   const listeners = new Set<(news: ReaderNews) => void>();
   const announce = (news: ReaderNews) => {
@@ -84,6 +92,10 @@ export function scriptedErrand(stage: ErrandStage, errand: Partial<Errand> = {})
     installCertificate: async () => calls.installCertificate(),
     installLocalCa: async () => calls.installLocalCa(),
     dismissWarning: async () => calls.dismissWarning(),
+    expandWindow: async (expanded) => calls.expandWindow(expanded),
+    downloadDocument: async (handle) => calls.downloadDocument(handle),
+    downloadAll: async () => calls.downloadAll(),
+    openWith: async (handle) => calls.openWith(handle),
   };
   return { port, calls, announce };
 }
@@ -123,11 +135,16 @@ export function scriptedFrom(story: { args: object; parameters?: object }) {
 
 /** El documento del artboard, el mismo que se enseña al consentir. */
 export const signedDocument: SiteDocument = {
+  handle: "document-handle-1",
+  name: null,
+  detected: "pdf",
+  sha256: "3e7d1a90c4b25f8e06d9a3c7b1f4e2d85a0c6b9f3e1d7a42c8b5f0e9d3a6c71b",
   title: "Solicitud de subvención 2026",
   pages: 27,
   sizeBytes: 2_400_000,
   round: { kind: "sign" },
   previousSignatures: NO_PREVIOUS_SIGNATURES,
+  content: { kind: "none" },
 };
 
 type ConsentStage = Extract<ErrandStage, { kind: "consent" }>;

@@ -258,3 +258,101 @@ fn an_invoice_is_detected_as_invoice_signature() {
         Some(DetectedSignature::Invoice)
     );
 }
+
+macro_rules! received {
+    ($file:literal) => {
+        include_bytes!(concat!("../../../../../../../testdata/", $file)).as_slice()
+    };
+}
+
+#[test]
+fn the_type_of_a_document_comes_from_its_bytes_and_carries_its_extension() {
+    let cases: [(&[u8], DocumentType, &str); 14] = [
+        (
+            received!("site-driver/test/samples/pades-rsa.pdf"),
+            DocumentType::Pdf,
+            "pdf",
+        ),
+        (
+            received!("reference/document.xml"),
+            DocumentType::Xml,
+            "xml",
+        ),
+        (received!("reference/invoice.xml"), DocumentType::Xml, "xml"),
+        (
+            received!("received-types/image.png"),
+            DocumentType::Png,
+            "png",
+        ),
+        (
+            received!("received-types/image.jpg"),
+            DocumentType::Jpeg,
+            "jpg",
+        ),
+        (
+            received!("received-types/image.gif"),
+            DocumentType::Gif,
+            "gif",
+        ),
+        (
+            received!("received-types/image.webp"),
+            DocumentType::Webp,
+            "webp",
+        ),
+        (
+            received!("received-types/document.odt"),
+            DocumentType::Odt,
+            "odt",
+        ),
+        (
+            received!("received-types/spreadsheet.ods"),
+            DocumentType::Ods,
+            "ods",
+        ),
+        (
+            received!("received-types/document.docx"),
+            DocumentType::Docx,
+            "docx",
+        ),
+        (
+            received!("received-types/spreadsheet.xlsx"),
+            DocumentType::Xlsx,
+            "xlsx",
+        ),
+        (
+            received!("received-types/archive.zip"),
+            DocumentType::Zip,
+            "zip",
+        ),
+        (
+            received!("received-types/notes.txt"),
+            DocumentType::Text,
+            "txt",
+        ),
+        (
+            received!("reference/challenge.bin"),
+            DocumentType::Unknown,
+            "bin",
+        ),
+    ];
+    for (bytes, expected, extension) in cases {
+        let detected = type_of(bytes);
+        assert_eq!(detected, expected);
+        assert_eq!(detected.extension(), extension, "{expected:?}");
+    }
+}
+
+#[test]
+fn only_an_unknown_type_is_not_recognised() {
+    assert!(!DocumentType::Unknown.is_recognised());
+    assert!(type_of(received!("received-types/document.odt")).is_recognised());
+}
+
+#[test]
+fn a_signature_container_or_nothing_at_all_is_unknown() {
+    assert_eq!(
+        type_of(received!("reference/cades-implicit.p7s")),
+        DocumentType::Unknown
+    );
+    assert_eq!(type_of(b""), DocumentType::Unknown);
+}

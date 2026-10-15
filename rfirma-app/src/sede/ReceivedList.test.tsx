@@ -95,6 +95,34 @@ describe("ReceivedList", () => {
     expect(iconOf("Anexo I · Beneficiarios.xlsx")).toBe(drawn("document"));
   });
 
+  it("takes the icon from the detected type, not from what the viewer could paint", () => {
+    renderWithCatalog(
+      <ReceivedList
+        documents={[{ ...RESOLUTION_DOCUMENT, content: { kind: "none" } }]}
+        actions={receivedActions}
+        selected="resolution"
+        onSelect={vi.fn()}
+      />,
+    );
+    const icon = screen
+      .getByRole("button", { current: true })
+      .querySelector(".received-list__icon > svg")?.outerHTML;
+
+    expect(icon).toBe(render(<Icon name="documentPdf" />).container.innerHTML);
+  });
+
+  it("offers only the actions the window has", async () => {
+    renderWithCatalog(
+      <ReceivedList
+        documents={[RESOLUTION_DOCUMENT]}
+        actions={{ onCopy: vi.fn() }}
+        selected="resolution"
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(await menuOf("Resolución 2026-0412.pdf")).toEqual(["Copiar SHA-256"]);
+  });
+
   it("names a document without a name or a title as untitled", () => {
     renderWithCatalog(
       <ReceivedList

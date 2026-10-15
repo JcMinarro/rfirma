@@ -1,12 +1,11 @@
 import { composeStories } from "@storybook/react-vite";
-import { screen, within } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import * as stories from "./SedeConsent.stories";
 
 const {
-  CompactDigest,
   CompactRemoteBatch,
   CompactOneDocument,
   CompactSeveralDocuments,
@@ -25,10 +24,7 @@ async function choose(onBehalfOfTheCouncil: boolean) {
 }
 
 describe("the expandable site consent", () => {
-  it.each([
-    ["a digest", CompactDigest],
-    ["a remote batch", CompactRemoteBatch],
-  ])("offers no viewer for %s", (_, Story) => {
+  it.each([["a remote batch", CompactRemoteBatch]])("offers no viewer for %s", (_, Story) => {
     renderWithCatalog(<Story pendingActions />);
     expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
   });
@@ -92,12 +88,6 @@ describe("the expandable site consent", () => {
     expect(document.querySelectorAll(".rf-admonition")).toHaveLength(1);
   });
 
-  it("offers the hashes of a digest as a reference", () => {
-    renderWithCatalog(<CompactDigest pendingActions />);
-    expect(screen.getByText("Vas a firmar 1 referencia")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Descargar huellas" })).toBeInTheDocument();
-  });
-
   it("offers nothing to download from a remote batch", () => {
     renderWithCatalog(<CompactRemoteBatch pendingActions />);
     expect(screen.getByText("Vas a firmar 4 documentos")).toBeInTheDocument();
@@ -105,7 +95,7 @@ describe("the expandable site consent", () => {
   });
 
   it("names who asks for the signature, or says it is unidentified", () => {
-    renderWithCatalog(<CompactDigest />);
+    renderWithCatalog(<CompactRemoteBatch withOrigin={false} />);
     expect(screen.getByText("Una página sin identificar")).toBeInTheDocument();
   });
 
@@ -114,19 +104,37 @@ describe("the expandable site consent", () => {
     expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
   });
 
+  it("shows in the viewer the document picked in the list", async () => {
+    renderWithCatalog(<ExpandedSeveralDocuments />);
+    expect(screen.queryByText(/<baremo convocatoria="FACHADAS-2026">/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Anexo II · Baremo.xml" }));
+
+    expect(screen.getByText(/<baremo convocatoria="FACHADAS-2026">/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { current: true })).toHaveTextContent(
+      "Anexo II · Baremo.xml",
+    );
+  });
+
+  it("keeps the countdown when picking another document", () => {
+    vi.useFakeTimers();
+    try {
+      renderWithCatalog(<ExpandedSeveralDocuments countdown />);
+      act(() => vi.advanceTimersByTime(1000));
+
+      fireEvent.click(screen.getByRole("button", { name: "Anexo II · Baremo.xml" }));
+
+      expect(screen.getByRole("button", { name: "Firmar (2)" })).toBeDisabled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("collapses with «Ocultar» as an icon alone", () => {
     renderWithCatalog(<ExpandedSeveralDocuments />);
     const hide = screen.getByRole("button", { name: "Ocultar" });
     expect(hide).toHaveAttribute("title", "Ocultar");
     expect(hide).toHaveTextContent(/^$/);
-  });
-
-  it("says only what an authentication challenge is", () => {
-    renderWithCatalog(<CompactSeveralDocuments received="challenge" pendingActions />);
-    expect(screen.getByText("Vas a firmar un reto de autenticación")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("list")).not.toBeInTheDocument();
   });
 
   it("names a document without a name or a title as untitled", () => {
