@@ -12,15 +12,20 @@ cambiar una, se sustituye por otra publicada y se actualiza esta tabla.
 
 ## Origen
 
-Eeutil-Igae 6.8.2 (enero de 2026), de la Suite CSVCreator que distribuye el
-Centro de Transferencia de Tecnología en
-<https://administracionelectronica.gob.es/ctt/csvcreator/descargas>. Se copian
-de su réplica en GitHub, [`carm-es/eeutil-igae`](https://github.com/carm-es/eeutil-igae),
-en el commit `d6a520f1eda8fa358e9ebd97fa965a47679196be`, desde
-`resources/config/visorFace/<versión>/visorFace.xsl`.
+`eeutil-igae-src_6.8.2.zip`, el código fuente de Eeutil-Igae 6.8.2 de la
+Suite CSVCreator (Eeutils), que distribuye el Centro de Transferencia de
+Tecnología en <https://administracionelectronica.gob.es/ctt/csvcreator/descargas>.
+Las hojas son `resources/config/visorFace/<versión>/visorFace.xsl` dentro del
+zip.
+
+La réplica en GitHub, [`carm-es/eeutil-igae`](https://github.com/carm-es/eeutil-igae),
+trae los mismos ficheros byte a byte en el commit
+`d6a520f1eda8fa358e9ebd97fa965a47679196be`, por si el zip deja de estar
+publicado.
 
 ## Licencia
 
-EUPL 1.1, la de Eeutil-Igae. Su texto, el mismo PDF que trae ese repositorio,
+EUPL 1.1: el `fuentes/LICENSES.txt` del zip declara Eeutil-Igae bajo esa
+licencia. Su texto, el mismo PDF que `fuentes/LICENSE_EUPL_1.1.pdf` del zip,
 está en `packaging/licenses/EUPL-1.1.pdf`. rFirma se distribuye con la
 EUPL-1.2 (ADR-0008).
