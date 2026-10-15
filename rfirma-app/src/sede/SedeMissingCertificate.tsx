@@ -112,17 +112,7 @@ function InstallFailure({ failure }: { failure: NamedFailure }) {
   const message = errorText(failure.situation, t);
 
   return (
-    <Admonition
-      tone="error"
-      className="sede-ending__detail"
-      title={message.title}
-      action={
-        <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(failure.detail)}>
-          <Icon name="copy" size={14} />
-          {t("actions.copy")}
-        </Button>
-      }
-    >
+    <Admonition tone="error" className="sede-ending__detail" title={message.title}>
       {message.body !== undefined && <p className="rf-body">{message.body}</p>}
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: la región con desplazamiento tiene que poder enfocarse para leerla con el teclado. */}
       <code className="rf-body sede-ending__detail-text" tabIndex={0}>

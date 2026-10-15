@@ -87,7 +87,7 @@ const meta = {
         component: [
           "Provisional: el diseño del momento sin certificado utilizable con el esqueleto del consentimiento compacto. Arriba, la misma cabecera que al consentir, con quién lo pide; debajo, alineado a la izquierda, solo el título con el icono a su izquierda.",
           "El pie conserva las posiciones del consentimiento: a la izquierda, «Volver a buscar», que cede y se corta si no cabe; a la derecha, «Cancelar» e «Instalar un certificado…» como principal. Desde una orden de terminal con todos excluidos no hay arreglo que ofrecer y solo queda «Cerrar».",
-          "Si falla la instalación, el fallo va bajo el título en un aviso de error con su detalle copiable.",
+          "Si falla la instalación, el fallo va bajo el título en un aviso de error con su detalle técnico.",
         ].join("\n\n"),
       },
     },
