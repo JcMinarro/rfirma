@@ -5,7 +5,7 @@ import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import type { SiteDocument } from "./errand";
 import { SedeWindow } from "./SedeWindow";
-import { PADES_SIGNATURES } from "./testing/fixtures/received";
+import { LOCAL_BATCH_DOCUMENTS, PADES_SIGNATURES } from "./testing/fixtures/received";
 import { Batch, IdentityData, TerminalOrder } from "./testing/fixtures/sedeErrands";
 import {
   certificate,
@@ -117,6 +117,25 @@ describe("2 · the expanded consent", () => {
     renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
 
     expect(screen.queryByRole("button", { name: /^Ver documento/ })).not.toBeInTheDocument();
+  });
+
+  describe("a local batch", () => {
+    const items = LOCAL_BATCH_DOCUMENTS.slice(0, 3);
+
+    it("lists every element and shows the one picked", async () => {
+      const user = userEvent.setup();
+      const { port } = scriptedErrand(
+        consentStage({ document: null, signing: null, signs: items.length, items }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      await user.click(screen.getByRole("button", { name: "Ver documentos" }));
+
+      const list = screen.getByRole("navigation", { name: "Vas a firmar 3 documentos" });
+      expect(within(list).getAllByRole("listitem")).toHaveLength(3);
+      await user.click(within(list).getByRole("button", { name: /003/ }));
+      expect(screen.getByText(/<baremo/)).toBeInTheDocument();
+    });
   });
 
   describe("the viewer", () => {

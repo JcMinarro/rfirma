@@ -5,6 +5,7 @@ import { elapse } from "../testing/elapse";
 import { renderWithCatalog } from "../testing/render";
 import { SedeWindow } from "./SedeWindow";
 import { previousSignature, previousSignaturesReport } from "./testing/fixtures/previousSignatures";
+import { LOCAL_BATCH_DOCUMENTS } from "./testing/fixtures/received";
 import {
   Batch,
   Consent,
@@ -122,7 +123,7 @@ describe("2 · consent", () => {
           signs: 1,
           signing: null,
           sha1ToAllow: true,
-          items: [{ id: "001", signing: "pdf", round: { kind: "sign" } }],
+          items: LOCAL_BATCH_DOCUMENTS.slice(1, 2),
         }),
       ],
     ])("signs anyway for %s, with the countdown even when it is turned off", (_, stage) => {

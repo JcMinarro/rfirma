@@ -2,6 +2,7 @@
 
 import type { Errand, ErrandStage, SiteOutcome } from "../../errand";
 import { previousSignature, previousSignaturesReport } from "./previousSignatures";
+import { LOCAL_BATCH_DOCUMENTS } from "./received";
 import { sedeErrand } from "./sedeView";
 import { certificate, consentStage, signedDocument } from "./sedeWindow";
 
@@ -39,13 +40,7 @@ export const LocalBatch = consenting(
     document: null,
     signs: 5,
     signing: null,
-    items: [
-      { id: "001", signing: "pdf", round: { kind: "sign" } },
-      { id: "002", signing: "challenge", round: { kind: "cosign" } },
-      { id: "003", signing: "xml", round: { kind: "sign" } },
-      { id: "004", signing: "invoice", round: { kind: "counter", target: "tree" } },
-      { id: "005", signing: "pdf", round: { kind: "counter", target: "leafs" } },
-    ],
+    items: LOCAL_BATCH_DOCUMENTS,
   }),
 );
 

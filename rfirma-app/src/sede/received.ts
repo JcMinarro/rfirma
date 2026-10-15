@@ -141,6 +141,7 @@ export function allSignaturesOf(
 
 /** Lo recibido en el consentimiento, o `null` cuando no hay ningún documento que firmar. */
 export function receivedOf(stage: Extract<ErrandStage, { kind: "consent" }>): Received | null {
+  if (stage.items !== null) return { kind: "documents", documents: stage.items };
   if (stage.signs !== null) return { kind: "remoteBatch", count: stage.signs };
   if (stage.document === null) return null;
   return { kind: "documents", documents: [consentedDocument(stage.document)] };
