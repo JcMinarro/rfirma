@@ -30,6 +30,7 @@ const DIALOG_SIZE: (f64, f64) = (520.0, 420.0);
 pub struct SiteWindowPicker<'a> {
     identity: Option<&'a IdentityRoot>,
     configuration: Option<ConfigurationView>,
+    language: Language,
     context: Mutex<Option<tauri::Context<tauri::Wry>>>,
 }
 
@@ -44,6 +45,9 @@ impl<'a> SiteWindowPicker<'a> {
                     &roots.documents.documents_folder,
                 )
                 .into()
+            }),
+            language: roots.map_or(Language::Spanish, |roots| {
+                roots.signing.configuration().language
             }),
             context: Mutex::new(Some(context)),
         }
@@ -66,12 +70,14 @@ impl GraphicalPicker for SiteWindowPicker<'_> {
         let app = tauri::Builder::default()
             .manage(Arc::clone(&choice))
             .manage(self.configuration.clone())
-            .manage(SecretDialog(Arc::clone(&identity.prompter)))
+            .manage(SecretDialog {
+                prompter: Arc::clone(&identity.prompter),
+                language: self.language,
+            })
             .invoke_handler(tauri::generate_handler![
                 super::tauri_certgui::read_terminal_configuration,
                 super::tauri_certgui::read_terminal_choice,
                 super::tauri_certgui::terminal_choose_certificate,
-                super::tauri_certgui::terminal_hand_the_secret,
                 super::tauri_certgui::terminal_cancel,
             ])
             .setup({
@@ -121,8 +127,13 @@ fn open_the_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     .map(|_| ())
 }
 
-/// El diálogo del PIN del sistema, el mismo que el resto de la aplicación, al alcance de las órdenes de la ventana.
-pub struct SecretDialog(pub Arc<dyn SecretPrompter + Send + Sync>);
+/// El diálogo del PIN del sistema, el mismo que el resto de la aplicación, en el idioma guardado.
+pub struct SecretDialog {
+    /// El diálogo.
+    pub prompter: Arc<dyn SecretPrompter + Send + Sync>,
+    /// El idioma en que lo pide.
+    pub language: Language,
+}
 
 /// El asa de una fila de la ventana, y su certificado con el secreto que pide su almacén, o por qué no se puede elegir.
 pub type Choosable = (String, Result<(TokenCertificate, StoreSecret), Failure>);
@@ -230,12 +241,12 @@ impl TerminalChoice {
         let request = SecretPromptRequest {
             secret: SecretName::of(certificate.reference().store().class()),
             holder: prompted_holder_of(certificate.der()),
-            language: Language::Spanish,
+            language: dialog.language,
             incorrect_secret: false,
             pin_warning: PinWarning::Quiet,
             origin_window: None,
         };
-        match dialog.0.prompt_secret(&request) {
+        match dialog.prompter.prompt_secret(&request) {
             Ok(secret) => self.hand_the_secret(secret),
             Err(SecretPromptError::Cancelled) => {
                 self.cancel();

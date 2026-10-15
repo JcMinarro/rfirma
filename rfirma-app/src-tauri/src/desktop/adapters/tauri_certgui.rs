@@ -8,7 +8,6 @@ use super::site_window_picker::{SecretDialog, TerminalChoice, TERMINAL_WINDOW};
 use super::views::TerminalChoiceView;
 use crate::crossing::Failure;
 use crate::identity::adapters::views::SecretView;
-use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::StoreSecret;
 use crate::signing::adapters::views::ConfigurationView;
 
@@ -48,18 +47,6 @@ pub fn terminal_choose_certificate(
         close_the_window(&app_handle);
     }
     Ok(secret.into())
-}
-
-/// Devuelve a la orden el PIN del certificado elegido y cierra la ventana.
-#[tauri::command(async)]
-pub fn terminal_hand_the_secret(
-    pin: String,
-    choice: State<'_, Arc<TerminalChoice>>,
-    app_handle: tauri::AppHandle,
-) -> Result<(), Failure> {
-    choice.hand_the_secret(ProtectedSecret::new(pin))?;
-    close_the_window(&app_handle);
-    Ok(())
 }
 
 /// Cancela la elección y cierra la ventana.

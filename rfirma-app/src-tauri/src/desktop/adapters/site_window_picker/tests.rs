@@ -1,5 +1,6 @@
 use std::ffi::OsString;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use super::*;
 use crate::desktop::adapters::paths::Platform;
@@ -32,6 +33,43 @@ fn label_of(choice: &WindowChoice) -> Option<String> {
     }
 }
 
+struct AnsweringDialog {
+    answer: Mutex<Option<Result<ProtectedSecret, SecretPromptError>>>,
+    asked_in: Mutex<Option<Language>>,
+}
+
+impl SecretPrompter for AnsweringDialog {
+    fn prompt_secret(
+        &self,
+        request: &SecretPromptRequest,
+    ) -> Result<ProtectedSecret, SecretPromptError> {
+        *lock(&self.asked_in) = Some(request.language);
+        lock(&self.answer)
+            .take()
+            .expect("el diálogo se abre una vez")
+    }
+}
+
+fn a_dialog_answering(
+    answer: Result<ProtectedSecret, SecretPromptError>,
+) -> (SecretDialog, Arc<AnsweringDialog>) {
+    let prompter = Arc::new(AnsweringDialog {
+        answer: Mutex::new(Some(answer)),
+        asked_in: Mutex::new(None),
+    });
+    let dialog = SecretDialog {
+        prompter: Arc::clone(&prompter) as Arc<dyn SecretPrompter + Send + Sync>,
+        language: Language::Catalan,
+    };
+    (dialog, prompter)
+}
+
+fn a_choice_waiting_for_the_pin() -> TerminalChoice {
+    let choice = a_choice_of(vec![a_row("0", "uno", StoreSecret::TypedOnScreen)]);
+    choice.choose("0").expect("se puede elegir");
+    choice
+}
+
 fn secret_of(choice: &WindowChoice) -> Option<Vec<u8>> {
     match choice {
         WindowChoice::Chosen { secret, .. } => {
@@ -59,6 +97,39 @@ fn a_certificate_whose_store_asks_for_a_pin_waits_for_it_before_deciding() {
     let taken = choice.taken().expect("la ventana se abrió");
     assert_eq!(label_of(&taken), Some("dos".to_owned()));
     assert_eq!(secret_of(&taken), Some(b"1234".to_vec()));
+}
+
+#[test]
+fn the_pin_typed_in_the_system_dialog_completes_the_choice_in_the_saved_language() {
+    let choice = a_choice_waiting_for_the_pin();
+    let (dialog, prompter) = a_dialog_answering(Ok(ProtectedSecret::from("1234")));
+
+    choice.ask_the_secret(&dialog).expect("el diálogo contesta");
+
+    assert_eq!(*lock(&prompter.asked_in), Some(Language::Catalan));
+    let taken = choice.taken().expect("la ventana se abrió");
+    assert_eq!(label_of(&taken), Some("uno".to_owned()));
+    assert_eq!(secret_of(&taken), Some(b"1234".to_vec()));
+}
+
+#[test]
+fn cancelling_the_system_dialog_cancels_the_choice_without_an_error() {
+    let choice = a_choice_waiting_for_the_pin();
+    let (dialog, _) = a_dialog_answering(Err(SecretPromptError::Cancelled));
+
+    assert!(choice.ask_the_secret(&dialog).is_ok());
+    assert!(choice.is_decided());
+    assert!(matches!(choice.taken(), Ok(WindowChoice::Cancelled)));
+}
+
+#[test]
+fn a_system_dialog_that_fails_cancels_the_choice_and_says_so() {
+    let choice = a_choice_waiting_for_the_pin();
+    let (dialog, _) = a_dialog_answering(Err(SecretPromptError::Failed("sin pinentry".to_owned())));
+
+    assert!(choice.ask_the_secret(&dialog).is_err());
+    assert!(choice.is_decided());
+    assert!(matches!(choice.taken(), Ok(WindowChoice::Cancelled)));
 }
 
 #[test]
