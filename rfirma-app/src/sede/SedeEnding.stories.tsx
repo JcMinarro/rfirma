@@ -145,8 +145,8 @@ const meta = {
     docs: {
       description: {
         component: [
-          "Provisional: el diseño del desenlace de sede con el esqueleto del consentimiento compacto. Arriba, quién lo pidió; en medio, el icono y el título, sin nada de lo que se firmó; abajo, «Cerrar» donde estaba «Firmar», con los segundos que faltan para irse sola: «Cerrar (15)» baja hasta cerrar.",
-          "En el rechazo, bajo el título, una sola frase con la causa o con lo que puede hacer la persona, y el detalle técnico copiable con su nota para la sede. El desconocido añade «¿Te parece un fallo de rFirma?» con la ayuda, y como el que pide cerrar otro programa, no se cierra solo: el botón dice «Cerrar» a secas.",
+          "Provisional: el diseño del desenlace de sede con el esqueleto del consentimiento compacto. Arriba, la cabecera con solo el nombre de la sede, sin «Te pide la firma»; debajo, alineado a la izquierda con ese nombre, el icono a la izquierda del título, en la misma fila, sin nada de lo que se firmó; abajo, «Cerrar» donde estaba «Firmar», con los segundos que faltan para irse sola: «Cerrar (15)» baja hasta cerrar.",
+          "En el rechazo, bajo el título y alineados a la izquierda, una sola frase con la causa o con lo que puede hacer la persona, y el detalle técnico copiable con su nota para la sede. El desconocido añade «¿Te parece un fallo de rFirma?» con la ayuda, y como el que pide cerrar otro programa, no se cierra solo: el botón dice «Cerrar» a secas.",
           "No repitas qué se firmó ni cuántos documentos: eso ya se vio al consentir. No pongas la cuenta atrás en una frase aparte: la lleva el botón.",
         ].join("\n\n"),
       },

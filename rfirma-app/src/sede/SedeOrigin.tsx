@@ -1,4 +1,4 @@
-//! La cabecera de 56 px de la ventana de sede que dice quién pide la firma o los datos: el dominio a secas, una página sin identificar o una orden de terminal.
+//! La cabecera de 56 px de la ventana de sede que dice quién pide la firma o los datos: el dominio a secas, una página sin identificar o una orden de terminal; en el desenlace, solo el nombre.
 
 import { useTranslation } from "react-i18next";
 import "./SedeOrigin.css";
@@ -10,7 +10,8 @@ export function SedeOrigin({
   terminal = false,
 }: {
   origin: string | null;
-  asks?: "signature" | "identity";
+  /** Qué pide, o `null` para pintar solo el nombre, como en el desenlace. */
+  asks?: "signature" | "identity" | null;
   terminal?: boolean;
 }) {
   const { t } = useTranslation();
@@ -18,9 +19,11 @@ export function SedeOrigin({
 
   return (
     <header className="sede-origin">
-      <span className="rf-label">
-        {asks === "identity" ? t("sede.origin.asksIdentity") : t("sede.origin.asks")}
-      </span>
+      {asks !== null && (
+        <span className="rf-label">
+          {asks === "identity" ? t("sede.origin.asksIdentity") : t("sede.origin.asks")}
+        </span>
+      )}
       <span className="rf-body sede-origin__name" title={name}>
         {name}
       </span>

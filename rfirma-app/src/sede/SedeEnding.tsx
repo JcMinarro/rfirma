@@ -1,4 +1,4 @@
-//! 4 · El desenlace provisional con el esqueleto del consentimiento compacto: el origen, el icono y el título, y en el rechazo su frase y el detalle copiable; hoy solo lo pintan las historias.
+//! 4 · El desenlace provisional con el esqueleto del consentimiento compacto: el nombre de la sede, el icono junto al título, y en el rechazo su frase y el detalle copiable; hoy solo lo pintan las historias.
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,19 +56,19 @@ export function SedeEnding({ origin, outcome, onClose, onOpenHelp }: SedeEndingP
       }
     >
       <div className="sede-ending">
-        <SedeOrigin origin={origin} />
+        <SedeOrigin origin={origin} asks={null} />
         <div className="sede-ending__body">
-          <div className="sede-ending__head">
-            <span className="sede-ending__icon">
+          <Row gap="xs" className="sede-outcome__head">
+            <span className="sede-outcome__icon">
               <OutcomeIcon kind={outcome.kind} />
             </span>
             <p className="rf-title sede-ending__title">{outcomeTitle(outcome, t)}</p>
-            {outcome.kind === "refused" && (
-              <p className="rf-prose sede-ending__statement">
-                <RefusalStatement situation={outcome.situation} />
-              </p>
-            )}
-          </div>
+          </Row>
+          {outcome.kind === "refused" && (
+            <p className="rf-prose sede-ending__statement">
+              <RefusalStatement situation={outcome.situation} />
+            </p>
+          )}
           {outcome.kind === "refused" && (
             <TechnicalDetail situation={outcome.situation} detail={outcome.detail} />
           )}

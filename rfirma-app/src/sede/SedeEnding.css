@@ -9,29 +9,15 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: safe center;
   gap: var(--rf-space-sm);
   min-height: 0;
   overflow-y: auto;
   padding: 16px var(--rf-space-md);
 }
 
-.sede-ending__head {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--rf-space-xs);
-  text-align: center;
-}
-
-.sede-ending__icon {
-  display: flex;
-  color: var(--rf-text);
-}
-
 .sede-ending__title,
 .sede-ending__statement {
+  flex: none;
   margin: 0;
 }
 
