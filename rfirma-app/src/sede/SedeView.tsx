@@ -3,16 +3,14 @@
 import { useTranslation } from "react-i18next";
 import type { NamedFailure } from "../errors/classify";
 import { type Certificate, type ReaderStatus, UNAVAILABLE_READER } from "../signing/certificate";
-import type { Errand, MarkedArea } from "./errand";
+import { consentActionKey, type Errand, type MarkedArea } from "./errand";
 import { SedeConfirm } from "./SedeConfirm";
 import { SedeConsent } from "./SedeConsent";
 import { SedeEnding } from "./SedeEnding";
 import { SedeMarking } from "./SedeMarking";
 import { SedeMissingCertificate } from "./SedeMissingCertificate";
 import { SedeOldWebClient } from "./SedeOldWebClient";
-import { SedeSigning } from "./SedeSigning";
-import { SedeTransfer } from "./SedeTransfer";
-import { SedeWaiting } from "./SedeWaiting";
+import { SedeAwaiting, SedeFileTransfer, SedeSigningProgress } from "./SedePassing";
 import "./SedeWindow.css";
 
 export interface SedeViewProps {
@@ -58,6 +56,7 @@ export function SedeView({
 }: SedeViewProps) {
   const { t } = useTranslation();
   const stage = errand.stage;
+  const asks = consentActionKey(errand.operation) === "identify" ? "identity" : "signature";
 
   return (
     <div className="sede-window__frame">
@@ -68,16 +67,14 @@ export function SedeView({
         aria-label={t("app.name")}
         data-stage={stage.kind}
       >
-        {stage.kind === "waiting" && (
-          <SedeWaiting
-            moment="connecting"
-            onInstallLocalCa={onInstallLocalCa}
-            onCancel={onCancel}
-          />
-        )}
-        {(stage.kind === "unreachable" || stage.kind === "noChannel") && (
-          <SedeWaiting
-            moment="unreachable"
+        {(stage.kind === "waiting" ||
+          stage.kind === "unreachable" ||
+          stage.kind === "noChannel") && (
+          <SedeAwaiting
+            origin={errand.origin}
+            asks={asks}
+            moment={stage.kind === "waiting" ? "waiting" : "unreachable"}
+            localCaMissing={stage.kind === "noChannel" && stage.reason === "localCaMissing"}
             onInstallLocalCa={onInstallLocalCa}
             onCancel={onCancel}
           />
@@ -107,17 +104,17 @@ export function SedeView({
           />
         )}
         {stage.kind === "signing" && (
-          <SedeSigning
+          <SedeSigningProgress
             origin={errand.origin}
-            certificate={stage.certificate}
+            asks={asks}
+            terminal={errand.terminalOrder !== undefined}
             phase={stage.phase}
             onCancel={onCancel}
           />
         )}
-        {/* Guardar y cargar **no preguntan en esta ventana**: la orden abre el
-            diálogo del portal en cuanto el momento llega, y aquí sólo se
-            nombra el fichero (ADR-0011). */}
-        {(stage.kind === "saving" || stage.kind === "loading") && <SedeTransfer transfer={stage} />}
+        {(stage.kind === "saving" || stage.kind === "loading") && (
+          <SedeFileTransfer origin={errand.origin} transfer={stage} />
+        )}
         {stage.kind === "outcome" && (
           <SedeEnding
             origin={errand.origin}
