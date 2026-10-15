@@ -18,7 +18,12 @@ export interface SiteErrandView {
 /** El momento de la secuencia, tal como lo emite el backend. */
 export type SiteStageView =
   | { kind: "waiting" }
-  | { kind: "askingForConsent"; certificates: readonly Certificate[] }
+  | {
+      kind: "askingForConsent";
+      certificates: readonly Certificate[];
+      narrowed: boolean;
+      notAccepted: number;
+    }
   /** La sede pide `visibleSignature`: el área se marca sobre el PDF antes del consentimiento. */
   | { kind: "markingTheArea"; document: string }
   | {
@@ -29,6 +34,10 @@ export type SiteStageView =
       signing: SigningKind;
       round: SignatureRound;
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */
@@ -48,6 +57,10 @@ export type SiteStageView =
       /** Cuántas firmas lleva el lote. */
       signs: number;
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */
@@ -62,6 +75,10 @@ export type SiteStageView =
       /** Los elementos del lote, en el orden en que la sede los declaró. */
       items: readonly LocalBatchItem[];
       certificates: readonly Certificate[];
+      /** Si la sede acotó la lista: hay certificados propios que no acepta. */
+      narrowed: boolean;
+      /** Cuántos certificados propios no acepta la sede. */
+      notAccepted: number;
       /** El asa preseleccionada: la fijada en la sesión o la única fila que pasó el filtro. */
       alreadyChosen: string | null;
       /** La ventana consiente sola con `alreadyChosen`, sin esperar a la persona. */
