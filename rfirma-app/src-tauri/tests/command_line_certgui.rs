@@ -54,6 +54,7 @@ fn signed_in_the_window(
     std::fs::write(&input, a_one_page_pdf()).expect("el PDF deberia escribirse");
     let output = home.join("firmado.pdf");
     let store = format!("pkcs11:{}", the_card_module().display());
+    let _token = the_token_alone();
     let words = [
         "sign",
         "-i",

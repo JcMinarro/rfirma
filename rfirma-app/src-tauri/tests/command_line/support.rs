@@ -120,6 +120,14 @@ impl Keyring for FixedPinKeyring {
     }
 }
 
+/// El token de pruebas, de una en una: el login de PKCS#11 es del proceso, y un PIN equivocado en una prueba tumba el de la de al lado.
+pub fn the_token_alone() -> std::sync::MutexGuard<'static, ()> {
+    static TOKEN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    TOKEN
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
 pub fn the_card_module() -> PathBuf {
     let module = PathBuf::from(CARD_MODULE);
     assert!(
