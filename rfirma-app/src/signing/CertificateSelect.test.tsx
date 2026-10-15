@@ -129,6 +129,21 @@ describe("CertificateSelect", () => {
       expect(layer.style.maxHeight).toBe("300px");
     });
 
+    it("opens upwards when asked to, with the room above the box as its ceiling", async () => {
+      const { container } = renderSelect({ opens: "up" });
+      const frame = container.querySelector(".combobox__frame") as HTMLElement;
+      vi.spyOn(frame, "getBoundingClientRect").mockReturnValue(
+        DOMRect.fromRect({ x: 20, y: 300, width: 480, height: 52 }),
+      );
+
+      await userEvent.click(box());
+
+      const layer = document.querySelector(".combobox__layer") as HTMLElement;
+      expect(layer.style.top).toBe("");
+      expect(layer.style.bottom).toBe(`${window.innerHeight - 300 + 4}px`);
+      expect(layer.style.maxHeight).toBe(`${300 - 4 - 8}px`);
+    });
+
     it("keeps the list inside the window, which is its ceiling", async () => {
       const { container } = renderSelect();
       const frame = container.querySelector(".combobox__frame") as HTMLElement;

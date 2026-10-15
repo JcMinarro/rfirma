@@ -1647,3 +1647,117 @@ msgstr[2] "O teu --filter non deixa ningún dos teus {{count}} certificados"
 
 msgid "sede.noCertificate.excludedBody"
 msgstr "Instala outro certificado, ou pecha e continúa desde a sede."
+
+#. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
+msgid "sede.origin.asks"
+msgstr "Pídeche a sinatura"
+
+#. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
+msgid "sede.origin.unknown"
+msgstr "Unha páxina sen identificar"
+
+msgid "sede.received.documents"
+msgid_plural "sede.received.documents"
+msgstr[0] "Vas asinar 1 documento"
+msgstr[1] "Vas asinar {{count}} documentos"
+msgstr[2] "Vas asinar {{count}} documentos"
+
+#. Huellas que calculó la sede: se firma la referencia, no un documento.
+msgid "sede.received.digests"
+msgid_plural "sede.received.digests"
+msgstr[0] "Vas asinar 1 referencia"
+msgstr[1] "Vas asinar {{count}} referencias"
+msgstr[2] "Vas asinar {{count}} referencias"
+
+msgid "sede.received.download"
+msgstr "Descargar"
+
+msgid "sede.received.downloadAll"
+msgstr "Descargar todo"
+
+#. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
+msgid "sede.received.downloadAllTitle"
+msgid_plural "sede.received.downloadAllTitle"
+msgstr[0] "O documento e a súa pegada SHA-256, nun .zip"
+msgstr[1] "Os {{count}} documentos e as súas pegadas SHA-256, nun .zip"
+msgstr[2] "Os {{count}} documentos e as súas pegadas SHA-256, nun .zip"
+
+msgid "sede.received.downloadDigests"
+msgstr "Descargar pegadas"
+
+msgid "sede.received.downloadDigestsTitle"
+msgstr "As pegadas e o seu algoritmo, nun .txt"
+
+#. {{name}} es el nombre del documento.
+msgid "sede.received.actionsOf"
+msgstr "Accións de {{name}}"
+
+msgid "sede.received.openWith"
+msgstr "Abrir con…"
+
+msgid "sede.received.saveCopy"
+msgstr "Gardar copia"
+
+msgid "sede.received.copySha256"
+msgstr "Copiar SHA-256"
+
+#. Un solo documento, que ya trae firmas.
+msgid "sede.received.signedOne"
+msgstr "Xa trae sinaturas doutras persoas"
+
+#. Cuántos documentos del lote ya traen firmas, válidas o no.
+msgid "sede.received.signedCount"
+msgid_plural "sede.received.signedCount"
+msgstr[0] "{{count}} xa trae sinaturas doutras persoas"
+msgstr[1] "{{count}} xa traen sinaturas doutras persoas"
+msgstr[2] "{{count}} xa traen sinaturas doutras persoas"
+
+#. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledOne"
+msgstr "Ten unha sinatura que non é válida"
+
+#. Cuántos documentos del lote tienen alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledCount"
+msgid_plural "sede.received.troubledCount"
+msgstr[0] "{{count}} ten unha sinatura que non é válida"
+msgstr[1] "{{count}} teñen unha sinatura que non é válida"
+msgstr[2] "{{count}} teñen unha sinatura que non é válida"
+
+#. El nombre accesible de la franja de firmas que ya trae el documento, sobre el visor.
+msgid "sede.signatures.region"
+msgstr "Sinaturas que xa ten"
+
+msgid "sede.signatures.valid"
+msgid_plural "sede.signatures.valid"
+msgstr[0] "1 válida"
+msgstr[1] "{{count}} válidas"
+msgstr[2] "{{count}} válidas"
+
+msgid "sede.signatures.expired"
+msgid_plural "sede.signatures.expired"
+msgstr[0] "1 caducada"
+msgstr[1] "{{count}} caducadas"
+msgstr[2] "{{count}} caducadas"
+
+msgid "sede.signatures.invalid"
+msgid_plural "sede.signatures.invalid"
+msgstr[0] "1 non válida"
+msgstr[1] "{{count}} non válidas"
+msgstr[2] "{{count}} non válidas"
+
+msgid "sede.signatures.show"
+msgstr "Ver sinaturas"
+
+msgid "sede.signatures.hide"
+msgstr "Ocultar sinaturas"
+
+#. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
+msgid "sede.consent.viewDocuments"
+msgid_plural "sede.consent.viewDocuments"
+msgstr[0] "Ver documento"
+msgstr[1] "Ver documentos"
+msgstr[2] "Ver documentos"
+
+#. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
+msgid "sede.consent.hideDocuments"
+msgstr "Ocultar"

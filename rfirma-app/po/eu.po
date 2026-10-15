@@ -1667,3 +1667,117 @@ msgstr[2] "Zure --filter-ak ez du zure {{count}} ziurtagirietako bat ere uzten"
 
 msgid "sede.noCertificate.excludedBody"
 msgstr "Instalatu beste ziurtagiri bat, edo itxi eta jarraitu egoitzatik."
+
+#. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
+msgid "sede.origin.asks"
+msgstr "Sinadura eskatzen dizu"
+
+#. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
+msgid "sede.origin.unknown"
+msgstr "Identifikatu gabeko orrialde bat"
+
+msgid "sede.received.documents"
+msgid_plural "sede.received.documents"
+msgstr[0] "Dokumentu 1 sinatuko duzu"
+msgstr[1] "{{count}} dokumentu sinatuko dituzu"
+msgstr[2] "{{count}} dokumentu sinatuko dituzu"
+
+#. Huellas que calculó la sede: se firma la referencia, no un documento.
+msgid "sede.received.digests"
+msgid_plural "sede.received.digests"
+msgstr[0] "Erreferentzia 1 sinatuko duzu"
+msgstr[1] "{{count}} erreferentzia sinatuko dituzu"
+msgstr[2] "{{count}} erreferentzia sinatuko dituzu"
+
+msgid "sede.received.download"
+msgstr "Deskargatu"
+
+msgid "sede.received.downloadAll"
+msgstr "Deskargatu dena"
+
+#. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
+msgid "sede.received.downloadAllTitle"
+msgid_plural "sede.received.downloadAllTitle"
+msgstr[0] "Dokumentua eta haren SHA-256 laburpena, .zip batean"
+msgstr[1] "{{count}} dokumentuak eta haien SHA-256 laburpenak, .zip batean"
+msgstr[2] "{{count}} dokumentuak eta haien SHA-256 laburpenak, .zip batean"
+
+msgid "sede.received.downloadDigests"
+msgstr "Deskargatu laburpenak"
+
+msgid "sede.received.downloadDigestsTitle"
+msgstr "Laburpenak eta haien algoritmoa, .txt batean"
+
+#. {{name}} es el nombre del documento.
+msgid "sede.received.actionsOf"
+msgstr "{{name}}: ekintzak"
+
+msgid "sede.received.openWith"
+msgstr "Ireki honekin…"
+
+msgid "sede.received.saveCopy"
+msgstr "Gorde kopia"
+
+msgid "sede.received.copySha256"
+msgstr "Kopiatu SHA-256"
+
+#. Un solo documento, que ya trae firmas.
+msgid "sede.received.signedOne"
+msgstr "Beste pertsona batzuen sinadurak ditu jada"
+
+#. Cuántos documentos del lote ya traen firmas, válidas o no.
+msgid "sede.received.signedCount"
+msgid_plural "sede.received.signedCount"
+msgstr[0] "Dokumentu batek beste pertsona batzuen sinadurak ditu jada"
+msgstr[1] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte jada"
+msgstr[2] "{{count}} dokumentuk beste pertsona batzuen sinadurak dituzte jada"
+
+#. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledOne"
+msgstr "Baliozkoa ez den sinadura bat du"
+
+#. Cuántos documentos del lote tienen alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledCount"
+msgid_plural "sede.received.troubledCount"
+msgstr[0] "Dokumentu batek baliozkoa ez den sinadura bat du"
+msgstr[1] "{{count}} dokumentuk baliozkoa ez den sinadura bat dute"
+msgstr[2] "{{count}} dokumentuk baliozkoa ez den sinadura bat dute"
+
+#. El nombre accesible de la franja de firmas que ya trae el documento, sobre el visor.
+msgid "sede.signatures.region"
+msgstr "Dagoeneko dituen sinadurak"
+
+msgid "sede.signatures.valid"
+msgid_plural "sede.signatures.valid"
+msgstr[0] "1 baliozkoa"
+msgstr[1] "{{count}} baliozko"
+msgstr[2] "{{count}} baliozko"
+
+msgid "sede.signatures.expired"
+msgid_plural "sede.signatures.expired"
+msgstr[0] "1 iraungita"
+msgstr[1] "{{count}} iraungita"
+msgstr[2] "{{count}} iraungita"
+
+msgid "sede.signatures.invalid"
+msgid_plural "sede.signatures.invalid"
+msgstr[0] "1 baliogabea"
+msgstr[1] "{{count}} baliogabe"
+msgstr[2] "{{count}} baliogabe"
+
+msgid "sede.signatures.show"
+msgstr "Ikusi sinadurak"
+
+msgid "sede.signatures.hide"
+msgstr "Ezkutatu sinadurak"
+
+#. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
+msgid "sede.consent.viewDocuments"
+msgid_plural "sede.consent.viewDocuments"
+msgstr[0] "Ikusi dokumentua"
+msgstr[1] "Ikusi dokumentuak"
+msgstr[2] "Ikusi dokumentuak"
+
+#. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
+msgid "sede.consent.hideDocuments"
+msgstr "Ezkutatu"

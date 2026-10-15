@@ -4,14 +4,24 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useRef, useState } from "react";
 import { Button } from "./Button";
 import { Card } from "./Card";
-import { Popover } from "./Popover";
+import { Popover, type PortalPlacement } from "./Popover";
 
-function PopoverDemo({ startsOpen, inPortal }: { startsOpen: boolean; inPortal: boolean }) {
+interface PopoverDemoProps {
+  startsOpen: boolean;
+  inPortal: boolean;
+  opens: NonNullable<PortalPlacement["opens"]>;
+  align: NonNullable<PortalPlacement["align"]>;
+}
+
+function PopoverDemo({ startsOpen, inPortal, opens, align }: PopoverDemoProps) {
   const [open, setOpen] = useState(startsOpen);
   const anchor = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   return (
-    <div ref={anchor} style={{ display: "inline-block", minWidth: 220 }}>
+    <div
+      ref={anchor}
+      style={{ display: "inline-block", minWidth: 220, marginTop: opens === "up" ? 160 : 0 }}
+    >
       <Button ref={trigger} variant="secondary" onClick={() => setOpen((was) => !was)}>
         Abrir panel
       </Button>
@@ -21,7 +31,7 @@ function PopoverDemo({ startsOpen, inPortal }: { startsOpen: boolean; inPortal: 
         anchorRef={anchor}
         returnFocusRef={trigger}
         tabIndex={-1}
-        portal={inPortal ? { maxHeight: 240 } : undefined}
+        portal={inPortal ? { maxHeight: 240, opens, align } : undefined}
       >
         <Card elevated className="rf-body" style={{ marginTop: 4, padding: "8px 10px" }}>
           Contenido del panel
@@ -40,14 +50,20 @@ const meta = {
         component: [
           "El panel flotante de los desplegables: se cierra al pulsar fuera, con Escape o tabulando desde dentro, y mueve el foco al abrirse y al cerrarse.",
           "Úsalo como base de un desplegable propio. Si lo que quieres es un menú o una lista de opciones, usa `Menu`, `Select` o `Combobox`, que ya lo llevan dentro.",
+          'En portal, `opens: "up"` lo abre encima del ancla y `align: "end"` lo pega a su borde derecho, a la medida de su contenido.',
           "No le pases `style`: la colocación es suya. No lo uses como diálogo: no es modal.",
         ].join("\n\n"),
       },
     },
     designSync: { cardMode: "single", primaryStory: "Open" },
   },
-  args: { startsOpen: true, inPortal: false },
-  argTypes: { startsOpen: { control: "boolean" }, inPortal: { control: "boolean" } },
+  args: { startsOpen: true, inPortal: false, opens: "down", align: "stretch" },
+  argTypes: {
+    startsOpen: { control: "boolean" },
+    inPortal: { control: "boolean" },
+    opens: { control: "inline-radio", options: ["down", "up"], if: { arg: "inPortal" } },
+    align: { control: "inline-radio", options: ["stretch", "end"], if: { arg: "inPortal" } },
+  },
 } satisfies Meta<typeof PopoverDemo>;
 
 export default meta;
@@ -55,3 +71,6 @@ export default meta;
 export const Open: StoryObj<typeof meta> = {};
 export const Closed: StoryObj<typeof meta> = { args: { startsOpen: false } };
 export const InPortal: StoryObj<typeof meta> = { args: { inPortal: true } };
+export const InPortalUpAlignedToTheEnd: StoryObj<typeof meta> = {
+  args: { inPortal: true, opens: "up", align: "end" },
+};

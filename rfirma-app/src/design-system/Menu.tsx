@@ -11,8 +11,8 @@ export type MenuItemProps = Omit<ComponentPropsWithRef<"button">, "role" | "tabI
 
 const ITEMS = '[role="menuitem"]:not([disabled])';
 
-/** Un menú anclado a su botón; sus entradas son `MenuItem` y, entre grupos, un `<hr>`. */
-export function Menu({ onKeyDown, onFocus, className, ...rest }: MenuProps) {
+/** Un menú anclado a su botón; sus entradas son `MenuItem` y, entre grupos, un `<hr>`. En portal, a la medida de sus entradas y pegado al borde derecho del ancla. */
+export function Menu({ onKeyDown, onFocus, className, portal, ...rest }: MenuProps) {
   const focusFirstItem = (event: FocusEvent<HTMLDivElement>) => {
     onFocus?.(event);
     if (event.target === event.currentTarget) itemsOf(event.currentTarget).at(0)?.focus();
@@ -38,7 +38,8 @@ export function Menu({ onKeyDown, onFocus, className, ...rest }: MenuProps) {
       initialFocus="panel"
       onFocus={focusFirstItem}
       onKeyDown={moveFocus}
-      className={classNames("rf-menu", className)}
+      className={classNames("rf-menu", portal && "rf-menu--floating", className)}
+      portal={portal && { align: "end", ...portal }}
       {...rest}
     />
   );

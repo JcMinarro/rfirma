@@ -363,6 +363,7 @@ describe("el vocabulario de clases", () => {
     "rf-btn--secondary",
     "rf-btn--ghost",
     "rf-btn--pill",
+    "rf-btn--sm",
     "rf-btn--disabled",
     "rf-field",
     "rf-field--error",

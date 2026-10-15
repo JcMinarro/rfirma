@@ -199,6 +199,51 @@ de las cabeceras de los componentes.
   salir y para las microacciones, y `--secondary` no se usa en ningún momento de
   esta ventana.
 
+### Consentimiento ampliable (diseño pendiente de implementar)
+
+Quien no se fía de la sede puede ver lo que firma sin cargar la ventana a quien
+sí se fía. El diseño son las historias de «Pantallas/Ventana de sede/Consentimiento
+ampliable» y de «Dominio/Sede»; esta sección guarda solo lo que una historia no
+enseña. **Son provisionales**: documentan el diseño sobre componentes que solo
+usan ellas (`SedeConsentCompact`, `SedeConsentExpanded`, `SedeSignatureCards`),
+sin cambiar el consentimiento real. La spec que lo implemente lleva la vista
+nueva a `SedeConsent`, sustituye estas historias por las de siempre y borra lo
+que solo existía para ellas.
+
+- **La compacta no lista nada: resume.** Dice cuánto se firma, ofrece
+  «Descargar…» y, si los hay, dos hechos de las firmas previas: cuántos
+  documentos ya traen firmas y cuántos tienen alguna que no es válida. La lista
+  es de la ampliada, que abre «Ver documentos». Con huellas no hay nada que ver
+  ni vista ampliada. El lote remoto solo da el recuento: sus documentos y sus
+  prefirmas no llegan hasta después de elegir certificado, así que no hay
+  huellas, ni «Descargar», ni «Ver documentos».
+- **«Descargar»** guarda el documento tal cual; con varios, «Descargar todo» es
+  un `.zip` con los documentos y un `SHA256SUMS`; con huellas, un `.txt` con el
+  algoritmo que manda la sede y el valor.
+- **«Abrir con…»** solo existe para un tipo que se sabe abrir; la extensión sale
+  del tipo detectado, nunca del nombre que propone la sede.
+- **Las firmas previas son de cada documento**: el resumen de la compacta cuenta
+  documentos, no firmas, y el detalle es el panel de la ampliada, que flota sobre
+  el visor sin cambiar su ancho. **Escape cierra el panel y no cancela el
+  trámite.**
+- **La ampliada es la misma ventana a 1080 × 660**, el tamaño de marcar el área,
+  y se centra al crecer como en ese momento: ni Wayland ni el compositor dejan
+  colocarla, así que la columna no puede quedarse quieta mientras crece.
+- **Todos los desplegables se abren hacia arriba** (`opens="up"`), porque debajo
+  del selector solo queda el pie.
+- **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en
+  la ampliada ocupan el mismo sitio, y la cuenta atrás de Firmar es la de
+  siempre: no se reinicia al ampliar ni al cambiar de documento.
+
+Lo que la spec tiene que traer y hoy no hay: los bytes de cada documento y la
+huella con su algoritmo desde el backend; el nombre de la entidad en las firmas
+previas («En nombre de» pinta hoy el `organizationIdentifier`), y llevar a
+`SignatureCards` la forma de `SedeSignatureCards` (sin NIF, encabezado atenuado
+en vez de insignias, «Sellada» sin la TSA y «No admite más firmas» tras el
+motivo), que cambia también la ventana principal. Cuando se implemente, la
+invariante 2 («el visor solo aparece en el momento 1c») y la decisión de las
+firmas previas como aviso compacto dejan de ser ciertas.
+
 ### Marcar el área
 
 - **Es el único momento en que la ventana crece**, porque en la caja útil no cabe
@@ -368,6 +413,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 1 · espera | `SedeWaiting.stories.tsx`: `Waiting`, `Unreachable`, `NoChannel` |
 | 1c · marcar el área | `SedeMarking.stories.tsx`: `Marking`, `UnreadableDocument` |
 | 2 · consentimiento | `SedeConsent.stories.tsx`: una por certificado, varios, acotado, sin título, cofirma, contrafirma sobre todas o sobre las últimas, firmas previas válidas o con problema, lote remoto y local, cesión de identidad, sin origen, cuenta atrás y orden de terminal |
+| 2 · consentimiento ampliable (diseño pendiente) | `SedeConsentExpandable.stories.tsx`: `Compact*` a 520 × 420 (huella, lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 2b · confirmar | `SedeConfirm.stories.tsx`: `ShadowAttackSuspect`, `ModifiedForm`, `CertifiedPdf`, `UnknownMessage` |
 | 3 · firmando | `SedeSigning.stories.tsx`: `Signing`, `Returning` |
 | 3 · guardar y cargar | `SedeTransfer.stories.tsx`: `Saving*`, `Loading*` |

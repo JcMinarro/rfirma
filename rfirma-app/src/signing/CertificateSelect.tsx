@@ -21,6 +21,8 @@ interface CertificateSelectProps {
   onChoose: (certificate: Certificate) => void;
   /** El alto máximo de la lista abierta, en px; la ventana lo recorta si no cabe. */
   listMaxHeight?: number;
+  /** Hacia dónde se despliega la lista: arriba cuando la caja vive al pie de la ventana. */
+  opens?: "down" | "up";
   /** Mientras se listan los certificados: la caja lo dice y no se abre. */
   searching?: boolean;
   /** Sin ninguno que elegir: la caja se queda en su sitio, desactivada, y lo dice. */
@@ -35,6 +37,7 @@ export function CertificateSelect({
   chosen,
   onChoose,
   listMaxHeight = 480,
+  opens = "down",
   searching = false,
   absent,
   disabled = false,
@@ -74,6 +77,7 @@ export function CertificateSelect({
       emptyMessage={t("panel.certificate.noMatch")}
       countLabel={(shown, total) => t("panel.certificate.matches", { shown, total })}
       listMaxHeight={listMaxHeight}
+      opens={opens}
       alwaysGroupHeaders
       disabled={searching || absent !== undefined || disabled}
       defaultOpen={defaultOpen}

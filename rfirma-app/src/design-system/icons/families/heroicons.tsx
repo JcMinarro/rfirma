@@ -9,6 +9,7 @@ function outline(d: string) {
 }
 
 const chevronRight = outline("m8.25 4.5 7.5 7.5-7.5 7.5");
+const chevronLeft = outline("M15.75 19.5 8.25 12l7.5-7.5");
 const chevronDown = outline("m19.5 8.25-7.5 7.5-7.5-7.5");
 const check = outline("m4.5 12.75 6 6 9-13.5");
 const plus = outline("M12 4.5v15m7.5-7.5h-15");
@@ -19,6 +20,7 @@ export const HEROICONS_ICONS: IconFamily = {
     ...SHARED_GLYPHS,
     add: plus,
     close: outline("M6 18 18 6M6 6l12 12"),
+    collapseSide: chevronRight,
     collapsed: chevronRight,
     copy: outline(
       "M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75",
@@ -31,6 +33,7 @@ export const HEROICONS_ICONS: IconFamily = {
     dropFile: outline(
       "M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5",
     ),
+    expandSide: chevronLeft,
     expanded: chevronDown,
     externalLink: outline(
       "M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25",
@@ -50,13 +53,16 @@ export const HEROICONS_ICONS: IconFamily = {
     ),
     lastPage: outline("m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"),
     menu: outline("M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"),
+    moreActions: outline(
+      "M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z",
+    ),
     move: outline(
       "M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59",
     ),
     newVersion: outline("m15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"),
     nextPage: chevronRight,
     outOfValidity: outline("M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"),
-    previousPage: outline("M15.75 19.5 8.25 12l7.5-7.5"),
+    previousPage: chevronLeft,
     revoked: outline(
       "M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636",
     ),

@@ -80,7 +80,12 @@ Lo que hay en `window.RFirma`, por capa y título de historia.
 | Dominio | Firma / CertificateCard | `CertificateCard` |
 | Dominio | Firma / CertificateSelect | `CertificateSelect` |
 | Dominio | Firma / PlacementBlock | `PlacementBlock` |
+| Dominio | Sede / ReceivedHeading | `ReceivedHeading` |
+| Dominio | Sede / ReceivedList | `ReceivedList` |
+| Dominio | Sede / ReceivedSummary | `ReceivedSummary` |
 | Dominio | Sede / SedeBody | `SedeBody` |
+| Dominio | Sede / SedeOrigin | `SedeOrigin` |
+| Dominio | Sede / SignaturesStrip | `SignaturesStrip` |
 | Primitivos | Badge | `Badge` |
 | Primitivos | Button | `Button` |
 | Primitivos | Card | `Card` |

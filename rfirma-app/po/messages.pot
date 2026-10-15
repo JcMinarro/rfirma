@@ -1595,3 +1595,117 @@ msgstr[2] ""
 
 msgid "sede.noCertificate.excludedBody"
 msgstr ""
+
+#. Rótulo de la cabecera de la ventana de sede, delante del dominio que pide la firma.
+msgid "sede.origin.asks"
+msgstr ""
+
+#. La cabecera de la ventana de sede cuando la petición no trae un origen válido.
+msgid "sede.origin.unknown"
+msgstr ""
+
+msgid "sede.received.documents"
+msgid_plural "sede.received.documents"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Huellas que calculó la sede: se firma la referencia, no un documento.
+msgid "sede.received.digests"
+msgid_plural "sede.received.digests"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.received.download"
+msgstr ""
+
+msgid "sede.received.downloadAll"
+msgstr ""
+
+#. La ayuda de «Descargar todo»: un .zip con los documentos y un SHA256SUMS.
+msgid "sede.received.downloadAllTitle"
+msgid_plural "sede.received.downloadAllTitle"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.received.downloadDigests"
+msgstr ""
+
+msgid "sede.received.downloadDigestsTitle"
+msgstr ""
+
+#. {{name}} es el nombre del documento.
+msgid "sede.received.actionsOf"
+msgstr ""
+
+msgid "sede.received.openWith"
+msgstr ""
+
+msgid "sede.received.saveCopy"
+msgstr ""
+
+msgid "sede.received.copySha256"
+msgstr ""
+
+#. Un solo documento, que ya trae firmas.
+msgid "sede.received.signedOne"
+msgstr ""
+
+#. Cuántos documentos del lote ya traen firmas, válidas o no.
+msgid "sede.received.signedCount"
+msgid_plural "sede.received.signedCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Un solo documento, con alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledOne"
+msgstr ""
+
+#. Cuántos documentos del lote tienen alguna firma caducada o no válida, o algún hallazgo.
+msgid "sede.received.troubledCount"
+msgid_plural "sede.received.troubledCount"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El nombre accesible de la franja de firmas que ya trae el documento, sobre el visor.
+msgid "sede.signatures.region"
+msgstr ""
+
+msgid "sede.signatures.valid"
+msgid_plural "sede.signatures.valid"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.expired"
+msgid_plural "sede.signatures.expired"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.invalid"
+msgid_plural "sede.signatures.invalid"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "sede.signatures.show"
+msgstr ""
+
+msgid "sede.signatures.hide"
+msgstr ""
+
+#. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
+msgid "sede.consent.viewDocuments"
+msgid_plural "sede.consent.viewDocuments"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
+msgid "sede.consent.hideDocuments"
+msgstr ""

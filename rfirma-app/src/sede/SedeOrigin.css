@@ -1,0 +1,18 @@
+.sede-origin {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--rf-space-xs);
+  height: 56px;
+  padding: 0 var(--rf-space-md);
+  border-bottom: 1px solid var(--rf-border-subtle);
+}
+
+.sede-origin__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: var(--rf-ui-strong-weight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

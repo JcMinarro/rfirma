@@ -1,0 +1,27 @@
+.received-viewer {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.received-viewer__text-scroll {
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--rf-space-md);
+  overflow: auto;
+  background: var(--rf-surface);
+}
+
+.received-viewer__text {
+  box-sizing: border-box;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--rf-space-md);
+  background: var(--rf-bg);
+  box-shadow: var(--rf-shadow-card);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--rf-caption-size);
+  line-height: var(--rf-body-prose-leading);
+  white-space: pre;
+  overflow-x: auto;
+}

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { type ReactNode, useRef, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Popover, type PopoverProps } from "./Popover";
 
 function Harness({
@@ -33,7 +33,17 @@ function Harness({
   );
 }
 
+const anchorRect = DOMRect.fromRect({ x: 300, y: 400, width: 32, height: 32 });
+
+function anchorAt(rect: DOMRect) {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(rect);
+}
+
 describe("Popover", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("closes on Escape and gives the focus back to the trigger", () => {
     render(<Harness />);
 
@@ -96,5 +106,39 @@ describe("Popover", () => {
     expect(panel.parentElement).toBe(document.body);
     expect(panel.style.position).toBe("fixed");
     expect(panel.style.maxHeight).toBe(`${window.innerHeight - 4 - 8}px`);
+  });
+
+  it("opens above the anchor when asked to, with the room left over it", () => {
+    anchorAt(anchorRect);
+    render(<Harness portal={{ opens: "up" }} />);
+
+    const panel = screen.getByRole("menu");
+
+    expect(panel.style.top).toBe("");
+    expect(panel.style.bottom).toBe(`${window.innerHeight - 400 + 4}px`);
+    expect(panel.style.maxHeight).toBe(`${400 - 4 - 8}px`);
+  });
+
+  it("hangs from the anchor's right edge, as wide as its content, when aligned to the end", () => {
+    anchorAt(anchorRect);
+    render(<Harness portal={{ align: "end" }} />);
+
+    const panel = screen.getByRole("menu");
+
+    expect(panel.style.left).toBe("");
+    expect(panel.style.width).toBe("");
+    expect(panel.style.right).toBe(`${window.innerWidth - 332}px`);
+    expect(panel.style.top).toBe("436px");
+  });
+
+  it("takes the anchor's width and left edge by default", () => {
+    anchorAt(anchorRect);
+    render(<Harness portal={{}} />);
+
+    const panel = screen.getByRole("menu");
+
+    expect(panel.style.left).toBe("300px");
+    expect(panel.style.width).toBe("32px");
+    expect(panel.style.right).toBe("");
   });
 });

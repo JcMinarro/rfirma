@@ -266,7 +266,7 @@ CSS con `var(--rf-*)`.
 | Texto | `.rf-heading`, `.rf-title`, `.rf-body`, `.rf-prose`, `.rf-caption`, `.rf-text-muted`, `.rf-text-primary` |
 | Disposición | `.rf-stack`, `.rf-row`, `.rf-divider`, `.rf-gap-xs\|sm\|md\|lg` |
 | Superficies | `.rf-card`, `.rf-card--elevated` |
-| Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill\|--disabled` |
+| Botones | `.rf-btn` + `--primary\|--secondary\|--ghost\|--pill\|--sm\|--disabled` |
 | Formularios | `.rf-field`, `.rf-field--error`, `.rf-label`, `.rf-input`, `.rf-hint` |
 | Otros | `.rf-badge`, `.rf-badge--primary`, `.rf-progress`, `.rf-progress--framed`, `.rf-dialog`, `.rf-scrim` |
 

@@ -21,6 +21,7 @@ function renderCombobox({
   value = null as string | null,
   onChange = vi.fn(),
   defaultOpen = false,
+  opens = undefined as "down" | "up" | undefined,
 } = {}) {
   render(
     <Combobox
@@ -33,6 +34,7 @@ function renderCombobox({
       emptyMessage="Ninguna ciudad coincide"
       countLabel={(shown, total) => `${shown} de ${total}`}
       defaultOpen={defaultOpen}
+      opens={opens}
     >
       {value ?? "Elige una"}
     </Combobox>,
@@ -244,5 +246,20 @@ describe("Combobox", () => {
     await user.click(screen.getByRole("combobox", { name: "Ciudad" }));
 
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("opens the list above the box when asked to", async () => {
+    renderCombobox({ opens: "up" });
+    const frame = document.querySelector(".combobox__frame") as HTMLElement;
+    vi.spyOn(frame, "getBoundingClientRect").mockReturnValue(
+      DOMRect.fromRect({ x: 20, y: 500, width: 320, height: 52 }),
+    );
+
+    await open();
+
+    const layer = document.querySelector(".combobox__layer") as HTMLElement;
+    expect(layer.style.top).toBe("");
+    expect(layer.style.bottom).toBe(`${window.innerHeight - 500 + 4}px`);
+    expect(layer.style.width).toBe("320px");
   });
 });

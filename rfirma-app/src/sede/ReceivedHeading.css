@@ -1,0 +1,12 @@
+.received-heading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--rf-space-xs);
+  height: 44px;
+}
+
+.received-heading__title {
+  flex: 1;
+  margin: 0;
+}

@@ -33,6 +33,8 @@ interface ComboboxProps<T> {
   listMaxHeight?: number;
   /** Pinta las cabeceras con más de una opción aunque todas sean de un mismo grupo. */
   alwaysGroupHeaders?: boolean;
+  /** Hacia dónde se despliega la lista: arriba cuando la caja vive al pie de la ventana. */
+  opens?: "down" | "up";
   disabled?: boolean;
   defaultOpen?: boolean;
 }
@@ -55,6 +57,7 @@ export function Combobox<T>({
   countLabel,
   listMaxHeight = 480,
   alwaysGroupHeaders = false,
+  opens = "down",
   disabled = false,
   defaultOpen = false,
 }: ComboboxProps<T>) {
@@ -224,7 +227,7 @@ export function Combobox<T>({
         initialFocus={search}
         returnFocusRef={box}
         restoreFocus="always"
-        portal={{ maxHeight: listMaxHeight }}
+        portal={{ maxHeight: listMaxHeight, opens }}
         className="combobox__layer"
       >
         {wanted !== "" && ordered.length > 0 && (
