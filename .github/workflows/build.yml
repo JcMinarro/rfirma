@@ -143,6 +143,15 @@ jobs:
           flatpak-builder --user --install-deps-from=flathub --install-deps-only \
             build-dir me.sgomez.rfirma.yml
 
+      # rfirma carga con dlopen la libxslt del runtime, que no se empaqueta.
+      - name: El runtime trae libxslt
+        working-directory: packaging/flatpak
+        run: |
+          version="$(sed -n "s/^runtime-version: '\(.*\)'$/\1/p" me.sgomez.rfirma.yml)"
+          runtime="$(flatpak info --user --show-location "org.gnome.Platform//$version")"
+          find "$runtime/files/lib" -name libxslt.so.1 | grep -q . \
+            || { echo "org.gnome.Platform//$version no trae libxslt.so.1" >&2; exit 1; }
+
       - name: Construye frontend
         run: just build-ts
 

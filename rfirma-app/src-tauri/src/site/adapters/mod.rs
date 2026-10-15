@@ -12,6 +12,8 @@ pub mod desk;
 pub mod frontier;
 #[cfg(test)]
 mod header_probe;
+pub mod invoice_scheme;
+pub mod invoice_view;
 pub mod nss;
 pub mod readers;
 pub mod relay;
@@ -27,6 +29,7 @@ pub mod views;
 pub mod window;
 #[cfg(windows)]
 pub mod windows_root;
+pub mod xslt;
 
 use std::path::Path;
 

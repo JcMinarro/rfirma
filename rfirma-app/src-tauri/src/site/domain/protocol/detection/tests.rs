@@ -259,6 +259,81 @@ fn an_invoice_is_detected_as_invoice_signature() {
     );
 }
 
+fn an_invoice_in(namespace: &str) -> Vec<u8> {
+    format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+<fe:Facturae xmlns:fe=\"{namespace}\" xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">\
+<FileHeader><SchemaVersion>3.2.x</SchemaVersion></FileHeader>\
+<Parties><SellerParty><TaxIdentification><TaxIdentificationNumber>A00000000</TaxIdentificationNumber>\
+</TaxIdentification></SellerParty></Parties>\
+<Invoices><Invoice/></Invoices>\
+</fe:Facturae>"
+    )
+    .into_bytes()
+}
+
+const NAMESPACE_3_2_1: &str = "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
+const NAMESPACE_3_2_2: &str = "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml";
+
+#[test]
+fn an_invoice_of_a_version_with_stylesheet_has_the_invoice_type_and_the_xml_extension() {
+    for namespace in [NAMESPACE_3_2_1, NAMESPACE_3_2_2] {
+        let kind = type_of(&an_invoice_in(namespace));
+        assert_eq!(kind, DocumentType::Invoice, "{namespace}");
+        assert_eq!(kind.extension(), "xml");
+    }
+}
+
+#[test]
+fn an_invoice_of_another_namespace_is_plain_xml() {
+    for namespace in [
+        "http://www.facturae.es/Facturae/2009/v3.2/Facturae",
+        "http://example.invalid/Facturae",
+    ] {
+        assert_eq!(type_of(&an_invoice_in(namespace)), DocumentType::Xml);
+    }
+}
+
+#[test]
+fn an_invoice_without_namespace_is_plain_xml() {
+    let document = b"<Facturae><FileHeader/><Parties/><Invoices/></Facturae>";
+    assert_eq!(shape_of(document), DetectedShape::Invoice);
+    assert_eq!(type_of(document), DocumentType::Xml);
+}
+
+#[test]
+fn an_invoice_with_a_default_namespace_is_told_by_it() {
+    let document = format!(
+        "<Facturae xmlns=\"{NAMESPACE_3_2_2}\"><FileHeader/><Parties/><Invoices/></Facturae>"
+    );
+    assert_eq!(type_of(document.as_bytes()), DocumentType::Invoice);
+}
+
+#[test]
+fn the_root_namespace_tells_the_version_of_an_invoice_with_stylesheet() {
+    assert_eq!(
+        invoice_version(&an_invoice_in(NAMESPACE_3_2_1)),
+        Some(InvoiceVersion::V3_2_1)
+    );
+    assert_eq!(
+        invoice_version(&an_invoice_in(NAMESPACE_3_2_2)),
+        Some(InvoiceVersion::V3_2_2)
+    );
+}
+
+#[test]
+fn an_invoice_without_stylesheet_or_a_document_that_is_no_invoice_has_no_version() {
+    let not_an_invoice = format!(
+        "<Factura xmlns=\"{NAMESPACE_3_2_2}\"><FileHeader/><Parties/><Invoices/></Factura>"
+    );
+    for document in [
+        an_invoice_in("http://www.facturae.es/Facturae/2009/v3.2/Facturae"),
+        not_an_invoice.into_bytes(),
+    ] {
+        assert_eq!(invoice_version(&document), None);
+    }
+}
+
 macro_rules! received {
     ($file:literal) => {
         include_bytes!(concat!("../../../../../../../testdata/", $file)).as_slice()

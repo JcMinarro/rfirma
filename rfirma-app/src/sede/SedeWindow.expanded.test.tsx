@@ -21,11 +21,21 @@ const BAREMO: SiteDocument = {
   ...signedDocument,
   name: "Baremo.xml",
   detected: "xml",
-  content: { kind: "text", text: '<baremo convocatoria="FACHADAS-2026"/>' },
+  content: { kind: "xml", text: '<baremo convocatoria="FACHADAS-2026"/>' },
 };
 
 function consenting(document: SiteDocument = BAREMO) {
   return scriptedErrand(consentStage({ document }));
+}
+
+function depthOf(line: HTMLElement) {
+  return line.style.getPropertyValue("--xml-depth");
+}
+
+function invoiceFrame() {
+  const frame = document.querySelector("iframe");
+  if (frame === null) throw new Error("falta el marco de la factura");
+  return frame;
 }
 
 function footerButtons() {
@@ -158,6 +168,77 @@ describe("2 · the expanded consent", () => {
         "src",
         "data:image/png;base64,AQID",
       );
+    });
+
+    it("shows a one-line XML indented, one element per line", async () => {
+      await expandWith({
+        ...BAREMO,
+        content: {
+          kind: "xml",
+          text: '<baremo convocatoria="FACHADAS-2026"><criterio id="1"><peso>40</peso></criterio></baremo>',
+        },
+      });
+
+      const root = screen.getByText('<baremo convocatoria="FACHADAS-2026">');
+      expect(depthOf(root)).toBe("0");
+      expect(depthOf(screen.getByText('<criterio id="1">'))).toBe("1");
+      expect(depthOf(screen.getByText("<peso>40</peso>"))).toBe("2");
+      expect(depthOf(screen.getByText("</criterio>"))).toBe("1");
+      expect(depthOf(screen.getByText("</baremo>"))).toBe("0");
+    });
+
+    it("shows an XML that cannot be parsed as it comes", async () => {
+      await expandWith({
+        ...BAREMO,
+        content: { kind: "xml", text: "<baremo><criterio></baremo>" },
+      });
+
+      expect(screen.getByText("<baremo><criterio></baremo>")).toBeInTheDocument();
+    });
+
+    const INVOICE: SiteDocument = {
+      ...signedDocument,
+      name: "Factura 2026-0087.xml",
+      detected: "invoice",
+      content: { kind: "invoice", src: "rfirma-invoice://localhost/handle-1" },
+    };
+
+    it("paints an invoice with a view in a frame that only runs its scripts, named after the document", async () => {
+      await expandWith(INVOICE);
+
+      const frame = invoiceFrame();
+      expect(frame).toHaveAttribute("title", "Factura 2026-0087.xml");
+      expect(frame).toHaveAttribute("sandbox", "allow-scripts");
+      expect(frame).toHaveAttribute("src", "rfirma-invoice://localhost/handle-1");
+    });
+
+    it("enters the invoice frame and leaves it with the tab key", async () => {
+      await expandWith(INVOICE);
+      const frame = invoiceFrame();
+      // Un `iframe` está en el orden del tabulador sin `tabindex`, y user-event no lo modela.
+      expect(frame).not.toHaveAttribute("tabindex");
+      frame.focus();
+      expect(document.activeElement).toBe(frame);
+
+      expect(fireEvent.keyDown(frame, { key: "Tab" })).toBe(true);
+      expect(fireEvent.keyDown(frame, { key: "Tab", shiftKey: true })).toBe(true);
+    });
+
+    it("opens and closes the signatures panel over an invoice, and Escape still closes it first", async () => {
+      const user = userEvent.setup();
+      const { port, calls } = consenting({ ...INVOICE, previousSignatures: PADES_SIGNATURES });
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+      await user.click(screen.getByRole("button", { name: "Ver documento" }));
+      await user.click(screen.getByRole("button", { name: "Ver firmas" }));
+
+      expect(screen.getByRole("dialog", { name: "Firmas del documento" })).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(screen.queryByRole("dialog", { name: "Firmas del documento" })).toBeNull();
+      expect(invoiceFrame()).toBeInTheDocument();
+      expect(calls.cancel).not.toHaveBeenCalled();
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(calls.cancel).toHaveBeenCalledOnce();
     });
 
     it("says a document without preview cannot be shown, with its name", async () => {

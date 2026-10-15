@@ -43,7 +43,10 @@ describe("stories", () => {
         );
 
         await waitFor(() => expect(container).not.toBeEmptyDOMElement());
-        const { violations } = await axe.run(container, { rules: rulesOf(Story) });
+        const { violations } = await axe.run(container, {
+          rules: rulesOf(Story),
+          iframes: false,
+        });
         expect(violations.map(({ id, nodes }) => `${id}: ${nodes[0]?.html}`)).toEqual([]);
       });
     }

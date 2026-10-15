@@ -55,6 +55,7 @@ expect "script de compilacion" "$backend windows=true macos=true" "rfirma-app/sr
 expect "configuracion de tauri" "java=false web=true rust=true native=true landing=false windows=true macos=true" "rfirma-app/src-tauri/tauri.conf.json"
 expect "reglas de clippy" "$backend windows=true macos=true" "rfirma-app/src-tauri/clippy.toml"
 expect "manifiesto de windows" "java=false web=true rust=true native=true landing=false windows=true macos=false" "rfirma-app/src-tauri/windows-app-manifest.xml"
+expect "manifiesto de vcpkg" "java=false web=true rust=true native=true landing=false windows=true macos=false" "rfirma-app/src-tauri/vcpkg.json"
 expect "empaquetado de windows" "java=false web=true rust=false native=false landing=false windows=true macos=false" "packaging/windows/tauri.windows.json"
 expect "empaquetado de macos" "java=false web=true rust=false native=false landing=false windows=false macos=true" "packaging/macos/Info.plist"
 expect "puente" "java=true web=false rust=false native=true landing=false windows=false macos=false" "rfirma-native-bridge/src/main/java/A.java"

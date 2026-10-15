@@ -105,14 +105,15 @@ fails_with "argumentos: modo desconocido" "uso:" "$built" --otro
 
 if command -v dpkg-deb > /dev/null 2>&1; then
     deb() {
-        local out="$1" library="$2" relations="${3-Depends: libpcsclite1
+        local out="$1" library="$2" relations="${3-Depends: libpcsclite1, libxslt1.1
 Recommends: opensc, pcscd
 }" staging
         staging="$(mktemp -d "$tmp/deb.XXXX")"
-        mkdir -p "$staging/DEBIAN" "$staging/usr/lib/rfirma"
+        mkdir -p "$staging/DEBIAN" "$staging/usr/lib/rfirma" "$staging/usr/share/doc/rfirma/licenses"
         printf 'Package: rfirma\nVersion: 1.0.0\nArchitecture: amd64\nMaintainer: pruebas\nDescription: pruebas\n%s' \
             "$relations" > "$staging/DEBIAN/control"
         : > "$staging/usr/lib/rfirma/librfirma_crypto.so"
+        : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
         [ -z "$library" ] || : > "$staging/usr/lib/rfirma/$library"
         dpkg-deb --build --root-owner-group "$staging" "$out" > /dev/null
     }
@@ -134,9 +135,17 @@ Recommends: opensc, pcscd
     "$manifest" write "$bare"
     fails_with "contenido: un .deb sin depender de libpcsclite" "libpcsclite" "$bare"
 
+    no_xslt="$tmp/no-xslt"
+    mkdir "$no_xslt"
+    deb "$no_xslt/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1
+Recommends: opensc, pcscd
+"
+    "$manifest" write "$no_xslt"
+    fails_with "contenido: un .deb sin depender de libxslt" "libxslt1.1" "$no_xslt"
+
     unadvised="$tmp/unadvised"
     mkdir "$unadvised"
-    deb "$unadvised/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1
+    deb "$unadvised/rfirma_1.0.0_amd64.deb" "" "Depends: libpcsclite1, libxslt1.1
 "
     "$manifest" write "$unadvised"
     fails_with "contenido: un .deb que no recomienda opensc ni pcscd" "opensc" "$unadvised"

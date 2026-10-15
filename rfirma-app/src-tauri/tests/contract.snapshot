@@ -55,6 +55,7 @@ ORDENES DE TAURI                          (<contexto>/adapters/tauri*.rs)
   async site_mark_area(area: Option<PlacementOrder>) -> Result<bool, Failure>
   async site_expand_window(expanded: bool)
   async site_open_with(document: String) -> Result<(), Failure>
+  async site_prepare_invoice_view(document: String) -> bool
   async site_finish_signing() -> Result<(), Failure>
   async site_install_certificate() -> Result<bool, Failure>
   async site_dismiss_the_warning()
@@ -450,6 +451,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
   pub enum DocumentTypeView
       Pdf
       Xml
+      Invoice
       Png
       Jpeg
       Gif

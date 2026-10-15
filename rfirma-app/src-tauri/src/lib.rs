@@ -291,6 +291,7 @@ fn with_the_five_roots(
             site::adapters::tauri::site_mark_area,
             site::adapters::tauri::site_expand_window,
             site::adapters::tauri::site_open_with,
+            site::adapters::tauri::site_prepare_invoice_view,
             site::adapters::tauri::site_finish_signing,
             site::adapters::tauri::site_install_certificate,
             site::adapters::tauri::site_look_again,
@@ -403,31 +404,33 @@ fn run_site(
     let builder =
         desktop::adapters::installer::with_the_updater(tauri::Builder::default(), context.config());
 
-    let builder = with_the_five_roots(builder, roots)
-        .manage(scratch)
-        .setup(move |app| {
-            dialogs.attach(app.handle().clone());
-            prompter.attach(app.handle().clone());
-            say(said_by_the_role);
-            site::adapters::readers::follow_the_readers_for_the_site_window(app.handle());
+    let builder = site::adapters::invoice_scheme::with_the_invoice_scheme(with_the_five_roots(
+        builder, roots,
+    ))
+    .manage(scratch)
+    .setup(move |app| {
+        dialogs.attach(app.handle().clone());
+        prompter.attach(app.handle().clone());
+        say(said_by_the_role);
+        site::adapters::readers::follow_the_readers_for_the_site_window(app.handle());
 
-            let handle = app.handle().clone();
-            let window = Arc::new(site::adapters::window::TauriSiteWindow::new(handle.clone()));
-            site::adapters::trace::note_the_launch(&url);
+        let handle = app.handle().clone();
+        let window = Arc::new(site::adapters::window::TauriSiteWindow::new(handle.clone()));
+        site::adapters::trace::note_the_launch(&url);
 
-            let launch = {
-                let (handle, window, url) = (handle.clone(), Arc::clone(&window), url.clone());
-                move || attend_the_site_launch(&handle, &url, window)
-            };
-            site::application::startup::warn_before_launching(
-                &url,
-                window,
-                &app.state::<SiteRoot>().errand,
-                Box::new(launch),
-            );
+        let launch = {
+            let (handle, window, url) = (handle.clone(), Arc::clone(&window), url.clone());
+            move || attend_the_site_launch(&handle, &url, window)
+        };
+        site::application::startup::warn_before_launching(
+            &url,
+            window,
+            &app.state::<SiteRoot>().errand,
+            Box::new(launch),
+        );
 
-            Ok(())
-        });
+        Ok(())
+    });
     build_and_run(builder, context, &Arc::new(Serving::from_the_start()));
 }
 

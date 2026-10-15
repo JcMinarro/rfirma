@@ -10,6 +10,7 @@ import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import {
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  INVOICE_DOCUMENT,
   LOCAL_BATCH_DOCUMENTS,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
@@ -26,6 +27,7 @@ const DOCUMENTS = {
   one: [RESOLUTION_DOCUMENT],
   untitled: [UNTITLED_DOCUMENT],
   localBatch: LOCAL_BATCH_DOCUMENTS,
+  invoice: [INVOICE_DOCUMENT],
 };
 
 const WITHOUT_DOCUMENTS = { remoteBatch: REMOTE_BATCH };
@@ -163,6 +165,7 @@ const meta = {
         one: "Un documento",
         untitled: "Un documento sin título",
         localBatch: "Lote local",
+        invoice: "Una factura",
         remoteBatch: "Lote remoto",
       },
     },
@@ -265,6 +268,11 @@ export const ExpandedOneDocument: Story = {
 export const ExpandedXmlDocument: Story = {
   ...expanded,
   args: { view: "expanded", pendingActions: true, defaultDocument: "baremo" },
+};
+
+export const ExpandedInvoiceDocument: Story = {
+  ...expanded,
+  args: { view: "expanded", pendingActions: true, received: "invoice" },
 };
 
 export const ExpandedImageDocument: Story = {

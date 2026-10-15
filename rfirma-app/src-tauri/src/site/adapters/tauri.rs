@@ -115,6 +115,25 @@ pub fn site_open_with(
         .map_err(|error| Failure::new("unknown", error.to_string()))
 }
 
+/// Prepara en el trámite la vista de la factura tras el asa para el marco aislado; `false` si no tiene vista (ADR-0051).
+#[tauri::command(async)]
+pub fn site_prepare_invoice_view(
+    document: String,
+    site: State<'_, SiteRoot>,
+    documents: State<'_, crate::documents::DocumentsRoot>,
+) -> bool {
+    crate::site::application::errand::prepare_the_invoice_view(
+        &site.errand,
+        &document,
+        &|handle| {
+            documents
+                .bytes_of(handle)
+                .map_err(|error| error.to_string())
+        },
+        &super::invoice_view::invoice_html,
+    )
+}
+
 /// Postfirma del trámite de sede y entrega del resultado a la sede, o el paso al guardado
 /// del portal si la firma venía de `signandsave`.
 #[tauri::command(async)]

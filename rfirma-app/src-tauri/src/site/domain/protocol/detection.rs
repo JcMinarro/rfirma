@@ -1,7 +1,7 @@
 //! Detector puro por cabecera: la forma que decide el formato de firma y el tipo de un documento de la sede, sin fiarse de su nombre (ADR-0050).
 
 use quick_xml::events::Event;
-use quick_xml::Reader;
+use quick_xml::{Reader, XmlVersion};
 use x509_cert::der::asn1::AnyRef;
 use x509_cert::der::{Decode, Reader as _, SliceReader, Tag, TagNumber, Tagged};
 
@@ -80,8 +80,10 @@ pub fn shape_of(document: &[u8]) -> DetectedShape {
 pub enum DocumentType {
     /// Un PDF.
     Pdf,
-    /// Un XML, factura electrónica incluida.
+    /// Un XML que no es una factura con hoja de estilos.
     Xml,
+    /// Una FacturaE de una versión con hoja de estilos.
+    Invoice,
     /// Una imagen PNG.
     Png,
     /// Una imagen JPEG.
@@ -115,7 +117,7 @@ impl DocumentType {
     pub fn extension(self) -> &'static str {
         match self {
             Self::Pdf => "pdf",
-            Self::Xml => "xml",
+            Self::Xml | Self::Invoice => "xml",
             Self::Png => "png",
             Self::Jpeg => "jpg",
             Self::Gif => "gif",
@@ -151,9 +153,70 @@ pub fn type_of(document: &[u8]) -> DocumentType {
     }
     match shape_of(document) {
         DetectedShape::Pdf => DocumentType::Pdf,
+        DetectedShape::Invoice if stylesheet_version(document).is_some() => DocumentType::Invoice,
         DetectedShape::Xml | DetectedShape::Invoice => DocumentType::Xml,
         DetectedShape::Binary if is_plain_text(document) => DocumentType::Text,
         DetectedShape::Binary => DocumentType::Unknown,
+    }
+}
+
+/// La versión de una FacturaE que tiene hoja de estilos (ADR-0051).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InvoiceVersion {
+    /// FacturaE 3.2.1.
+    V3_2_1,
+    /// FacturaE 3.2.2.
+    V3_2_2,
+}
+
+const INVOICE_NAMESPACES_WITH_STYLESHEET: [(&str, InvoiceVersion); 2] = [
+    (
+        "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae",
+        InvoiceVersion::V3_2_1,
+    ),
+    (
+        "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml",
+        InvoiceVersion::V3_2_2,
+    ),
+];
+
+/// La versión de la FacturaE, por el espacio de nombres de su raíz, o `None` si no es una factura con hoja.
+pub fn invoice_version(document: &[u8]) -> Option<InvoiceVersion> {
+    if shape_of(document) != DetectedShape::Invoice {
+        return None;
+    }
+    stylesheet_version(document)
+}
+
+fn stylesheet_version(document: &[u8]) -> Option<InvoiceVersion> {
+    let namespace = root_namespace(document)?;
+    INVOICE_NAMESPACES_WITH_STYLESHEET
+        .iter()
+        .find(|(known, _)| *known == namespace)
+        .map(|(_, version)| *version)
+}
+
+fn root_namespace(document: &[u8]) -> Option<String> {
+    let mut reader = Reader::from_reader(document);
+    let mut buffer = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buffer).ok()? {
+            Event::Start(tag) | Event::Empty(tag) => {
+                let wanted = match tag.name().prefix() {
+                    Some(prefix) => format!("xmlns:{}", String::from_utf8_lossy(prefix.as_ref())),
+                    None => "xmlns".to_owned(),
+                };
+                return tag
+                    .attributes()
+                    .flatten()
+                    .find(|attribute| attribute.key.as_ref() == wanted.as_bytes())
+                    .and_then(|attribute| attribute.normalized_value(XmlVersion::Implicit1_0).ok())
+                    .map(|value| value.into_owned());
+            }
+            Event::Eof => return None,
+            _ => {}
+        }
+        buffer.clear();
     }
 }
 

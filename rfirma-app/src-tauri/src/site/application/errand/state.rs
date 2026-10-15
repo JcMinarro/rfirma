@@ -50,6 +50,7 @@ pub struct LiveErrand {
     origin: Mutex<SiteOrigin>,
     sha1_once: std::sync::atomic::AtomicBool,
     expanded: std::sync::atomic::AtomicBool,
+    invoice_views: Mutex<std::collections::HashMap<String, String>>,
 }
 
 /// Datos identificativos y de conexión de un trámite en curso.
@@ -136,6 +137,16 @@ impl LiveErrand {
     /// Registra la ruta temporal de un fichero de paso, que se borra al acabar la operación.
     pub(super) fn keep_the_scratch(&self, path: PathBuf, files: Arc<dyn Scratch + Send + Sync>) {
         crate::lock(&self.scratch).push(KeptScratch { path, files });
+    }
+
+    /// Guarda el HTML de la vista de la factura tras el asa, que se olvida al acabar la operación.
+    pub(super) fn keep_the_invoice_view(&self, handle: &str, html: String) {
+        crate::lock(&self.invoice_views).insert(handle.to_owned(), html);
+    }
+
+    /// El HTML guardado de la vista de la factura tras el asa, si lo hay.
+    pub(super) fn invoice_view(&self, handle: &str) -> Option<String> {
+        crate::lock(&self.invoice_views).get(handle).cloned()
     }
 
     /// Registra la petición original de la sede.
@@ -236,6 +247,7 @@ impl LiveErrand {
         }
         *crate::lock(&self.asked) = None;
         *crate::lock(&self.chosen_document) = None;
+        crate::lock(&self.invoice_views).clear();
         self.sha1_once
             .store(false, std::sync::atomic::Ordering::SeqCst);
         self.expand_the_window(false);

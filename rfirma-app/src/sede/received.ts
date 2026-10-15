@@ -6,6 +6,7 @@ import type { PreviousSignaturesReport } from "../signing/previousSignatures";
 import { sameSignerNotice } from "../signing/sameSignerNotice";
 import type { PdfDocument } from "../viewer/pdf";
 import type { DocumentType, ErrandStage, SiteDocument } from "./errand";
+import { decodedXml } from "./xml";
 
 /** Lo que se va a firmar: documentos o un lote remoto, del que solo se sabe cuántos son. */
 export type Received =
@@ -26,9 +27,11 @@ export interface ReceivedDocument {
   previousSignatures: PreviousSignaturesReport;
 }
 
-/** Lo que el visor pinta: el PDF paginado, el texto literal, la imagen o nada, porque no hay vista previa. */
+/** Lo que el visor pinta: el PDF paginado, la vista de la factura, el XML indentado, el texto literal, la imagen o nada, porque no hay vista previa. */
 export type DocumentContent =
   | { kind: "pdf"; pdf: PdfDocument }
+  | { kind: "invoice"; src: string }
+  | { kind: "xml"; text: string }
   | { kind: "text"; text: string }
   | { kind: "image"; mediaType: string; bytes: Uint8Array }
   | { kind: "none" };
@@ -40,11 +43,17 @@ const IMAGE_MEDIA_TYPES: Partial<Record<DocumentType, string>> = {
   webp: "image/webp",
 };
 
-/** Lo que el visor pinta de unos bytes según el tipo que rFirma detecta en ellos; un PDF que no se abre no tiene vista previa. */
+/** Cómo se abre un PDF y cómo se pide la vista de una factura, que da su dirección o `null` si no la tiene. */
+interface ContentReaders {
+  loadPdf: (bytes: Uint8Array) => Promise<PdfDocument>;
+  invoiceView: () => Promise<string | null>;
+}
+
+/** Lo que el visor pinta de unos bytes según el tipo que rFirma detecta en ellos; un PDF que no se abre no tiene vista previa, y una factura sin vista se ve como XML. */
 export async function contentOf(
   detected: DocumentType,
   bytes: Uint8Array,
-  loadPdf: (bytes: Uint8Array) => Promise<PdfDocument>,
+  { loadPdf, invoiceView }: ContentReaders,
 ): Promise<DocumentContent> {
   if (detected === "pdf") {
     try {
@@ -53,9 +62,12 @@ export async function contentOf(
       return { kind: "none" };
     }
   }
-  if (detected === "xml" || detected === "text") {
-    return { kind: "text", text: new TextDecoder().decode(bytes) };
+  if (detected === "invoice") {
+    const src = await invoiceView().catch(() => null);
+    if (src !== null) return { kind: "invoice", src };
   }
+  if (detected === "xml" || detected === "invoice") return { kind: "xml", text: decodedXml(bytes) };
+  if (detected === "text") return { kind: "text", text: new TextDecoder().decode(bytes) };
   const mediaType = IMAGE_MEDIA_TYPES[detected];
   return mediaType === undefined ? { kind: "none" } : { kind: "image", mediaType, bytes };
 }
@@ -70,6 +82,7 @@ function untitledKey(detected: DocumentType) {
     case "pdf":
       return "sede.consent.untitled";
     case "xml":
+    case "invoice":
       return "sede.consent.untitledXml";
     case "png":
     case "jpeg":

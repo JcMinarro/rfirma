@@ -125,7 +125,7 @@ fi
 echo "OK  $AWT no aparece en ninguna parte"
 
 # Las dependencias del .deb y del .rpm (ID-463): el vigilante enlaza libpcsclite,
-# y OpenSC y pcscd van recomendados. Se leen del paquete con las herramientas de
+# el visor de facturas carga libxslt, y OpenSC y pcscd van recomendados. Se leen del paquete con las herramientas de
 # cada formato; el .rpm, sin `rpm`, por los nombres de su cabecera, que no va comprimida.
 exige_relacion() {
     local relaciones="$1" nombre="$2" tipo="$3"
@@ -136,9 +136,23 @@ exige_relacion() {
     echo "OK  $tipo $nombre"
 }
 
+# La licencia de las hojas de FacturaE que van en el binario (ADR-0051), con las demás de terceros.
+case "$PAQUETE" in
+    *.deb | *.rpm)
+        licencia="$LAB/contenido/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
+        if [ ! -f "$licencia" ]; then
+            echo "FALTA la EUPL 1.1 de las hojas de FacturaE en /usr/share/doc/rfirma/licenses" >&2
+            exit 1
+        fi
+        echo "OK  la EUPL 1.1 de las hojas de FacturaE"
+        ;;
+esac
+
 case "$PAQUETE" in
     *.deb)
-        exige_relacion "$(dpkg-deb -f "$PAQUETE" Depends)" libpcsclite1 "obligatorias"
+        obligatorias="$(dpkg-deb -f "$PAQUETE" Depends)"
+        exige_relacion "$obligatorias" libpcsclite1 "obligatorias"
+        exige_relacion "$obligatorias" libxslt1.1 "obligatorias"
         recomendados="$(dpkg-deb -f "$PAQUETE" Recommends)"
         exige_relacion "$recomendados" opensc "recomendadas"
         exige_relacion "$recomendados" pcscd "recomendadas"
@@ -148,10 +162,11 @@ case "$PAQUETE" in
             obligatorias="$(rpm -qp --requires "$PAQUETE")"
             recomendados="$(rpm -qp --recommends "$PAQUETE")"
         else
-            obligatorias="$(grep -a -o 'libpcsclite\.so\.1[()0-9a-z]*' "$PAQUETE" || true)"
+            obligatorias="$(grep -a -o -e 'libpcsclite\.so\.1[()0-9a-z]*' -e 'libxslt\.so\.1[()0-9a-z]*' "$PAQUETE" || true)"
             recomendados="$(grep -a -o -e 'opensc' -e 'pcsc-lite' "$PAQUETE" || true)"
         fi
         exige_relacion "$obligatorias" libpcsclite.so.1 "obligatorias"
+        exige_relacion "$obligatorias" libxslt.so.1 "obligatorias"
         exige_relacion "$recomendados" opensc "recomendadas"
         exige_relacion "$recomendados" pcsc-lite "recomendadas"
         ;;

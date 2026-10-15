@@ -4,6 +4,7 @@ mod area;
 mod closing;
 pub mod desk;
 mod download;
+mod invoice_view;
 mod open_with;
 pub mod outcome;
 mod pdf_password;
@@ -47,6 +48,7 @@ pub use desk::{
     consent_to_the_local_batch, ErrandDesk, Neighbours,
 };
 pub use download::{download_all, download_one, DownloadError};
+pub use invoice_view::{prepare_the_invoice_view, the_invoice_view};
 pub use open_with::{copy_to_open, CopyToOpenError};
 pub use outcome::{
     BatchConsent, ConfirmationConsent, ErrandStep, ForTheSiteServer, LoadCompletion,

@@ -184,6 +184,23 @@ runs:
         cygpath -w "$directorio" >> "$GITHUB_PATH"
         "$directorio/just.exe" --version
 
+    # libxml2 y libxslt estáticas: con la caché, `just vcpkg` no corre y no se recompilan.
+    # Se guarda en cuanto existe, como la .dll del puente, aunque un paso posterior falle.
+    - id: vcpkg
+      if: inputs.rust != 'none' && runner.os == 'Windows'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: rfirma-app/src-tauri/vcpkg_installed
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('rfirma-app/src-tauri/vcpkg.json') }}
+    - if: inputs.rust != 'none' && runner.os == 'Windows' && steps.vcpkg.outputs.cache-hit != 'true'
+      shell: bash
+      run: just vcpkg
+    - if: inputs.rust != 'none' && runner.os == 'Windows' && steps.vcpkg.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: rfirma-app/src-tauri/vcpkg_installed
+        key: ${{ steps.vcpkg.outputs.cache-primary-key }}
+
     - if: inputs.apt != 'none'
       shell: bash
       env:

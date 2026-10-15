@@ -235,8 +235,16 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
 - **En la lista, el sello del documento dice cómo vienen sus firmas**: `sealed`
   si se validan sin incidencias y `sealedWarning` con el mismo criterio que
   separa una firma no válida en el aviso; sin firmas, ningún sello.
-- **El visor enseña lo que puede del documento**: el PDF paginado, el texto
-  literal del XML o la imagen, centrada en una hoja de 600 px como mucho. Un
+- **El visor enseña lo que puede del documento**: el PDF paginado, el XML
+  indentado o la imagen, centrada en una hoja de 600 px como mucho. El XML se
+  ve un elemento por línea, con la sangría de su profundidad, y nunca se
+  desplaza en horizontal: una línea larga se corta dentro de la hoja y lo
+  cortado conserva su sangría. El contenido mixto, los comentarios, el CDATA y
+  los atributos se quedan como vienen; el XML que no se puede analizar se ve
+  tal cual, cortado igual. Una factura electrónica con vista se ve como en
+  FACe, no con el sistema de diseño (ADR-0051): en un marco aislado que ocupa
+  el área del visor, con el nombre del documento por título, y en el que el
+  tabulador entra y del que sale; sin vista, se ve como su XML. Un
   tipo sin vista previa ocupa esa hoja con el icono, el nombre y «Este tipo de
   archivo no se puede mostrar aquí.», y debajo «Abrir con…» si el tipo se
   reconoce.
@@ -499,7 +507,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
 | 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
 | 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, uno, varios, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
 | 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 

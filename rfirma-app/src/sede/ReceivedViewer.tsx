@@ -1,11 +1,13 @@
-//! El documento recibido en la vista ampliada de la sede: la franja de sus firmas y, debajo, el visor de PDF, su texto literal, su imagen o el aviso de que no tiene vista previa.
+//! El documento recibido en la vista ampliada de la sede: la franja de sus firmas y, debajo, el visor de PDF, su XML indentado, su texto literal, su imagen o el aviso de que no tiene vista previa.
 
+import { type CSSProperties, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { DocumentViewer } from "../viewer/DocumentViewer";
 import { hasKnownType, type ReceivedDocument, receivedName } from "./received";
 import { SignaturesStrip } from "./SignaturesStrip";
+import { indentedXml } from "./xml";
 import "./ReceivedViewer.css";
 
 /** El documento que se mira, a todo lo alto, con sus firmas encima. */
@@ -53,6 +55,21 @@ function Content({
           onOpen={noop}
         />
       );
+    case "invoice":
+      return (
+        <iframe
+          className="received-viewer__frame"
+          src={content.src}
+          title={name}
+          sandbox="allow-scripts"
+        />
+      );
+    case "xml":
+      return (
+        <div className="received-viewer__scroll">
+          <XmlSheet text={content.text} />
+        </div>
+      );
     case "text":
       return (
         <div className="received-viewer__scroll">
@@ -87,6 +104,27 @@ function Content({
         </div>
       );
   }
+}
+
+function XmlSheet({ text }: { text: string }) {
+  const lines = useMemo(() => indentedXml(text), [text]);
+  if (lines === null) {
+    return <div className="rf-body received-viewer__sheet received-viewer__xml">{text}</div>;
+  }
+  return (
+    <div className="rf-body received-viewer__sheet received-viewer__xml">
+      {lines.map((line, index) => (
+        <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: las líneas no cambian de orden ni de número para un mismo texto.
+          key={index}
+          className="received-viewer__xml-line"
+          style={{ "--xml-depth": line.depth } as CSSProperties}
+        >
+          {line.text}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function dataUrl(mediaType: string, bytes: Uint8Array): string {

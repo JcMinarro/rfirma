@@ -7,6 +7,9 @@ coverage/
 # Generado por tauri-build en cada compilacion (esquemas de capacidades).
 src-tauri/gen/
 
+# libxml2 y libxslt de Windows, que compila `just vcpkg` desde src-tauri/vcpkg.json.
+src-tauri/vcpkg_installed/
+
 # Catalogos generados por tools/po-import.mjs desde po/*.po (ID-121): son
 # datos compilados, y lo que se versiona es el .po.
 src/i18n/locales/

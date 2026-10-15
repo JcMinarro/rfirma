@@ -68,6 +68,7 @@ describe("receivedName", () => {
   it.each([
     ["pdf", "sede.consent.untitled"],
     ["xml", "sede.consent.untitledXml"],
+    ["invoice", "sede.consent.untitledXml"],
     ["png", "sede.consent.untitledImage"],
     ["webp", "sede.consent.untitledImage"],
     ["xlsx", "sede.consent.untitledDocument"],
@@ -163,9 +164,11 @@ describe("contentOf", () => {
   const bytes = new TextEncoder().encode("<baremo>Antigüedad</baremo>");
   const pdf = { pageCount: 1, getPage: () => Promise.reject(new Error("sin páginas")) };
   const loadPdf = vi.fn(async () => pdf);
+  const invoiceView = vi.fn(async (): Promise<string | null> => null);
+  const readers = { loadPdf, invoiceView };
 
   it("opens a PDF to page through it", async () => {
-    expect(await contentOf("pdf", bytes, loadPdf)).toEqual({ kind: "pdf", pdf });
+    expect(await contentOf("pdf", bytes, readers)).toEqual({ kind: "pdf", pdf });
     expect(loadPdf).toHaveBeenCalledWith(bytes);
   });
 
@@ -174,14 +177,62 @@ describe("contentOf", () => {
       throw new Error("no es un PDF");
     };
 
-    expect(await contentOf("pdf", bytes, broken)).toEqual({ kind: "none" });
+    expect(await contentOf("pdf", bytes, { ...readers, loadPdf: broken })).toEqual({
+      kind: "none",
+    });
   });
 
-  it.each(["xml", "text"] as const)("shows %s as its literal text", async (detected) => {
-    expect(await contentOf(detected, bytes, loadPdf)).toEqual({
+  it("shows text as its literal text", async () => {
+    expect(await contentOf("text", bytes, readers)).toEqual({
       kind: "text",
       text: "<baremo>Antigüedad</baremo>",
     });
+  });
+
+  it.each(["xml", "invoice"] as const)("shows %s without a view as XML", async (detected) => {
+    expect(await contentOf(detected, bytes, readers)).toEqual({
+      kind: "xml",
+      text: "<baremo>Antigüedad</baremo>",
+    });
+  });
+
+  it("shows an invoice with a view by the address of its view", async () => {
+    const withView = { loadPdf, invoiceView: async () => "rfirma-invoice://localhost/asa-1" };
+
+    expect(await contentOf("invoice", bytes, withView)).toEqual({
+      kind: "invoice",
+      src: "rfirma-invoice://localhost/asa-1",
+    });
+  });
+
+  it("shows an invoice as XML when preparing its view fails", async () => {
+    const failing = {
+      loadPdf,
+      invoiceView: async (): Promise<string | null> => {
+        throw new Error("sin trámite");
+      },
+    };
+
+    expect(await contentOf("invoice", bytes, failing)).toEqual({
+      kind: "xml",
+      text: "<baremo>Antigüedad</baremo>",
+    });
+  });
+
+  it("does not ask for an invoice view of a plain XML", async () => {
+    const asked = vi.fn(async () => "rfirma-invoice://localhost/asa-1");
+
+    expect(await contentOf("xml", bytes, { loadPdf, invoiceView: asked })).toMatchObject({
+      kind: "xml",
+    });
+    expect(asked).not.toHaveBeenCalled();
+  });
+
+  it("reads an XML with the encoding it declares", async () => {
+    const declared = '<?xml version="1.0" encoding="ISO-8859-1"?><n>Peña</n>';
+    const latin1 = Uint8Array.from(declared, (char) => char.charCodeAt(0));
+
+    expect(await contentOf("xml", latin1, readers)).toEqual({ kind: "xml", text: declared });
   });
 
   it.each([
@@ -190,11 +241,11 @@ describe("contentOf", () => {
     ["gif", "image/gif"],
     ["webp", "image/webp"],
   ] as const)("shows a %s as an image of %s", async (detected, mediaType) => {
-    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "image", mediaType, bytes });
+    expect(await contentOf(detected, bytes, readers)).toEqual({ kind: "image", mediaType, bytes });
   });
 
   it.each(["xlsx", "zip", "unknown"] as const)("has no preview of %s", async (detected) => {
-    expect(await contentOf(detected, bytes, loadPdf)).toEqual({ kind: "none" });
+    expect(await contentOf(detected, bytes, readers)).toEqual({ kind: "none" });
   });
 });
 
