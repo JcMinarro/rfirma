@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solicitud xmlns="urn:villaejemplo:sede:solicitud:1.0">
+  <expediente>2026/CONT/0142</expediente>
+  <procedimiento codigo="CON-07">Presentación de garantía definitiva</procedimiento>
+  <interesado>
+    <razonSocial>TALLERES INVENTADOS DEL NORTE, S.L.</razonSocial>
+    <nif>A00000000</nif>
+    <domicilio>Polígono industrial La Prueba, nave 7</domicilio>
+  </interesado>
+  <importe moneda="EUR">2000.00</importe>
+  <documentos>
+    <documento nombre="aval-bancario.pdf" tipo="TD99"/>
+    <documento nombre="escritura-poder.pdf" tipo="TD02"/>
+  </documentos>
+  <fecha>2026-10-06</fecha>
+</solicitud>
