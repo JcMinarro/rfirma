@@ -272,12 +272,14 @@ fn an_invoice_in(namespace: &str) -> Vec<u8> {
     .into_bytes()
 }
 
+const NAMESPACE_3_1: &str = "http://www.facturae.es/Facturae/2007/v3.1/Facturae";
+const NAMESPACE_3_2: &str = "http://www.facturae.es/Facturae/2009/v3.2/Facturae";
 const NAMESPACE_3_2_1: &str = "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
 const NAMESPACE_3_2_2: &str = "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml";
 
 #[test]
 fn an_invoice_of_a_version_with_stylesheet_has_the_invoice_type_and_the_xml_extension() {
-    for namespace in [NAMESPACE_3_2_1, NAMESPACE_3_2_2] {
+    for namespace in [NAMESPACE_3_2, NAMESPACE_3_2_1, NAMESPACE_3_2_2] {
         let kind = type_of(&an_invoice_in(namespace));
         assert_eq!(kind, DocumentType::Invoice, "{namespace}");
         assert_eq!(kind.extension(), "xml");
@@ -286,10 +288,7 @@ fn an_invoice_of_a_version_with_stylesheet_has_the_invoice_type_and_the_xml_exte
 
 #[test]
 fn an_invoice_of_another_namespace_is_plain_xml() {
-    for namespace in [
-        "http://www.facturae.es/Facturae/2009/v3.2/Facturae",
-        "http://example.invalid/Facturae",
-    ] {
+    for namespace in [NAMESPACE_3_1, "http://example.invalid/Facturae"] {
         assert_eq!(type_of(&an_invoice_in(namespace)), DocumentType::Xml);
     }
 }
@@ -312,6 +311,10 @@ fn an_invoice_with_a_default_namespace_is_told_by_it() {
 #[test]
 fn the_root_namespace_tells_the_version_of_an_invoice_with_stylesheet() {
     assert_eq!(
+        invoice_version(&an_invoice_in(NAMESPACE_3_2)),
+        Some(InvoiceVersion::V3_2)
+    );
+    assert_eq!(
         invoice_version(&an_invoice_in(NAMESPACE_3_2_1)),
         Some(InvoiceVersion::V3_2_1)
     );
@@ -326,10 +329,7 @@ fn an_invoice_without_stylesheet_or_a_document_that_is_no_invoice_has_no_version
     let not_an_invoice = format!(
         "<Factura xmlns=\"{NAMESPACE_3_2_2}\"><FileHeader/><Parties/><Invoices/></Factura>"
     );
-    for document in [
-        an_invoice_in("http://www.facturae.es/Facturae/2009/v3.2/Facturae"),
-        not_an_invoice.into_bytes(),
-    ] {
+    for document in [an_invoice_in(NAMESPACE_3_1), not_an_invoice.into_bytes()] {
         assert_eq!(invoice_version(&document), None);
     }
 }
@@ -353,7 +353,11 @@ fn the_type_of_a_document_comes_from_its_bytes_and_carries_its_extension() {
             DocumentType::Xml,
             "xml",
         ),
-        (received!("reference/invoice.xml"), DocumentType::Xml, "xml"),
+        (
+            received!("reference/invoice.xml"),
+            DocumentType::Invoice,
+            "xml",
+        ),
         (
             received!("received-types/image.png"),
             DocumentType::Png,

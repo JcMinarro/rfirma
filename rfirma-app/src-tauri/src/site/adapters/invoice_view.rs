@@ -4,6 +4,10 @@ use crate::site::domain::protocol::{invoice_version, InvoiceVersion};
 
 use super::xslt;
 
+const STYLESHEET_3_2: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/stylesheets/facturae/FacturaeTemplate-3.2.xsl"
+));
 const STYLESHEET_3_2_1: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/stylesheets/facturae/visorFace-3.2.1.xsl"
@@ -20,6 +24,7 @@ pub fn invoice_html(document: &[u8]) -> Option<String> {
 
 fn stylesheet_of(version: InvoiceVersion) -> &'static [u8] {
     match version {
+        InvoiceVersion::V3_2 => STYLESHEET_3_2,
         InvoiceVersion::V3_2_1 => STYLESHEET_3_2_1,
         InvoiceVersion::V3_2_2 => STYLESHEET_3_2_2,
     }
