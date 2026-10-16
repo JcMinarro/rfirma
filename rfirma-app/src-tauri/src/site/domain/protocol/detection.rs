@@ -163,13 +163,19 @@ pub fn type_of(document: &[u8]) -> DocumentType {
 /// La versión de una FacturaE que tiene hoja de estilos (ADR-0051).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InvoiceVersion {
+    /// FacturaE 3.2.
+    V3_2,
     /// FacturaE 3.2.1.
     V3_2_1,
     /// FacturaE 3.2.2.
     V3_2_2,
 }
 
-const INVOICE_NAMESPACES_WITH_STYLESHEET: [(&str, InvoiceVersion); 2] = [
+const INVOICE_NAMESPACES_WITH_STYLESHEET: [(&str, InvoiceVersion); 3] = [
+    (
+        "http://www.facturae.es/Facturae/2009/v3.2/Facturae",
+        InvoiceVersion::V3_2,
+    ),
     (
         "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae",
         InvoiceVersion::V3_2_1,

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sede de pega</title>
+    <link rel="icon" href="/logo.svg" />
+    <link rel="stylesheet" href="/ds/styles.css" />
+    <link rel="stylesheet" href="/sede.css" />
+    <script src="/autoscript.js"></script>
+    <script src="/sede.js" defer></script>
+  </head>
+  <body class="rf-root">
+    <header class="masthead">
+      <nav class="wrap masthead-row">
+        <a class="brand" href="/">
+          <img src="/logo.svg" width="34" height="34" alt="" />
+          <span class="brand-name">rFirma</span>
+          <span class="rf-badge brand-badge">sede de pega</span>
+        </a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <section class="intro">
+        <h1>Sede de pruebas</h1>
+        <p>Envía operaciones de AutoScript al cliente que tenga registrado <code>afirma://</code>.</p>
+      </section>
+
+      <div class="layout">
+        <form class="rf-card panel" id="operation" autocomplete="off">
+          <h2 class="rf-title">Petición</h2>
+
+          <div class="rf-field">
+            <label class="rf-label" for="op">Operación</label>
+            <select class="rf-input" id="op">
+              <option value="sign">Firmar</option>
+              <option value="cosign">Cofirmar</option>
+              <option value="counterSign">Contrafirmar</option>
+              <option value="signAndSaveToFile">Firmar y guardar</option>
+              <option value="selectCertificate">Seleccionar certificado</option>
+            </select>
+          </div>
+
+          <div class="pair">
+            <div class="rf-field" data-needs="format">
+              <label class="rf-label" for="format">Formato</label>
+              <select class="rf-input" id="format"></select>
+            </div>
+            <div class="rf-field" data-needs="format">
+              <label class="rf-label" for="algorithm">Huella</label>
+              <select class="rf-input" id="algorithm">
+                <option value="SHA1withRSA">SHA-1</option>
+                <option value="SHA256withRSA" selected>SHA-256</option>
+                <option value="SHA384withRSA">SHA-384</option>
+                <option value="SHA512withRSA">SHA-512</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="rf-field">
+            <label class="rf-label" for="keystore">Almacén</label>
+            <select class="rf-input" id="keystore">
+              <option value="PKCS11:/usr/lib/softhsm/libsofthsm2.so">SoftHSM (pruebas)</option>
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <fieldset class="rf-field source" data-needs="data">
+            <legend class="rf-label">Documento</legend>
+            <label class="choice"><input type="radio" name="source" value="sample" checked /> Muestra</label>
+            <select class="rf-input" id="sample" aria-label="Muestra"></select>
+            <label class="choice"><input type="radio" name="source" value="file" /> Fichero</label>
+            <input class="rf-input file" id="file" type="file" aria-label="Fichero" />
+            <label class="choice"><input type="radio" name="source" value="none" /> Ninguno (lo elige el cliente)</label>
+          </fieldset>
+
+          <div class="rf-field">
+            <label class="rf-label" for="params">extraParams</label>
+            <textarea class="rf-input params" id="params" rows="5" spellcheck="false"
+              placeholder="clave=valor, una por línea"></textarea>
+            <div class="presets" id="presets" aria-label="Añadir parámetros"></div>
+          </div>
+
+          <div class="actions">
+            <button class="rf-btn rf-btn--pill brand-button" type="submit" id="go">Enviar</button>
+            <button class="rf-btn rf-btn--ghost" type="button" id="clear">Vaciar</button>
+          </div>
+        </form>
+
+        <section class="rf-card panel" aria-live="polite">
+          <h2 class="rf-title">Respuesta</h2>
+          <div id="result" class="result idle"></div>
+          <h3 class="rf-label history-title">Historial</h3>
+          <ol id="history" class="history"></ol>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

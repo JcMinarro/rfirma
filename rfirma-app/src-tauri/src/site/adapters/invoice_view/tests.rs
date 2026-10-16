@@ -1,6 +1,6 @@
 use sha2::{Digest, Sha256};
 
-use super::{invoice_html, STYLESHEET_3_2_1, STYLESHEET_3_2_2};
+use super::{invoice_html, STYLESHEET_3_2, STYLESHEET_3_2_1, STYLESHEET_3_2_2};
 
 const SOURCE_NOTE: &str = include_str!("../../../../stylesheets/facturae/README.md");
 
@@ -26,6 +26,7 @@ fn sha256_of(bytes: &[u8]) -> String {
 #[test]
 fn the_stylesheets_in_the_binary_are_byte_for_byte_those_of_the_source_note() {
     for (file, bytes) in [
+        ("FacturaeTemplate-3.2.xsl", STYLESHEET_3_2),
         ("visorFace-3.2.1.xsl", STYLESHEET_3_2_1),
         ("visorFace-3.2.2.xsl", STYLESHEET_3_2_2),
     ] {
@@ -35,6 +36,7 @@ fn the_stylesheets_in_the_binary_are_byte_for_byte_those_of_the_source_note() {
 
 const REFERENCE_INVOICE: &str = include_str!("../../../../../../testdata/reference/invoice.xml");
 const REFERENCE_NAMESPACE: &str = "http://www.facturae.es/Facturae/2009/v3.2/Facturae";
+const NAMESPACE_3_1: &str = "http://www.facturae.es/Facturae/2007/v3.1/Facturae";
 const NAMESPACE_3_2_1: &str = "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
 const NAMESPACE_3_2_2: &str = "http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml";
 
@@ -48,7 +50,7 @@ fn an_invoice_in(namespace: &str) -> String {
 
 #[test]
 fn an_invoice_of_each_version_with_stylesheet_shows_its_seller_and_its_total() {
-    for namespace in [NAMESPACE_3_2_1, NAMESPACE_3_2_2] {
+    for namespace in [REFERENCE_NAMESPACE, NAMESPACE_3_2_1, NAMESPACE_3_2_2] {
         let html = invoice_html(an_invoice_in(namespace).as_bytes())
             .unwrap_or_else(|| panic!("la factura de {namespace} tiene vista"));
 
@@ -59,7 +61,7 @@ fn an_invoice_of_each_version_with_stylesheet_shows_its_seller_and_its_total() {
 
 #[test]
 fn an_invoice_of_a_version_without_stylesheet_has_no_view() {
-    assert_eq!(invoice_html(REFERENCE_INVOICE.as_bytes()), None);
+    assert_eq!(invoice_html(an_invoice_in(NAMESPACE_3_1).as_bytes()), None);
 }
 
 #[test]

@@ -700,6 +700,12 @@ dev-fake-card tries="3" profile="dnie" *args: check-native po-import
 dev-handler mode="on":
     RFIRMA_LIB_DIR="$(dirname "{{ native_lib }}")" {{ root }}/scripts/dev-handler.sh {{ mode }}
 
+# Levanta en https://sede.localhost una sede de pega con el autoscript.js publicado, para mandar a
+# firmar a mano al cliente que tenga registrado afirma://. Su certificado lo emite la CA local de rFirma.
+[group('dev')]
+sede port="8443": autoscript
+    RFIRMA_AUTOSCRIPT="{{ root }}/testdata/conformance/autoscript-{{ autofirma_version }}.js" RFIRMA_SEDE_PORT={{ port }} node {{ root }}/testdata/sede/serve.mjs
+
 # Levanta la consola web de la suite de conformidad de rfirma-conformance/, imprime su URL con el
 # token y la abre en el navegador. Cliente, informe y comprobaciones se eligen en la pagina; cada
 # informe vive en reports/conformance/<nombre>/, con sus transcripciones dentro.
