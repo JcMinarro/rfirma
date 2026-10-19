@@ -148,6 +148,17 @@ export const someUserCertificates: SignalRow = {
   },
 };
 
+export const someUserCertificatesOnMacos: SignalRow = {
+  ...someUserCertificates,
+  detail: {
+    kind: "certificates",
+    stores: [
+      { brand: "macos", certificates: 2 },
+      { brand: "card", certificates: 1 },
+    ],
+  },
+};
+
 export const cardReaderDetected = cardReaderRow({ kind: "noCard" });
 
 export const cardReaderMissing = cardReaderRow({ kind: "noReader" });

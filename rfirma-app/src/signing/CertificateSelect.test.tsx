@@ -247,6 +247,16 @@ describe("CertificateSelect", () => {
       expect(within(row(0)).getByText("Tarjeta")).toBeVisible();
     });
 
+    it("names the macOS personal store as the macOS store", async () => {
+      renderSelect({
+        certificates: [aCertificate({ id: "macos", stores: ["macos"] })],
+      });
+
+      await userEvent.click(box());
+
+      expect(within(row(0)).getByText("Almacén de macOS")).toBeVisible();
+    });
+
     it("tags a DNIe certificate as «DNIe» and a certificate on any other card as «Tarjeta»", async () => {
       renderSelect({
         certificates: [
