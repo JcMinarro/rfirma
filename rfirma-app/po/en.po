@@ -1500,6 +1500,15 @@ msgstr "The site only accepts some certificates"
 msgid "sede.received.sha1ToAllow"
 msgstr "This site uses an insecure signing method"
 
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] "You are making 1 signature"
+msgstr[1] "You are making {{count}} signatures"
+msgstr[2] "You are making {{count}} signatures"
+
+msgid "sede.received.remoteBatch"
+msgstr "The documents stay on the site's server, and rFirma cannot show them to you"
+
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"
 msgstr "Sign anyway"

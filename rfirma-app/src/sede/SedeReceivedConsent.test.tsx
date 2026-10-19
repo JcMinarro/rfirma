@@ -90,7 +90,7 @@ describe("the expandable site consent", () => {
 
   it("offers nothing to download from a remote batch", () => {
     renderWithCatalog(<CompactRemoteBatch pendingActions />);
-    expect(screen.getByText("Vas a firmar 4 documentos")).toBeInTheDocument();
+    expect(screen.getByText("Vas a hacer 4 firmas")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Descargar/ })).not.toBeInTheDocument();
   });
 

@@ -1458,6 +1458,17 @@ msgstr ""
 msgid "sede.received.sha1ToAllow"
 msgstr ""
 
+#. Encabezado del lote remoto: cuenta firmas, porque los documentos no se ven.
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Aviso de lo recibido en un lote remoto: los documentos los tiene el servidor de la sede.
+msgid "sede.received.remoteBatch"
+msgstr ""
+
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"
 msgstr ""

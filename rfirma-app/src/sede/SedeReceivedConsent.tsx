@@ -194,6 +194,7 @@ function SedeConsentCompact({
                 documents={received.kind === "documents" ? received.documents : []}
                 certificate={consent.chosen}
                 sha1ToAllow={sha1ToAllow}
+                remoteBatch={received.kind === "remoteBatch"}
               />
               {terminal ? (
                 <TerminalDocumentHeading documentPath={terminalDocument} />
