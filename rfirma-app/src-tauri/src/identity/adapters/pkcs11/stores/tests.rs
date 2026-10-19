@@ -225,6 +225,21 @@ fn finds_softoken_in_multiarch_subdirectories() {
 }
 
 #[test]
+fn skips_a_32_bit_softoken_listed_before_the_64_bit_one() {
+    let temp = tempfile::tempdir().expect("deberia poder crearse un directorio temporal");
+    let usr_lib = temp.path().join("usr/lib");
+    let i386 = usr_lib.join("i386-linux-gnu");
+    let x86_64 = usr_lib.join("x86_64-linux-gnu");
+    std::fs::create_dir_all(&i386).expect("deberia poder crearse i386-linux-gnu");
+    std::fs::create_dir_all(&x86_64).expect("deberia poder crearse x86_64-linux-gnu");
+    std::fs::write(i386.join("libsoftokn3.so"), b"\x7fELF\x01").expect("deberia poder escribirse");
+    let softoken_path = x86_64.join("libsoftokn3.so");
+    std::fs::write(&softoken_path, b"\x7fELF\x02").expect("deberia poder escribirse");
+
+    assert_eq!(softoken_under(&usr_lib), Some(softoken_path));
+}
+
+#[test]
 fn finds_softoken_in_multiarch_nss_subdirectory() {
     let temp = tempfile::tempdir().expect("deberia poder crearse un directorio temporal");
     let usr_lib = temp.path().join("usr/lib");
