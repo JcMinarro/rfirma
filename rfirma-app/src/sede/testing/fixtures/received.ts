@@ -344,6 +344,14 @@ export const UNTITLED_DOCUMENT = document({
   name: null,
 });
 
+/** La huella del documento que manda una sede en lugar del documento. */
+export const HASH_DOCUMENT = document({
+  id: "hash",
+  name: null,
+  precalculatedHash: true,
+  previousSignatures: NO_PREVIOUS_SIGNATURES,
+});
+
 /** El lote local de cinco elementos, cada uno con sus bytes y su identificador por nombre. */
 export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
   document({
@@ -365,6 +373,36 @@ export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
     name: "005",
     content: { kind: "pdf", pdf: resolutionPdf },
     previousSignatures: CO_SIGNED,
+  }),
+];
+
+/** Un lote local de cuatro elementos en el que el segundo y el cuarto son huellas. */
+export const MIXED_LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
+  document({
+    id: "001",
+    name: "001",
+    content: { kind: "pdf", pdf: resolutionPdf },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "002",
+    name: "002",
+    precalculatedHash: true,
+    content: { kind: "none" },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "003",
+    name: "003",
+    content: { kind: "xml", text: BAREMO_XML },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "004",
+    name: "004",
+    precalculatedHash: true,
+    content: { kind: "none" },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
   }),
 ];
 

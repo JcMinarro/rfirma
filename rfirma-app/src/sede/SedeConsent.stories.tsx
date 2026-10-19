@@ -10,8 +10,10 @@ import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import {
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  HASH_DOCUMENT,
   INVOICE_DOCUMENT,
   LOCAL_BATCH_DOCUMENTS,
+  MIXED_LOCAL_BATCH_DOCUMENTS,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   receivedActions,
@@ -27,7 +29,9 @@ const DOCUMENTS = {
   one: [RESOLUTION_DOCUMENT],
   untitled: [UNTITLED_DOCUMENT],
   localBatch: LOCAL_BATCH_DOCUMENTS,
+  mixedLocalBatch: MIXED_LOCAL_BATCH_DOCUMENTS,
   invoice: [INVOICE_DOCUMENT],
+  hash: [HASH_DOCUMENT],
 };
 
 const WITHOUT_DOCUMENTS = { remoteBatch: REMOTE_BATCH };
@@ -55,6 +59,7 @@ interface ExpandableConsentDesignProps {
   withOrigin: boolean;
   siteFiltersCertificates: boolean;
   sha1ToAllow: boolean;
+  throughSiteServer: boolean;
   countdown: boolean;
   pendingActions: boolean;
   defaultDocument?: string;
@@ -89,6 +94,7 @@ function ExpandableConsentDesign({
   withOrigin,
   siteFiltersCertificates,
   sha1ToAllow,
+  throughSiteServer,
   countdown,
   pendingActions,
   defaultDocument,
@@ -101,6 +107,7 @@ function ExpandableConsentDesign({
     reader: READERS[reader],
     narrowed: siteFiltersCertificates,
     sha1ToAllow,
+    throughSiteServer,
     countdown,
     onConsent: sedeViewActions.onConsent,
     onCancel: sedeViewActions.onCancel,
@@ -142,6 +149,7 @@ const meta = {
     withOrigin: true,
     siteFiltersCertificates: false,
     sha1ToAllow: false,
+    throughSiteServer: false,
     countdown: false,
     pendingActions: false,
   },
@@ -165,6 +173,7 @@ const meta = {
         one: "Un documento",
         untitled: "Un documento sin título",
         localBatch: "Lote local",
+        mixedLocalBatch: "Lote local con huellas",
         invoice: "Una factura",
         remoteBatch: "Lote remoto",
       },
@@ -212,6 +221,10 @@ const meta = {
       description:
         "La sede pide SHA-1 sin permiso: el aviso, «Firmar igualmente» y la cuenta atrás",
     },
+    throughSiteServer: {
+      description:
+        "La sede firma con su servidor trifásico: el aviso de que prepara la firma y «Ver el documento enviado»",
+    },
     countdown: { description: "El botón de firmar espera unos segundos antes de habilitarse" },
     pendingActions: {
       description:
@@ -225,7 +238,7 @@ const meta = {
         component: [
           "El consentimiento de sede cuando se sabe qué se firma. La compacta, a 520 × 420, lleva quién lo pide, debajo el selector, que se abre hacia abajo, con la línea del lector, y pegado al pie lo que se firma: primero un único aviso con los hechos de las firmas que ya traen los documentos y después el recuento; desde una orden de terminal, el nombre del documento en vez del recuento. «Ver documentos», en el hueco izquierdo del pie, lleva la ventana a 1080 × 660, con el documento a la izquierda y, en una columna de 400 px, el selector encima de la lista de documentos y su menú «⋯», y «Ocultar» en el mismo sitio, solo con su icono. Lo que ya firmaste tú lo dice la franja del documento. La descarga y «Abrir con…» son diseño pendiente: los enseña el control de acciones pendientes.",
           "Úsalo como referencia del momento 2 con documentos, al pedir los datos y desde una orden de terminal; sin documentos de una sede no hay vista ampliada. Los controles cambian los datos, no la pantalla.",
-          "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar igualmente», con la cuenta atrás obligada; con el permiso ya dado no se dice nada.",
+          "Si la sede acotó los certificados, lo dice el pie de la lista abierta, no una línea bajo el selector. Si pide SHA-1 sin permiso, lo dice el mismo aviso, tras la firma no válida si la hay, y el botón dice «Firmar igualmente», con la cuenta atrás obligada; con el permiso ya dado no se dice nada. Si la firma pasa por el servidor trifásico de la sede, el aviso añade que ese servidor la prepara con el documento, sin cambiar su tono, y el botón dice «Ver el documento enviado».",
           "No enseñes del lote remoto más que su recuento, ni del reto más que qué es; no digas el tipo del documento ni si se firma, se cofirma o se contrafirma; no pongas ayuda bajo la tarjeta ilegible, y no cierres el trámite con Escape mientras el panel de firmas está abierto: Escape cierra el panel.",
         ].join("\n\n"),
       },
@@ -249,9 +262,20 @@ const expanded = {
 
 export const CompactRemoteBatch: Story = { decorators: compact, args: { received: "remoteBatch" } };
 
+export const CompactRemoteBatchWithSha1: Story = {
+  decorators: compact,
+  args: { received: "remoteBatch", sha1ToAllow: true },
+};
+
 export const CompactOneDocument: Story = { decorators: compact, args: { received: "one" } };
 
 export const CompactSeveralDocuments: Story = { decorators: compact };
+
+export const CompactPrecalculatedHash: Story = { decorators: compact, args: { received: "hash" } };
+export const CompactSiteServer: Story = {
+  decorators: compact,
+  args: { received: "one", throughSiteServer: true },
+};
 
 export const CompactCountdown: Story = { decorators: compact, args: { countdown: true } };
 
@@ -260,9 +284,19 @@ export const ExpandedSeveralDocuments: Story = {
   args: { view: "expanded", pendingActions: true },
 };
 
+export const ExpandedMixedLocalBatch: Story = {
+  ...expanded,
+  args: { view: "expanded", pendingActions: true, received: "mixedLocalBatch" },
+};
+
 export const ExpandedOneDocument: Story = {
   ...expanded,
   args: { view: "expanded", pendingActions: true, received: "one" },
+};
+
+export const ExpandedSiteServer: Story = {
+  ...expanded,
+  args: { view: "expanded", pendingActions: true, received: "one", throughSiteServer: true },
 };
 
 export const ExpandedXmlDocument: Story = {

@@ -7,6 +7,7 @@ mod support_window;
 
 mod automatic_selection;
 mod batch_local;
+mod batch_local_hash;
 mod batch_remote;
 mod certificate_selection;
 mod check_signatures;
@@ -20,6 +21,7 @@ mod invoice_view;
 mod open_with;
 mod pdf_awaiting_the_person;
 mod pdf_password;
+mod precalculated_hash;
 mod readers;
 mod relay_window;
 mod service;

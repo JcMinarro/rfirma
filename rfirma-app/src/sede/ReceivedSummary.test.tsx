@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import { renderWithCatalog } from "../testing/render";
 import { ReceivedSummary } from "./ReceivedSummary";
 import {
@@ -117,6 +118,21 @@ describe("ReceivedSummary", () => {
     );
   });
 
+  it("says a remote batch keeps its documents at the site", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} remoteBatch />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos\.$/,
+    );
+  });
+
+  it("puts SHA-1 and the remote batch in the same box, each with its tone", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} remoteBatch sha1ToAllow />);
+    expect(admonitions()).toHaveLength(1);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^Esta sede usa un método de firma poco seguro\.Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos\.$/,
+    );
+  });
+
   it("leaves the invalid signatures and those of other people out when asked for yours only", () => {
     const documents = withYourSignature([RESOLUTION_DOCUMENT], yourSignature("sameCertificate"));
     renderWithCatalog(
@@ -128,6 +144,29 @@ describe("ReceivedSummary", () => {
   it("says nothing when asked for yours only and you signed nothing", () => {
     renderWithCatalog(<ReceivedSummary documents={BATCH_DOCUMENTS} yoursOnly />);
     expect(admonitions()).toEqual([]);
+  });
+
+  it("tells the site server prepares the signature, as information", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} throughSiteServer />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^El servidor de la sede prepara la firma con este documento\.$/,
+    );
+  });
+
+  it("puts the site server after the other facts without lowering their tone", () => {
+    renderWithCatalog(<ReceivedSummary documents={BATCH_DOCUMENTS} throughSiteServer />);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /3 traen firmas de otras personas\. El servidor de la sede prepara la firma con este documento\.$/,
+    );
+  });
+
+  it("keeps SHA-1 first, with its tone, beside the site server", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} sha1ToAllow throughSiteServer />);
+    expect(admonitions()).toHaveLength(1);
+    expect(title()).toBe("Esta sede usa un método de firma poco seguro.");
+    expect(document.querySelector(".rf-admonition")).toHaveTextContent(
+      "El servidor de la sede prepara la firma con este documento.",
+    );
   });
 
   it.each([
@@ -143,5 +182,17 @@ describe("ReceivedSummary", () => {
       <ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} sha1ToAllow />,
     );
     expect(admonitions()).toHaveLength(1);
+  });
+
+  it("tells the site only sends the hash, as information, after the other facts", () => {
+    const hash = {
+      ...RESOLUTION_DOCUMENT,
+      previousSignatures: NO_PREVIOUS_SIGNATURES,
+      precalculatedHash: true,
+    };
+    renderWithCatalog(<ReceivedSummary documents={[hash]} />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+    );
   });
 });

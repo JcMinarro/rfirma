@@ -118,6 +118,8 @@ fn consenting_to(document: ReceivedDocument) -> serde_json::Value {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
+        through_the_site_server: false,
     });
     serde_json::to_value(&view).expect("serializa")["stage"].clone()
 }
@@ -155,6 +157,8 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
+        through_the_site_server: false,
     });
 
     assert_eq!(
@@ -164,7 +168,8 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
 }
 
 #[test]
-fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
+fn the_consent_crosses_whether_sha1_is_allowed_and_whether_the_site_server_prepares_the_signature()
+{
     for allowed in [true, false] {
         let view = SiteErrandView::from(&Moment::AskingToSign {
             document: a_received(None, b"%PDF-1.7\n"),
@@ -176,12 +181,13 @@ fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
             without_asking: false,
             sha1_allowed: allowed,
             sha1_to_allow: false,
+            precalculated_hash: false,
+            through_the_site_server: !allowed,
         });
 
-        assert_eq!(
-            serde_json::to_value(&view).expect("serializa")["stage"]["sha1Allowed"],
-            serde_json::json!(allowed)
-        );
+        let stage = serde_json::to_value(&view).expect("serializa")["stage"].clone();
+        assert_eq!(stage["sha1Allowed"], serde_json::json!(allowed));
+        assert_eq!(stage["throughTheSiteServer"], serde_json::json!(!allowed));
     }
 }
 
@@ -199,6 +205,8 @@ fn a_countersignature_crosses_with_its_own_label_and_target() {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
+        through_the_site_server: false,
     });
 
     assert_eq!(
@@ -406,6 +414,7 @@ fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha25
                     ),
                     format: Format::Pades,
                     round: SignatureRound::First,
+                    precalculated_hash: false,
                 },
                 LocalBatchItem {
                     id: "002".to_owned(),
@@ -416,6 +425,7 @@ fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha25
                     ),
                     format: Format::Cades,
                     round: SignatureRound::Again,
+                    precalculated_hash: true,
                 },
             ],
             certificates: Vec::new(),
@@ -439,6 +449,7 @@ fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha25
                         "sha256": "0716f9264c9fe19f5d7455276107f3ddcc1d3497f63d60689a73558ae8a1bf5e",
                         "signing": "pdf",
                         "round": { "kind": "sign" },
+                        "precalculatedHash": false,
                     },
                     {
                         "id": "002",
@@ -448,6 +459,7 @@ fn the_local_batch_consent_crosses_each_item_with_its_handle_name_type_and_sha25
                         "sha256": "ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc",
                         "signing": "challenge",
                         "round": { "kind": "cosign" },
+                        "precalculatedHash": true,
                     },
                 ],
                 "certificates": [],
@@ -485,6 +497,8 @@ fn what_is_signed_crosses_named_after_the_format_the_site_asked_for() {
             without_asking: false,
             sha1_allowed: false,
             sha1_to_allow: false,
+            precalculated_hash: false,
+            through_the_site_server: false,
         });
 
         assert_eq!(
@@ -583,6 +597,8 @@ fn the_four_consents_cross_whether_the_site_narrowed_the_list_and_how_many_it_do
                 without_asking: false,
                 sha1_allowed: false,
                 sha1_to_allow: false,
+                precalculated_hash: false,
+                through_the_site_server: false,
             },
             Moment::AskingToSignTheBatch {
                 signs: 1,

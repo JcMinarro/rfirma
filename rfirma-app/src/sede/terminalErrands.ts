@@ -57,6 +57,7 @@ function documentOfTheOrder(path: string, detected: DocumentType): SiteDocument 
     round: { kind: "sign" },
     previousSignatures: NO_PREVIOUS_SIGNATURES,
     content: { kind: "none" },
+    precalculatedHash: false,
   };
 }
 
@@ -89,6 +90,7 @@ function errandOf(choice: TerminalChoiceView): Errand {
       narrowed: false,
       sha1Allowed: false,
       sha1ToAllow: false,
+      throughSiteServer: false,
     },
   };
 }

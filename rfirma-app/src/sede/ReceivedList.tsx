@@ -8,7 +8,7 @@ import { Icon } from "../design-system/icons";
 import type { IconName } from "../design-system/icons/names";
 import { Menu, MenuItem } from "../design-system/Menu";
 import {
-  hasKnownType,
+  opensOutside,
   previousSignaturesState,
   type ReceivedActions,
   type ReceivedDocument,
@@ -97,7 +97,9 @@ function DocumentRow({
         {content}
       </button>
       {sealLabel}
-      <RowActions name={name} items={documentActions(t, document, actions)} />
+      {document.precalculatedHash !== true && (
+        <RowActions name={name} items={documentActions(t, document, actions)} />
+      )}
     </li>
   ) : (
     <li className="received-list__item">
@@ -145,7 +147,7 @@ function documentActions(
 ): RowAction[] {
   const { onOpenWith, onSaveCopy } = actions;
   return [
-    ...(hasKnownType(document) && onOpenWith
+    ...(opensOutside(document) && onOpenWith
       ? [
           {
             icon: "externalLink" as const,

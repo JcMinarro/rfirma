@@ -119,6 +119,7 @@ function stageOf(
         narrowed: stage.narrowed,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       };
     case "askingToSign":
       return {
@@ -131,6 +132,7 @@ function stageOf(
         narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
+        throughSiteServer: stage.throughTheSiteServer,
       };
     case "askingToConfirm":
       return { kind: "confirming", messageCode: stage.messageCode };
@@ -149,6 +151,7 @@ function stageOf(
         narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
+        throughSiteServer: false,
       };
     case "askingToSignTheLocalBatch":
       // Igual que el lote remoto, y además con cada elemento como documento:
@@ -163,6 +166,7 @@ function stageOf(
         narrowed: stage.narrowed,
         sha1Allowed: stage.sha1Allowed,
         sha1ToAllow: stage.sha1ToAllow,
+        throughSiteServer: false,
       };
   }
 }
@@ -192,6 +196,7 @@ export function documentOf(
     round: stage.round,
     previousSignatures,
     content,
+    precalculatedHash: stage.precalculatedHash,
   };
 }
 
@@ -209,6 +214,7 @@ export function batchDocumentOf(
     sha256: item.sha256,
     detected: item.detected,
     previousSignatures,
+    precalculatedHash: item.precalculatedHash,
   };
 }
 

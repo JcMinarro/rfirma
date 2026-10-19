@@ -53,6 +53,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });
@@ -86,6 +87,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });
@@ -278,6 +280,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
             round: { kind: "cosign" },
             previousSignatures: NO_PREVIOUS_SIGNATURES,
             content: { kind: "pdf", pdf: opened },
+            precalculatedHash: false,
           },
           signs: null,
           signing: "pdf",
@@ -286,6 +289,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           narrowed: false,
           sha1Allowed: false,
           sha1ToAllow: false,
+          throughSiteServer: false,
         },
       }),
     );
@@ -331,6 +335,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           withoutAsking: false,
           sha1Allowed: false,
           sha1ToAllow: false,
+          precalculatedHash: false,
+          throughTheSiteServer: false,
         },
       };
       const { push, last } = watched();
@@ -338,6 +344,23 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
       push(view);
 
       await vi.waitFor(() => expect(last()?.stage).toMatchObject({ signing }));
+    },
+  );
+
+  it.each([true, false])(
+    "carries precalculatedHash=%s to the document of the consent",
+    async (marked) => {
+      const view: SiteErrandView = {
+        ...ASKING_TO_SIGN,
+        stage: { ...ASKING_TO_SIGN.stage, precalculatedHash: marked } as SiteErrandView["stage"],
+      };
+      const { push, last } = watched();
+
+      push(view);
+
+      await vi.waitFor(() =>
+        expect(last()?.stage).toMatchObject({ document: { precalculatedHash: marked } }),
+      );
     },
   );
 
@@ -352,6 +375,24 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
 
     await vi.waitFor(() => expect(last()?.stage).toMatchObject({ sha1Allowed: true }));
   });
+
+  it.each([true, false])(
+    "carries whether the site server prepares the signature (%s) through to the consent stage",
+    async (through) => {
+      const view: SiteErrandView = {
+        ...ASKING_TO_SIGN,
+        stage: {
+          ...ASKING_TO_SIGN.stage,
+          throughTheSiteServer: through,
+        } as SiteErrandView["stage"],
+      };
+      const { push, last } = watched();
+
+      push(view);
+
+      await vi.waitFor(() => expect(last()?.stage).toMatchObject({ throughSiteServer: through }));
+    },
+  );
 
   it.each(["tree", "leafs"] as const)(
     "carries the %s target of a countersignature through to the consent document",
@@ -373,6 +414,8 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           withoutAsking: false,
           sha1Allowed: false,
           sha1ToAllow: false,
+          precalculatedHash: false,
+          throughTheSiteServer: false,
         },
       };
       const { push, last } = watched();
@@ -409,9 +452,15 @@ describe("el lote local: cada elemento como documento", () => {
     sha256: DOCUMENT_SHA256,
     detected: "pdf",
     previousSignatures: NO_PREVIOUS_SIGNATURES,
+    precalculatedHash: false,
     ...overrides,
   });
-  const item = { signing: "pdf", round: { kind: "sign" }, sha256: DOCUMENT_SHA256 } as const;
+  const item = {
+    signing: "pdf",
+    round: { kind: "sign" },
+    sha256: DOCUMENT_SHA256,
+    precalculatedHash: false,
+  } as const;
   const view: SiteErrandView = {
     origin: "sede.ejemplo.gob.es",
     stage: {
@@ -449,6 +498,7 @@ describe("el lote local: cada elemento como documento", () => {
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });

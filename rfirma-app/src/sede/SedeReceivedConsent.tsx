@@ -22,7 +22,7 @@ import { ReceivedHeading } from "./ReceivedHeading";
 import { ReceivedList } from "./ReceivedList";
 import { ReceivedSummary } from "./ReceivedSummary";
 import { ReceivedViewer } from "./ReceivedViewer";
-import type { Received, ReceivedActions, ReceivedDocument } from "./received";
+import { type Received, type ReceivedActions, type ReceivedDocument, viewableOf } from "./received";
 import { SedeBody, useConsentCountdown } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
 import { TerminalDocumentHeading } from "./TerminalDocumentHeading";
@@ -40,6 +40,8 @@ interface ConsentBasics {
   narrowed?: boolean;
   /** La sede pide SHA-1 sin permiso en Preferencias: el aviso, «Firmar igualmente» y la cuenta atrás obligada. */
   sha1ToAllow?: boolean;
+  /** El servidor trifásico de la sede prepara la firma: el aviso y el botón «Ver el documento enviado». */
+  throughSiteServer?: boolean;
   countdown?: boolean;
   onConsent: (certificateId: string) => void;
   onCancel: () => void;
@@ -96,6 +98,7 @@ export function SedeReceivedConsent({
     <SedeConsentExpanded
       origin={basics.origin}
       sha1ToAllow={basics.sha1ToAllow}
+      throughSiteServer={basics.throughSiteServer}
       consent={consent}
       documents={viewable}
       actions={actions}
@@ -109,6 +112,7 @@ export function SedeReceivedConsent({
       origin={basics.origin}
       asks={basics.asks}
       sha1ToAllow={basics.sha1ToAllow}
+      throughSiteServer={basics.throughSiteServer}
       consent={consent}
       received={received}
       terminalDocument={terminalDocument}
@@ -120,16 +124,14 @@ export function SedeReceivedConsent({
   );
 }
 
-/** Los documentos que se pueden ver en la ampliada: los de una sede que pide la firma, nunca los de una orden de terminal. */
+/** Los documentos que se pueden ver en la ampliada: los de una sede que pide la firma, nunca los de una orden de terminal ni solo huellas. */
 function viewableDocuments(
   received: Received | null,
   terminalDocument: string | undefined,
   asks: ConsentBasics["asks"],
 ): readonly ReceivedDocument[] {
-  if (received?.kind !== "documents" || terminalDocument !== undefined || asks === "identity") {
-    return [];
-  }
-  return received.documents;
+  if (terminalDocument !== undefined || asks === "identity") return [];
+  return viewableOf(received);
 }
 
 type Consent = ReturnType<typeof useConsent>;
@@ -139,6 +141,7 @@ function SedeConsentCompact({
   origin,
   asks,
   sha1ToAllow,
+  throughSiteServer,
   consent,
   received,
   terminalDocument,
@@ -146,7 +149,7 @@ function SedeConsentCompact({
   failure,
   documents,
   onExpand,
-}: Pick<ConsentBasics, "origin" | "asks" | "sha1ToAllow"> & {
+}: Pick<ConsentBasics, "origin" | "asks" | "sha1ToAllow" | "throughSiteServer"> & {
   consent: Consent;
   received: Received | null;
   terminalDocument?: string;
@@ -158,6 +161,10 @@ function SedeConsentCompact({
   const { t } = useTranslation();
   const terminal = terminalDocument !== undefined;
   const identity = asks === "identity" || received === null;
+  const viewLabel = t(
+    throughSiteServer ? "sede.consent.viewSentDocuments" : "sede.consent.viewDocuments",
+    { count: documents },
+  );
 
   return (
     <SedeBody
@@ -171,13 +178,11 @@ function SedeConsentCompact({
             <Button
               variant="ghost"
               className="sede-received__view"
-              title={t("sede.consent.viewDocuments", { count: documents })}
+              title={viewLabel}
               onClick={onExpand}
             >
               <Icon name="expandSide" size={20} />
-              <span className="sede-received__view-label">
-                {t("sede.consent.viewDocuments", { count: documents })}
-              </span>
+              <span className="sede-received__view-label">{viewLabel}</span>
             </Button>
           )}
           {consent.footer}
@@ -194,6 +199,8 @@ function SedeConsentCompact({
                 documents={received.kind === "documents" ? received.documents : []}
                 certificate={consent.chosen}
                 sha1ToAllow={sha1ToAllow}
+                throughSiteServer={throughSiteServer}
+                remoteBatch={received.kind === "remoteBatch"}
               />
               {terminal ? (
                 <TerminalDocumentHeading documentPath={terminalDocument} />
@@ -213,6 +220,7 @@ function SedeConsentCompact({
 function SedeConsentExpanded({
   origin,
   sha1ToAllow,
+  throughSiteServer,
   consent,
   documents,
   actions,
@@ -220,7 +228,7 @@ function SedeConsentExpanded({
   defaultDocument,
   defaultSignaturesOpen = false,
   onCollapse,
-}: Pick<ConsentBasics, "origin" | "sha1ToAllow"> & {
+}: Pick<ConsentBasics, "origin" | "sha1ToAllow" | "throughSiteServer"> & {
   consent: Consent;
   documents: readonly ReceivedDocument[];
   actions: ReceivedActions;
@@ -275,6 +283,7 @@ function SedeConsentExpanded({
               documents={documents}
               certificate={consent.chosen}
               sha1ToAllow={sha1ToAllow}
+              throughSiteServer={throughSiteServer}
               yoursOnly
             />
             <nav

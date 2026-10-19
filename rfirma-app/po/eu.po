@@ -1318,6 +1318,10 @@ msgstr "Izenbururik gabeko irudi bat"
 msgid "sede.consent.untitledDocument"
 msgstr "Izenbururik gabeko dokumentu bat"
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr "Dokumentuaren hatz-marka bat"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Zure izena, zure IFZa, ziurtagiriaren jaulkitzailea eta serie-zenbakia "
@@ -1505,6 +1509,23 @@ msgstr "Egoitzak ziurtagiri batzuk baino ez ditu onartzen"
 msgid "sede.received.sha1ToAllow"
 msgstr "Egoitza honek sinatzeko metodo ez oso segurua erabiltzen du"
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr "Egoitzaren zerbitzariak sinadura dokumentu honekin prestatzen du"
+
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] "Sinadura 1 egingo duzu"
+msgstr[1] "{{count}} sinadura egingo dituzu"
+msgstr[2] "{{count}} sinadura egingo dituzu"
+
+msgid "sede.received.remoteBatch"
+msgstr "Dokumentuak egoitzaren zerbitzarian geratzen dira, eta rFirmak ezin dizkizu erakutsi"
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr "Egoitzak dokumentuaren hatz-marka soilik bidaltzen du, beraz rFirmak ezin dizu erakutsi"
+
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"
 msgstr "Sinatu hala ere"
@@ -1631,6 +1652,13 @@ msgid_plural "sede.consent.viewDocuments"
 msgstr[0] "Ikusi dokumentua"
 msgstr[1] "Ikusi dokumentuak"
 msgstr[2] "Ikusi dokumentuak"
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
+msgstr[0] "Ikusi bidalitako dokumentua"
+msgstr[1] "Ikusi bidalitako dokumentuak"
+msgstr[2] "Ikusi bidalitako dokumentuak"
 
 #. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
 msgid "sede.consent.hideDocuments"

@@ -1316,6 +1316,10 @@ msgstr "Una imagen sin título"
 msgid "sede.consent.untitledDocument"
 msgstr "Un documento sin título"
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr "Una huella del documento"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Se enviarán tu nombre, tu NIF, el emisor del certificado y su número de "
@@ -1499,6 +1503,23 @@ msgstr "La sede solo admite algunos certificados"
 msgid "sede.received.sha1ToAllow"
 msgstr "Esta sede usa un método de firma poco seguro"
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr "El servidor de la sede prepara la firma con este documento"
+
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] "Vas a hacer 1 firma"
+msgstr[1] "Vas a hacer {{count}} firmas"
+msgstr[2] "Vas a hacer {{count}} firmas"
+
+msgid "sede.received.remoteBatch"
+msgstr "Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos"
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr "La sede solo envía la huella del documento, así que rFirma no puede enseñártelo"
+
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"
 msgstr "Firmar igualmente"
@@ -1623,6 +1644,13 @@ msgid_plural "sede.consent.viewDocuments"
 msgstr[0] "Ver documento"
 msgstr[1] "Ver documentos"
 msgstr[2] "Ver documentos"
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
+msgstr[0] "Ver el documento enviado"
+msgstr[1] "Ver los documentos enviados"
+msgstr[2] "Ver los documentos enviados"
 
 #. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
 msgid "sede.consent.hideDocuments"

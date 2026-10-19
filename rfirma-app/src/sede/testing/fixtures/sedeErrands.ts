@@ -2,7 +2,7 @@
 
 import type { Errand, ErrandStage, SiteOutcome } from "../../errand";
 import { previousSignature, previousSignaturesReport } from "./previousSignatures";
-import { LOCAL_BATCH_DOCUMENTS } from "./received";
+import { LOCAL_BATCH_DOCUMENTS, MIXED_LOCAL_BATCH_DOCUMENTS } from "./received";
 import { sedeErrand } from "./sedeView";
 import { certificate, consentStage, signedDocument } from "./sedeWindow";
 
@@ -33,6 +33,10 @@ export const NoChannel = errandStory(sedeErrand({ kind: "noChannel", reason: "ch
 
 export const Consent = consenting(consentStage());
 
+export const PrecalculatedHash = consenting(
+  consentStage({ document: { ...signedDocument, precalculatedHash: true } }),
+);
+
 export const Batch = consenting(consentStage({ document: null, signs: 3, signing: null }));
 
 export const LocalBatch = consenting(
@@ -41,6 +45,15 @@ export const LocalBatch = consenting(
     signs: 5,
     signing: null,
     items: LOCAL_BATCH_DOCUMENTS,
+  }),
+);
+
+export const MixedLocalBatch = consenting(
+  consentStage({
+    document: null,
+    signs: MIXED_LOCAL_BATCH_DOCUMENTS.length,
+    signing: null,
+    items: MIXED_LOCAL_BATCH_DOCUMENTS,
   }),
 );
 

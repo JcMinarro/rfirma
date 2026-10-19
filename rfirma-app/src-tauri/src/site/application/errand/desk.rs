@@ -420,8 +420,13 @@ fn consent_to_a_signature<E: FilterEngine, P: PolicyEngine>(
         live,
         ask.algorithm == AskedAlgorithm::Sha1 || sha1_of_the_data.is_some(),
     );
+    let precalculated_hash = ask
+        .declared_params
+        .iter()
+        .any(|(key, _)| key == PRECALCULATED_HASH_KEY);
     ErrandStep::AskingToSign(Box::new(SigningConsent {
         sha1_to_allow,
+        precalculated_hash,
         document,
         sha1_of_the_data,
         format,
@@ -448,6 +453,7 @@ const UNREGISTERED_SIGNATURES: &str = "pdfHasUnregisteredSignatures";
 const COUNTER_TARGET_KEY: &str = "target";
 const MIME_TYPE_KEY: &str = "mimeType";
 const HASH_SHA1: &str = "hash/sha1";
+const PRECALCULATED_HASH_KEY: &str = "precalculatedHashAlgorithm";
 
 /// En la XAdES explícita, el asa de la huella SHA-1 que firma el puente y el `mimeType` que la declara (ADR-0023).
 fn the_sha1_of_the_data_kept<E: FilterEngine, P: PolicyEngine>(

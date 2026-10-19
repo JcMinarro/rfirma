@@ -73,9 +73,11 @@ pub(super) fn received_now(live: &LiveErrand) -> Vec<ReceivedDocument> {
 fn received_in(moment: Moment) -> Vec<ReceivedDocument> {
     match moment {
         Moment::AskingToSign { document, .. } => vec![document],
-        Moment::AskingToSignTheLocalBatch { items, .. } => {
-            items.into_iter().map(|item| item.document).collect()
-        }
+        Moment::AskingToSignTheLocalBatch { items, .. } => items
+            .into_iter()
+            .filter(|item| !item.precalculated_hash)
+            .map(|item| item.document)
+            .collect(),
         Moment::Waiting
         | Moment::AskingForConsent { .. }
         | Moment::MarkingTheArea { .. }

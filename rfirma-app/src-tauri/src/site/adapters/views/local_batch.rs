@@ -26,6 +26,8 @@ crossing! {
         pub signing: SigningKindView,
         /// Tipo de firma solicitada sobre el elemento.
         pub round: SignatureRoundView,
+        /// Si lo que trae el elemento es una huella precalculada y no el documento.
+        pub precalculated_hash: bool,
     }
 }
 
@@ -39,6 +41,7 @@ impl From<&LocalBatchItem> for LocalBatchItemView {
             sha256: item.document.sha256.clone(),
             signing: item.format.into(),
             round: item.round.into(),
+            precalculated_hash: item.precalculated_hash,
         }
     }
 }

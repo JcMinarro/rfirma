@@ -1292,6 +1292,10 @@ msgstr ""
 msgid "sede.consent.untitledDocument"
 msgstr ""
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr ""
+
 msgid "sede.consent.willSend"
 msgstr ""
 
@@ -1458,6 +1462,25 @@ msgstr ""
 msgid "sede.received.sha1ToAllow"
 msgstr ""
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr ""
+
+#. Encabezado del lote remoto: cuenta firmas, porque los documentos no se ven.
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. Aviso de lo recibido en un lote remoto: los documentos los tiene el servidor de la sede.
+msgid "sede.received.remoteBatch"
+msgstr ""
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr ""
+
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"
 msgstr ""
@@ -1579,6 +1602,13 @@ msgstr ""
 #. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
 msgid "sede.consent.viewDocuments"
 msgid_plural "sede.consent.viewDocuments"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""

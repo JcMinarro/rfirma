@@ -11,6 +11,8 @@ import {
   Consent,
   IdentityData,
   LocalBatch,
+  MixedLocalBatch,
+  PrecalculatedHash,
   PreviousSignaturesWithProblem,
 } from "./testing/fixtures/sedeErrands";
 import {
@@ -61,15 +63,27 @@ describe("2 · consent", () => {
     expect(text.indexOf("Certificado")).toBeLessThan(text.indexOf("Vas a firmar 1 documento"));
   });
 
-  it.each([
-    ["a remote batch", Batch, "Vas a firmar 3 documentos"],
-    ["a local batch", LocalBatch, "Vas a firmar 5 documentos"],
-  ])("sums up %s with its count alone", (_, story, count) => {
-    const { port } = scriptedFrom(story);
+  it.each([["a local batch", LocalBatch, "Vas a firmar 5 documentos"]])(
+    "sums up %s with its count alone",
+    (_, story, count) => {
+      const { port } = scriptedFrom(story);
+      renderWithCatalog(<SedeWindow errands={port} />);
+
+      expect(screen.getByText(count)).toBeInTheDocument();
+      expect(screen.queryByText("001")).not.toBeInTheDocument();
+    },
+  );
+
+  it("sums up a remote batch by its signatures and says the documents stay at the site", () => {
+    const { port } = scriptedFrom(Batch);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.getByText(count)).toBeInTheDocument();
-    expect(screen.queryByText("001")).not.toBeInTheDocument();
+    expect(screen.getByText("Vas a hacer 3 firmas")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("offers the document and its download", () => {
@@ -142,6 +156,84 @@ describe("2 · consent", () => {
 
       expect(screen.queryByText(/SHA-1|poco seguro/)).not.toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Firmar" })).toBeEnabled();
+    });
+  });
+
+  describe("a precalculated hash instead of the document", () => {
+    it("says the site only sends the hash and names it as a hash", () => {
+      const { port } = scriptedFrom(PrecalculatedHash);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+      );
+      expect(screen.getByText("Una huella del documento")).toBeInTheDocument();
+      expect(screen.queryByText("Un documento sin título")).not.toBeInTheDocument();
+    });
+
+    it("offers neither the viewer nor the download", () => {
+      const { port } = scriptedFrom(PrecalculatedHash);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByRole("button", { name: "Ver documento" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Descargar" })).not.toBeInTheDocument();
+      expect(screen.queryByText("Vas a firmar 1 documento")).not.toBeInTheDocument();
+    });
+
+    it("tells a local batch with several hashes in a single notice", () => {
+      const { port } = scriptedFrom(MixedLocalBatch);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getAllByRole("status")).toHaveLength(1);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+      );
+    });
+
+    it("tells both the hash and the site server in a single notice", () => {
+      const { port } = scriptedErrand(
+        consentStage({
+          document: { ...signedDocument, precalculatedHash: true },
+          throughSiteServer: true,
+        }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getAllByRole("status")).toHaveLength(1);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.\s*El servidor de la sede prepara la firma con este documento\.$/,
+      );
+    });
+
+    it("keeps the notice quiet about a document that is not a hash, whatever its size", () => {
+      const { port } = scriptedErrand(
+        consentStage({ document: { ...signedDocument, sizeBytes: 32 } }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByText(/huella/)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
+    });
+  });
+
+  describe("when the site server prepares the signature", () => {
+    it("tells it and names the button after the document sent", () => {
+      const { port } = scriptedErrand(consentStage({ throughSiteServer: true }));
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(
+        screen.getByText("El servidor de la sede prepara la firma con este documento."),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver el documento enviado" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Ver documento" })).not.toBeInTheDocument();
+    });
+
+    it("says nothing of it, and keeps the usual button, without the mark", () => {
+      const { port } = scriptedErrand(consentStage());
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByText(/servidor de la sede/)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
     });
   });
 

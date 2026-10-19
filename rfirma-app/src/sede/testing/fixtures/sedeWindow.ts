@@ -145,6 +145,7 @@ export const signedDocument: SiteDocument = {
   round: { kind: "sign" },
   previousSignatures: NO_PREVIOUS_SIGNATURES,
   content: { kind: "none" },
+  precalculatedHash: false,
 };
 
 type ConsentStage = Extract<ErrandStage, { kind: "consent" }>;
@@ -161,6 +162,7 @@ export function consentStage(overrides: Partial<ConsentStage> = {}): ConsentStag
     narrowed: false,
     sha1Allowed: false,
     sha1ToAllow: false,
+    throughSiteServer: false,
     ...overrides,
   };
 }

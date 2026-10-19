@@ -77,6 +77,8 @@ export interface SiteDocument {
   previousSignatures: PreviousSignaturesReport;
   /** Lo que el visor de la ampliada pinta de sus bytes. */
   content: DocumentContent;
+  /** Los bytes son la huella del documento, no el documento. */
+  precalculatedHash: boolean;
 }
 
 /** Lo que puede hacer la persona tras un rechazo de la sede. */
@@ -231,6 +233,8 @@ export interface LocalBatchItem {
   signing: SigningKind;
   /** Si sobre el elemento se pide una firma inicial o una cofirma. */
   round: SignatureRound;
+  /** Los bytes del elemento son la huella del documento, no el documento. */
+  precalculatedHash: boolean;
 }
 
 /** El área de la firma visible que marca la persona, con la forma del recuadro de la firma local. */
@@ -285,6 +289,8 @@ export type ErrandStage =
       sha1Allowed: boolean;
       /** Si la sede pide SHA-1 y la persona no lo permite todavía: no se firma sin que lo permita. */
       sha1ToAllow: boolean;
+      /** Si el servidor trifásico de la sede prepara la firma con el documento enviado. */
+      throughSiteServer: boolean;
     }
   /**
    * Entre que la persona acepta y que la firma vuelve a la sede. Dos momentos,
