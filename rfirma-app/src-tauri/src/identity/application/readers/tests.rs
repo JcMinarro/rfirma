@@ -229,14 +229,14 @@ fn with_no_full_listing_yet_every_store_is_opened() {
 }
 
 #[test]
-fn the_readers_are_watched_on_linux_and_windows_but_not_on_macos() {
+fn the_readers_are_watched_on_linux_windows_and_macos() {
     use crate::desktop::domain::channel::Channel;
     use crate::desktop::domain::platform::Platform;
 
     assert!(watches_the_readers(Platform::Linux, Channel::Native));
     assert!(watches_the_readers(Platform::Linux, Channel::Flatpak));
     assert!(watches_the_readers(Platform::Windows, Channel::Windows));
-    assert!(!watches_the_readers(Platform::MacOs, Channel::Native));
+    assert!(watches_the_readers(Platform::MacOs, Channel::Native));
 }
 
 const CARD_KSP: &str = "Microsoft Smart Card Key Storage Provider";
@@ -420,4 +420,60 @@ fn without_the_smart_card_service_there_is_no_reader_and_the_listing_goes_on() {
     let listed = arranged.listed_in_full();
     assert_eq!(listed.len(), 1);
     assert_eq!(listed[0].label, IN_SOFTWARE);
+}
+
+fn the_macos_store() -> Store {
+    Store::module(format!(
+        "{}search-list",
+        crate::identity::domain::store::MACOS_STORE_PREFIX
+    ))
+}
+
+fn in_macos(label: &str, der: Vec<u8>) -> TokenCertificate {
+    TokenCertificate::new(
+        CertificateRef::new(
+            the_macos_store(),
+            "login.keychain-db",
+            label,
+            label.as_bytes().to_vec(),
+        ),
+        der,
+    )
+}
+
+#[test]
+fn a_card_in_the_reader_with_no_card_class_certificate_in_macos_is_unreadable() {
+    let token = Counting::showing(|_store| {
+        vec![in_macos(
+            IN_SOFTWARE,
+            TestAuthority::root("Firmante en el disco").der(),
+        )]
+    });
+    let arranged = Arranged::over(token, vec![the_macos_store()]);
+    let steps = [true];
+    let (card, _) = WindowsWithACard::of(Vec::new());
+
+    let heard = followed(&arranged, &card, &steps);
+
+    assert_eq!(
+        heard.iter().map(|news| news.reader).collect::<Vec<_>>(),
+        vec![ReaderStatus::Reading, ReaderStatus::Unreadable]
+    );
+    assert_eq!(labels_in(&heard[1]), vec![IN_SOFTWARE]);
+}
+
+#[test]
+fn a_change_in_the_readers_lists_the_macos_store_and_the_card_modules_again() {
+    let token = Counting::new();
+    let arranged = Arranged::over(token, vec![the_macos_store(), Store::module(CARD)]);
+    arranged.listed_in_full();
+    arranged.token.asked();
+    let (card, _) = WindowsWithACard::of(Vec::new());
+
+    followed(&arranged, &card, &[false, true]);
+
+    let mut asked = arranged.token.asked();
+    asked.dedup();
+    assert!(asked.contains(&the_macos_store()));
+    assert!(asked.contains(&Store::module(CARD)));
 }

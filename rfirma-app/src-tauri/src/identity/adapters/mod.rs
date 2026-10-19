@@ -6,7 +6,7 @@ pub mod folder;
 pub mod keyring;
 #[cfg(target_os = "macos")]
 pub mod macos_store;
-#[cfg(any(target_os = "linux", windows))]
+#[cfg(any(target_os = "linux", windows, target_os = "macos"))]
 pub mod pcsc;
 #[cfg(target_os = "macos")]
 pub mod pending_macos_keychain;
@@ -30,21 +30,21 @@ pub use pending_macos_keychain::PendingMacosKeychain as DesktopKeyring;
 pub use windows_credential_manager::WindowsCredentialManager as DesktopKeyring;
 
 /// Una consulta puntual a los lectores; `None`, si PC/SC no responde.
-#[cfg(any(target_os = "linux", windows))]
+#[cfg(any(target_os = "linux", windows, target_os = "macos"))]
 pub use pcsc::survey_readers;
 /// El vigilante de lectores de esta plataforma.
-#[cfg(any(target_os = "linux", windows))]
+#[cfg(any(target_os = "linux", windows, target_os = "macos"))]
 pub use pcsc::PcscReaderWatch as DesktopReaderWatch;
 /// Una consulta puntual a los lectores; sin PC/SC en esta plataforma, nunca hay respuesta.
-#[cfg(not(any(target_os = "linux", windows)))]
+#[cfg(not(any(target_os = "linux", windows, target_os = "macos")))]
 pub fn survey_readers() -> Option<Vec<crate::identity::domain::readers::Reader>> {
     None
 }
 /// Si esta plataforma habla con PC/SC.
-pub const SPEAKS_PCSC: bool = cfg!(any(target_os = "linux", windows));
+pub const SPEAKS_PCSC: bool = cfg!(any(target_os = "linux", windows, target_os = "macos"));
 
 /// El vigilante de lectores de esta plataforma.
-#[cfg(not(any(target_os = "linux", windows)))]
+#[cfg(not(any(target_os = "linux", windows, target_os = "macos")))]
 pub use readers::UnavailableReaderWatch as DesktopReaderWatch;
 
 /// El token de esta plataforma.
