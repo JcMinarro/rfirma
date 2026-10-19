@@ -114,6 +114,7 @@ export function SedeView({
             reader={reader}
             narrowed={stage.narrowed}
             sha1ToAllow={stage.sha1ToAllow}
+            throughSiteServer={stage.throughSiteServer}
             countdown={consentCountdown}
             actions={actions}
             failure={receivedFailure}

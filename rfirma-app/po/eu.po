@@ -1505,6 +1505,10 @@ msgstr "Egoitzak ziurtagiri batzuk baino ez ditu onartzen"
 msgid "sede.received.sha1ToAllow"
 msgstr "Egoitza honek sinatzeko metodo ez oso segurua erabiltzen du"
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr "Egoitzaren zerbitzariak sinadura dokumentu honekin prestatzen du"
+
 msgid "sede.received.signatures"
 msgid_plural "sede.received.signatures"
 msgstr[0] "Sinadura 1 egingo duzu"
@@ -1640,6 +1644,13 @@ msgid_plural "sede.consent.viewDocuments"
 msgstr[0] "Ikusi dokumentua"
 msgstr[1] "Ikusi dokumentuak"
 msgstr[2] "Ikusi dokumentuak"
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
+msgstr[0] "Ikusi bidalitako dokumentua"
+msgstr[1] "Ikusi bidalitako dokumentuak"
+msgstr[2] "Ikusi bidalitako dokumentuak"
 
 #. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
 msgid "sede.consent.hideDocuments"

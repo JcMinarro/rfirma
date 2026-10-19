@@ -161,6 +161,7 @@ export function consentStage(overrides: Partial<ConsentStage> = {}): ConsentStag
     narrowed: false,
     sha1Allowed: false,
     sha1ToAllow: false,
+    throughSiteServer: false,
     ...overrides,
   };
 }
