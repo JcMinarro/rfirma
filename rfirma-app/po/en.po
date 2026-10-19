@@ -1052,6 +1052,9 @@ msgstr "Installed file"
 msgid "status.storeBrands.windows"
 msgstr "Windows store"
 
+msgid "status.storeBrands.macos"
+msgstr "macOS store"
+
 msgid "status.notices.restartFirefox"
 msgstr "Restart Firefox for this to take effect."
 

@@ -5,6 +5,7 @@ import { fn } from "storybook/test";
 import { CertificateSelect } from "./CertificateSelect";
 import {
   ENTITY_CERTIFICATE,
+  MACOS_CERTIFICATE,
   PERSONAL_CERTIFICATE,
   STORY_CERTIFICATES,
 } from "./testing/storyReports";
@@ -52,5 +53,13 @@ export const Unchosen: Story = { args: { chosen: null } };
 export const Searching: Story = { args: { certificates: [], chosen: null, searching: true } };
 
 export const Disabled: Story = { args: { disabled: true } };
+
+export const OpenWithMacosStore: Story = {
+  args: {
+    certificates: [MACOS_CERTIFICATE, PERSONAL_CERTIFICATE],
+    chosen: MACOS_CERTIFICATE,
+    defaultOpen: true,
+  },
+};
 
 export const Open: Story = { args: { defaultOpen: true } };

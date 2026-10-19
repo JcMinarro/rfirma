@@ -21,7 +21,8 @@ export type StoreBrand =
   | "nssdb"
   | "card"
   | "installed"
-  | "windows";
+  | "windows"
+  | "macos";
 
 export interface StoreDetail {
   brand: StoreBrand;
@@ -44,6 +45,8 @@ export function storeBrandLabel(t: TFunction, brand: StoreBrand): string {
       return t("status.storeBrands.installed");
     case "windows":
       return t("status.storeBrands.windows");
+    case "macos":
+      return t("status.storeBrands.macos");
   }
 }
 

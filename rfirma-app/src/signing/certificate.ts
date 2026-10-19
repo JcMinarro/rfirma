@@ -55,6 +55,7 @@ type CertificateStoreClass =
   | "nssdb"
   | "installed"
   | "windows"
+  | "macos"
   | BrowserStoreMark;
 
 /** Un certificado elegible, con lo justo para pintarlo y para firmar con él. */

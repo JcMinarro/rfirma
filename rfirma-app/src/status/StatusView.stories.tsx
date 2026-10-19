@@ -21,6 +21,7 @@ import {
   sitesUnavailableOutsideFlatpak,
   sitesWithTwoCandidates,
   someUserCertificates,
+  someUserCertificatesOnMacos,
   versionChecking,
   versionOutdated,
   versionUpToDate,
@@ -121,6 +122,10 @@ export const CardReaderDetected = panel([cardReaderDetected]);
 export const CardReaderMissing = panel([cardReaderMissing]);
 
 export const CardReaderNotSupported = panel([cardReaderNotSupported]);
+
+export const UserCertificatesOnMacos = panel([someUserCertificatesOnMacos], {
+  initiallyExpanded: ["userCertificates"],
+});
 
 export const UserCertificatesDetailExpanded = panel([someUserCertificates], {
   initiallyExpanded: ["userCertificates"],

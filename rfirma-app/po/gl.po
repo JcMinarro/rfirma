@@ -1050,6 +1050,9 @@ msgstr "Ficheiro instalado"
 msgid "status.storeBrands.windows"
 msgstr "Almacén de Windows"
 
+msgid "status.storeBrands.macos"
+msgstr "Almacén de macOS"
+
 msgid "status.notices.restartFirefox"
 msgstr "Reinicia Firefox para que xurda efecto."
 
