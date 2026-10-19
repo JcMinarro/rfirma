@@ -1,13 +1,14 @@
 //! Las historias del asistente del primer arranque: la bienvenida y la configuración con cada estado de sus dos pasos.
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 import { inMemoryPreferences } from "../preferences/preferences";
 import { defaults } from "../preferences/testing/fixtures";
 import { memoryStatus } from "../status/status";
 import { SetupWizard } from "./SetupWizard";
 import {
   aVersionRow,
+  certificateFailedOnMacos,
   certificateInstalled,
   certificateNotInstalled,
   handlerNotOurs,
@@ -82,6 +83,22 @@ export const WithoutAutoFirma: Story = {
   args: {
     initialStep: 2,
     statusPort: memoryStatus([aVersionRow, certificateNotInstalled, handlerWithoutAutoFirma]),
+  },
+};
+
+export const CertificateFailedOnMacos: Story = {
+  name: "2 · Configuración, certificado sin instalar en macOS",
+  args: {
+    initialStep: 2,
+    statusPort: {
+      ...memoryStatus([aVersionRow, certificateNotInstalled, handlerNotOurs]),
+      installLocalCaCertificate: async () => certificateFailedOnMacos,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", { name: "Instalar" }));
+    await expect(await canvas.findByText("Almacén de macOS")).toBeVisible();
   },
 };
 

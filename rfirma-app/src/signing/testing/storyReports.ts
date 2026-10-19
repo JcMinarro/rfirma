@@ -181,6 +181,15 @@ const NOT_YET_VALID_CERTIFICATE = aCertificate({
   status: { kind: "notYetValid", notBefore: IN_2099 },
 });
 
+export const MACOS_CERTIFICATE = aCertificate({
+  id: "macos",
+  holderName: "BABBAGE CHARLES",
+  givenName: "Charles",
+  surname: "Babbage",
+  idNumber: "IDCES-00000002W",
+  stores: ["macos"],
+});
+
 export const STORY_CERTIFICATES: readonly Certificate[] = [
   PERSONAL_CERTIFICATE,
   ENTITY_CERTIFICATE,

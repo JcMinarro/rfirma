@@ -1,5 +1,6 @@
 import { composeStories } from "@storybook/react-vite";
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderWithCatalog } from "../testing/render";
 import * as stories from "./SetupWizard.stories";
@@ -13,6 +14,7 @@ const {
   CertificateDoneHandlerPending,
   WithoutAutoFirma,
   ProtectionOff,
+  CertificateFailedOnMacos,
 } = composeStories(stories);
 
 const stepButtons = ["Instalar", "Usar rFirma", "Ahora no"];
@@ -97,5 +99,15 @@ describe("the protection against accidental signing", () => {
     renderWithCatalog(<ProtectionOff />);
     await screen.findByRole("button", { name: "Instalar" });
     expect(await screen.findByRole("switch")).not.toBeChecked();
+  });
+});
+
+describe("the certificate step on macOS", () => {
+  it("names the macOS store among the places where the install failed", async () => {
+    renderWithCatalog(<CertificateFailedOnMacos />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "Instalar" }));
+
+    expect(await screen.findByText("Almacén de macOS")).toBeInTheDocument();
   });
 });

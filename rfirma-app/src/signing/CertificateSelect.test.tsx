@@ -247,9 +247,9 @@ describe("CertificateSelect", () => {
       expect(within(row(0)).getByText("Tarjeta")).toBeVisible();
     });
 
-    it("names the keychain certificates as the macOS store", async () => {
+    it("names the macOS personal store as the macOS store", async () => {
       renderSelect({
-        certificates: [aCertificate({ id: "keychain", stores: ["macos"] })],
+        certificates: [aCertificate({ id: "macos", stores: ["macos"] })],
       });
 
       await userEvent.click(box());
