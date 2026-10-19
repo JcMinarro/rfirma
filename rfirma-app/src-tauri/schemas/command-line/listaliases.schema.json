@@ -16,9 +16,9 @@
             "type": "string"
           },
           "store": {
-            "description": "El almacén, con el nombre que acepta --store: pkcs11:<ruta del módulo>, mozilla para la familia NSS, o windows.",
+            "description": "El almacén, con el nombre que acepta --store: pkcs11:<ruta del módulo>, mozilla para la familia NSS, windows o apple.",
             "type": "string",
-            "pattern": "^(pkcs11:.+|mozilla|windows)$"
+            "pattern": "^(pkcs11:.+|mozilla|windows|apple)$"
           }
         },
         "required": ["alias", "store"],

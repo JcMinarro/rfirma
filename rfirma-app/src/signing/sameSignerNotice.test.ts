@@ -19,6 +19,7 @@ function aCertificate(overrides: Partial<Certificate> = {}): Certificate {
     stores: ["card"],
     status: { kind: "valid", notAfter: 1_894_752_000 },
     remembered: false,
+    installed: false,
     ...overrides,
   };
 }

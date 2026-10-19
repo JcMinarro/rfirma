@@ -18,21 +18,25 @@ pub fn within_the_scope(
         ),
         _ => None,
     };
-    let certificates = stores.certificates().map_err(ScopeFailure::Token)?;
+    let certificates = stores
+        .certificates()
+        .map_err(ScopeFailure::Token)?
+        .into_iter()
+        .filter(|certificate| !certificate.is_a_macos_token_identity());
     Ok(match (scope, module) {
         (StoreScope::Nss, _) => certificates
-            .into_iter()
             .filter(|certificate| certificate.reference().store().class() != StoreClass::Card)
             .collect(),
         (StoreScope::Windows, _) => certificates
-            .into_iter()
             .filter(|certificate| certificate.reference().store().class() == StoreClass::Windows)
             .collect(),
+        (StoreScope::Macos, _) => certificates
+            .filter(|certificate| certificate.reference().store().class() == StoreClass::Macos)
+            .collect(),
         (_, Some(module)) => certificates
-            .into_iter()
             .filter(|certificate| certificate.reference().module() == module)
             .collect(),
-        _ => certificates,
+        _ => certificates.collect(),
     })
 }
 

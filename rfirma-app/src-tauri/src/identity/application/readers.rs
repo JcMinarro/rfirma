@@ -190,11 +190,11 @@ fn listed_in(token: &dyn Token, stores: &[Store]) -> Vec<TokenCertificate> {
     token.list_across(stores).unwrap_or_default()
 }
 
-/// Si el almacén se vuelve a listar al cambiar los lectores: uno de tarjeta, o el de Windows, que copia las suyas.
+/// Si el almacén se vuelve a listar al cambiar los lectores: uno de tarjeta, o el de Windows o macOS, que copian las suyas.
 fn shows_cards(store: &Store, installed_dir: &Path) -> bool {
     matches!(
         store.class_under(installed_dir),
-        StoreClass::Card | StoreClass::Windows
+        StoreClass::Card | StoreClass::Windows | StoreClass::Macos
     )
 }
 

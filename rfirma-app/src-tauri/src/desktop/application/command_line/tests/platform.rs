@@ -15,15 +15,19 @@ impl CardAndWindows {
 impl CertificateStores for CardAndWindows {
     fn certificates(&self) -> Result<Vec<TokenCertificate>, TokenError> {
         self.opened.set(true);
-        Ok([("cng:CurrentUser", "WIN"), ("/modulo.so", "TARJETA")]
-            .into_iter()
-            .map(|(module, label)| {
-                TokenCertificate::new(
-                    CertificateRef::new(Store::module(module), "token", label, None),
-                    Vec::new(),
-                )
-            })
-            .collect())
+        Ok([
+            ("cng:CurrentUser", "WIN"),
+            ("/modulo.so", "TARJETA"),
+            ("keychain:login", "MAC"),
+        ]
+        .into_iter()
+        .map(|(module, label)| {
+            TokenCertificate::new(
+                CertificateRef::new(Store::module(module), "token", label, None),
+                Vec::new(),
+            )
+        })
+        .collect())
     }
 
     fn discovered_module(&self, library: &str) -> Option<PathBuf> {
@@ -176,5 +180,65 @@ fn the_password_is_refused_in_any_position_with_a_message_naming_password_fd() {
             said(&outcome)
         );
         assert!(!said(&outcome).contains("1234"), "nunca repite el secreto");
+    }
+}
+
+#[test]
+fn on_macos_store_apple_narrows_to_the_macos_store() {
+    let outcome = listed_on(
+        Platform::MacOs,
+        &["listaliases", "-store", "apple"],
+        &CardAndWindows::new(),
+    );
+
+    assert_eq!(outcome.exit_code, SUCCEEDED);
+    assert_eq!(outcome.stdout, b"MAC\n");
+}
+
+#[test]
+fn on_linux_store_apple_is_refused_without_opening_any_store() {
+    let stores = CardAndWindows::new();
+
+    let outcome = listed_on(
+        Platform::Linux,
+        &["listaliases", "-store", "apple"],
+        &stores,
+    );
+
+    assert_eq!(outcome.exit_code, REFUSED);
+    assert!(!stores.opened.get());
+}
+
+struct SoftwareAndTokenIdentities;
+
+impl CertificateStores for SoftwareAndTokenIdentities {
+    fn certificates(&self) -> Result<Vec<TokenCertificate>, TokenError> {
+        let in_the_keychain = |label: &str| {
+            CertificateRef::new(Store::module("keychain:login"), "token", label, None)
+        };
+        Ok(vec![
+            TokenCertificate::new(in_the_keychain("SOFTWARE"), Vec::new()),
+            TokenCertificate::new(
+                in_the_keychain("EN_TOKEN").with_key_provider("com.apple.pivtoken"),
+                Vec::new(),
+            ),
+        ])
+    }
+
+    fn discovered_module(&self, _library: &str) -> Option<PathBuf> {
+        None
+    }
+}
+
+#[test]
+fn on_macos_the_command_line_leaves_out_the_identities_with_their_key_in_a_system_token() {
+    for words in [
+        &["listaliases", "-store", "apple"][..],
+        &["listaliases"][..],
+    ] {
+        let outcome = listed_on(Platform::MacOs, words, &SoftwareAndTokenIdentities);
+
+        assert_eq!(outcome.exit_code, SUCCEEDED, "{words:?}");
+        assert_eq!(outcome.stdout, b"SOFTWARE\n", "{words:?}");
     }
 }

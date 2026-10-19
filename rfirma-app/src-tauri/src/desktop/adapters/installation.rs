@@ -16,7 +16,7 @@ pub fn this_installation(channel: Channel) -> Installation {
     match channel {
         Channel::Flatpak => Installation::Flatpak(flatpak_installation()),
         Channel::Windows => Installation::WindowsInstaller(installer_scope()),
-        Channel::Native if cfg!(target_os = "macos") => Installation::MacOs,
+        Channel::MacOs => Installation::MacOs,
         Channel::Native => native_installation(),
     }
 }

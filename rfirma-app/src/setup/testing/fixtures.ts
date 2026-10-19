@@ -28,6 +28,12 @@ export const certificateInstalled: SignalRow = {
   action: null,
 };
 
+export const certificateFailedOnMacos: SignalRow = {
+  ...certificateNotInstalled,
+  verdict: "incorrect",
+  detail: { kind: "trust", stores: [{ brand: "macos", trusted: false }] },
+};
+
 export const handlerNotOurs: SignalRow = {
   signal: "siteSignature",
   value: "AutoFirma",

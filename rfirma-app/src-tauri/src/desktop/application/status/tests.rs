@@ -102,6 +102,7 @@ fn checking_version_signal_has_no_value_nor_action() {
 fn each_channel_updates_from_its_own_destination() {
     assert_eq!(update_destination_for(Channel::Windows), "windows");
     assert_eq!(update_destination_for(Channel::Native), "releases");
+    assert_eq!(update_destination_for(Channel::MacOs), "releases");
     assert_eq!(update_destination_for(Channel::Flatpak), "repository");
 }
 

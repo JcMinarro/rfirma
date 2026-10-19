@@ -68,6 +68,16 @@ pub trait Token {
     /// Cierra el login que compartían las firmas del certificado.
     fn release_the_login(&self, _reference: &CertificateRef) {}
 
+    /// Si instalar y quitar un `.p12` es cosa del sistema y no del Almacén de rFirma: sin carpeta, sin PIN del llavero.
+    fn installs_in_the_system(&self) -> bool {
+        false
+    }
+
+    /// Si `reference` es de un `.p12` que rFirma instaló en el sistema, según lo apuntado en `directory`.
+    fn installed_in_the_system(&self, _directory: &Path, _reference: &CertificateRef) -> bool {
+        false
+    }
+
     /// Importa un `.p12` al Almacén de rFirma en ese directorio, cifrado con `pin`, y lo devuelve.
     fn import_pkcs12(
         &self,

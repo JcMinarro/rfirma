@@ -22,7 +22,7 @@ const OUR_NAME: &str = "rFirma";
 pub fn update_destination_for(channel: Channel) -> &'static str {
     match channel {
         Channel::Flatpak => REPOSITORY,
-        Channel::Native => RELEASES,
+        Channel::Native | Channel::MacOs => RELEASES,
         Channel::Windows => WINDOWS,
     }
 }
@@ -185,6 +185,7 @@ pub fn brand_of_class(class: StoreClass) -> StoreBrand {
         StoreClass::Card => StoreBrand::Card,
         StoreClass::Installed => StoreBrand::Installed,
         StoreClass::Windows => StoreBrand::Windows,
+        StoreClass::Macos => StoreBrand::Macos,
         StoreClass::Nssdb => StoreBrand::Nssdb,
         StoreClass::Browser(owner) => match owner.browser_name() {
             Some(name) => StoreBrand::Browser {

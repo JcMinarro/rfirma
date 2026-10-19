@@ -40,6 +40,7 @@ export function anInstalledCertificate(overrides: Partial<Certificate> = {}): Ce
     stores: ["installed"],
     status: { kind: "valid", notAfter: IN_2030 },
     remembered: false,
+    installed: true,
     ...overrides,
   };
 }

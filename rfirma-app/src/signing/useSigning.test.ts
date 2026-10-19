@@ -28,6 +28,7 @@ const certificate: Certificate = {
   stores: ["card"],
   status: { kind: "valid", notAfter: 1_894_752_000 },
   remembered: false,
+  installed: false,
 };
 
 const wrongPin: TokenFailure = {

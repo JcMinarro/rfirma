@@ -534,6 +534,9 @@ msgstr ""
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instalatu OpenSC rFirmak txartela irakur dezan."
 
+msgid "panel.certificate.reader.unreadableHelp.macos"
+msgstr "Instalatu OpenSC edo DGPren modulua rFirmak txartela irakur dezan."
+
 #. {{issuer}} es el nombre de la entidad emisora del certificado.
 msgid "panel.certificate.issuer"
 msgstr "Jaulkitzailea: {{issuer}}"
@@ -1052,6 +1055,9 @@ msgstr "Instalatutako fitxategia"
 
 msgid "status.storeBrands.windows"
 msgstr "Windows biltegia"
+
+msgid "status.storeBrands.macos"
+msgstr "macOS biltegia"
 
 msgid "status.notices.restartFirefox"
 msgstr "Berrabiarazi Firefox eragina izan dezan."

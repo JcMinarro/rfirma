@@ -116,7 +116,12 @@ describe("App", () => {
    */
   it("lists a just installed certificate in Preferences", async () => {
     const user = userEvent.setup();
-    const p12: Certificate = { ...aCertificate, id: "p12", stores: ["installed"] };
+    const p12: Certificate = {
+      ...aCertificate,
+      id: "p12",
+      stores: ["installed"],
+      installed: true,
+    };
     let found: readonly Certificate[] = [];
     renderApp({
       recents: inMemoryRecents(),
@@ -145,7 +150,12 @@ describe("App", () => {
 
   it("takes a removed certificate out of the list", async () => {
     const user = userEvent.setup();
-    const p12: Certificate = { ...aCertificate, id: "p12", stores: ["installed"] };
+    const p12: Certificate = {
+      ...aCertificate,
+      id: "p12",
+      stores: ["installed"],
+      installed: true,
+    };
     let found: readonly Certificate[] = [p12];
     renderApp({
       recents: inMemoryRecents(),

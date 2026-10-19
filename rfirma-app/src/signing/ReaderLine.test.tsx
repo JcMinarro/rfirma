@@ -32,6 +32,13 @@ describe("the reader line under the certificate selector", () => {
       expect(screen.getByRole("status")).toHaveTextContent(/OpenSC/);
     });
 
+    it("points to OpenSC and the DGP page on macOS", () => {
+      renderWithCatalog(<ReaderLine reader={{ kind: "unreadable" }} platform="macos" />);
+
+      expect(screen.getByRole("status")).toHaveTextContent(/OpenSC/);
+      expect(screen.getByRole("status")).toHaveTextContent(/DGP/);
+    });
+
     it("offers nothing on a platform it has no advice for", () => {
       renderWithCatalog(<ReaderLine reader={{ kind: "unreadable" }} platform="other" />);
 

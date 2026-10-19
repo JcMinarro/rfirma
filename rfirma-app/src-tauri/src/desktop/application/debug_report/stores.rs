@@ -1,6 +1,6 @@
-//! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers.
+//! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers y el de macOS con sus controladores.
 
-use super::{section, NssProfileState, NssStores, ReportOwner, WindowsStores};
+use super::{section, MacosStores, NssProfileState, NssStores, ReportOwner, WindowsStores};
 
 pub(super) fn windows_sections(stores: Option<&WindowsStores>) -> [Option<String>; 2] {
     let Some(stores) = stores else {
@@ -19,6 +19,29 @@ pub(super) fn windows_sections(stores: Option<&WindowsStores>) -> [Option<String
     [
         section("Almacén de Windows", &[trust]),
         section("Minidrivers", &minidrivers),
+    ]
+}
+
+pub(super) fn macos_sections(stores: Option<&MacosStores>) -> [Option<String>; 2] {
+    let Some(stores) = stores else {
+        return [None, None];
+    };
+    let trust = format!(
+        "Confianza del usuario: {}",
+        profile_state(&stores.local_channel)
+    );
+    let drivers = if stores.card_drivers.is_empty() {
+        vec!["tarjetas: ninguno instalado".to_owned()]
+    } else {
+        stores
+            .card_drivers
+            .iter()
+            .map(|name| format!("{name}: instalado"))
+            .collect()
+    };
+    [
+        section("Almacén de macOS", &[trust]),
+        section("Controladores de tarjeta", &drivers),
     ]
 }
 

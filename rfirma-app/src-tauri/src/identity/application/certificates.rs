@@ -68,7 +68,26 @@ pub fn listed_rows(
         listed,
         installed_copies,
         memory,
-    ))
+    )
+    .into_iter()
+    .map(|mut row| {
+        row.installed = row.installed
+            || listed
+                .get(&row.id)
+                .is_some_and(|reference| token.installed_in_the_system(installed_dir, &reference));
+        row
+    })
+    .collect())
+}
+
+/// Si rFirma instaló `reference` desde un `.p12`: en su Almacén o, donde instala el sistema, apuntado por el token.
+fn installed_by_rfirma(
+    token: &dyn Token,
+    installed_dir: &Path,
+    reference: &CertificateRef,
+) -> bool {
+    reference.class_under(installed_dir) == StoreClass::Installed
+        || token.installed_in_the_system(installed_dir, reference)
 }
 
 /// Los certificados de los almacenes, cada uno con los emisores que su propio almacén aporta.
@@ -103,7 +122,9 @@ pub fn on_the_desktop(found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
 fn holders_only(found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
     found
         .into_iter()
-        .filter(|certificate| !certificate.is_an_authority())
+        .filter(|certificate| {
+            !certificate.is_an_authority() && !certificate.is_a_macos_token_identity()
+        })
         .collect()
 }
 
@@ -115,9 +136,12 @@ pub fn certificates_by_class(
 ) -> Vec<(StoreClass, usize)> {
     let mut counted: Vec<(StoreClass, usize)> = Vec::new();
     for store in stores {
-        let found = token
-            .list(store)
-            .map_or(0, |certificates| certificates.len());
+        let found = token.list(store).map_or(0, |certificates| {
+            certificates
+                .iter()
+                .filter(|certificate| !certificate.is_a_macos_token_identity())
+                .count()
+        });
         if found == 0 {
             continue;
         }
@@ -224,6 +248,7 @@ fn listed_as(row: ChosenCopy, id: String) -> ListedCertificate {
         from_a_dnie: certificate.is_from_a_dnie(),
         status: certificate.status(),
         remembered: row.remembered,
+        installed: row.installed_reference.is_some(),
     }
 }
 
@@ -248,6 +273,10 @@ pub fn install_pkcs12(
     pkcs12: &[u8],
     password: &str,
 ) -> Result<(), InstallError> {
+    if token.installs_in_the_system() {
+        token.import_pkcs12(installed_dir, pkcs12, password, &ProtectedSecret::new(b""))?;
+        return Ok(());
+    }
     let already_existed = installed_dir.join("cert9.db").is_file();
     let pin = pin_for_installing(keyring, already_existed)?;
     validate_pkcs12_alone(token, folder, pkcs12, password)?;
@@ -398,16 +427,18 @@ pub fn remove_installed(
         Some(installed) => installed,
         None => listed.get(handle).ok_or_else(not_from_the_last_listing)?,
     };
-    reference
-        .store()
-        .installed_directory_under(installed_dir)
-        .ok_or_else(|| {
-            TokenError::new(
-                Situation::CertificateNotFound,
-                "ese certificado no viene de un .p12 instalado",
-            )
-        })?;
-    let pin = keyring.pin()?;
+    if !installed_by_rfirma(token, installed_dir, &reference) {
+        return Err(TokenError::new(
+            Situation::CertificateNotFound,
+            "ese certificado no viene de un .p12 instalado",
+        )
+        .into());
+    }
+    let pin = if token.installs_in_the_system() {
+        ProtectedSecret::new(b"")
+    } else {
+        keyring.pin()?
+    };
     token.remove_certificate(installed_dir, &reference, &pin)?;
     if memory.remembered_certificate().as_ref() == Some(&reference) {
         let _ = memory.forget_the_certificate();

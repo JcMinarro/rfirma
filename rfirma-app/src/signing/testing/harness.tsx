@@ -67,6 +67,7 @@ export const certificate: Certificate = {
   stores: ["card"],
   status: { kind: "valid", notAfter: 1_894_752_000 },
   remembered: false,
+  installed: false,
 };
 
 /** Un JPEG de un píxel: lo que devuelve `rubric::normalize`, ya opaco. */

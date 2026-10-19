@@ -43,6 +43,7 @@ pub(super) fn a_flatpak_report() -> DebugReport {
         pkcs11_modules: None,
         nss_stores: None,
         windows_stores: None,
+        macos_stores: None,
     }
 }
 

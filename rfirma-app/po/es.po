@@ -533,6 +533,9 @@ msgstr ""
 msgid "panel.certificate.reader.unreadableHelp.linux"
 msgstr "Instala OpenSC para que rFirma pueda leerla."
 
+msgid "panel.certificate.reader.unreadableHelp.macos"
+msgstr "Instala OpenSC o el módulo de la DGP para que rFirma pueda leerla."
+
 #. {{issuer}} es el nombre de la entidad emisora del certificado.
 msgid "panel.certificate.issuer"
 msgstr "Emitido por {{issuer}}"
@@ -1051,6 +1054,9 @@ msgstr "Fichero instalado"
 
 msgid "status.storeBrands.windows"
 msgstr "Almacén de Windows"
+
+msgid "status.storeBrands.macos"
+msgstr "Almacén de macOS"
 
 msgid "status.notices.restartFirefox"
 msgstr "Reinicia Firefox para que surta efecto."

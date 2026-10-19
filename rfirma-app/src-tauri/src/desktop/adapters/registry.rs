@@ -1,7 +1,9 @@
-//! `DesktopRegistry`, el registro de manejadores detrás del puerto `HandlerRegistry`: canal, GIO y `mimeapps.list` en Linux, el registro en Windows y Launch Services, pendiente, en macOS.
+//! `DesktopRegistry`, el registro de manejadores detrás del puerto `HandlerRegistry`: canal, GIO y `mimeapps.list` en Linux, el registro en Windows y LaunchServices en macOS.
 
 use std::path::PathBuf;
 
+#[cfg(target_os = "macos")]
+pub mod launch_services;
 #[cfg(windows)]
 pub mod windows_classes;
 
@@ -12,7 +14,7 @@ use crate::desktop::adapters::choice::{
     choose_handler_for_scheme, current_default_for_scheme, remove_handler_for_scheme,
 };
 use crate::desktop::domain::error::DesktopError;
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
 use crate::desktop::domain::error::Situation;
 use crate::desktop::domain::handlers::UrlHandler;
 use crate::desktop::ports::HandlerRegistry;
@@ -88,45 +90,14 @@ pub fn this_desktop_to_write() -> Result<Box<dyn HandlerRegistry>, DesktopError>
     Ok(this_desktop())
 }
 
-/// Quién abre `afirma://` en este escritorio, para leerlo: Launch Services, aún pendiente.
+/// Quién abre `afirma://` en este escritorio, para leerlo: LaunchServices.
 #[cfg(target_os = "macos")]
 pub fn this_desktop() -> Box<dyn HandlerRegistry> {
-    Box::new(PendingMacosLaunchServices)
+    Box::new(launch_services::of_this_app())
 }
 
-/// Quién abre `afirma://` en este escritorio, para escribirlo: Launch Services, aún pendiente.
+/// Quién abre `afirma://` en este escritorio, para escribirlo: LaunchServices.
 #[cfg(target_os = "macos")]
 pub fn this_desktop_to_write() -> Result<Box<dyn HandlerRegistry>, DesktopError> {
     Ok(this_desktop())
-}
-
-/// El registro de manejadores sobre Launch Services de macOS, que aún no existe: ni se consulta ni se escribe.
-#[cfg(target_os = "macos")]
-pub struct PendingMacosLaunchServices;
-
-#[cfg(target_os = "macos")]
-impl HandlerRegistry for PendingMacosLaunchServices {
-    fn registered_for(&self, _scheme: &str) -> Option<Vec<UrlHandler>> {
-        None
-    }
-
-    fn current_default_for(&self, _scheme: &str) -> Option<String> {
-        None
-    }
-
-    fn choose_for(&self, _scheme: &str, _handler: &str) -> Result<(), DesktopError> {
-        Err(pending_macos_launch_services())
-    }
-
-    fn remove_for(&self, _scheme: &str) -> Result<(), DesktopError> {
-        Err(pending_macos_launch_services())
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn pending_macos_launch_services() -> DesktopError {
-    DesktopError::new(
-        Situation::TheListIsNotWritable,
-        "el registro de manejadores de macOS aún no está disponible",
-    )
 }

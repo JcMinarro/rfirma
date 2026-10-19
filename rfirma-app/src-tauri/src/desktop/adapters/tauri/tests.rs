@@ -1,5 +1,7 @@
 use super::*;
 
+mod macos_trust;
+
 #[test]
 fn a_trust_profile_takes_its_brand_from_its_discovered_owner_and_not_from_its_path() {
     use crate::identity::domain::browsers::{browser_named, BrowserChannel, NssOwner};
@@ -29,6 +31,17 @@ fn a_trust_profile_takes_its_brand_from_its_discovered_owner_and_not_from_its_pa
             None
         ),
         StoreBrand::Windows
+    );
+}
+
+#[test]
+fn the_macos_user_trust_is_the_macos_brand() {
+    assert_eq!(
+        brand_of(
+            std::path::Path::new(crate::site::adapters::MACOS_USER_TRUST),
+            None
+        ),
+        StoreBrand::Macos
     );
 }
 

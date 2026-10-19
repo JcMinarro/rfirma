@@ -84,6 +84,15 @@ pub struct WindowsStores {
     pub minidrivers: Vec<String>,
 }
 
+/// Lo que solo existe en macOS: la confianza del usuario y los controladores de tarjeta del sistema.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MacosStores {
+    /// Si la confianza del usuario en el Almacén de macOS acepta el canal local.
+    pub local_channel: NssProfileState,
+    /// Controladores de tarjeta que macOS tiene instalados.
+    pub card_drivers: Vec<String>,
+}
+
 /// Dónde y con qué instalador está el flatpak.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FlatpakInstallation {
@@ -263,6 +272,8 @@ pub struct DebugReport {
     pub nss_stores: Option<NssStores>,
     /// Almacén de Windows y minidrivers; `None` fuera de Windows.
     pub windows_stores: Option<WindowsStores>,
+    /// Almacén de macOS y controladores de tarjeta; `None` fuera de macOS.
+    pub macos_stores: Option<MacosStores>,
 }
 
 /// Una cabecera y una sección por bloque, con el patrón `clave: estado · detalle` y las rutas anonimizadas.
@@ -293,6 +304,7 @@ pub fn debug_report_text(report: &DebugReport, owner: &ReportOwner) -> String {
             .map(|stores| section("Almacenes NSS", &stores::nss_lines(stores, owner))),
     )
     .chain(stores::windows_sections(report.windows_stores.as_ref()))
+    .chain(stores::macos_sections(report.macos_stores.as_ref()))
     .flatten()
     .collect::<Vec<_>>()
     .join("\n\n")

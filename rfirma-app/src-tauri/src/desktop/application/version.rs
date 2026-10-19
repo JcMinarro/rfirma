@@ -111,13 +111,16 @@ pub(crate) fn ask_and_remember(
     Some(announced)
 }
 
-/// Extrae la versión anunciada: `version` del `latest.json` en Windows, `tag_name` en GitHub.
+/// Extrae la versión anunciada: `version` del `latest.json` con la entrada del canal, `tag_name` en GitHub.
 fn announced_version(body: &str, channel: Channel) -> Option<Version> {
-    let field = match channel {
-        Channel::Windows => "version",
-        Channel::Native | Channel::Flatpak => "tag_name",
-    };
     let feed: serde_json::Value = serde_json::from_str(body).ok()?;
+    let field = match channel.updater_target() {
+        Some(target) => {
+            feed.get("platforms")?.get(target)?;
+            "version"
+        }
+        None => "tag_name",
+    };
     Version::parse(feed.get(field)?.as_str()?)
 }
 

@@ -67,6 +67,8 @@ export function storeLabel(store: Store, t: TFunction): string {
       return t("panel.certificate.stores.installed");
     case "windows":
       return t("status.storeBrands.windows");
+    case "macos":
+      return t("status.storeBrands.macos");
   }
 }
 

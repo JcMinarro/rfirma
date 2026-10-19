@@ -118,6 +118,11 @@ const table: Record<keyof typeof stories, Expected> = {
     buttons: [],
     absent: ["No aplica"],
   },
+  UserCertificatesOnMacos: {
+    texts: ["Almacén de macOS", "Tarjeta"],
+    buttons: ["Ver dónde"],
+    absent: ["Almacén de Windows"],
+  },
   UserCertificatesDetailExpanded: {
     texts: [
       "Almacén de Windows",

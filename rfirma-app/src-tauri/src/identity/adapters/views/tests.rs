@@ -70,6 +70,7 @@ fn a_view() -> CertificateView {
             not_after: 1_900_000_000,
         },
         remembered: false,
+        installed: false,
     }
 }
 
@@ -91,6 +92,7 @@ fn a_row_in(stores: Vec<StoreClass>, from_a_dnie: bool) -> ListedCertificate {
         from_a_dnie,
         status: CertificateStatus::Valid { not_after: 0 },
         remembered: false,
+        installed: false,
     }
 }
 

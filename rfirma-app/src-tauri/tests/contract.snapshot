@@ -251,6 +251,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Installed
       Nssdb
       Windows
+      Macos
       SharedChromium
       Browser { name: String, channel: Option<String> }
 
@@ -269,6 +270,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       stores: Vec<StoreMarkView>
       status: StatusView
       remembered: bool
+      installed: bool
 
   pub enum ReaderStatusView   (serde: etiqueta "kind")
       Unavailable
@@ -533,6 +535,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Card
       Installed
       Windows
+      Macos
 
   pub enum Theme   [signing/application/configuration_memory.rs]
       System

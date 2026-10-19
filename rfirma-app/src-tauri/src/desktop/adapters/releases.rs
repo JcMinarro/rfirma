@@ -1,4 +1,4 @@
-//! Consulta HTTP de la última publicación oficial según el canal (la API de GitHub o el `latest.json` de rfirma.sgomez.me en Windows); no es el instalador, que es `installer.rs` (ADR-0015).
+//! Consulta HTTP de la última publicación oficial según el canal (la API de GitHub o el `latest.json` de rfirma.sgomez.me en Windows y macOS); no es el instalador, que es `installer.rs` (ADR-0015).
 
 use std::time::Duration;
 
@@ -10,6 +10,9 @@ pub const LATEST_RELEASE_ENDPOINT: &str =
 
 /// `latest.json` estable del servidor propio, el feed del canal de Windows.
 pub const WINDOWS_FEED_ENDPOINT: &str = "https://rfirma.sgomez.me/windows/latest.json";
+
+/// `latest.json` estable del servidor propio, el feed del canal de macOS.
+pub const MACOS_FEED_ENDPOINT: &str = "https://rfirma.sgomez.me/macos/latest.json";
 
 /// Tiempo máximo de espera para la respuesta del servidor.
 const TIMEOUT: Duration = Duration::from_secs(4);
@@ -24,6 +27,7 @@ pub fn latest_release(channel: Channel) -> Option<String> {
 fn endpoint_for(channel: Channel) -> &'static str {
     match channel {
         Channel::Windows => WINDOWS_FEED_ENDPOINT,
+        Channel::MacOs => MACOS_FEED_ENDPOINT,
         Channel::Native | Channel::Flatpak => LATEST_RELEASE_ENDPOINT,
     }
 }

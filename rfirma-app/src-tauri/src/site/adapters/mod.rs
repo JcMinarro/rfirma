@@ -1,4 +1,4 @@
-//! Adaptadores de `site`, todo lo que toca el mundo con las órdenes y vistas de Tauri, y qué almacenes de confianza usa cada plataforma: NSS en Linux, `CurrentUser\Root` en Windows y el llavero, pendiente, en macOS (ADR-0035, ADR-0040).
+//! Adaptadores de `site`, todo lo que toca el mundo con las órdenes y vistas de Tauri, y qué almacenes de confianza usa cada plataforma: NSS en Linux, `CurrentUser\Root` en Windows y la confianza de la persona usuaria en macOS (ADR-0035, ADR-0040).
 
 pub mod batch_services;
 pub mod channel;
@@ -14,6 +14,8 @@ pub mod frontier;
 mod header_probe;
 pub mod invoice_scheme;
 pub mod invoice_view;
+#[cfg(target_os = "macos")]
+pub mod macos_trust;
 pub mod nss;
 pub mod readers;
 pub mod relay;
@@ -34,8 +36,6 @@ pub mod xslt;
 use std::path::Path;
 
 use crate::identity::domain::browsers::NssOwner;
-#[cfg(target_os = "macos")]
-use crate::site::domain::trust_error::{Situation, TrustError};
 use crate::site::ports::TrustStores;
 
 /// El almacén raíz del usuario de Windows, visto como un perfil más de los almacenes de confianza.
@@ -44,6 +44,14 @@ pub const SYSTEM_ROOT_STORE: &str = "cryptoapi:CurrentUser/Root";
 /// Si el perfil es el almacén raíz del usuario de Windows y no un perfil NSS.
 pub fn is_the_system_root_store(profile: &Path) -> bool {
     profile.as_os_str() == SYSTEM_ROOT_STORE
+}
+
+/// La confianza del dominio de la persona usuaria de macOS, vista como un perfil más.
+pub const MACOS_USER_TRUST: &str = "trust-settings:user";
+
+/// Si el perfil es la confianza de la persona usuaria de macOS y no un perfil NSS.
+pub fn is_the_macos_user_trust(profile: &Path) -> bool {
+    profile.as_os_str() == MACOS_USER_TRUST
 }
 
 /// Si la CA local vigente es de confianza en cada perfil, en el orden dado; la medición del panel de estado.
@@ -106,7 +114,7 @@ pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
     Vec::new()
 }
 
-/// Ningún perfil NSS de navegador: en macOS, la confianza vivirá en el llavero.
+/// Ningún perfil NSS de navegador: en macOS, la confianza vive en la de la persona usuaria.
 #[cfg(target_os = "macos")]
 pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
     Vec::new()
@@ -116,56 +124,14 @@ pub fn trust_profile_owners() -> Vec<(std::path::PathBuf, NssOwner)> {
 #[cfg(windows)]
 pub use windows_root::trust_profiles;
 
+/// Los almacenes de confianza de esta persona.
+#[cfg(target_os = "macos")]
+pub use macos_trust::trust_profiles;
+
 /// Los almacenes de confianza de esta plataforma.
 #[cfg(target_os = "macos")]
 pub fn desktop_trust_stores() -> Box<dyn TrustStores + Send + Sync> {
-    Box::new(PendingMacosKeychainTrust)
-}
-
-/// Ningún almacén de confianza: sin llavero de macOS no hay dónde instalar la CA local.
-#[cfg(target_os = "macos")]
-pub fn trust_profiles() -> Vec<std::path::PathBuf> {
-    Vec::new()
-}
-
-/// La confianza en la CA local sobre el llavero de macOS, que aún no existe: toda escritura falla.
-#[cfg(target_os = "macos")]
-pub struct PendingMacosKeychainTrust;
-
-#[cfg(target_os = "macos")]
-impl TrustStores for PendingMacosKeychainTrust {
-    fn install(
-        &self,
-        _profile: &Path,
-        _certificate_der: &[u8],
-        _nickname: &str,
-    ) -> Result<(), TrustError> {
-        Err(pending_macos_keychain_trust(Situation::TrustNotWritten))
-    }
-
-    fn trust_of(
-        &self,
-        _profile: &Path,
-        _certificate_der: &[u8],
-    ) -> Result<Option<u32>, TrustError> {
-        Ok(None)
-    }
-
-    fn withdraw(&self, _profile: &Path, _certificate_der: &[u8]) -> Result<(), TrustError> {
-        Err(pending_macos_keychain_trust(Situation::TrustNotWithdrawn))
-    }
-
-    fn local_cas(&self, _profile: &Path) -> Result<Vec<Vec<u8>>, TrustError> {
-        Ok(Vec::new())
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn pending_macos_keychain_trust(situation: Situation) -> TrustError {
-    TrustError::new(
-        situation,
-        "el llavero de macOS aún no está disponible para la CA local",
-    )
+    Box::new(macos_trust::MacosUserTrust)
 }
 
 const CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);

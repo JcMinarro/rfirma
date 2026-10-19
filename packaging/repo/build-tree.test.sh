@@ -77,6 +77,20 @@ instalador_de_pega() {
     "$raiz/scripts/packages-manifest.sh" write "$dir"
 }
 
+actualizacion_de_macos_de_pega() {
+    local dir="$1" version="$2"
+    echo "app $version" > "$dir/rFirma_${version}_aarch64.app.tar.gz"
+    printf 'firma mac de %s\n' "$version" > "$dir/rFirma_${version}_aarch64.app.tar.gz.sig"
+    "$raiz/scripts/packages-manifest.sh" write "$dir"
+}
+
+sin_actualizacion_de_macos() {
+    local dir="$1"
+    rm -f "$dir"/*.app.tar.gz "$dir"/*.app.tar.gz.sig
+    jq 'map(select(.platform != "macos"))' "$dir/paquetes.json" > "$dir/paquetes.json.nuevo"
+    mv "$dir/paquetes.json.nuevo" "$dir/paquetes.json"
+}
+
 # an_incomplete_series_stops_the_publication
 incompleta="$tmp/incompleta"
 paquetes_de_pega "$incompleta/v0.4.0" "0.4.0"
@@ -149,6 +163,20 @@ if "$construye" "$incompleta" "$tmp/arbol-malo" "$tmp/no-esta.asc" "$SIN_FIRMA" 
     fail "una clave publica que no existe no detiene la publicacion"
 else
     ok "una clave publica que no existe detiene la publicacion"
+fi
+
+# a_macos_update_without_its_signature_stops_the_publication
+mac_sin_sig="$tmp/mac-sin-sig"
+paquetes_de_pega "$mac_sin_sig/v0.4.0" "0.4.0"
+actualizacion_de_macos_de_pega "$mac_sin_sig/v0.4.0" "0.4.0"
+rm "$mac_sin_sig/v0.4.0"/*.app.tar.gz.sig
+"$raiz/scripts/packages-manifest.sh" write "$mac_sin_sig/v0.4.0"
+if salida="$("$construye" "$mac_sin_sig" "$tmp/arbol-malo" "$tmp/rfirma.asc" "$SIN_FIRMA" 2>&1)"; then
+    fail "una actualizacion de macOS sin su .sig no detiene la publicacion"
+elif grep -q "actualizacion de macOS" <<< "$salida"; then
+    ok "una actualizacion de macOS sin su .sig detiene la publicacion"
+else
+    fail "una actualizacion de macOS sin su .sig se para por otro motivo: $salida"
 fi
 
 # ---------------------------------------------------------------------------
@@ -251,12 +279,16 @@ for version in "${versiones[@]}"; do
     deb_de_prueba "$version" "$dir/rfirma_${version}_amd64.deb"
     rpm_de_prueba "$version" "$dir/rfirma-$version.x86_64.rpm"
     instalador_de_pega "$dir" "$version"
+    # La primera version es de antes de macOS: no trae su actualizacion.
+    [ "$version" = 0.4.0 ] || actualizacion_de_macos_de_pega "$dir" "$version"
 done
 
 # Assets subidos a mano a la Release DESPUES del manifiesto: no estan en el.
 echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_x64-setup.exe"
 echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_x64-setup.exe.sig"
 echo "de mas" > "$serie/v0.4.10/subido-a-mano.exe"
+echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_aarch64.app.tar.gz"
+echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_aarch64.app.tar.gz.sig"
 
 # ---------------------------------------------------------------------------
 # El arbol, dos veces y en dos directorios distintos
@@ -471,11 +503,75 @@ else
     fail "una candidata aparece en windows/ o en latest.json"
 fi
 
+# ---------------------------------------------------------------------------
+# /macos/: la actualizacion y latest.json
+# ---------------------------------------------------------------------------
+# macos_has_the_update_and_signature_of_every_version_that_brings_it
+faltan_de_macos=0
+for version in 0.4.2 0.4.10; do
+    for fichero in "rFirma_${version}_aarch64.app.tar.gz" "rFirma_${version}_aarch64.app.tar.gz.sig"; do
+        [ -f "$tmp/arbol/macos/$fichero" ] || { faltan_de_macos=1; echo "  falta $fichero" >&2; }
+    done
+done
+if [ "$faltan_de_macos" -eq 0 ] && [ -z "$(find "$tmp/arbol/macos" -name '*0.4.0*' -print -quit)" ] \
+    && [ ! -e "$tmp/arbol/macos/rFirma_9.9.9_aarch64.app.tar.gz" ]; then
+    ok "macos/ trae la actualizacion y su .sig de cada version que la trae, y nada fuera del manifiesto"
+else
+    fail "macos/ no trae lo que dicen los manifiestos de la serie"
+fi
+
+# macos_latest_json_announces_the_darwin_aarch64_entry_of_the_highest_version
+latest_mac="$tmp/arbol/macos/latest.json"
+app_alta="rFirma_0.4.10_aarch64.app.tar.gz"
+if [ -f "$latest_mac" ] \
+    && [ "$(jq -r .version "$latest_mac")" = "0.4.10" ] \
+    && [ "$(jq -r '.platforms | keys | join(",")' "$latest_mac")" = "darwin-aarch64" ] \
+    && [ "$(jq -r '.platforms["darwin-aarch64"].url' "$latest_mac")" = "https://rfirma.sgomez.me/macos/$app_alta" ] \
+    && [ "$(jq -r '.platforms["darwin-aarch64"].signature' "$latest_mac")" = "$(cat "$tmp/arbol/macos/$app_alta.sig")" ] \
+    && jq -e '.pub_date != null and .notes != null' "$latest_mac" > /dev/null; then
+    ok "el latest.json de macos anuncia la entrada darwin-aarch64 de la version mas alta"
+else
+    fail "el latest.json de macos no cumple el contrato del updater: $(cat "$latest_mac" 2>&1)"
+fi
+
+# a_candidate_never_appears_in_macos
+actualizacion_de_macos_de_pega "$con_candidata/v0.4.11-rc.1" "0.4.11-rc.1"
+"$construye" "$con_candidata" "$tmp/arbol-rc-mac" "$tmp/rfirma.asc" "$SIN_FIRMA" > /dev/null 2>&1 \
+    || fail "la construccion con una candidata de macOS en la serie falla"
+if [ "$(jq -r .version "$tmp/arbol-rc-mac/macos/latest.json")" = "0.4.10" ] \
+    && [ -z "$(find "$tmp/arbol-rc-mac/macos" -name '*-rc*' -print -quit)" ]; then
+    ok "una candidata no aparece en macos/ ni en su latest.json"
+else
+    fail "una candidata aparece en macos/ o en su latest.json"
+fi
+
+# a_series_without_any_macos_update_still_builds_without_announcing_one
+sin_mac="$tmp/sin-mac"
+cp -r "$serie" "$sin_mac"
+for version in "${versiones[@]}"; do
+    sin_actualizacion_de_macos "$sin_mac/v$version"
+done
+if "$construye" "$sin_mac" "$tmp/arbol-sin-mac" "$tmp/rfirma.asc" "$SIN_FIRMA" > /dev/null 2>&1 \
+    && [ ! -e "$tmp/arbol-sin-mac/macos/latest.json" ] \
+    && [ -f "$tmp/arbol-sin-mac/windows/latest.json" ]; then
+    ok "una serie sin actualizacion de macOS se construye y no anuncia ninguna"
+else
+    fail "una serie sin actualizacion de macOS no se construye o anuncia una"
+fi
+
 # the_caddyfile_serves_windows_from_the_current_link
 if grep -E '^\s*@repositorio path .*/windows/\*' "$raiz/packaging/repo/Caddyfile" > /dev/null; then
     ok "el Caddyfile sirve /windows/* desde actual"
 else
     fail "el Caddyfile no sirve /windows/*"
+fi
+
+# the_caddyfile_serves_macos_from_the_current_link
+if grep -E '^\s*@repositorio path .*/macos/\*' "$raiz/packaging/repo/Caddyfile" > /dev/null \
+    && grep -E '^\s*@web not path .*/macos/\*' "$raiz/packaging/repo/Caddyfile" > /dev/null; then
+    ok "el Caddyfile sirve /macos/* desde actual"
+else
+    fail "el Caddyfile no sirve /macos/*"
 fi
 
 # ---------------------------------------------------------------------------

@@ -6,19 +6,20 @@ use std::path::Path;
 const SANDBOX_MARKER: &str = "/.flatpak-info";
 
 pub use crate::desktop::domain::channel::Channel;
+use crate::desktop::domain::platform::Platform;
 
 impl Channel {
     /// Detecta el canal examinando la presencia del testigo de sandbox.
     pub fn detected() -> Self {
-        Self::on_platform(cfg!(windows), Path::new(SANDBOX_MARKER))
+        Self::on_platform(Platform::CURRENT, Path::new(SANDBOX_MARKER))
     }
 
-    /// Windows es su propio canal; en el resto manda el testigo de sandbox.
-    fn on_platform(windows: bool, marker: &Path) -> Self {
-        if windows {
-            Self::Windows
-        } else {
-            Self::over(marker)
+    /// Windows y macOS son su propio canal; en Linux manda el testigo de sandbox.
+    fn on_platform(platform: Platform, marker: &Path) -> Self {
+        match platform {
+            Platform::Windows => Self::Windows,
+            Platform::MacOs => Self::MacOs,
+            Platform::Linux => Self::over(marker),
         }
     }
 
@@ -45,7 +46,7 @@ pub enum RegisteredHandlers {
 pub fn registered_handlers_for_scheme(channel: Channel, scheme: &str) -> RegisteredHandlers {
     match channel {
         Channel::Flatpak => RegisteredHandlers::NotAvailableInsideTheSandbox,
-        Channel::Native | Channel::Windows => {
+        Channel::Native | Channel::Windows | Channel::MacOs => {
             #[cfg(target_os = "linux")]
             let handlers = gio::AppInfo::all_for_type(&content_type_for(scheme))
                 .iter()

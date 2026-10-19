@@ -94,6 +94,11 @@ ffi_allow := "src/signing/adapters/ffi.rs"
 # carril de Windows lo mide con `just test-windows` (ADR-0014, ADR-0035).
 windows_allow := "src/identity/adapters/windows_store/cng.rs"
 
+# Los adaptadores que solo compila macOS: el carril rapido de Linux los oculta y
+# el carril de macOS los mide con `just test-macos` (ADR-0014, ADR-0040).
+macos_store_allow := "src/identity/adapters/macos_store"
+macos_trust_allow := "src/site/adapters/macos_trust.rs"
+
 autoscript_url := "https://raw.githubusercontent.com/ctt-gob-es/clienteafirma/v" + autofirma_version + "/afirma-ui-miniapplet-deploy/src/main/webapp/js/autoscript.js"
 
 # Librerias -dev del WebView que necesita Tauri; lista canonica que instala
@@ -402,10 +407,13 @@ smoke-console: build-ts
     cd {{ tauri }} && {{ no_debuginfo }} cargo build --features console --bin rfirma --bin rfirma-console
     {{ root }}/scripts/console-smoke.sh "$CARGO_TARGET_DIR/debug"
 
-# Pruebas de --lib y del canal local en macOS, sin grada B ni C (ADR-0040).
+# Pruebas de --lib y del canal local en macOS, sin grada B ni C, y la puerta CRAP de sus adaptadores (ADR-0040).
 [group('ci')]
 test-macos: build-ts
-    cd {{ tauri }} && cargo test --all-features --lib --test channel_client --test channel_operations --test service_acknowledgement
+    mkdir -p "{{ coverage_out }}/macos"
+    cd {{ tauri }} && {{ no_debuginfo }} cargo llvm-cov --all-features --lib --test channel_client --test channel_operations --test service_acknowledgement --lcov --output-path "{{ coverage_out }}/macos/lcov.info"
+    cd {{ tauri }} && cargo crap --path '{{ macos_store_allow }}' --lcov "{{ coverage_out }}/macos/lcov.info" --threshold 30 --fail-above
+    cd {{ tauri }} && cargo crap --path '{{ macos_trust_allow }}' --lcov "{{ coverage_out }}/macos/lcov.info" --threshold 30 --fail-above
 
 # ---------------------------------------------------------------------------
 # CRAP: solo en Rust (ADR-0014)
@@ -428,7 +436,8 @@ coverage: (certs "install") build-ts llvm-cov-tag
 [private]
 crap: coverage
     cd {{ tauri }} && cargo crap --lcov "{{ coverage_out }}/coverage/lcov.info" --threshold 30 --fail-above \
-        --allow '{{ ffi_allow }}' --allow '{{ windows_allow }}'
+        --allow '{{ ffi_allow }}' --allow '{{ windows_allow }}' \
+        --allow '{{ macos_store_allow }}/**' --allow '{{ macos_trust_allow }}'
 
 # Cobertura del diff contra origin/main (ADR-0014): reutiliza el lcov.info que
 # ya dejo `coverage` (dependencia de `check-rust`) en disco, sin volver a
@@ -608,6 +617,11 @@ bundle: check-native build-ts
         exit 1
     fi
     echo "dmg: $dmg ($(du -h "$dmg" | cut -f1))"
+    # La actualización que baja el updater: la .app sola, sin firmar aquí (ADR-0015).
+    rm -f "$salida"/dmg/*.app.tar.gz
+    archivo="$salida/dmg/$(basename "$dmg" .dmg).app.tar.gz"
+    COPYFILE_DISABLE=1 tar -czf "$archivo" -C "$salida/macos" rfirma.app
+    echo "actualizacion: $archivo ($(du -h "$archivo" | cut -f1))"
 
 # Regenera cargo-sources.json y el sello de Cargo.lock.
 [group('release')]

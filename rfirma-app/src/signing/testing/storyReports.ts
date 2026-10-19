@@ -146,6 +146,7 @@ function aCertificate(overrides: Partial<Certificate> = {}): Certificate {
     stores: ["card"],
     status: { kind: "valid", notAfter: IN_2030 },
     remembered: false,
+    installed: false,
     ...overrides,
   };
 }
@@ -179,6 +180,15 @@ const NOT_YET_VALID_CERTIFICATE = aCertificate({
   surname: "Holberton",
   idNumber: "IDCES-00000003A",
   status: { kind: "notYetValid", notBefore: IN_2099 },
+});
+
+export const MACOS_CERTIFICATE = aCertificate({
+  id: "macos",
+  holderName: "BABBAGE CHARLES",
+  givenName: "Charles",
+  surname: "Babbage",
+  idNumber: "IDCES-00000002W",
+  stores: ["macos"],
 });
 
 export const STORY_CERTIFICATES: readonly Certificate[] = [

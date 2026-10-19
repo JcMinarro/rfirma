@@ -41,6 +41,7 @@ const {
   CardReady,
   UnreadableCardOnLinux,
   UnreadableCardOnWindows,
+  UnreadableCardOnMacos,
   NoCertificatesWithReader,
 } = composed;
 
@@ -135,6 +136,7 @@ describe("the signing panel, by state", () => {
       { Story: CardReady, said: "Tarjeta lista" },
       { Story: UnreadableCardOnWindows, said: "rFirma no puede leer la tarjeta del lector" },
       { Story: UnreadableCardOnLinux, said: "rFirma no puede leer la tarjeta del lector" },
+      { Story: UnreadableCardOnMacos, said: "rFirma no puede leer la tarjeta del lector" },
     ] as const;
 
     for (const { Story, said } of cases) {

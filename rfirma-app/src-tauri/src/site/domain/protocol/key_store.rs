@@ -14,6 +14,9 @@ const THE_NSS_STORES: [KeyStoreOfTheOriginal; 2] = [
     ("Mozilla / Firefox (unificado)", "MOZ_UNI"),
 ];
 
+/// Los dos nombres del Almacén de macOS, que solo en macOS rFirma abre.
+const THE_MACOS_STORE: [KeyStoreOfTheOriginal; 1] = [("Llavero de Mac", "APPLE")];
+
 /// Los dos nombres del almacén PKCS#11, el único que admite biblioteca, y solo como acotación.
 const THE_PKCS11_STORE: [KeyStoreOfTheOriginal; 1] = [("PKCS#11", "PKCS11")];
 
@@ -98,6 +101,8 @@ pub enum StoreScope {
     Everywhere,
     /// Solo los de la familia NSS.
     Nss,
+    /// Solo el Almacén de macOS.
+    Macos,
     /// Solo el módulo PKCS#11 de esta biblioteca, tal y como vino.
     Module(String),
 }
@@ -110,6 +115,7 @@ pub fn scope_named_by(url: &AfirmaUrl) -> StoreScope {
     match named.library {
         Some(library) if named_among(&named.name, &THE_PKCS11_STORE) => StoreScope::Module(library),
         None if named_among(&named.name, &THE_NSS_STORES) => StoreScope::Nss,
+        None if named_among(&named.name, &THE_MACOS_STORE) => StoreScope::Macos,
         _ => StoreScope::Everywhere,
     }
 }
@@ -146,10 +152,28 @@ fn refused(blame: Parameter, detail: String) -> Refusal {
         .because(RefusalSituation::UnsupportedKeyStore)
 }
 
+/// El `SAF_08` de `APPLE` fuera de macOS, donde no hay Almacén de macOS que abrir.
+pub fn refuse_the_macos_store(url: &AfirmaUrl) -> Result<(), Refusal> {
+    match key_store_named_by(url) {
+        Some(named) if named.library().is_none() && named_among(named.name(), &THE_MACOS_STORE) => {
+            Err(refused(
+                named.declared_in(),
+                format!(
+                    "rFirma no abre el almacen '{}' que nombra la sede",
+                    named.name()
+                ),
+            ))
+        }
+        _ => Ok(()),
+    }
+}
+
 /// Un nombre del original que no es el de la familia NSS; uno que el original tampoco reconoce
 /// no lo es, porque allí acaba en el almacén por omisión del sistema.
 fn is_a_store_rfirma_does_not_open(name: &str) -> bool {
-    named_among(name, &THE_STORES_OF_THE_ORIGINAL) && !named_among(name, &THE_NSS_STORES)
+    named_among(name, &THE_STORES_OF_THE_ORIGINAL)
+        && !named_among(name, &THE_NSS_STORES)
+        && !named_among(name, &THE_MACOS_STORE)
 }
 
 /// El original mira antes el nombre visible, y ya recortado (ADR-0022).

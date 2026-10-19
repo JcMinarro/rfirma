@@ -144,6 +144,59 @@ fn windows_without_registered_minidrivers_says_none() {
     );
 }
 
+fn report_with_macos(trust: NssProfileState, drivers: Vec<&str>) -> String {
+    let mut report = a_flatpak_report();
+    report.pcsc = None;
+    report.macos_stores = Some(MacosStores {
+        local_channel: trust,
+        card_drivers: drivers.into_iter().map(str::to_owned).collect(),
+    });
+    debug_report_text(&report, &ana())
+}
+
+#[test]
+fn macos_replaces_the_nss_stores_with_the_macos_store_and_card_drivers() {
+    let text = report_with_macos(
+        NssProfileState::TrustsLocalChannel {
+            until: Some("2027-03-14".to_owned()),
+        },
+        vec!["ifd-ccid", "ifd-gempc"],
+    );
+
+    assert!(
+        text.ends_with(
+            "Almacén de macOS\n  \
+               Confianza del usuario: confía en el canal local · hasta 2027-03-14\n\
+             \n\
+             Controladores de tarjeta\n  \
+               ifd-ccid: instalado\n  \
+               ifd-gempc: instalado"
+        ),
+        "{text}"
+    );
+    assert!(!text.contains("Almacenes NSS"), "{text}");
+}
+
+#[test]
+fn macos_without_trust_in_the_local_channel_says_so() {
+    let text = report_with_macos(NssProfileState::DoesNotTrustLocalChannel, vec!["ifd-ccid"]);
+
+    assert!(
+        text.contains("Almacén de macOS\n  Confianza del usuario: no confía en el canal local\n"),
+        "{text}"
+    );
+}
+
+#[test]
+fn macos_without_card_drivers_says_none() {
+    let text = report_with_macos(NssProfileState::DoesNotTrustLocalChannel, Vec::new());
+
+    assert!(
+        text.ends_with("Controladores de tarjeta\n  tarjetas: ninguno instalado"),
+        "{text}"
+    );
+}
+
 #[test]
 fn a_flatpak_store_says_its_browser_and_channel_and_its_full_path() {
     let section = report_with_nss(

@@ -27,6 +27,7 @@ export function certificate(overrides: Partial<Certificate> = {}): Certificate {
     stores: ["installed"],
     status: { kind: "valid", notAfter: 4_102_444_800 },
     remembered: false,
+    installed: false,
     ...overrides,
   };
 }

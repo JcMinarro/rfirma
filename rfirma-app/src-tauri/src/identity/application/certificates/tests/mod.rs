@@ -198,6 +198,7 @@ const SOFTOKEN: &str = "/usr/lib/libsoftokn3.so";
 struct StoresWith {
     signable: Vec<TokenCertificate>,
     everything: Result<Vec<TokenCertificate>, TokenError>,
+    installed_in_the_system: Vec<String>,
 }
 
 impl StoresWith {
@@ -206,6 +207,7 @@ impl StoresWith {
         Self {
             signable,
             everything: Ok(everything),
+            installed_in_the_system: Vec::new(),
         }
     }
 
@@ -216,7 +218,14 @@ impl StoresWith {
                 Situation::ModuleNotFound,
                 "el almacen no se deja abrir",
             )),
+            installed_in_the_system: Vec::new(),
         }
+    }
+
+    /// El mismo token, con el certificado de esa etiqueta instalado en el sistema por rFirma.
+    fn having_installed_in_the_system(mut self, label: &str) -> Self {
+        self.installed_in_the_system.push(label.to_owned());
+        self
     }
 
     fn only(&self, store: &Store, certificates: &[TokenCertificate]) -> Vec<TokenCertificate> {
@@ -229,6 +238,12 @@ impl StoresWith {
 }
 
 impl Token for StoresWith {
+    fn installed_in_the_system(&self, _directory: &Path, reference: &CertificateRef) -> bool {
+        self.installed_in_the_system
+            .iter()
+            .any(|label| label == reference.label())
+    }
+
     fn accepts_the_secret(
         &self,
         _reference: &crate::identity::domain::certificate::CertificateRef,
@@ -606,5 +621,7 @@ fn an_entity_certificate_without_a_natural_person_holder_carries_no_entity_name(
 }
 
 mod copies;
+mod macos_store;
 mod removal;
+mod system_install;
 mod windows_store;

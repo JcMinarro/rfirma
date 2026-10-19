@@ -115,7 +115,7 @@ jobs:
           packaging/verify-packages.sh paquetes --against "${{ runner.temp }}/SHA256SUMS.construccion"
 
       # Despues de comparar con la construccion y antes del `SHA256SUMS`, que cubre el `.sig` (ADR-0015).
-      - name: Firma de actualizacion de cada -setup.exe
+      - name: Firma de actualizacion de cada -setup.exe y .app.tar.gz
         if: ${{ env.IS_PRERELEASE != 'true' }}
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

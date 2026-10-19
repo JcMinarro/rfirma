@@ -3,7 +3,7 @@
 El contexto de la **identidad**: qué certificados hay, cuál se usa y cómo entra o
 sale un `.p12`. Aquí no se firma ningún documento, solo se dice quién puede.
 Su adaptador de verdad es `adapters/pkcs11/`, la única parte del backend que
-habla con el token; en Windows, también `adapters/windows_store/`. Rutas relativas a `src/identity/`.
+habla con el token; en Windows, también `adapters/windows_store/`, y en macOS, `adapters/macos_store/`. Rutas relativas a `src/identity/`.
 
 ## Dónde vive qué
 

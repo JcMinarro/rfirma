@@ -63,6 +63,62 @@ fn on_windows_the_feed_is_read_as_latest_json_and_the_version_is_installable() {
     );
 }
 
+fn a_macos_latest_json(version: &str) -> String {
+    format!(
+        r#"{{"version":"{version}","notes":"","pub_date":"2026-09-30T00:00:00Z","platforms":{{"darwin-aarch64":{{"signature":"sig","url":"https://rfirma.sgomez.me/macos/rfirma.app.tar.gz"}}}}}}"#
+    )
+}
+
+#[test]
+fn on_macos_the_darwin_aarch64_entry_of_latest_json_is_announced_and_installable() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+
+    let newer = new_version(
+        Version::parse("0.3.1").expect("es una version"),
+        &memory,
+        &|| Some(a_macos_latest_json("0.4.0")),
+        Channel::MacOs,
+        at(1_756_000_000),
+    );
+
+    assert_eq!(
+        newer,
+        Some(NewVersion {
+            version: Version::parse("0.4.0").expect("es una version"),
+            installable: true,
+        })
+    );
+}
+
+#[test]
+fn a_latest_json_without_the_entry_of_this_platform_announces_nothing() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let running = Version::parse("0.3.1").expect("es una version");
+
+    assert_eq!(
+        new_version(
+            running,
+            &memory,
+            &|| Some(a_latest_json("0.4.0")),
+            Channel::MacOs,
+            at(1)
+        ),
+        None
+    );
+    assert_eq!(
+        new_version(
+            running,
+            &memory,
+            &|| Some(a_macos_latest_json("0.4.0")),
+            Channel::Windows,
+            at(2)
+        ),
+        None
+    );
+}
+
 #[test]
 fn on_linux_the_version_is_announced_but_not_installable() {
     let home = tempfile::tempdir().expect("deberia haber directorio temporal");
