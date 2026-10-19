@@ -144,8 +144,7 @@ dependencia en todas las plataformas para algo que en Linux y Windows ya resuelv
 - El CI tiene un job `macos` en `platforms.yml` que compila la `.dylib`, pasa `rustfmt`, `clippy`
   y `just test-macos`. Corre en un PR solo si toca algo que solo compila macOS o que cambia cómo
   se compila allí, o lleva `ci-macos` o `ci-full`, y en `main` en la nocturna (ADR-0014).
-- El `.dmg` no se publica en la entrega: `build.yml` no lo construye mientras los adaptadores de
-  firma estén pendientes, porque un paquete que no puede firmar no sirve a quien lo descarga.
+  La entrega (`build.yml`) construye el `.dmg` con firma ad hoc y el *hardened runtime* desactivado.
 - `lib.rs` genera el contexto de Tauri una sola vez en `run` y `event_loop.rs` lo construye: en macOS `generate_context!()` define
   el `Info.plist` embebido, y llamarla dos veces falla al enlazar.
 - Los códigos con que macOS rechaza un certificado de sede no reconocido (ADR-0039) se añaden a
