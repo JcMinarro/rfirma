@@ -6,7 +6,12 @@ import { renderWithCatalog } from "../testing/render";
 import type { SiteDocument } from "./errand";
 import { SedeWindow } from "./SedeWindow";
 import { LOCAL_BATCH_DOCUMENTS, PADES_SIGNATURES } from "./testing/fixtures/received";
-import { Batch, IdentityData, TerminalOrder } from "./testing/fixtures/sedeErrands";
+import {
+  Batch,
+  IdentityData,
+  MixedLocalBatch,
+  TerminalOrder,
+} from "./testing/fixtures/sedeErrands";
 import {
   certificate,
   consentStage,
@@ -167,6 +172,26 @@ describe("2 · the expanded consent", () => {
       await user.click(within(list).getByRole("button", { name: "Una huella del documento" }));
       expect(within(list).queryByRole("button", { name: /^Acciones de/ })).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Abrir con…" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("a mixed local batch", () => {
+    it("names a hash as such in the viewer, without a preview or a way out", async () => {
+      const user = userEvent.setup();
+      const { port } = scriptedFrom(MixedLocalBatch);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      await user.click(screen.getByRole("button", { name: "Ver documentos" }));
+      const list = screen.getByRole("navigation", { name: "Vas a firmar 4 documentos" });
+      await user.click(
+        within(list).getAllByRole("button", { name: "Una huella del documento" })[0]!,
+      );
+
+      expect(
+        screen.getByText("Este tipo de archivo no se puede mostrar aquí."),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Abrir con…" })).not.toBeInTheDocument();
+      expect(within(list).queryByRole("button", { name: /^Acciones de/ })).not.toBeInTheDocument();
     });
   });
 

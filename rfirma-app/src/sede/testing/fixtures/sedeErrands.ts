@@ -2,7 +2,7 @@
 
 import type { Errand, ErrandStage, SiteOutcome } from "../../errand";
 import { previousSignature, previousSignaturesReport } from "./previousSignatures";
-import { LOCAL_BATCH_DOCUMENTS } from "./received";
+import { LOCAL_BATCH_DOCUMENTS, MIXED_LOCAL_BATCH_DOCUMENTS } from "./received";
 import { sedeErrand } from "./sedeView";
 import { certificate, consentStage, signedDocument } from "./sedeWindow";
 
@@ -45,6 +45,15 @@ export const LocalBatch = consenting(
     signs: 5,
     signing: null,
     items: LOCAL_BATCH_DOCUMENTS,
+  }),
+);
+
+export const MixedLocalBatch = consenting(
+  consentStage({
+    document: null,
+    signs: MIXED_LOCAL_BATCH_DOCUMENTS.length,
+    signing: null,
+    items: MIXED_LOCAL_BATCH_DOCUMENTS,
   }),
 );
 

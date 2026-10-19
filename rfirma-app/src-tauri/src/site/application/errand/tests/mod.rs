@@ -7,6 +7,7 @@ mod support_window;
 
 mod automatic_selection;
 mod batch_local;
+mod batch_local_hash;
 mod batch_remote;
 mod certificate_selection;
 mod check_signatures;

@@ -11,6 +11,7 @@ import {
   Consent,
   IdentityData,
   LocalBatch,
+  MixedLocalBatch,
   PrecalculatedHash,
   PreviousSignaturesWithProblem,
 } from "./testing/fixtures/sedeErrands";
@@ -177,6 +178,16 @@ describe("2 · consent", () => {
       expect(screen.queryByRole("button", { name: "Ver documento" })).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Descargar" })).not.toBeInTheDocument();
       expect(screen.queryByText("Vas a firmar 1 documento")).not.toBeInTheDocument();
+    });
+
+    it("tells a local batch with several hashes in a single notice", () => {
+      const { port } = scriptedFrom(MixedLocalBatch);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getAllByRole("status")).toHaveLength(1);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+      );
     });
 
     it("keeps the notice quiet about a document that is not a hash, whatever its size", () => {

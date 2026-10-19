@@ -256,6 +256,10 @@ fn cancelling_the_dialog_of_everything_writes_nothing() {
 
 /// El consentimiento de un lote local de tres elementos, con las asas de sus documentos.
 fn consenting_to_sign_the_local_batch() -> (Consenting, Vec<String>) {
+    consenting_to_sign_the_local_batch_of(&a_local_batch(""))
+}
+
+fn consenting_to_sign_the_local_batch_of(url: &AfirmaUrl) -> (Consenting, Vec<String>) {
     let home = tempfile::tempdir().expect("deberia haber directorio temporal");
     let memory = a_memory(home.path());
     let ours = vec![a_usable_certificate("FIRMA")];
@@ -270,8 +274,7 @@ fn consenting_to_sign_the_local_batch() -> (Consenting, Vec<String>) {
     let neighbours = neighbours_for_the_local_batch(home.path(), &listed, &opened, &memory, &ours);
     let desk = a_desk(&engine, &policies, &neighbours, &scratch);
 
-    let url = a_local_batch("");
-    let step = attend_operation(&desk, &url, decoded(&url), &live);
+    let step = attend_operation(&desk, url, decoded(url), &live);
     let ErrandStep::AskingToSignTheLocalBatch(asked) = remembered(&live, step) else {
         panic!("un lote local pide consentimiento");
     };
@@ -334,6 +337,39 @@ fn downloading_everything_of_the_local_batch_writes_every_item_in_the_zip() {
     assert_eq!(entries[1].1, A_LOCAL_BINARY.to_vec());
     assert_eq!(entries[2].1, A_LOCAL_XML.to_vec());
     assert_eq!(entries[3].0, "SHA256SUMS");
+}
+
+#[test]
+fn downloading_everything_of_a_mixed_local_batch_leaves_the_hashes_out_of_the_zip() {
+    let own = format!(
+        ",{}",
+        super::batch_local_hash::extraparams("precalculatedHashAlgorithm=SHA-256")
+    );
+    let url = super::batch_local_hash::batch_with("", ["", &own, ""]);
+    let (consenting, handles) = consenting_to_sign_the_local_batch_of(&url);
+    let destination = consenting.destination("todo.zip");
+    let offered = RefCell::new(None);
+
+    let written = download_all(
+        &consenting.live,
+        &consenting.read(),
+        a_dialog_choosing(Some(destination.clone()), &offered),
+        &RealScratch,
+    );
+
+    assert_eq!(written, Ok(true));
+    let entries = unpacked(&destination);
+    assert_eq!(entries.len(), 3, "dos documentos y su SHA256SUMS");
+    assert_eq!(entries[0].1, A_LOCAL_PDF.to_vec());
+    assert_eq!(entries[1].1, A_LOCAL_XML.to_vec());
+    let lone = download_one(
+        &consenting.live,
+        &handles[1],
+        &consenting.read(),
+        a_dialog_choosing(None, &offered),
+        &RealScratch,
+    );
+    assert_eq!(lone, Err(DownloadError::NotReceived(handles[1].clone())));
 }
 
 #[test]

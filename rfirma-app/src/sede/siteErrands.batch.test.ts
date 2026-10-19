@@ -176,6 +176,7 @@ const LOCAL_ITEM = {
   sha256: DOCUMENT_SHA256,
   signing: "pdf",
   round: { kind: "sign" },
+  precalculatedHash: false,
 } as const;
 
 describe("el lote local", () => {
@@ -233,6 +234,44 @@ describe("el lote local", () => {
       ["002", { kind: "text", text: "leído como unknown" }],
       ["003", { kind: "text", text: "leído como xml" }],
     ]);
+  });
+
+  it("marks the elements that carry a hash and reads neither their content nor their signatures", async () => {
+    const read: string[] = [];
+    const { push, calls, last } = watched({
+      readContent: async (id) => {
+        read.push(id);
+        return { kind: "text", text: "contenido" };
+      },
+    });
+    push({
+      origin: "sede.ejemplo.gob.es",
+      stage: {
+        kind: "askingToSignTheLocalBatch",
+        items: [
+          { ...LOCAL_ITEM, id: "001", document: "handle-001" },
+          { ...LOCAL_ITEM, id: "002", document: "handle-002", precalculatedHash: true },
+        ],
+        certificates: [certificate()],
+        narrowed: false,
+        notAccepted: 0,
+        alreadyChosen: null,
+        withoutAsking: false,
+        sha1Allowed: false,
+        sha1ToAllow: false,
+      },
+    });
+    await vi.waitFor(() => expect(last()?.stage.kind).toBe("consent"));
+
+    const stage = last()?.stage;
+    if (stage?.kind !== "consent") throw new Error("no es un consentimiento");
+    expect(stage.items?.map((item) => [item.id, item.precalculatedHash === true])).toEqual([
+      ["001", false],
+      ["002", true],
+    ]);
+    expect(stage.items?.[1]?.content).toEqual({ kind: "none" });
+    expect(read).toEqual(["handle-001"]);
+    expect(calls.previousSignatures.mock.calls.map(([id]) => id)).toEqual(["handle-001"]);
   });
 
   it("closes the local batch with the secret alone, without a postsign of its own", async () => {

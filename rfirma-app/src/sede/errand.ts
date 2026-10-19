@@ -233,6 +233,8 @@ export interface LocalBatchItem {
   signing: SigningKind;
   /** Si sobre el elemento se pide una firma inicial o una cofirma. */
   round: SignatureRound;
+  /** Los bytes del elemento son la huella del documento, no el documento. */
+  precalculatedHash: boolean;
 }
 
 /** El área de la firma visible que marca la persona, con la forma del recuadro de la firma local. */

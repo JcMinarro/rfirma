@@ -376,6 +376,36 @@ export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
   }),
 ];
 
+/** Un lote local de cuatro elementos en el que el segundo y el cuarto son huellas. */
+export const MIXED_LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
+  document({
+    id: "001",
+    name: "001",
+    content: { kind: "pdf", pdf: resolutionPdf },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "002",
+    name: "002",
+    precalculatedHash: true,
+    content: { kind: "none" },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "003",
+    name: "003",
+    content: { kind: "xml", text: BAREMO_XML },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+  document({
+    id: "004",
+    name: "004",
+    precalculatedHash: true,
+    content: { kind: "none" },
+    previousSignatures: NO_PREVIOUS_SIGNATURES,
+  }),
+];
+
 /** Los documentos con las firmas previas de `state`: sin ninguna, con las válidas o como vienen, con alguna que no lo es. */
 export function withPreviousSignatures(
   documents: readonly ReceivedDocument[],
