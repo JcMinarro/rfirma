@@ -7,7 +7,7 @@ import { Icon } from "../design-system/icons";
 import { type Received, receivedCount } from "./received";
 import "./ReceivedHeading.css";
 
-/** «Vas a firmar N documentos», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
+/** «Vas a firmar N documentos» o, en un lote remoto, «Vas a hacer N firmas», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
 export function ReceivedHeading({
   received,
   onDownload,
@@ -23,7 +23,9 @@ export function ReceivedHeading({
 
   return (
     <div className="received-heading">
-      {!withoutCount && <p className="rf-body received-heading__title">{headingOf(t, count)}</p>}
+      {!withoutCount && (
+        <p className="rf-body received-heading__title">{headingOf(t, received.kind, count)}</p>
+      )}
       {onDownload !== undefined && (
         <DownloadButton received={received} count={count} onDownload={onDownload} />
       )}
@@ -31,8 +33,10 @@ export function ReceivedHeading({
   );
 }
 
-function headingOf(t: TFunction, count: number): string {
-  return t("sede.received.documents", { count });
+function headingOf(t: TFunction, kind: Received["kind"], count: number): string {
+  return kind === "remoteBatch"
+    ? t("sede.received.signatures", { count })
+    : t("sede.received.documents", { count });
 }
 
 function DownloadButton({
