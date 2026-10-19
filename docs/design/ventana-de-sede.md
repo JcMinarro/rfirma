@@ -187,7 +187,10 @@ de las cabeceras de los componentes.
   información y no de alarma, y esa firma cuenta como un problema más en el aviso.
 - **El lote remoto solo da un recuento**: rFirma no recibe los PDF, sino una
   definición de lote que resuelve el servidor de la sede, así que no hay títulos
-  que listar. El lote local sí trae el resumen de cada elemento, en una lista
+  que listar. Cuenta firmas, no documentos («Vas a hacer 1 firma» / «Vas a hacer
+  N firmas»), y su aviso dice «Los documentos se quedan en el servidor de la
+  sede, y rFirma no puede enseñártelos.»: sale de ser un lote remoto, sin
+  analizarlo, y con SHA-1 comparte aviso con el de SHA-1, cada hecho con su tono. El lote local sí trae el resumen de cada elemento, en una lista
   desplazable dentro del marco fijo, sin tapar el desplegable ni el pie.
 - **Se firma con el teclado, y por eso hay cuenta atrás.** Con el certificado
   recordado elegido, la acción principal se lleva el foco y un Intro consiente.
@@ -215,8 +218,8 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
   descarga, a la derecha, y la frase queda como nombre accesible de la lista.
 - **Como mucho un aviso en pantalla, nunca dos apilados.** Todos los hechos van
   en un solo `Admonition`, por orden de importancia: la firma que no es válida,
-  el SHA-1 por permitir, lo que ya firmaste tú, las firmas de otras personas y
-  que lo recibido es una huella. El primero es el título del aviso, en su fila, y los demás van debajo; con un
+  el SHA-1 por permitir, que el lote es remoto, lo que ya firmaste tú, las
+  firmas de otras personas y que lo recibido es una huella. El primero es el título del aviso, en su fila, y los demás van debajo; con un
   solo hecho, sin título. El tono es el del peor: error con una firma no válida,
   advertencia con SHA-1 y, si no, información.
 - **Una huella precalculada no se presenta como documento.** Cuando los parámetros
@@ -514,7 +517,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
 | 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
 | 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, uno, varios, huella, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, lote remoto con SHA-1, uno, varios, huella, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
 | 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 

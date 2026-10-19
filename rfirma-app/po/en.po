@@ -1504,6 +1504,15 @@ msgstr "The site only accepts some certificates"
 msgid "sede.received.sha1ToAllow"
 msgstr "This site uses an insecure signing method"
 
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] "You are making 1 signature"
+msgstr[1] "You are making {{count}} signatures"
+msgstr[2] "You are making {{count}} signatures"
+
+msgid "sede.received.remoteBatch"
+msgstr "The documents stay on the site's server, and rFirma cannot show them to you"
+
 #. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
 msgid "sede.received.precalculatedHash"
 msgstr "The site only sends the document's hash, so rFirma cannot show it to you"

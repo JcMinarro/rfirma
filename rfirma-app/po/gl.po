@@ -1499,6 +1499,15 @@ msgstr "A sede só admite algúns certificados"
 msgid "sede.received.sha1ToAllow"
 msgstr "Esta sede usa un método de sinatura pouco seguro"
 
+msgid "sede.received.signatures"
+msgid_plural "sede.received.signatures"
+msgstr[0] "Vas facer 1 sinatura"
+msgstr[1] "Vas facer {{count}} sinaturas"
+msgstr[2] "Vas facer {{count}} sinaturas"
+
+msgid "sede.received.remoteBatch"
+msgstr "Os documentos quedan no servidor da sede, e rFirma non llos pode ensinar"
+
 #. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
 msgid "sede.received.precalculatedHash"
 msgstr "A sede só envía a pegada do documento, así que rFirma non pode ensinarcho"

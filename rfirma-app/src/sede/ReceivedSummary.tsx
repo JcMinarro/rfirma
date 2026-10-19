@@ -1,4 +1,4 @@
-//! Los avisos de lo recibido en la ventana de sede, juntos en un solo `Admonition`: la firma no válida, el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas y que lo recibido es una huella, por ese orden.
+//! Los avisos de lo recibido en la ventana de sede, juntos en un solo `Admonition`: la firma no válida, el SHA-1 por permitir, el lote remoto, lo que ya firmaste tú, las firmas de otras personas y que lo recibido es una huella, por ese orden.
 
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -15,12 +15,15 @@ export function ReceivedSummary({
   documents,
   certificate = null,
   sha1ToAllow = false,
+  remoteBatch = false,
   yoursOnly = false,
 }: {
   documents: readonly ReceivedDocument[];
   certificate?: Certificate | null;
   /** La sede pide SHA-1 sin permiso en Preferencias. */
   sha1ToAllow?: boolean;
+  /** Lo recibido es un lote remoto: los documentos se quedan en la sede. */
+  remoteBatch?: boolean;
   /** Sin las firmas no válidas ni las de otras personas, que en la ampliada cuenta la franja de cada documento. */
   yoursOnly?: boolean;
 }) {
@@ -30,6 +33,7 @@ export function ReceivedSummary({
   const candidates: (string | null)[] = [
     yoursOnly ? null : troubledLine(t, tally, single),
     sha1ToAllow ? t("sede.received.sha1ToAllow") : null,
+    remoteBatch ? t("sede.received.remoteBatch") : null,
     ...yourLines(t, tally, single),
     yoursOnly ? null : byOthersLine(t, tally, single),
     documents.some((document) => document.precalculatedHash)

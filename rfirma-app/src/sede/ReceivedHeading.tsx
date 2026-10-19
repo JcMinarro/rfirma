@@ -7,7 +7,7 @@ import { Icon } from "../design-system/icons";
 import { type Received, receivedCount, receivedName } from "./received";
 import "./ReceivedHeading.css";
 
-/** «Vas a firmar N documentos», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
+/** «Vas a firmar N documentos» o, en un lote remoto, «Vas a hacer N firmas», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
 export function ReceivedHeading({
   received,
   onDownload,
@@ -34,7 +34,8 @@ export function ReceivedHeading({
 }
 
 function headingOf(t: TFunction, received: Received, count: number): string {
-  const [only] = received.kind === "documents" && count === 1 ? received.documents : [];
+  if (received.kind === "remoteBatch") return t("sede.received.signatures", { count });
+  const [only] = count === 1 ? received.documents : [];
   if (only?.precalculatedHash) return receivedName(t, only);
   return t("sede.received.documents", { count });
 }

@@ -251,6 +251,11 @@ const expanded = {
 
 export const CompactRemoteBatch: Story = { decorators: compact, args: { received: "remoteBatch" } };
 
+export const CompactRemoteBatchWithSha1: Story = {
+  decorators: compact,
+  args: { received: "remoteBatch", sha1ToAllow: true },
+};
+
 export const CompactOneDocument: Story = { decorators: compact, args: { received: "one" } };
 
 export const CompactSeveralDocuments: Story = { decorators: compact };

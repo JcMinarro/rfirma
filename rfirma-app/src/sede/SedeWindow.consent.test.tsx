@@ -62,15 +62,27 @@ describe("2 · consent", () => {
     expect(text.indexOf("Certificado")).toBeLessThan(text.indexOf("Vas a firmar 1 documento"));
   });
 
-  it.each([
-    ["a remote batch", Batch, "Vas a firmar 3 documentos"],
-    ["a local batch", LocalBatch, "Vas a firmar 5 documentos"],
-  ])("sums up %s with its count alone", (_, story, count) => {
-    const { port } = scriptedFrom(story);
+  it.each([["a local batch", LocalBatch, "Vas a firmar 5 documentos"]])(
+    "sums up %s with its count alone",
+    (_, story, count) => {
+      const { port } = scriptedFrom(story);
+      renderWithCatalog(<SedeWindow errands={port} />);
+
+      expect(screen.getByText(count)).toBeInTheDocument();
+      expect(screen.queryByText("001")).not.toBeInTheDocument();
+    },
+  );
+
+  it("sums up a remote batch by its signatures and says the documents stay at the site", () => {
+    const { port } = scriptedFrom(Batch);
     renderWithCatalog(<SedeWindow errands={port} />);
 
-    expect(screen.getByText(count)).toBeInTheDocument();
-    expect(screen.queryByText("001")).not.toBeInTheDocument();
+    expect(screen.getByText("Vas a hacer 3 firmas")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("offers the document and its download", () => {
