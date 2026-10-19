@@ -3,10 +3,11 @@
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
 
+use crate::desktop::domain::platform::Platform;
 use crate::site::domain::batch::parse_local_batch;
 use crate::site::domain::protocol::{
-    read_operation, AfirmaUrl, BatchRequest, Refusal, SiteOperation, WireAnswer,
-    THIRD_PROTOCOL_VERSION,
+    read_operation, refuse_the_macos_store, AfirmaUrl, BatchRequest, Refusal, SiteOperation,
+    WireAnswer, THIRD_PROTOCOL_VERSION,
 };
 
 use crate::site::adapters::data_download::HttpDataSource;
@@ -24,7 +25,10 @@ pub struct V4Codec;
 
 impl ProtocolCodec for V4Codec {
     fn decode(&self, message: &AfirmaUrl) -> SiteRequest {
-        request_of(read_operation(message, &HttpDataSource))
+        request_of(on_this_host(
+            message,
+            read_operation(message, &HttpDataSource),
+        ))
     }
 
     fn encode(&self, outcome: &SiteOutcome) -> String {
@@ -72,6 +76,26 @@ impl ProtocolCodec for V4Codec {
 }
 
 /// La petición que el trámite atiende a partir de la operación leída.
+/// La lectura de la operación, con `APPLE` rechazado donde no hay Almacén de macOS.
+pub(super) fn on_this_host(
+    url: &AfirmaUrl,
+    read: Result<SiteOperation, Refusal>,
+) -> Result<SiteOperation, Refusal> {
+    on_host(url, read, Platform::CURRENT == Platform::MacOs)
+}
+
+fn on_host(
+    url: &AfirmaUrl,
+    read: Result<SiteOperation, Refusal>,
+    on_macos: bool,
+) -> Result<SiteOperation, Refusal> {
+    let operation = read?;
+    if !on_macos && operation.chooses_a_certificate() {
+        refuse_the_macos_store(url)?;
+    }
+    Ok(operation)
+}
+
 pub(super) fn request_of(read: Result<SiteOperation, Refusal>) -> SiteRequest {
     match read {
         Ok(SiteOperation::SelectCertificate(request)) => SiteRequest::SelectCertificate(request),

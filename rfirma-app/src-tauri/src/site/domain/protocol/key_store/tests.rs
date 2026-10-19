@@ -1,5 +1,6 @@
 use super::{
-    key_store_named_by, refuse_a_key_store_rfirma_does_not_open, scope_named_by, StoreScope,
+    key_store_named_by, refuse_a_key_store_rfirma_does_not_open, refuse_the_macos_store,
+    scope_named_by, StoreScope,
 };
 use crate::site::domain::protocol::codes::{Parameter, SafCode};
 use crate::site::domain::protocol::refusal::RefusalSituation;
@@ -101,7 +102,6 @@ fn a_pkcs12_named_by_the_site_is_refused_with_saf_08() {
 fn the_stores_of_the_original_that_rfirma_does_not_open_are_refused_one_by_one() {
     for store in [
         "WINDOWS",
-        "APPLE",
         "PKCS12",
         "JAVA",
         "PKCS11",
@@ -146,7 +146,6 @@ fn the_visible_name_of_a_store_names_it_as_the_constant_does() {
     for store in [
         "PKCS#12 / PFX",
         "pkcs#12 / pfx",
-        "Llavero de Mac",
         "DNIe y tarjetas FNMT-TIF",
         "Tipo desconocido",
     ] {
@@ -227,4 +226,41 @@ fn the_legacy_nss_scopes_the_listing_over_a_module_in_base64() {
 #[test]
 fn a_store_the_original_does_not_recognise_scopes_nothing() {
     assert_eq!(scope_named_by(&ksb64("INVENTADO")), StoreScope::Everywhere);
+}
+
+#[test]
+fn apple_scopes_the_listing_to_the_macos_store_in_any_spelling() {
+    for named in ["APPLE", "apple", "Llavero de Mac"] {
+        assert_eq!(scope_named_by(&ksb64(named)), StoreScope::Macos, "{named}");
+    }
+}
+
+#[test]
+fn apple_is_not_refused_as_a_store_rfirma_does_not_open() {
+    assert!(refuse_a_key_store_rfirma_does_not_open(&ksb64("APPLE")).is_ok());
+}
+
+#[test]
+fn apple_with_a_library_is_still_refused() {
+    let refusal = refuse_a_key_store_rfirma_does_not_open(&ksb64("APPLE:/usr/lib/x.dylib"))
+        .expect_err("la biblioteca no es de un almacen del sistema");
+
+    assert_eq!(refusal.code(), SafCode::CannotAccessKeystore);
+}
+
+#[test]
+fn off_macos_apple_is_refused_with_saf_08_naming_its_parameter() {
+    for named in ["APPLE", "Llavero de Mac"] {
+        let refusal = refuse_the_macos_store(&ksb64(named)).expect_err("no hay Almacen de macOS");
+
+        assert_eq!(refusal.code(), SafCode::CannotAccessKeystore, "{named}");
+    }
+}
+
+#[test]
+fn off_macos_the_other_stores_are_left_to_their_own_refusal() {
+    for named in ["NSS", "PKCS12", "INVENTADO"] {
+        assert!(refuse_the_macos_store(&ksb64(named)).is_ok(), "{named}");
+    }
+    assert!(refuse_the_macos_store(&a_selection("")).is_ok());
 }

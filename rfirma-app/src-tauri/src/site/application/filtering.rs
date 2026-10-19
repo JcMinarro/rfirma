@@ -96,6 +96,10 @@ fn within_the_scope(
             .into_iter()
             .filter(|certificate| certificate.reference().store().class() != StoreClass::Card)
             .collect()),
+        StoreScope::Macos => Ok(certificates
+            .into_iter()
+            .filter(|certificate| certificate.reference().store().class() == StoreClass::Macos)
+            .collect()),
         StoreScope::Module(named) => {
             let module = directory
                 .discovered_module(named)
