@@ -5,7 +5,7 @@ use crate::site::domain::protocol::{read_operation_within_the_protocol, AfirmaUr
 use crate::site::adapters::data_download::HttpDataSource;
 use crate::site::application::errand::{ProtocolCodec, SiteOutcome, SiteRequest};
 
-use super::codec::{request_of, V4Codec};
+use super::codec::{on_this_host, request_of, V4Codec};
 
 /// Códec de la versión 3 del protocolo de comunicación con la sede: el catálogo y la forma
 /// de respuesta de la versión 4, pero cada operación se somete a la versión que declara.
@@ -14,7 +14,10 @@ pub struct V3Codec;
 
 impl ProtocolCodec for V3Codec {
     fn decode(&self, message: &AfirmaUrl) -> SiteRequest {
-        request_of(read_operation_within_the_protocol(message, &HttpDataSource))
+        request_of(on_this_host(
+            message,
+            read_operation_within_the_protocol(message, &HttpDataSource),
+        ))
     }
 
     fn encode(&self, outcome: &SiteOutcome) -> String {

@@ -118,3 +118,25 @@ fn store_without_a_value_is_refused() {
         Err(StoreRefusal::Missing)
     );
 }
+
+#[test]
+fn on_macos_apple_narrows_to_the_macos_store_in_any_case() {
+    for name in ["apple", "Apple", "APPLE"] {
+        assert_eq!(
+            scope_of_words_on(Platform::MacOs, &["listaliases", "-store", name]),
+            Ok(StoreScope::Macos),
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn outside_macos_apple_is_still_an_unknown_store() {
+    for platform in [Platform::Linux, Platform::Windows] {
+        assert_eq!(
+            scope_of_words_on(platform, &["listaliases", "-store", "apple"]),
+            Err(StoreRefusal::Unknown("apple".to_owned())),
+            "{platform:?}"
+        );
+    }
+}

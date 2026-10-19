@@ -10,6 +10,7 @@ const AUTO: &str = "auto";
 const MOZILLA: &str = "mozilla";
 const PKCS11: &str = "pkcs11";
 const WINDOWS: &str = "windows";
+const APPLE: &str = "apple";
 const NOT_SUPPORTED: [&str; 5] = ["pkcs12", "dni", "dnie", WINDOWS, "mac"];
 const NOT_SUPPORTED_ON_WINDOWS: [&str; 4] = ["pkcs12", "dni", "dnie", "mac"];
 
@@ -23,6 +24,8 @@ pub enum StoreScope {
     Nss,
     /// Solo en el almacén de Windows.
     Windows,
+    /// Solo en el Almacén de macOS.
+    Macos,
     /// Solo en este módulo PKCS#11, si es uno ya descubierto.
     Module(String),
 }
@@ -82,6 +85,7 @@ fn scope_of(value: &str, platform: Platform) -> Result<StoreScope, StoreRefusal>
     let lowered = name.trim().to_ascii_lowercase();
     let on_windows = platform == Platform::Windows;
     match (lowered.as_str(), library) {
+        (APPLE, None) if platform == Platform::MacOs => Ok(StoreScope::Macos),
         (AUTO | WINDOWS, None) if on_windows => Ok(StoreScope::Windows),
         (AUTO | MOZILLA, None) if !on_windows => Ok(StoreScope::Nss),
         (PKCS11, Some(library)) if !library.is_empty() => {
