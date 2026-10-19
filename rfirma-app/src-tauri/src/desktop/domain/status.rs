@@ -105,7 +105,7 @@ pub enum StoreBrand {
     Installed,
     /// Almacén raíz del usuario de Windows.
     Windows,
-    /// Los certificados con clave del llavero de macOS.
+    /// El Almacén de macOS: los certificados con clave del llavero y la confianza de la persona usuaria.
     Macos,
 }
 
