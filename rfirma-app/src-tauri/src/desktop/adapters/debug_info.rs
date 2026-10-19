@@ -11,9 +11,9 @@ use crate::desktop::adapters::installation::{this_glibc, this_installation, this
 use crate::desktop::adapters::paths::{Paths, Platform};
 use crate::desktop::adapters::registry::this_desktop;
 use crate::desktop::application::debug_report::{
-    DebugReport, DiscardReason, LinuxEnvironment, ModuleStatus, NativeLibrary, NativeLibraryStatus,
-    NssProfile, NssProfileState, NssStores, OwnerFolder, PcscStatus, Pkcs11Module, Pkcs11Modules,
-    ProtocolHandlerStatus, ReportOwner, WindowsStores,
+    DebugReport, DiscardReason, LinuxEnvironment, MacosStores, ModuleStatus, NativeLibrary,
+    NativeLibraryStatus, NssProfile, NssProfileState, NssStores, OwnerFolder, PcscStatus,
+    Pkcs11Module, Pkcs11Modules, ProtocolHandlerStatus, ReportOwner, WindowsStores,
 };
 use crate::desktop::domain::channel::Channel;
 use crate::identity::adapters as identity_adapters;
@@ -57,6 +57,7 @@ pub fn this_process_report() -> DebugReport {
         pkcs11_modules: pkcs11_modules(),
         nss_stores: nss_stores(),
         windows_stores: windows_stores(channel),
+        macos_stores: macos_stores(channel),
     }
 }
 
@@ -274,9 +275,20 @@ fn native_library() -> NativeLibrary {
 }
 
 fn windows_stores(channel: Channel) -> Option<WindowsStores> {
-    if channel != Channel::Windows {
-        return None;
-    }
+    (channel == Channel::Windows).then(|| WindowsStores {
+        local_channel: user_trust_state(),
+        minidrivers: crate::desktop::adapters::minidrivers::registered_minidrivers(),
+    })
+}
+
+fn macos_stores(channel: Channel) -> Option<MacosStores> {
+    (channel == Channel::MacOs).then(|| MacosStores {
+        local_channel: user_trust_state(),
+        card_drivers: crate::desktop::adapters::card_drivers::system_card_drivers(),
+    })
+}
+
+fn user_trust_state() -> NssProfileState {
     let local_ca = Paths::from_environment()
         .ok()
         .map(|paths| LocalCaStore::of(&paths));
@@ -287,17 +299,13 @@ fn windows_stores(channel: Channel) -> Option<WindowsStores> {
             .copied()
             .unwrap_or(false)
     });
-    let local_channel = if trusted {
+    if trusted {
         NssProfileState::TrustsLocalChannel {
             until: local_ca.as_ref().and_then(local_ca_expiry),
         }
     } else {
         NssProfileState::DoesNotTrustLocalChannel
-    };
-    Some(WindowsStores {
-        local_channel,
-        minidrivers: crate::desktop::adapters::minidrivers::registered_minidrivers(),
-    })
+    }
 }
 
 fn nss_stores() -> Option<NssStores> {
