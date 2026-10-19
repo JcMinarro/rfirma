@@ -265,11 +265,13 @@ jobs:
       - name: Empaqueta la .app y el .dmg
         run: just bundle
 
-      - name: Sube el .dmg
+      - name: Sube el .dmg y la actualizacion
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: bundle-macos
-          path: rfirma-app/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          path: |
+            rfirma-app/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            rfirma-app/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.app.tar.gz
           if-no-files-found: error
           retention-days: 1
 
@@ -317,7 +319,7 @@ jobs:
           name: bundle-windows
           path: ${{ runner.temp }}/paquetes
 
-      - name: Descarga el .dmg de macOS
+      - name: Descarga el .dmg y la actualizacion de macOS
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: bundle-macos

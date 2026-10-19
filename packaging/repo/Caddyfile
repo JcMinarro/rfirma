@@ -53,7 +53,7 @@
     # `.flatpakref` y de las órdenes de alta publicadas—, así que se enumeran
     # en vez de servir el montaje entero: lo que no esté en esta lista no se
     # sirve aunque alguien lo deje ahí.
-    @repositorio path /flatpak/* /apt/* /rpm/* /rfirma.asc /rfirma.flatpakref /rfirma.flatpakrepo /windows/*
+    @repositorio path /flatpak/* /apt/* /rpm/* /rfirma.asc /rfirma.flatpakref /rfirma.flatpakrepo /windows/* /macos/*
     handle @repositorio {
         root * /srv/rfirma-repo/actual
         header /rfirma.flatpakrepo Content-Type application/vnd.flatpak.repo
@@ -79,7 +79,7 @@
     # quien las pide es apt, dnf o flatpak, no una persona.
     handle_errors 404 {
         import cabeceras
-        @web not path /flatpak/* /apt/* /rpm/* /rfirma.asc /rfirma.flatpakref /rfirma.flatpakrepo /windows/*
+        @web not path /flatpak/* /apt/* /rpm/* /rfirma.asc /rfirma.flatpakref /rfirma.flatpakrepo /windows/* /macos/*
         handle @web {
             root * /srv
             rewrite * /404.html

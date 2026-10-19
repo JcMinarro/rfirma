@@ -608,6 +608,11 @@ bundle: check-native build-ts
         exit 1
     fi
     echo "dmg: $dmg ($(du -h "$dmg" | cut -f1))"
+    # La actualización que baja el updater: la .app sola, sin firmar aquí (ADR-0015).
+    rm -f "$salida"/dmg/*.app.tar.gz
+    archivo="$salida/dmg/$(basename "$dmg" .dmg).app.tar.gz"
+    COPYFILE_DISABLE=1 tar -czf "$archivo" -C "$salida/macos" rfirma.app
+    echo "actualizacion: $archivo ($(du -h "$archivo" | cut -f1))"
 
 # Regenera cargo-sources.json y el sello de Cargo.lock.
 [group('release')]

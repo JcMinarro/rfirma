@@ -42,6 +42,8 @@
 #   /apt/               con dists/stable/main/binary-amd64/
 #   /rpm/               con repodata/
 #   /windows/           el `-setup.exe` y el `.sig` de cada version, y `latest.json`
+#   /macos/             el `.app.tar.gz` y el `.sig` de cada version que lo trae, y
+#                       `latest.json`
 #
 # APT CON SUITE `stable` Y NO REPOSITORIO PLANO (ID-175): el plano es mas
 # barato y NO admite `Suites:`/`Components:` en un `.sources` deb822, que es el
@@ -99,7 +101,7 @@ exe_de_la_version() {
         return 1
     fi
     mapfile -t exes < <("$manifiesto" files "$dir" nsis)
-    mapfile -t sigs < <("$manifiesto" files "$dir" minisign)
+    mapfile -t sigs < <("$manifiesto" files "$dir" minisign | grep -v '\.app\.tar\.gz\.sig$' || true)
     if [ "${#exes[@]}" -ne 1 ] || [ "${#sigs[@]}" -ne 1 ] || [ "${sigs[0]}" != "${exes[0]}.sig" ]; then
         echo "a la version $(basename "$dir") le falta el .exe de Windows o su .sig" >&2
         return 1
@@ -109,6 +111,25 @@ exe_de_la_version() {
         return 1
     fi
     echo "${exes[0]}"
+}
+
+# La actualizacion de macOS no la traen las versiones de antes de macOS: sin ella, nada.
+app_de_la_version() {
+    local dir="$1" apps sigs
+    mapfile -t apps < <("$manifiesto" files "$dir" updater)
+    if [ "${#apps[@]}" -eq 0 ]; then
+        return 0
+    fi
+    mapfile -t sigs < <("$manifiesto" files "$dir" minisign | grep '\.app\.tar\.gz\.sig$' || true)
+    if [ "${#apps[@]}" -ne 1 ] || [ "${#sigs[@]}" -ne 1 ] || [ "${sigs[0]}" != "${apps[0]}.sig" ]; then
+        echo "a la version $(basename "$dir") le falta la actualizacion de macOS o su .sig" >&2
+        return 1
+    fi
+    if [ ! -f "$dir/${apps[0]}" ] || [ ! -f "$dir/${sigs[0]}" ]; then
+        echo "el manifiesto de $(basename "$dir") nombra ${apps[0]} y ${sigs[0]} y no estan en la Release" >&2
+        return 1
+    fi
+    echo "${apps[0]}"
 }
 
 # Las versiones de la serie, en orden de version y no de listado: el orden en
@@ -167,6 +188,10 @@ done
 exe_de=()
 for version in "${versiones[@]}"; do
     exe_de+=("$(exe_de_la_version "$serie/$version")") || exit 1
+done
+app_de=()
+for version in "${versiones[@]}"; do
+    app_de+=("$(app_de_la_version "$serie/$version")") || exit 1
 done
 
 # Las herramientas, TODAS de golpe y por su nombre de paquete: que la
@@ -235,7 +260,7 @@ ceba_el_agente() {
 }
 
 rm -rf "$arbol"
-mkdir -p "$arbol/flatpak" "$arbol/apt" "$arbol/rpm" "$arbol/windows"
+mkdir -p "$arbol/flatpak" "$arbol/apt" "$arbol/rpm" "$arbol/windows" "$arbol/macos"
 
 # La clave publica no la genera nada: es la misma que firma las Releases, y
 # aqui se copia tal cual para que apt y dnf la encuentren en la ruta que dicen
@@ -438,5 +463,29 @@ jq -n \
     '{version: $version, notes: "", pub_date: $fecha,
       platforms: {"windows-x86_64": {signature: ($firma | rtrimstr("\n")), url: $url}}}' \
     > "$arbol/windows/latest.json"
+
+# ----------------------------------------------------------------- 5. macos --
+# Como `windows/`, con las versiones estables que traen la actualizacion de macOS.
+echo "  macos: colocando las actualizaciones y latest.json"
+ultima_app=""
+for i in "${!versiones[@]}"; do
+    [[ "${versiones[$i]}" == *-* ]] && continue
+    [ -n "${app_de[$i]}" ] || continue
+    cp "$serie/${versiones[$i]}/${app_de[$i]}" "$serie/${versiones[$i]}/${app_de[$i]}.sig" "$arbol/macos/"
+    ultima_app="$i"
+done
+if [ -z "$ultima_app" ]; then
+    echo "  macos: ninguna version estable trae la actualizacion de macOS, no hay latest.json"
+else
+    app_ultima="${app_de[$ultima_app]}"
+    jq -n \
+        --arg version "${versiones[$ultima_app]#v}" \
+        --arg fecha "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        --arg url "https://rfirma.sgomez.me/macos/$(jq -rn --arg f "$app_ultima" '$f | @uri')" \
+        --rawfile firma "$arbol/macos/$app_ultima.sig" \
+        '{version: $version, notes: "", pub_date: $fecha,
+          platforms: {"darwin-aarch64": {signature: ($firma | rtrimstr("\n")), url: $url}}}' \
+        > "$arbol/macos/latest.json"
+fi
 
 echo "OK  arbol construido en $arbol con ${#versiones[@]} version(es): ${versiones[*]}"

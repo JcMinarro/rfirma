@@ -1,4 +1,4 @@
-//! El instalador de la versión anunciada detrás de `UpdateInstaller`: el plugin updater en Windows, «no disponible» en el resto (ADR-0035).
+//! El instalador de la versión anunciada detrás de `UpdateInstaller`: el plugin updater en Windows y macOS, «no disponible» en Linux (ADR-0035).
 
 use crate::desktop::domain::installation::InstallFailure;
 use crate::desktop::ports::UpdateInstaller;
@@ -6,7 +6,7 @@ use crate::desktop::ports::UpdateInstaller;
 /// La clave del plugin en `plugins` de la configuración de Tauri.
 const UPDATER: &str = "updater";
 
-/// Registra el plugin updater, solo en Windows y solo si la configuración de Windows lo trae.
+/// Registra el plugin updater, solo en Windows y macOS y solo si su configuración de plataforma lo trae.
 pub fn with_the_updater(
     builder: tauri::Builder<tauri::Wry>,
     config: &tauri::Config,
@@ -14,14 +14,14 @@ pub fn with_the_updater(
     if !configured(config) {
         return builder;
     }
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     builder
 }
 
-/// El instalador de esta máquina: el plugin en Windows con su configuración, y si no, ninguno.
+/// El instalador de esta máquina: el plugin en Windows y macOS con su configuración, y si no, ninguno.
 pub fn this_desktop(app: tauri::AppHandle) -> Box<dyn UpdateInstaller> {
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     if configured(app.config()) {
         return Box::new(plugin::PluginInstaller::new(app));
     }
@@ -29,7 +29,7 @@ pub fn this_desktop(app: tauri::AppHandle) -> Box<dyn UpdateInstaller> {
     Box::new(NotAvailable)
 }
 
-/// Sin la configuración de Windows que pasa `--config`, `just dev` y `cargo test` no la traen (ADR-0035).
+/// Sin la configuración de plataforma que pasa `--config`, `just dev` y `cargo test` no la traen (ADR-0035).
 fn configured(config: &tauri::Config) -> bool {
     config.plugins.0.contains_key(UPDATER)
 }
@@ -47,7 +47,7 @@ impl UpdateInstaller for NotAvailable {
     }
 }
 
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 mod plugin {
     use std::sync::Mutex;
 
@@ -56,7 +56,7 @@ mod plugin {
     use crate::desktop::domain::installation::InstallFailure;
     use crate::desktop::ports::UpdateInstaller;
 
-    /// El plugin updater: `latest.json`, la firma minisign y el NSIS en modo `passive`.
+    /// El plugin updater: `latest.json`, la firma minisign y el NSIS en modo `passive` o el `.app` sustituida.
     pub struct PluginInstaller {
         app: tauri::AppHandle,
         found: Mutex<Option<Update>>,
@@ -94,7 +94,12 @@ mod plugin {
                 tauri::async_runtime::block_on(async move {
                     update.download_and_install(|_, _| {}, || {}).await
                 })
-            })
+            })?;
+            // En Windows el NSIS ya cerró rFirma; en macOS la `.app` nueva solo corre al relanzarla.
+            if cfg!(target_os = "macos") {
+                self.app.request_restart();
+            }
+            Ok(())
         }
     }
 

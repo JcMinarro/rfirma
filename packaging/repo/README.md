@@ -265,17 +265,19 @@ Si el `grep` no encuentra nada, el fichero lleva la maestra: no se sube. Al term
 
 ## La clave de actualizaciones de Windows
 
-Un par minisign propio, distinto de la GPG (ADR-0015): firma el `-setup.exe` de cada versión
-estable para el *updater* de Tauri. La pública se versiona en un solo sitio,
-`plugins.updater.pubkey` de `packaging/windows/tauri.windows.json`, la configuración que se
-pasa con `--config` al bundler: es en la que confía la versión que se instala.
+Un par minisign propio, distinto de la GPG (ADR-0015): firma el `-setup.exe` y el
+`.app.tar.gz` de macOS de cada versión estable para el *updater* de Tauri. La pública se
+versiona en `plugins.updater.pubkey` de `packaging/windows/tauri.windows.json` y de
+`packaging/macos/tauri.macos.json`, las configuraciones que se pasan con `--config` al
+bundler: es en la que confía la versión que se instala. Las dos llevan la misma, y una
+prueba de `desktop/adapters/releases` lo comprueba.
 
 La privada y su contraseña son los secretos `TAURI_SIGNING_PRIVATE_KEY` y
 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` del entorno `release`, y no aparecen en ningún otro
 workflow: `.github/check-workflows.sh` lo comprueba.
 
-`release.yml` firma con `packaging/windows/sign-updater.sh`, que deja el `.sig` al lado del
-instalador y falla si falta la clave o si la firma no verifica con la pública embebida en la
+`release.yml` firma con `packaging/windows/sign-updater.sh`, que deja el `.sig` al lado de
+cada paquete y falla si falta la clave o si la firma no verifica con la pública embebida en la
 **última etiqueta estable**, que es la que aceptan las instalaciones que ya existen; si todavía
 no hay ninguna estable con *updater*, con la embebida actual. Todo lo de abajo se hace en un
 equipo propio, nunca en el CI, desde la raíz del repositorio y con las dependencias de
@@ -296,9 +298,10 @@ ficheros, la privada `rfirma-actualizaciones.key` y la pública
 - **Versionar la pública**, tal cual, por PR a `main`:
 
   ```bash
-  CONF=packaging/windows/tauri.windows.json
-  jq --arg k "$(cat "$DIR/rfirma-actualizaciones.key.pub")" '.plugins.updater.pubkey = $k' \
-    "$CONF" > "$DIR/conf.json" && mv "$DIR/conf.json" "$CONF"
+  for CONF in packaging/windows/tauri.windows.json packaging/macos/tauri.macos.json; do
+    jq --arg k "$(cat "$DIR/rfirma-actualizaciones.key.pub")" '.plugins.updater.pubkey = $k' \
+      "$CONF" > "$DIR/conf.json" && mv "$DIR/conf.json" "$CONF"
+  done
   ```
 
 - **Custodiar la privada**: copia `rfirma-actualizaciones.key` fuera de línea, con copia de

@@ -19,6 +19,8 @@ row_for() {
         *.rpm) echo "linux|rpm|true|" ;;
         *-setup.exe) echo "windows|nsis|false|Windows SmartScreen avisará de que el instalador no está firmado: pulsa «Más información» y «Ejecutar de todas formas»." ;;
         *-setup.exe.sig) echo "windows|minisign|false|" ;;
+        *.app.tar.gz) echo "macos|updater|false|" ;;
+        *.app.tar.gz.sig) echo "macos|minisign|false|" ;;
         *.dmg) echo "macos|dmg|false|Gatekeeper bloqueará la aplicación, que no está notarizada: pulsa «Abrir igualmente» en Ajustes del Sistema › Privacidad y seguridad." ;;
         *) return 1 ;;
     esac
@@ -95,7 +97,7 @@ case "$command" in
         ;;
     packages)
         require_manifest "$dir"
-        jq -r '.[] | select(.format != "minisign") | .file' "$dir/$manifest_name"
+        jq -r '.[] | select(.format != "minisign" and .format != "updater") | .file' "$dir/$manifest_name"
         ;;
     signable)
         require_manifest "$dir"

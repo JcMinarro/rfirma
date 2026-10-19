@@ -274,3 +274,8 @@ fn each_distribution_channel_marks_its_local_ca_with_its_own_value() {
     assert_eq!(mark_of(Channel::Flatpak).value(), "flatpak");
     assert_eq!(mark_of(Channel::Windows).value(), "windows");
 }
+
+#[test]
+fn macos_keeps_marking_its_local_ca_as_native() {
+    assert_eq!(mark_of(Channel::MacOs).value(), "native");
+}
