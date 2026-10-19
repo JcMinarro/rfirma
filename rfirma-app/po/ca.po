@@ -1317,6 +1317,10 @@ msgstr "Una imatge sense títol"
 msgid "sede.consent.untitledDocument"
 msgstr "Un document sense títol"
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr "Una empremta del document"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "S'enviaran el teu nom, el teu NIF, l'emissor del certificat i el seu número "
@@ -1501,6 +1505,10 @@ msgstr "La seu només admet alguns certificats"
 #. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar igualmente».
 msgid "sede.received.sha1ToAllow"
 msgstr "Aquesta seu fa servir un mètode de signatura poc segur"
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr "La seu només envia l'empremta del document, així que rFirma no pot ensenyar-te'l"
 
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"

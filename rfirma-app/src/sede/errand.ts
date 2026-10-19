@@ -77,6 +77,8 @@ export interface SiteDocument {
   previousSignatures: PreviousSignaturesReport;
   /** Lo que el visor de la ampliada pinta de sus bytes. */
   content: DocumentContent;
+  /** Los bytes son la huella del documento, no el documento. */
+  precalculatedHash: boolean;
 }
 
 /** Lo que puede hacer la persona tras un rechazo de la sede. */

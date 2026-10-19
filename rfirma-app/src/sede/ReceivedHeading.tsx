@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
-import { type Received, receivedCount } from "./received";
+import { type Received, receivedCount, receivedName } from "./received";
 import "./ReceivedHeading.css";
 
 /** «Vas a firmar N documentos», con su descarga si hay `onDownload`; del lote remoto, solo el recuento. */
@@ -23,7 +23,9 @@ export function ReceivedHeading({
 
   return (
     <div className="received-heading">
-      {!withoutCount && <p className="rf-body received-heading__title">{headingOf(t, count)}</p>}
+      {!withoutCount && (
+        <p className="rf-body received-heading__title">{headingOf(t, received, count)}</p>
+      )}
       {onDownload !== undefined && (
         <DownloadButton received={received} count={count} onDownload={onDownload} />
       )}
@@ -31,7 +33,9 @@ export function ReceivedHeading({
   );
 }
 
-function headingOf(t: TFunction, count: number): string {
+function headingOf(t: TFunction, received: Received, count: number): string {
+  const [only] = received.kind === "documents" && count === 1 ? received.documents : [];
+  if (only?.precalculatedHash) return receivedName(t, only);
   return t("sede.received.documents", { count });
 }
 

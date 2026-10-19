@@ -52,6 +52,8 @@ export type SiteStageView =
       sha1Allowed: boolean;
       /** La petición pide SHA-1 y la persona no lo permite todavía. */
       sha1ToAllow: boolean;
+      /** Lo recibido es una huella precalculada y no el documento. */
+      precalculatedHash: boolean;
     }
   | {
       kind: "askingToConfirm";

@@ -11,6 +11,7 @@ import {
   Consent,
   IdentityData,
   LocalBatch,
+  PrecalculatedHash,
   PreviousSignaturesWithProblem,
 } from "./testing/fixtures/sedeErrands";
 import {
@@ -142,6 +143,38 @@ describe("2 · consent", () => {
 
       expect(screen.queryByText(/SHA-1|poco seguro/)).not.toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Firmar" })).toBeEnabled();
+    });
+  });
+
+  describe("a precalculated hash instead of the document", () => {
+    it("says the site only sends the hash and names it as a hash", () => {
+      const { port } = scriptedFrom(PrecalculatedHash);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+      );
+      expect(screen.getByText("Una huella del documento")).toBeInTheDocument();
+      expect(screen.queryByText("Un documento sin título")).not.toBeInTheDocument();
+    });
+
+    it("offers neither the viewer nor the download", () => {
+      const { port } = scriptedFrom(PrecalculatedHash);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByRole("button", { name: "Ver documento" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Descargar" })).not.toBeInTheDocument();
+      expect(screen.queryByText("Vas a firmar 1 documento")).not.toBeInTheDocument();
+    });
+
+    it("keeps the notice quiet about a document that is not a hash, whatever its size", () => {
+      const { port } = scriptedErrand(
+        consentStage({ document: { ...signedDocument, sizeBytes: 32 } }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByText(/huella/)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
     });
   });
 

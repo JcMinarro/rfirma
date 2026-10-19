@@ -5,6 +5,7 @@ import { ReceivedSummary } from "./ReceivedSummary";
 import {
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  HASH_DOCUMENT,
   RESOLUTION_DOCUMENT,
   withYourSignature,
   yourSignature,
@@ -42,6 +43,8 @@ type Story = StoryObj<typeof meta>;
 export const Batch: Story = {};
 
 export const OneDocument: Story = { args: { documents: [RESOLUTION_DOCUMENT] } };
+
+export const PrecalculatedHash: Story = { args: { documents: [HASH_DOCUMENT] } };
 
 export const SignedByYou: Story = {
   args: {

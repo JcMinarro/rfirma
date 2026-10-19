@@ -118,6 +118,7 @@ fn consenting_to(document: ReceivedDocument) -> serde_json::Value {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
     });
     serde_json::to_value(&view).expect("serializa")["stage"].clone()
 }
@@ -155,6 +156,7 @@ fn the_round_crosses_named_as_the_site_asked_for_it() {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
     });
 
     assert_eq!(
@@ -176,6 +178,7 @@ fn the_consent_crosses_whether_sha1_is_signed_because_the_person_allows_it() {
             without_asking: false,
             sha1_allowed: allowed,
             sha1_to_allow: false,
+            precalculated_hash: false,
         });
 
         assert_eq!(
@@ -199,6 +202,7 @@ fn a_countersignature_crosses_with_its_own_label_and_target() {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
     });
 
     assert_eq!(
@@ -485,6 +489,7 @@ fn what_is_signed_crosses_named_after_the_format_the_site_asked_for() {
             without_asking: false,
             sha1_allowed: false,
             sha1_to_allow: false,
+            precalculated_hash: false,
         });
 
         assert_eq!(
@@ -583,6 +588,7 @@ fn the_four_consents_cross_whether_the_site_narrowed_the_list_and_how_many_it_do
                 without_asking: false,
                 sha1_allowed: false,
                 sha1_to_allow: false,
+                precalculated_hash: false,
             },
             Moment::AskingToSignTheBatch {
                 signs: 1,

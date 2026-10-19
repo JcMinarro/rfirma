@@ -57,6 +57,7 @@ function documentOfTheOrder(path: string, detected: DocumentType): SiteDocument 
     round: { kind: "sign" },
     previousSignatures: NO_PREVIOUS_SIGNATURES,
     content: { kind: "none" },
+    precalculatedHash: false,
   };
 }
 

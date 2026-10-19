@@ -205,6 +205,7 @@ impl From<&Moment> for SiteErrandView {
                 without_asking,
                 sha1_allowed,
                 sha1_to_allow,
+                precalculated_hash,
             } => Self::at(SiteStageView::AskingToSign {
                 document: document.handle.clone(),
                 name: document.name.clone(),
@@ -219,6 +220,7 @@ impl From<&Moment> for SiteErrandView {
                 without_asking: *without_asking,
                 sha1_allowed: *sha1_allowed,
                 sha1_to_allow: *sha1_to_allow,
+                precalculated_hash: *precalculated_hash,
             }),
             Moment::MarkingTheArea { document } => Self::at(SiteStageView::MarkingTheArea {
                 document: document.clone(),
@@ -406,6 +408,8 @@ crossing! {
             sha1_allowed: bool,
             /// Si la firma pide SHA-1 y la persona no lo permite todavía: la ventana se lo pregunta.
             sha1_to_allow: bool,
+            /// Si lo que se recibe es una huella precalculada y no el documento.
+            precalculated_hash: bool,
         },
         /// La firma espera a que la persona confirme lo que el validador del original señala.
         #[serde(rename_all = "camelCase")]

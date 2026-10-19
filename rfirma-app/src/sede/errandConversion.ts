@@ -192,6 +192,7 @@ export function documentOf(
     round: stage.round,
     previousSignatures,
     content,
+    precalculatedHash: stage.precalculatedHash,
   };
 }
 

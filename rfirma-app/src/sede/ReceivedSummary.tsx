@@ -1,4 +1,4 @@
-//! Los avisos de lo recibido en la ventana de sede, juntos en un solo `Admonition`: la firma no válida, el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas, por ese orden.
+//! Los avisos de lo recibido en la ventana de sede, juntos en un solo `Admonition`: la firma no válida, el SHA-1 por permitir, lo que ya firmaste tú y las firmas de otras personas y que lo recibido es una huella, por ese orden.
 
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -32,6 +32,9 @@ export function ReceivedSummary({
     sha1ToAllow ? t("sede.received.sha1ToAllow") : null,
     ...yourLines(t, tally, single),
     yoursOnly ? null : byOthersLine(t, tally, single),
+    documents.some((document) => document.precalculatedHash)
+      ? t("sede.received.precalculatedHash")
+      : null,
   ];
   const facts = candidates.filter((line): line is string => line !== null);
   const [first, ...rest] = facts;

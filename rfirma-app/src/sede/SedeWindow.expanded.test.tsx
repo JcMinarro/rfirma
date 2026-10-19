@@ -148,6 +148,28 @@ describe("2 · the expanded consent", () => {
     });
   });
 
+  describe("a local batch with a precalculated hash among its elements", () => {
+    const [first, second] = LOCAL_BATCH_DOCUMENTS;
+    if (first === undefined || second === undefined) throw new Error("faltan documentos");
+    const items = [first, { ...second, precalculatedHash: true }];
+
+    it("shows it as a hash, with no actions, and leaves the others as they were", async () => {
+      const user = userEvent.setup();
+      const { port } = scriptedErrand(
+        consentStage({ document: null, signing: null, signs: items.length, items }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      await user.click(screen.getByRole("button", { name: "Ver documentos" }));
+      const list = screen.getByRole("navigation", { name: "Vas a firmar 2 documentos" });
+
+      expect(within(list).getAllByRole("button", { name: /^Acciones de/ })).toHaveLength(1);
+      await user.click(within(list).getByRole("button", { name: "Una huella del documento" }));
+      expect(within(list).queryByRole("button", { name: /^Acciones de/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Abrir con…" })).not.toBeInTheDocument();
+    });
+  });
+
   describe("the viewer", () => {
     async function expandWith(document: SiteDocument) {
       const user = userEvent.setup();

@@ -10,6 +10,7 @@ import { SedeReceivedConsent } from "./SedeReceivedConsent";
 import {
   BATCH_DOCUMENTS,
   DESIGN_CERTIFICATES,
+  HASH_DOCUMENT,
   INVOICE_DOCUMENT,
   LOCAL_BATCH_DOCUMENTS,
   REMOTE_BATCH,
@@ -28,6 +29,7 @@ const DOCUMENTS = {
   untitled: [UNTITLED_DOCUMENT],
   localBatch: LOCAL_BATCH_DOCUMENTS,
   invoice: [INVOICE_DOCUMENT],
+  hash: [HASH_DOCUMENT],
 };
 
 const WITHOUT_DOCUMENTS = { remoteBatch: REMOTE_BATCH };
@@ -252,6 +254,8 @@ export const CompactRemoteBatch: Story = { decorators: compact, args: { received
 export const CompactOneDocument: Story = { decorators: compact, args: { received: "one" } };
 
 export const CompactSeveralDocuments: Story = { decorators: compact };
+
+export const CompactPrecalculatedHash: Story = { decorators: compact, args: { received: "hash" } };
 
 export const CompactCountdown: Story = { decorators: compact, args: { countdown: true } };
 

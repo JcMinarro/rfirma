@@ -1318,6 +1318,10 @@ msgstr "Izenbururik gabeko irudi bat"
 msgid "sede.consent.untitledDocument"
 msgstr "Izenbururik gabeko dokumentu bat"
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr "Dokumentuaren hatz-marka bat"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Zure izena, zure IFZa, ziurtagiriaren jaulkitzailea eta serie-zenbakia "
@@ -1504,6 +1508,10 @@ msgstr "Egoitzak ziurtagiri batzuk baino ez ditu onartzen"
 #. La sede pide una firma con SHA-1 que Preferencias no permite: el botón dice «Firmar igualmente».
 msgid "sede.received.sha1ToAllow"
 msgstr "Egoitza honek sinatzeko metodo ez oso segurua erabiltzen du"
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr "Egoitzak dokumentuaren hatz-marka soilik bidaltzen du, beraz rFirmak ezin dizu erakutsi"
 
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"

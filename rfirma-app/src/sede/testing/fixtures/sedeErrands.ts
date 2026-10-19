@@ -33,6 +33,10 @@ export const NoChannel = errandStory(sedeErrand({ kind: "noChannel", reason: "ch
 
 export const Consent = consenting(consentStage());
 
+export const PrecalculatedHash = consenting(
+  consentStage({ document: { ...signedDocument, precalculatedHash: true } }),
+);
+
 export const Batch = consenting(consentStage({ document: null, signs: 3, signing: null }));
 
 export const LocalBatch = consenting(
