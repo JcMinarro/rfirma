@@ -7,7 +7,7 @@ use std::path::Path;
 use super::pkcs11::RealToken;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
-use crate::identity::domain::error::{Situation, TokenError};
+use crate::identity::domain::error::TokenError;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, StoreSecret};
 use crate::identity::domain::store::{Store, StoreClass, MACOS_STORE_PREFIX};
@@ -42,13 +42,6 @@ fn stores_besides(pkcs11: Vec<Store>, module_named: bool) -> Vec<Store> {
         return pkcs11;
     }
     std::iter::once(user_store()).chain(pkcs11).collect()
-}
-
-fn not_signing_yet() -> TokenError {
-    TokenError::new(
-        Situation::MechanismNotOffered,
-        "el Almacén de macOS todavía no firma",
-    )
 }
 
 /// El adaptador de [`Token`] en macOS: el llavero para el Almacén de macOS y [`RealToken`] para los demás.
@@ -101,7 +94,7 @@ impl Token for MacosToken {
         algorithm: SignatureAlgorithm,
     ) -> Result<(), TokenError> {
         if is_a_keychain(&reference.store()) {
-            return Err(not_signing_yet());
+            return keychain::offers(reference, algorithm);
         }
         RealToken.offers(reference, algorithm)
     }
@@ -125,7 +118,7 @@ impl Token for MacosToken {
         data: &[u8],
     ) -> Result<Vec<u8>, TokenError> {
         if is_a_keychain(&reference.store()) {
-            return Err(not_signing_yet());
+            return keychain::sign(reference, algorithm, data);
         }
         RealToken.sign_with_secret(reference, secret, algorithm, data)
     }
