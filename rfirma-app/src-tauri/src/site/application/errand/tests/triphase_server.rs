@@ -419,3 +419,57 @@ fn signing_and_saving_against_a_failing_triphase_server_is_refused_with_saf_40()
         Some(WireAnswer::refused(SafCode::RecoverServerDocument).on_the_wire())
     );
 }
+
+fn whether_the_consent_names_the_site_server(url: &AfirmaUrl, site_params: &str) -> bool {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let memory = a_memory(home.path());
+    let ours = vec![a_usable_certificate("FIRMA")];
+    let (listed, _) = listed_from(&ours);
+    let live = a_live();
+    let engine = AnEngine::answering(&[&[0], &[0]]);
+    let policies = APolicyEngine::answering(site_params);
+    let neighbours = a_signer_for_the_batch(home.path(), &listed, &memory, &ours);
+    let desk = a_desk_for_the_batch(
+        &engine,
+        &policies,
+        &neighbours,
+        home.path(),
+        Arc::new(InMemoryBatchServices::default()),
+    );
+
+    let step = attend_operation(&desk, url, decoded(url), &live);
+
+    match step.moment() {
+        Some(Moment::AskingToSign {
+            through_the_site_server,
+            ..
+        }) => through_the_site_server,
+        other => panic!("una firma pide consentimiento: {other:?}"),
+    }
+}
+
+#[test]
+fn the_consent_names_the_site_server_in_every_round_that_goes_through_it() {
+    for op in ["sign", "cosign", "countersign"] {
+        assert!(
+            whether_the_consent_names_the_site_server(&a_cades_triphase(op), THE_SERVER),
+            "{op}"
+        );
+    }
+    let saved = a_triphase_sign_and_save("CAdEStri", b"los datos");
+    assert!(whether_the_consent_names_the_site_server(
+        &saved, THE_SERVER
+    ));
+}
+
+#[test]
+fn the_consent_does_not_name_the_site_server_for_a_local_signature_or_without_server_url() {
+    let local = a_triphase("CAdES", "sign", b"los datos");
+    assert!(!whether_the_consent_names_the_site_server(
+        &local, THE_SERVER
+    ));
+    assert!(!whether_the_consent_names_the_site_server(
+        &a_cades_triphase("sign"),
+        ""
+    ));
+}

@@ -90,6 +90,7 @@ function errandOf(choice: TerminalChoiceView): Errand {
       narrowed: false,
       sha1Allowed: false,
       sha1ToAllow: false,
+      throughSiteServer: false,
     },
   };
 }

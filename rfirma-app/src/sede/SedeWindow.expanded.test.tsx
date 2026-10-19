@@ -263,6 +263,17 @@ describe("2 · the expanded consent", () => {
       expect(calls.cancel).toHaveBeenCalledOnce();
     });
 
+    it("shows the text of a document that is an identifier, as it comes", async () => {
+      await expandWith({
+        ...signedDocument,
+        name: null,
+        detected: "text",
+        content: { kind: "text", text: "EXP-2026-00451" },
+      });
+
+      expect(screen.getByText("EXP-2026-00451")).toBeInTheDocument();
+    });
+
     it("says a document without preview cannot be shown, with its name", async () => {
       await expandWith({ ...signedDocument, name: "Beneficiarios.xlsx", detected: "xlsx" });
 

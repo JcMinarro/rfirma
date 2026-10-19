@@ -1503,6 +1503,10 @@ msgstr "La sede solo admite algunos certificados"
 msgid "sede.received.sha1ToAllow"
 msgstr "Esta sede usa un método de firma poco seguro"
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr "El servidor de la sede prepara la firma con este documento"
+
 msgid "sede.received.signatures"
 msgid_plural "sede.received.signatures"
 msgstr[0] "Vas a hacer 1 firma"
@@ -1640,6 +1644,13 @@ msgid_plural "sede.consent.viewDocuments"
 msgstr[0] "Ver documento"
 msgstr[1] "Ver documentos"
 msgstr[2] "Ver documentos"
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
+msgstr[0] "Ver el documento enviado"
+msgstr[1] "Ver los documentos enviados"
+msgstr[2] "Ver los documentos enviados"
 
 #. El botón del pie que pliega la vista ampliada y vuelve a la compacta.
 msgid "sede.consent.hideDocuments"

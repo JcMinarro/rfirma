@@ -190,6 +190,27 @@ describe("2 · consent", () => {
     });
   });
 
+  describe("when the site server prepares the signature", () => {
+    it("tells it and names the button after the document sent", () => {
+      const { port } = scriptedErrand(consentStage({ throughSiteServer: true }));
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(
+        screen.getByText("El servidor de la sede prepara la firma con este documento."),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver el documento enviado" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Ver documento" })).not.toBeInTheDocument();
+    });
+
+    it("says nothing of it, and keeps the usual button, without the mark", () => {
+      const { port } = scriptedErrand(consentStage());
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.queryByText(/servidor de la sede/)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ver documento" })).toBeInTheDocument();
+    });
+  });
+
   describe("the facts of the previous signatures", () => {
     it("tells them in one notice, the invalid signature first, with the tone of the worst", () => {
       const errand = errandOf(PreviousSignaturesWithProblem);

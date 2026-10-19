@@ -146,6 +146,29 @@ describe("ReceivedSummary", () => {
     expect(admonitions()).toEqual([]);
   });
 
+  it("tells the site server prepares the signature, as information", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} throughSiteServer />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^El servidor de la sede prepara la firma con este documento\.$/,
+    );
+  });
+
+  it("puts the site server after the other facts without lowering their tone", () => {
+    renderWithCatalog(<ReceivedSummary documents={BATCH_DOCUMENTS} throughSiteServer />);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /3 traen firmas de otras personas\. El servidor de la sede prepara la firma con este documento\.$/,
+    );
+  });
+
+  it("keeps SHA-1 first, with its tone, beside the site server", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} sha1ToAllow throughSiteServer />);
+    expect(admonitions()).toHaveLength(1);
+    expect(title()).toBe("Esta sede usa un método de firma poco seguro.");
+    expect(document.querySelector(".rf-admonition")).toHaveTextContent(
+      "El servidor de la sede prepara la firma con este documento.",
+    );
+  });
+
   it.each([
     ["none", "sameCertificate"],
     ["signed", "sameCertificate"],

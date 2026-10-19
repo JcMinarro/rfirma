@@ -11,7 +11,7 @@ use crate::site::domain::protocol::{
     RequestedFormat, SignAndSaveRequest, SignatureRound, SiteFilter, SiteVisibleSignature,
     StickyCertificate,
 };
-use crate::site::domain::triphase_server::ServerFormat;
+use crate::site::domain::triphase_server::{server_url_of, ServerFormat};
 
 use super::request::SiteRequest;
 
@@ -224,6 +224,8 @@ impl SigningConsent {
             sha1_allowed: self.asks_for_sha1() && !self.sha1_to_allow,
             sha1_to_allow: self.sha1_to_allow,
             precalculated_hash: self.precalculated_hash,
+            through_the_site_server: self.for_the_site_server.is_some()
+                && server_url_of(&self.from_the_site).is_ok(),
         }
     }
 }
@@ -416,6 +418,8 @@ pub enum Moment {
         sha1_to_allow: bool,
         /// Si lo que se recibe es una huella precalculada y no el documento.
         precalculated_hash: bool,
+        /// Si el servidor trifásico de la sede prepara la firma.
+        through_the_site_server: bool,
     },
     /// La persona marca sobre el PDF el área de la firma visible, antes de elegir certificado.
     MarkingTheArea {

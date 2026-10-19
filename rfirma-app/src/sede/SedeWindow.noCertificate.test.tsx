@@ -135,6 +135,7 @@ describe("when a child throws", () => {
       narrowed: false,
       sha1Allowed: false,
       sha1ToAllow: false,
+      throughSiteServer: false,
     });
     renderWithCatalog(
       <RenderErrorBoundary>

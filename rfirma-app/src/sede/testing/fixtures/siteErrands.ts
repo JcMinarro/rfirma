@@ -176,6 +176,7 @@ export const ASKING_TO_SIGN: SiteErrandView = {
     sha1Allowed: false,
     sha1ToAllow: false,
     precalculatedHash: false,
+    throughTheSiteServer: false,
   },
 };
 

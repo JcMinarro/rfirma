@@ -1462,6 +1462,10 @@ msgstr ""
 msgid "sede.received.sha1ToAllow"
 msgstr ""
 
+#. La sede firma con su servidor trifásico: el aviso de lo recibido lo dice.
+msgid "sede.received.siteServer"
+msgstr ""
+
 #. Encabezado del lote remoto: cuenta firmas, porque los documentos no se ven.
 msgid "sede.received.signatures"
 msgid_plural "sede.received.signatures"
@@ -1598,6 +1602,13 @@ msgstr ""
 #. El botón del pie que abre la vista ampliada con el visor del documento o los documentos.
 msgid "sede.consent.viewDocuments"
 msgid_plural "sede.consent.viewDocuments"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. El botón del pie de la vista ampliada cuando la sede firma con su servidor trifásico.
+msgid "sede.consent.viewSentDocuments"
+msgid_plural "sede.consent.viewSentDocuments"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""

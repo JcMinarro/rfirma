@@ -53,6 +53,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });
@@ -86,6 +87,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });
@@ -287,6 +289,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           narrowed: false,
           sha1Allowed: false,
           sha1ToAllow: false,
+          throughSiteServer: false,
         },
       }),
     );
@@ -333,6 +336,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           sha1Allowed: false,
           sha1ToAllow: false,
           precalculatedHash: false,
+          throughTheSiteServer: false,
         },
       };
       const { push, last } = watched();
@@ -372,6 +376,24 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
     await vi.waitFor(() => expect(last()?.stage).toMatchObject({ sha1Allowed: true }));
   });
 
+  it.each([true, false])(
+    "carries whether the site server prepares the signature (%s) through to the consent stage",
+    async (through) => {
+      const view: SiteErrandView = {
+        ...ASKING_TO_SIGN,
+        stage: {
+          ...ASKING_TO_SIGN.stage,
+          throughTheSiteServer: through,
+        } as SiteErrandView["stage"],
+      };
+      const { push, last } = watched();
+
+      push(view);
+
+      await vi.waitFor(() => expect(last()?.stage).toMatchObject({ throughSiteServer: through }));
+    },
+  );
+
   it.each(["tree", "leafs"] as const)(
     "carries the %s target of a countersignature through to the consent document",
     async (target) => {
@@ -393,6 +415,7 @@ describe("cada momento que llega se convierte en lo que la ventana espera", () =
           sha1Allowed: false,
           sha1ToAllow: false,
           precalculatedHash: false,
+          throughTheSiteServer: false,
         },
       };
       const { push, last } = watched();
@@ -469,6 +492,7 @@ describe("el lote local: cada elemento como documento", () => {
         narrowed: false,
         sha1Allowed: false,
         sha1ToAllow: false,
+        throughSiteServer: false,
       },
     });
   });

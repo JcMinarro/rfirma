@@ -213,6 +213,7 @@ fn without_the_preference_every_signature_with_sha1_asks_to_allow_it_and_never_c
             Moment::AskingToSign {
                 sha1_allowed: false,
                 sha1_to_allow: true,
+                through_the_site_server: false,
                 ..
             }
         ));
@@ -298,6 +299,7 @@ fn with_the_preference_a_signature_with_sha1_does_not_ask_to_allow_it_and_keeps_
         Moment::AskingToSign {
             sha1_allowed: true,
             sha1_to_allow: false,
+            through_the_site_server: false,
             ..
         }
     ));
@@ -521,6 +523,7 @@ fn with_the_preference_an_explicit_xades_carries_the_sha1_mark() {
         Moment::AskingToSign {
             sha1_allowed: true,
             sha1_to_allow: false,
+            through_the_site_server: false,
             ..
         }
     ));
