@@ -7,11 +7,12 @@ import { hasAReader, type ReaderStatus } from "./certificate";
 import "./ReaderLine.css";
 
 /** La plataforma de la que depende la ayuda para una tarjeta ilegible. */
-export type CardHelpPlatform = "windows" | "linux" | "other";
+export type CardHelpPlatform = "windows" | "macos" | "linux" | "other";
 
 /** La plataforma que corresponde al `userAgent` del WebView. */
 function cardHelpPlatformFor(userAgent: string): CardHelpPlatform {
   if (/windows/i.test(userAgent)) return "windows";
+  if (/macintosh|mac os x/i.test(userAgent)) return "macos";
   if (/linux/i.test(userAgent) && !/android/i.test(userAgent)) return "linux";
   return "other";
 }
@@ -69,11 +70,16 @@ function readerText(
 function CardHelp({ platform }: { platform: CardHelpPlatform }) {
   const { t } = useTranslation();
   if (platform === "other") return null;
-  return (
-    <span className="reader-line__help">
-      {platform === "windows"
-        ? t("panel.certificate.reader.unreadableHelp.windows")
-        : t("panel.certificate.reader.unreadableHelp.linux")}
-    </span>
-  );
+  return <span className="reader-line__help">{cardHelpText(platform, t)}</span>;
+}
+
+function cardHelpText(platform: Exclude<CardHelpPlatform, "other">, t: TFunction): string {
+  switch (platform) {
+    case "windows":
+      return t("panel.certificate.reader.unreadableHelp.windows");
+    case "macos":
+      return t("panel.certificate.reader.unreadableHelp.macos");
+    case "linux":
+      return t("panel.certificate.reader.unreadableHelp.linux");
+  }
 }

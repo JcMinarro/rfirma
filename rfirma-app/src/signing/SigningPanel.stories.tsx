@@ -138,6 +138,10 @@ export const UnreadableCardOnLinux: Story = {
   args: { certificate: withReader({ kind: "unreadable" }), platform: "linux" },
 };
 
+export const UnreadableCardOnMacos: Story = {
+  args: { certificate: withReader({ kind: "unreadable" }), platform: "macos" },
+};
+
 export const NoCertificatesWithReader: Story = {
   args: { certificate: withReader({ kind: "noCard" }, { kind: "empty" }) },
 };
