@@ -48,6 +48,7 @@ impl Workspace for SystemWorkspace {
     fn set_default_for(&self, scheme: &str, app: &Path) -> Result<(), String> {
         let (sender, answer) = mpsc::channel();
         let done = RcBlock::new(move |error: *mut NSError| {
+            // SAFETY: AppKit pasa un `NSError` vivo mientras dura la llamada, o nulo si fue bien.
             let outcome = unsafe { error.as_ref() }.map_or(Ok(()), |error| {
                 Err(error.localizedDescription().to_string())
             });
