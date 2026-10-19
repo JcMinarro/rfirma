@@ -193,6 +193,19 @@ describe("2 · the expanded consent", () => {
       expect(screen.queryByRole("button", { name: "Abrir con…" })).not.toBeInTheDocument();
       expect(within(list).queryByRole("button", { name: /^Acciones de/ })).not.toBeInTheDocument();
     });
+
+    it("counts in the download only the documents that are not a hash", async () => {
+      const user = userEvent.setup();
+      const { port } = scriptedFrom(MixedLocalBatch);
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      await user.click(screen.getByRole("button", { name: "Ver documentos" }));
+
+      expect(screen.getByRole("button", { name: "Descargar todo" })).toHaveAttribute(
+        "title",
+        "Los 2 documentos y sus huellas SHA-256, en un .zip",
+      );
+    });
   });
 
   describe("the viewer", () => {

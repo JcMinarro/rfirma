@@ -51,9 +51,12 @@ function DownloadButton({
 }) {
   const { t } = useTranslation();
   if (received.kind === "remoteBatch") return null;
+  const zipped = received.documents.filter((document) => !document.precalculatedHash).length;
   const label = count === 1 ? t("sede.received.download") : t("sede.received.downloadAll");
   const title =
-    count === 1 ? t("sede.received.downloadTitle") : t("sede.received.downloadAllTitle", { count });
+    count === 1
+      ? t("sede.received.downloadTitle")
+      : t("sede.received.downloadAllTitle", { count: zipped });
 
   return (
     <Button variant="ghost" title={title} onClick={onDownload}>

@@ -190,6 +190,21 @@ describe("2 · consent", () => {
       );
     });
 
+    it("tells both the hash and the site server in a single notice", () => {
+      const { port } = scriptedErrand(
+        consentStage({
+          document: { ...signedDocument, precalculatedHash: true },
+          throughSiteServer: true,
+        }),
+      );
+      renderWithCatalog(<SedeWindow errands={port} consentCountdown={false} />);
+
+      expect(screen.getAllByRole("status")).toHaveLength(1);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.\s*El servidor de la sede prepara la firma con este documento\.$/,
+      );
+    });
+
     it("keeps the notice quiet about a document that is not a hash, whatever its size", () => {
       const { port } = scriptedErrand(
         consentStage({ document: { ...signedDocument, sizeBytes: 32 } }),
