@@ -1,4 +1,3 @@
-cd /home/sergio/Developer/SideProjects/rfirma/.claude/worktrees/wf_ca41397d-203-12/rfirma-app/src-tauri && cargo run -q --example contract -- "/home/sergio/Developer/SideProjects/rfirma/.claude/worktrees/wf_ca41397d-203-12/rfirma-app/src-tauri/src"
 ORDENES DE TAURI                          (<contexto>/adapters/tauri*.rs)
   Sin el estado inyectado (State<...>, AppHandle): no cruza.
 
