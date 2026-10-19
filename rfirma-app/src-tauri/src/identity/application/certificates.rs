@@ -103,7 +103,9 @@ pub fn on_the_desktop(found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
 fn holders_only(found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
     found
         .into_iter()
-        .filter(|certificate| !certificate.is_an_authority())
+        .filter(|certificate| {
+            !certificate.is_an_authority() && !certificate.is_a_macos_token_identity()
+        })
         .collect()
 }
 
@@ -115,9 +117,12 @@ pub fn certificates_by_class(
 ) -> Vec<(StoreClass, usize)> {
     let mut counted: Vec<(StoreClass, usize)> = Vec::new();
     for store in stores {
-        let found = token
-            .list(store)
-            .map_or(0, |certificates| certificates.len());
+        let found = token.list(store).map_or(0, |certificates| {
+            certificates
+                .iter()
+                .filter(|certificate| !certificate.is_a_macos_token_identity())
+                .count()
+        });
         if found == 0 {
             continue;
         }

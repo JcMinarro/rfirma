@@ -335,6 +335,12 @@ impl TokenCertificate {
         })
     }
 
+    /// Si es del Almacén de macOS con la clave en un token del sistema, que se queda para las tarjetas.
+    pub fn is_a_macos_token_identity(&self) -> bool {
+        self.reference().store().class() == StoreClass::Macos
+            && self.reference().key_provider().is_some()
+    }
+
     /// Si es de una autoridad, con `CA:TRUE`.
     pub fn is_an_authority(&self) -> bool {
         Certificate::from_der(&self.der).is_ok_and(|certificate| {

@@ -121,3 +121,47 @@ fn without_a_card_the_macos_copy_is_the_one_behind_the_row() {
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].store, StoreClass::Macos);
 }
+
+fn in_the_keychain_on_a_token(label: &str, der: &[u8]) -> TokenCertificate {
+    let certificate = in_the_keychain(label, der);
+    TokenCertificate::new(
+        certificate
+            .reference()
+            .clone()
+            .with_key_provider("com.apple.setoken:Card"),
+        der.to_vec(),
+    )
+}
+
+#[test]
+fn a_keychain_certificate_with_its_key_in_a_token_is_not_listed() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let found = [
+        in_the_keychain("EN-SOFTWARE", &TestAuthority::root("EN SOFTWARE").der()),
+        in_the_keychain_on_a_token("EN-TOKEN", &TestAuthority::root("EN TOKEN").der()),
+    ];
+
+    let rows = listed_on_the_mac(&found, &[the_macos_store()], home.path());
+
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].store, StoreClass::Macos);
+}
+
+#[test]
+fn a_card_certificate_reaching_the_keychain_on_a_token_is_listed_once_by_pkcs11() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let der = TestAuthority::root("EIDAS CERTIFICADO PRUEBAS - 99999999R").der();
+    let found = [
+        a_copy_in(&Store::module(CARD), "COPIA-TARJETA", &der),
+        in_the_keychain_on_a_token("COPIA-LLAVERO", &der),
+    ];
+
+    let rows = listed_on_the_mac(
+        &found,
+        &[Store::module(CARD), the_macos_store()],
+        home.path(),
+    );
+
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].store, StoreClass::Card);
+}
