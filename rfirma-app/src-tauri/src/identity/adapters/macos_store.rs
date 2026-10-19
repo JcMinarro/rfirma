@@ -131,23 +131,29 @@ impl Token for MacosToken {
         RealToken.release_the_login(reference);
     }
 
+    fn installs_in_the_system(&self) -> bool {
+        true
+    }
+
     fn import_pkcs12(
         &self,
-        directory: &Path,
+        _directory: &Path,
         pkcs12: &[u8],
         password: &str,
-        pin: &ProtectedSecret,
+        _pin: &ProtectedSecret,
     ) -> Result<Store, TokenError> {
-        RealToken.import_pkcs12(directory, pkcs12, password, pin)
+        let store = user_store();
+        keychain::import_pkcs12(&store, pkcs12, password)?;
+        Ok(store)
     }
 
     fn remove_certificate(
         &self,
-        directory: &Path,
+        _directory: &Path,
         reference: &CertificateRef,
-        pin: &ProtectedSecret,
+        _pin: &ProtectedSecret,
     ) -> Result<(), TokenError> {
-        RealToken.remove_certificate(directory, reference, pin)
+        keychain::remove(reference)
     }
 }
 

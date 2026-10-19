@@ -248,6 +248,10 @@ pub fn install_pkcs12(
     pkcs12: &[u8],
     password: &str,
 ) -> Result<(), InstallError> {
+    if token.installs_in_the_system() {
+        token.import_pkcs12(installed_dir, pkcs12, password, &ProtectedSecret::new(b""))?;
+        return Ok(());
+    }
     let already_existed = installed_dir.join("cert9.db").is_file();
     let pin = pin_for_installing(keyring, already_existed)?;
     validate_pkcs12_alone(token, folder, pkcs12, password)?;
@@ -398,16 +402,20 @@ pub fn remove_installed(
         Some(installed) => installed,
         None => listed.get(handle).ok_or_else(not_from_the_last_listing)?,
     };
-    reference
-        .store()
-        .installed_directory_under(installed_dir)
-        .ok_or_else(|| {
-            TokenError::new(
-                Situation::CertificateNotFound,
-                "ese certificado no viene de un .p12 instalado",
-            )
-        })?;
-    let pin = keyring.pin()?;
+    let pin = if token.installs_in_the_system() {
+        ProtectedSecret::new(b"")
+    } else {
+        reference
+            .store()
+            .installed_directory_under(installed_dir)
+            .ok_or_else(|| {
+                TokenError::new(
+                    Situation::CertificateNotFound,
+                    "ese certificado no viene de un .p12 instalado",
+                )
+            })?;
+        keyring.pin()?
+    };
     token.remove_certificate(installed_dir, &reference, &pin)?;
     if memory.remembered_certificate().as_ref() == Some(&reference) {
         let _ = memory.forget_the_certificate();
