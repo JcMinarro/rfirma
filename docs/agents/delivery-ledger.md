@@ -17,3 +17,8 @@
 2026-10-19 spec=#2000 sub=#2024 model=opus effort=medium pr=#2039 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
 2026-10-19 spec=#2000 sub=#2009 model=sonnet effort=medium pr=#2040 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
 2026-10-19 spec=#2000 sub=#2016 model=sonnet effort=medium pr=#2041 verdict=CLEAN cycles=0 mergefix=0 wave=3 outcome=integrated
+2026-10-19 spec=#2000 sub=#2046 model=sonnet effort=medium pr=#2047 verdict=CLEAN cycles=0 mergefix=0 wave=1 outcome=integrated
+2026-10-19 spec=#2000 sub=#2044 model=sonnet effort=medium pr=#2048 verdict=CLEAN cycles=0 mergefix=0 wave=1 outcome=integrated
+2026-10-19 spec=#2000 sub=#2008 model=sonnet effort=medium pr=#2049 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
+2026-10-19 spec=#2000 sub=#2020 model=sonnet effort=medium pr=#2050 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
+2026-10-19 spec=#2000 sub=#2000 model=opus effort=medium pr=#2042 verdict=— cycles=1 mergefix=0 wave=— outcome=escalated
