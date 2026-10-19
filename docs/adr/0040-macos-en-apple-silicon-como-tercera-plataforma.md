@@ -24,28 +24,25 @@ de una tarjeta por PKCS#11 lo pide una alerta de AppKit con campo seguro, modal 
 que lo pidió (ADR-0047); el Almacén de macOS ya lista los certificados del llavero, pero aún no
 firma con ellos como firma el de CNG en Windows.
 
-## En macOS, la API de macOS siempre que se pueda, salvo el DNIe
+## En macOS, la API de macOS siempre que se pueda
 
-Como en Windows (ADR-0035), para certificados, PIN, tarjetas y confianza rFirma usa lo que macOS
-ofrece (Security.framework, CryptoTokenKit a través del llavero, LaunchServices): es lo que la
-persona ya conoce y evita mantener un camino propio. De la regla salen:
+Como en Windows (ADR-0035), para certificados, PIN y confianza rFirma usa lo que macOS ofrece
+(Security.framework y LaunchServices): es lo que la persona ya conoce y evita mantener un camino
+propio. De la regla salen:
 
-- **Los certificados con clave privada del llavero** salen como «Almacén de macOS» y se firman por
-  la API del sistema: Rust calcula el resumen y macOS lo firma (ADR-0001). La contraseña o el PIN
-  los pide macOS con su diálogo.
-- **Las tarjetas que macOS ya sabe leer** (PIV o con controlador del sistema) entran por ese mismo
-  camino y se tratan como tarjeta.
+- **Los certificados con clave de software del llavero** salen como «Almacén de macOS» y se firman
+  por la API del sistema: Rust calcula el resumen y macOS lo firma (ADR-0001). La contraseña o el
+  permiso los pide macOS con su diálogo. Una identidad con la clave en un token del sistema no sale.
 - **«Instalar certificado» importa el `.p12` al llavero de inicio de sesión** (ADR-0034); en macOS
   no hay Almacén de rFirma.
 - **La CA local va a la confianza de la persona usuaria** (ADR-0005), con el diálogo de contraseña
   del sistema, y `afirma://` se gestiona por LaunchServices.
 
-**La excepción es el DNIe**, que va por PKCS#11: macOS no trae controlador del sistema para él y
-la DGP solo publica un módulo PKCS#11 para Mac. Solo para él, rFirma carga el módulo de OpenSC o el
-de la DGP y pide el PIN con un diálogo propio nativo, que lee el estado del PIN antes de pedirlo
-(ADR-0047). Nadie debe meter PKCS#11 para todo ni quitar la excepción sin conocer este motivo.
+Las tarjetas y el DNIe en macOS quedan fuera de la regla: están pendientes de #2043, sin decidir, y
+mientras tanto el Almacén de macOS solo lista certificados con clave de software. En macOS no se
+vigilan los lectores ni aparece la línea del lector.
 
-El orden de almacenes pasa a ser: tarjeta, Almacén de macOS (o de Windows), Almacén de rFirma,
+El orden de almacenes pasa a ser: tarjeta, Almacén de Windows o de macOS, Almacén de rFirma,
 NSS del sistema, familia Firefox, familia Chromium.
 
 ## `afirma://` llega como evento, no como argumento
