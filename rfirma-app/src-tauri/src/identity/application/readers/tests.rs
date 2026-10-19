@@ -229,14 +229,14 @@ fn with_no_full_listing_yet_every_store_is_opened() {
 }
 
 #[test]
-fn the_readers_are_watched_on_linux_windows_and_macos() {
+fn the_readers_are_watched_on_linux_and_windows_and_not_on_macos() {
     use crate::desktop::domain::channel::Channel;
     use crate::desktop::domain::platform::Platform;
 
     assert!(watches_the_readers(Platform::Linux, Channel::Native));
     assert!(watches_the_readers(Platform::Linux, Channel::Flatpak));
     assert!(watches_the_readers(Platform::Windows, Channel::Windows));
-    assert!(watches_the_readers(Platform::MacOs, Channel::Native));
+    assert!(!watches_the_readers(Platform::MacOs, Channel::Native));
 }
 
 const CARD_KSP: &str = "Microsoft Smart Card Key Storage Provider";
