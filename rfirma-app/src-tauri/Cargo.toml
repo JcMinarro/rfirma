@@ -228,8 +228,8 @@ openssl = { version = "0.10", features = ["vendored"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 block2 = "0.6"
 objc2 = "0.6"
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSAlert", "NSApplication", "NSButton", "NSControl", "NSResponder", "NSSecureTextField", "NSTextField", "NSView", "NSWindow"] }
-objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSGeometry", "NSString"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSAlert", "NSApplication", "NSButton", "NSControl", "NSResponder", "NSSecureTextField", "NSTextField", "NSView", "NSWindow", "NSWorkspace"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSError", "NSFileManager", "NSGeometry", "NSString", "NSURL"] }
 
 [target.'cfg(not(windows))'.dev-dependencies]
 # La tarjeta falsa de las pruebas: no se compila en Windows y nunca llega a un paquete (ADR-0004).

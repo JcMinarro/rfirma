@@ -16,7 +16,6 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
-| Manejadores de `afirma://` por GIO | `PendingMacosLaunchServices`: la lista no está disponible y elegir falla. |
 | CA local en los almacenes NSS (ADR-0005) | `PendingMacosKeychainTrust`, sin perfiles: la CA consta como no instalada. |
 | Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
