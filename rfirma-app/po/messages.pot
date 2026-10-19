@@ -1292,6 +1292,10 @@ msgstr ""
 msgid "sede.consent.untitledDocument"
 msgstr ""
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr ""
+
 msgid "sede.consent.willSend"
 msgstr ""
 
@@ -1471,6 +1475,10 @@ msgstr[2] ""
 
 #. Aviso de lo recibido en un lote remoto: los documentos los tiene el servidor de la sede.
 msgid "sede.received.remoteBatch"
+msgstr ""
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
 msgstr ""
 
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.

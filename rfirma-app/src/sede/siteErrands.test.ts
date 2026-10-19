@@ -352,6 +352,7 @@ describe("los momentos que pone el adaptador", () => {
           sha256: DOCUMENT_SHA256,
           title: "Solicitud",
           pages: 3,
+          precalculatedHash: false,
           sizeBytes: 4096,
           round: { kind: "cosign" },
           previousSignatures: NO_PREVIOUS_SIGNATURES,
@@ -572,6 +573,7 @@ describe("la selección automática que pide la sede", () => {
     stage: {
       sha1Allowed: false,
       sha1ToAllow: false,
+      precalculatedHash: false,
       throughTheSiteServer: false,
       kind: "askingToSign",
       document: "asa-opaca-1",

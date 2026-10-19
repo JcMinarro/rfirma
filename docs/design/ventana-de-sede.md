@@ -219,10 +219,17 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
 - **Como mucho un aviso en pantalla, nunca dos apilados.** Todos los hechos van
   en un solo `Admonition`, por orden de importancia: la firma que no es válida,
   el SHA-1 por permitir, que el lote es remoto, lo que ya firmaste tú, las
-  firmas de otras personas y, si la sede firma con su servidor trifásico, que
-  ese servidor prepara la firma con el documento. El primero es el título del aviso, en su fila, y los demás van debajo; con un
+  firmas de otras personas, que lo recibido es una huella y, si la sede firma con su
+  servidor trifásico, que ese servidor prepara la firma con el documento. El primero es el título del aviso, en su fila, y los demás van debajo; con un
   solo hecho, sin título. El tono es el del peor: error con una firma no válida,
   advertencia con SHA-1 y, si no, información.
+- **Una huella precalculada no se presenta como documento.** Cuando los parámetros
+  de la sede llevan `precalculatedHashAlgorithm`, con cualquier valor, el aviso
+  dice «La sede solo envía la huella del documento, así que rFirma no puede
+  enseñártelo.», un hecho informativo que no rebaja el tono de los demás. Su
+  nombre es «Una huella del documento»; no hay «Ver documento», «Descargar»,
+  «Abrir con…» ni «Copiar SHA-256», y en una lista su fila no lleva menú. La
+  huella no se reconoce por su tamaño: la marca la dice el backend.
 - **La compacta no lista nada: resume.** Dice cuánto se firma y, si los hay, los hechos de las firmas previas: cuántos
   documentos traen firmas de otras personas, cuántos firmaste tú, con el
   certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
@@ -513,7 +520,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
 | 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
 | 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, lote remoto con SHA-1, uno, varios, servidor de la sede, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, lote remoto con SHA-1, uno, varios, huella, servidor de la sede, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
 | 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
 | 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 

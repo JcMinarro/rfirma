@@ -22,7 +22,7 @@ import { ReceivedHeading } from "./ReceivedHeading";
 import { ReceivedList } from "./ReceivedList";
 import { ReceivedSummary } from "./ReceivedSummary";
 import { ReceivedViewer } from "./ReceivedViewer";
-import type { Received, ReceivedActions, ReceivedDocument } from "./received";
+import { type Received, type ReceivedActions, type ReceivedDocument, viewableOf } from "./received";
 import { SedeBody, useConsentCountdown } from "./SedeFrame";
 import { SedeOrigin } from "./SedeOrigin";
 import { TerminalDocumentHeading } from "./TerminalDocumentHeading";
@@ -124,16 +124,14 @@ export function SedeReceivedConsent({
   );
 }
 
-/** Los documentos que se pueden ver en la ampliada: los de una sede que pide la firma, nunca los de una orden de terminal. */
+/** Los documentos que se pueden ver en la ampliada: los de una sede que pide la firma, nunca los de una orden de terminal ni solo huellas. */
 function viewableDocuments(
   received: Received | null,
   terminalDocument: string | undefined,
   asks: ConsentBasics["asks"],
 ): readonly ReceivedDocument[] {
-  if (received?.kind !== "documents" || terminalDocument !== undefined || asks === "identity") {
-    return [];
-  }
-  return received.documents;
+  if (terminalDocument !== undefined || asks === "identity") return [];
+  return viewableOf(received);
 }
 
 type Consent = ReturnType<typeof useConsent>;

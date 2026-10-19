@@ -117,6 +117,7 @@ fn a_relay_launch_with_fileid_and_stservlet_in_url_preserves_the_delivered_momen
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
         through_the_site_server: false,
     };
 
@@ -176,6 +177,7 @@ fn a_relay_launch_with_fileid_and_parameters_xml_preserves_the_delivered_moment(
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
         through_the_site_server: false,
     };
 

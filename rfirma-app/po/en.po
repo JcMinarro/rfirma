@@ -1316,6 +1316,10 @@ msgstr "An image with no title"
 msgid "sede.consent.untitledDocument"
 msgstr "A document with no title"
 
+#. El nombre de lo que la sede manda cuando es una huella precalculada y no el documento.
+msgid "sede.consent.untitledHash"
+msgstr "A document hash"
+
 msgid "sede.consent.willSend"
 msgstr ""
 "Your name, your ID number, the certificate issuer and its serial number will "
@@ -1512,6 +1516,10 @@ msgstr[2] "You are making {{count}} signatures"
 
 msgid "sede.received.remoteBatch"
 msgstr "The documents stay on the site's server, and rFirma cannot show them to you"
+
+#. Aviso informativo: la sede solo manda la huella del documento y rFirma no tiene qué enseñar.
+msgid "sede.received.precalculatedHash"
+msgstr "The site only sends the document's hash, so rFirma cannot show it to you"
 
 #. El botón de firmar cuando la sede pide SHA-1 sin permiso en Preferencias; lleva la cuenta atrás obligada.
 msgid "sede.received.signAnyway"

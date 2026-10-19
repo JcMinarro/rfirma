@@ -177,6 +177,8 @@ pub struct SigningConsent {
     pub algorithm: AskedAlgorithm,
     /// Si la firma pide SHA-1, en el algoritmo o en la XAdES explícita, y la persona no lo permite todavía, ni en Preferencias ni en esta operación.
     pub sha1_to_allow: bool,
+    /// Si los parámetros de la sede declaran `precalculatedHashAlgorithm`: lo recibido es una huella.
+    pub precalculated_hash: bool,
     /// Modalidad de firma solicitada.
     pub round: SignatureRound,
     /// Certificados aceptados por la sede, ya cribados.
@@ -221,6 +223,7 @@ impl SigningConsent {
             without_asking: self.without_asking,
             sha1_allowed: self.asks_for_sha1() && !self.sha1_to_allow,
             sha1_to_allow: self.sha1_to_allow,
+            precalculated_hash: self.precalculated_hash,
             through_the_site_server: self.for_the_site_server.is_some()
                 && server_url_of(&self.from_the_site).is_ok(),
         }
@@ -413,6 +416,8 @@ pub enum Moment {
         sha1_allowed: bool,
         /// Si la firma pide SHA-1 y la persona no lo permite todavía.
         sha1_to_allow: bool,
+        /// Si lo que se recibe es una huella precalculada y no el documento.
+        precalculated_hash: bool,
         /// Si el servidor trifásico de la sede prepara la firma.
         through_the_site_server: bool,
     },

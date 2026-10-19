@@ -25,6 +25,8 @@ export interface ReceivedDocument {
   /** El tipo que rFirma reconoce en los bytes: `unknown` sale como `.bin` y no ofrece «Abrir con…». */
   detected: DocumentType;
   previousSignatures: PreviousSignaturesReport;
+  /** Lo recibido es la huella del documento y no el documento: ni se ve, ni se descarga, ni se abre. */
+  precalculatedHash?: boolean;
 }
 
 /** Lo que el visor pinta: el PDF paginado, la vista de la factura, el XML indentado, el texto literal, la imagen o nada, porque no hay vista previa. */
@@ -74,6 +76,7 @@ export async function contentOf(
 
 /** El nombre con que se enseña el documento: el suyo o, sin él, uno por defecto que dice lo que es. */
 export function receivedName(t: TFunction, document: ReceivedDocument): string {
+  if (document.precalculatedHash) return t("sede.consent.untitledHash");
   return document.name ?? t(untitledKey(document.detected));
 }
 
@@ -94,9 +97,9 @@ function untitledKey(detected: DocumentType) {
   }
 }
 
-/** Si rFirma reconoce el tipo del documento por sus bytes. */
-export function hasKnownType(document: ReceivedDocument): boolean {
-  return document.detected !== "unknown";
+/** Si el documento se puede abrir con otra aplicación: rFirma reconoce su tipo y no es una huella. */
+export function opensOutside(document: ReceivedDocument): boolean {
+  return document.detected !== "unknown" && !document.precalculatedHash;
 }
 
 /** Lo que la persona puede hacer con lo recibido antes de firmarlo; sin una acción, no se ofrece. */
@@ -173,6 +176,7 @@ function consentedDocument(document: SiteDocument): ReceivedDocument {
     sha256: document.sha256,
     detected: document.detected,
     previousSignatures: document.previousSignatures,
+    precalculatedHash: document.precalculatedHash,
   };
 }
 
@@ -190,12 +194,23 @@ export function receivedActions(
 ): ReceivedActions {
   const onCopy = (value: string) => void navigator.clipboard.writeText(value);
   if (received?.kind !== "documents") return { onCopy };
+  if (received.documents.every(isHash)) return { onCopy };
   return {
     onCopy,
     onDownload: downloadOf(received.documents, commands),
     onOpenWith: (document) => commands.openWith(document.handle),
     onSaveCopy: (document) => commands.downloadDocument(document.handle),
   };
+}
+
+function isHash(document: ReceivedDocument): boolean {
+  return document.precalculatedHash === true;
+}
+
+/** Los documentos de la ampliada: todos, salvo que sean solo huellas, que no tienen nada que ver. */
+export function viewableOf(received: Received | null): readonly ReceivedDocument[] {
+  if (received?.kind !== "documents" || received.documents.every(isHash)) return [];
+  return received.documents;
 }
 
 /** Un documento se descarga tal cual y varios en un `.zip`; sin ninguno, no hay descarga. */

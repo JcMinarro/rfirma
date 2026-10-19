@@ -344,6 +344,14 @@ export const UNTITLED_DOCUMENT = document({
   name: null,
 });
 
+/** La huella del documento que manda una sede en lugar del documento. */
+export const HASH_DOCUMENT = document({
+  id: "hash",
+  name: null,
+  precalculatedHash: true,
+  previousSignatures: NO_PREVIOUS_SIGNATURES,
+});
+
 /** El lote local de cinco elementos, cada uno con sus bytes y su identificador por nombre. */
 export const LOCAL_BATCH_DOCUMENTS: readonly ReceivedDocument[] = [
   document({

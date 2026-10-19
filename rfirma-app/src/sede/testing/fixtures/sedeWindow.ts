@@ -145,6 +145,7 @@ export const signedDocument: SiteDocument = {
   round: { kind: "sign" },
   previousSignatures: NO_PREVIOUS_SIGNATURES,
   content: { kind: "none" },
+  precalculatedHash: false,
 };
 
 type ConsentStage = Extract<ErrandStage, { kind: "consent" }>;

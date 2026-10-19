@@ -20,6 +20,7 @@ mod invoice_view;
 mod open_with;
 mod pdf_awaiting_the_person;
 mod pdf_password;
+mod precalculated_hash;
 mod readers;
 mod relay_window;
 mod service;

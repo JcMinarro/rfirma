@@ -14,6 +14,7 @@ fn asking_to_sign() -> Moment {
         without_asking: false,
         sha1_allowed: false,
         sha1_to_allow: false,
+        precalculated_hash: false,
         through_the_site_server: false,
     }
 }

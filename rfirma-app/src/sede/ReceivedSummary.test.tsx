@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { NO_PREVIOUS_SIGNATURES } from "../signing/previousSignatures";
 import { renderWithCatalog } from "../testing/render";
 import { ReceivedSummary } from "./ReceivedSummary";
 import {
@@ -181,5 +182,17 @@ describe("ReceivedSummary", () => {
       <ReceivedSummary documents={documents} certificate={PERSON_CERTIFICATE} sha1ToAllow />,
     );
     expect(admonitions()).toHaveLength(1);
+  });
+
+  it("tells the site only sends the hash, as information, after the other facts", () => {
+    const hash = {
+      ...RESOLUTION_DOCUMENT,
+      previousSignatures: NO_PREVIOUS_SIGNATURES,
+      precalculatedHash: true,
+    };
+    renderWithCatalog(<ReceivedSummary documents={[hash]} />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^La sede solo envía la huella del documento, así que rFirma no puede enseñártelo\.$/,
+    );
   });
 });
