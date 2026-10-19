@@ -28,6 +28,10 @@ pub fn within_the_scope(
             .into_iter()
             .filter(|certificate| certificate.reference().store().class() == StoreClass::Windows)
             .collect(),
+        (StoreScope::Macos, _) => certificates
+            .into_iter()
+            .filter(|certificate| certificate.reference().store().class() == StoreClass::Macos)
+            .collect(),
         (_, Some(module)) => certificates
             .into_iter()
             .filter(|certificate| certificate.reference().module() == module)

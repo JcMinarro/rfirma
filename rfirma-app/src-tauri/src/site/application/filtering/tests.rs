@@ -82,6 +82,13 @@ fn an_nss_certificate(label: &str, der: &[u8]) -> TokenCertificate {
     )
 }
 
+fn a_macos_certificate(label: &str, der: &[u8]) -> TokenCertificate {
+    TokenCertificate::new(
+        CertificateRef::new("keychain:login", "llavero", label, vec![0x04]),
+        der.to_vec(),
+    )
+}
+
 #[test]
 fn the_expression_and_the_listing_reach_the_engine_untouched() {
     let engine = AnEngine::answering(&[0]);
@@ -419,4 +426,28 @@ fn a_certificate_inside_the_module_the_site_names_is_usable() {
     .expect("es del modulo que nombra la sede");
 
     assert_eq!(chosen.reference().label(), "TARJETA");
+}
+
+#[test]
+fn a_site_that_names_apple_only_sees_the_certificates_of_the_macos_store() {
+    let engine = AnEngine::answering(&[0]);
+    let certificates = vec![
+        a_certificate("TOKEN", &[0x01]),
+        an_nss_certificate("NSS", &[0x03]),
+        a_card_certificate("TARJETA", &[0x02]),
+        a_macos_certificate("LLAVERO", &[0x04]),
+    ];
+    let listed = ListedCertificates::new();
+
+    let kept = keep_what_the_site_accepts(
+        &engine,
+        &SiteFilter::default().within(StoreScope::Macos),
+        certificates.clone(),
+        &a_directory(&certificates, &listed),
+    )
+    .expect("el Almacen de macOS lo abre rFirma");
+
+    assert_eq!(kept.len(), 1);
+    assert_eq!(kept[0].reference().label(), "LLAVERO");
+    assert_eq!(engine.asked.borrow()[0].1, "BA==");
 }

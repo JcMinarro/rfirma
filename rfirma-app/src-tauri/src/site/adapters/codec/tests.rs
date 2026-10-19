@@ -207,3 +207,29 @@ fn the_cancellation_and_the_refusals_go_out_as_the_catalogue_writes_them() {
         "el detalle no sale"
     );
 }
+
+fn apple_selection() -> AfirmaUrl {
+    an_operation(&format!(
+        "afirma://selectcert?op=selectcert&idsession={CREDENTIAL}&keystore=APPLE"
+    ))
+}
+
+#[test]
+fn off_macos_a_site_that_names_apple_is_answered_with_saf_08() {
+    let url = apple_selection();
+
+    let refusal = on_host(&url, read_operation(&url, &HttpDataSource), false)
+        .expect_err("no hay Almacen de macOS");
+
+    assert!(refusal.code().as_str() == "SAF_08");
+}
+
+#[test]
+fn on_macos_a_site_that_names_apple_is_attended_over_the_macos_store() {
+    let url = apple_selection();
+
+    let operation = on_host(&url, read_operation(&url, &HttpDataSource), true)
+        .expect("el Almacen de macOS lo abre rFirma");
+
+    assert!(matches!(operation, SiteOperation::SelectCertificate(_)));
+}
