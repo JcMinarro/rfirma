@@ -68,7 +68,26 @@ pub fn listed_rows(
         listed,
         installed_copies,
         memory,
-    ))
+    )
+    .into_iter()
+    .map(|mut row| {
+        row.installed = row.installed
+            || listed
+                .get(&row.id)
+                .is_some_and(|reference| token.installed_in_the_system(installed_dir, &reference));
+        row
+    })
+    .collect())
+}
+
+/// Si rFirma instaló `reference` desde un `.p12`: en su Almacén o, donde instala el sistema, apuntado por el token.
+fn installed_by_rfirma(
+    token: &dyn Token,
+    installed_dir: &Path,
+    reference: &CertificateRef,
+) -> bool {
+    reference.class_under(installed_dir) == StoreClass::Installed
+        || token.installed_in_the_system(installed_dir, reference)
 }
 
 /// Los certificados de los almacenes, cada uno con los emisores que su propio almacén aporta.
@@ -229,6 +248,7 @@ fn listed_as(row: ChosenCopy, id: String) -> ListedCertificate {
         from_a_dnie: certificate.is_from_a_dnie(),
         status: certificate.status(),
         remembered: row.remembered,
+        installed: row.installed_reference.is_some(),
     }
 }
 
@@ -407,18 +427,16 @@ pub fn remove_installed(
         Some(installed) => installed,
         None => listed.get(handle).ok_or_else(not_from_the_last_listing)?,
     };
+    if !installed_by_rfirma(token, installed_dir, &reference) {
+        return Err(TokenError::new(
+            Situation::CertificateNotFound,
+            "ese certificado no viene de un .p12 instalado",
+        )
+        .into());
+    }
     let pin = if token.installs_in_the_system() {
         ProtectedSecret::new(b"")
     } else {
-        reference
-            .store()
-            .installed_directory_under(installed_dir)
-            .ok_or_else(|| {
-                TokenError::new(
-                    Situation::CertificateNotFound,
-                    "ese certificado no viene de un .p12 instalado",
-                )
-            })?;
         keyring.pin()?
     };
     token.remove_certificate(installed_dir, &reference, &pin)?;

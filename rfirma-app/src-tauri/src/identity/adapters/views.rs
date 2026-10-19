@@ -138,6 +138,8 @@ crossing! {
         pub status: StatusView,
         /// Si alguna de sus copias fue la usada en la última firma.
         pub remembered: bool,
+        /// Si rFirma lo instaló desde un `.p12`: Preferencias solo enseña y quita estos.
+        pub installed: bool,
     }
 }
 
@@ -162,6 +164,7 @@ impl From<ListedCertificate> for CertificateView {
                 .collect(),
             status: certificate.status.into(),
             remembered: certificate.remembered,
+            installed: certificate.installed,
         }
     }
 }

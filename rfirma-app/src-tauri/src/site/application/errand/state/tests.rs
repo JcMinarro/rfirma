@@ -37,6 +37,7 @@ fn asking_with(label: &str) -> Moment {
             from_a_dnie: false,
             status: CertificateStatus::Valid { not_after: 0 },
             remembered: false,
+            installed: false,
         }],
         not_accepted: 0,
     }

@@ -1,5 +1,6 @@
 //! `MacosToken`, el Almacén de macOS detrás del puerto `Token`, por Security.framework; los módulos PKCS#11 siguen en `RealToken` (ADR-0040).
 
+mod installs;
 mod keychain;
 
 use std::path::Path;
@@ -135,25 +136,34 @@ impl Token for MacosToken {
         true
     }
 
+    fn installed_in_the_system(&self, directory: &Path, reference: &CertificateRef) -> bool {
+        is_a_keychain(&reference.store())
+            && reference
+                .cka_id()
+                .is_some_and(|thumbprint| installs::holds(directory, thumbprint))
+    }
+
     fn import_pkcs12(
         &self,
-        _directory: &Path,
+        directory: &Path,
         pkcs12: &[u8],
         password: &str,
         _pin: &ProtectedSecret,
     ) -> Result<Store, TokenError> {
         let store = user_store();
-        keychain::import_pkcs12(&store, pkcs12, password)?;
+        let thumbprints = keychain::import_pkcs12(&store, pkcs12, password)?;
+        installs::record(directory, &thumbprints)?;
         Ok(store)
     }
 
     fn remove_certificate(
         &self,
-        _directory: &Path,
+        directory: &Path,
         reference: &CertificateRef,
         _pin: &ProtectedSecret,
     ) -> Result<(), TokenError> {
-        keychain::remove(reference)
+        keychain::remove(reference)?;
+        installs::forget(directory, reference.cka_id().unwrap_or_default())
     }
 }
 

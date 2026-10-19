@@ -18,6 +18,7 @@ struct SystemToken {
     imported: RefCell<Vec<String>>,
     removed: RefCell<Vec<CertificateRef>>,
     outcome: Result<(), TokenError>,
+    installed: Vec<CertificateRef>,
 }
 
 impl SystemToken {
@@ -26,13 +27,23 @@ impl SystemToken {
             imported: RefCell::new(Vec::new()),
             removed: RefCell::new(Vec::new()),
             outcome,
+            installed: Vec::new(),
         }
+    }
+
+    fn having_installed(mut self, reference: &CertificateRef) -> Self {
+        self.installed.push(reference.clone());
+        self
     }
 }
 
 impl Token for SystemToken {
     fn installs_in_the_system(&self) -> bool {
         true
+    }
+
+    fn installed_in_the_system(&self, _directory: &Path, reference: &CertificateRef) -> bool {
+        self.installed.contains(reference)
     }
 
     fn list(&self, store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
@@ -200,7 +211,7 @@ fn removing_a_macos_store_certificate_asks_the_system_and_forgets_it() {
     super::super::remember_the_certificate(&memory, &reference);
     let listed = ListedCertificates::new();
     let handle = listed.mint(reference.clone());
-    let token = SystemToken::answering(Ok(()));
+    let token = SystemToken::answering(Ok(())).having_installed(&reference);
 
     let removed = remove_installed(
         &token,
@@ -215,4 +226,29 @@ fn removing_a_macos_store_certificate_asks_the_system_and_forgets_it() {
     assert_eq!(removed, Ok(()));
     assert_eq!(*token.removed.borrow(), vec![reference]);
     assert!(memory.remembered_certificate().is_none());
+}
+
+#[test]
+fn a_macos_store_certificate_rfirma_did_not_install_is_not_removed() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let listed = ListedCertificates::new();
+    let handle = listed.mint(in_the_macos_store());
+    let token = SystemToken::answering(Ok(()));
+
+    let failure = remove_installed(
+        &token,
+        &NoKeyring,
+        &a_memory(home.path()),
+        &home.path().join("certificates"),
+        &handle,
+        &listed,
+        &ListedCertificates::new(),
+    )
+    .expect_err("no lo instalo rFirma");
+
+    assert!(matches!(
+        failure,
+        InstallError::Token(token) if token.situation() == Situation::CertificateNotFound
+    ));
+    assert!(token.removed.borrow().is_empty());
 }

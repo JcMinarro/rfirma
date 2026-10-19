@@ -17,7 +17,7 @@ use security_framework::import_export::Pkcs12ImportOptions;
 use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 
 use super::keychain::{import_pkcs12 as install, situation_of};
-use super::{keychain_store, stores_besides, user_store, MacosToken};
+use super::{installs, keychain_store, stores_besides, user_store, MacosToken};
 use crate::identity::application::certificates::certificates_with_their_chains;
 use crate::identity::domain::algorithm::{KeyKind, SignatureAlgorithm};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -334,7 +334,16 @@ fn verifies(
     let key = X509::from_der(certificate.der())
         .and_then(|certificate| certificate.public_key())
         .expect("el certificado deberia traer su clave publica");
-    let digest = match algorithm {
+    let digest = digest_of(algorithm);
+    let mut verifier = Verifier::new(digest, &key).expect("verificador");
+    if algorithm.name().ends_with("MGF1") {
+        with_pss_padding(&mut verifier, digest);
+    }
+    verifier.verify_oneshot(signature, DATA).unwrap_or(false)
+}
+
+fn digest_of(algorithm: SignatureAlgorithm) -> MessageDigest {
+    match algorithm {
         SignatureAlgorithm::Sha1Rsa | SignatureAlgorithm::Sha1Ecdsa => MessageDigest::sha1(),
         SignatureAlgorithm::Sha384Rsa
         | SignatureAlgorithm::Sha384RsaPss
@@ -343,16 +352,15 @@ fn verifies(
         | SignatureAlgorithm::Sha512RsaPss
         | SignatureAlgorithm::Sha512Ecdsa => MessageDigest::sha512(),
         _ => MessageDigest::sha256(),
-    };
-    let mut verifier = Verifier::new(digest, &key).expect("verificador");
-    if algorithm.name().ends_with("MGF1") {
-        verifier.set_rsa_padding(RsaPadding::PKCS1_PSS).unwrap();
-        verifier
-            .set_rsa_pss_saltlen(RsaPssSaltlen::DIGEST_LENGTH)
-            .unwrap();
-        verifier.set_rsa_mgf1_md(digest).unwrap();
     }
-    verifier.verify_oneshot(signature, DATA).unwrap_or(false)
+}
+
+fn with_pss_padding(verifier: &mut Verifier<'_>, digest: MessageDigest) {
+    verifier.set_rsa_padding(RsaPadding::PKCS1_PSS).unwrap();
+    verifier
+        .set_rsa_pss_saltlen(RsaPssSaltlen::DIGEST_LENGTH)
+        .unwrap();
+    verifier.set_rsa_mgf1_md(digest).unwrap();
 }
 
 fn algorithms_for(kind: KeyKind) -> Vec<SignatureAlgorithm> {
@@ -487,18 +495,39 @@ fn installing_a_pkcs12_puts_its_identity_in_the_keychain_for_rsa_and_elliptic_cu
     let rsa = an_rsa_key();
     let ec = an_elliptic_curve_key();
 
+    let mut thumbprints = Vec::new();
     for (name, key) in [("INSTALADO RSA", &rsa), ("INSTALADO CURVA", &ec)] {
         let pkcs12 = pkcs12_of(&a_certificate(name, key, None, false), Some(key), "clave");
-        install(&keychain.store(), &pkcs12, "clave").expect("deberia instalarse");
+        thumbprints
+            .extend(install(&keychain.store(), &pkcs12, "clave").expect("deberia instalarse"));
     }
 
-    let mut labels: Vec<String> = keychain
-        .listed()
+    let listed = keychain.listed();
+    let mut labels: Vec<String> = listed
         .iter()
         .map(|certificate| certificate.reference().label().to_owned())
         .collect();
     labels.sort();
     assert_eq!(labels, vec!["INSTALADO CURVA", "INSTALADO RSA"]);
+    let mut listed_thumbprints: Vec<Vec<u8>> = listed
+        .iter()
+        .filter_map(|certificate| certificate.reference().cka_id().map(<[u8]>::to_vec))
+        .collect();
+    listed_thumbprints.sort();
+    thumbprints.sort();
+    assert_eq!(thumbprints, listed_thumbprints);
+}
+
+#[test]
+fn the_record_of_what_rfirma_installed_keeps_each_thumbprint_until_it_is_removed() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let directory = home.path().join("certificates");
+
+    installs::record(&directory, &[vec![0x01], vec![0x02]]).expect("deberia apuntarse");
+    installs::forget(&directory, &[0x01]).expect("deberia borrarse");
+
+    assert!(!installs::holds(&directory, &[0x01]));
+    assert!(installs::holds(&directory, &[0x02]));
 }
 
 #[test]
@@ -548,8 +577,13 @@ fn removing_an_installed_certificate_deletes_it_and_its_key_from_the_keychain() 
         .find(|certificate| certificate.reference().label() == "SE VA")
         .expect("deberia estar en el llavero");
 
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let thumbprint = gone.reference().cka_id().expect("lleva huella").to_vec();
+    installs::record(home.path(), &[thumbprint]).expect("deberia apuntarse");
+    assert!(MacosToken.installed_in_the_system(home.path(), gone.reference()));
+
     MacosToken
-        .remove_certificate(Path::new(""), gone.reference(), &ProtectedSecret::new(b""))
+        .remove_certificate(home.path(), gone.reference(), &ProtectedSecret::new(b""))
         .expect("deberia quitarse");
 
     let labels: Vec<String> = keychain
@@ -558,6 +592,19 @@ fn removing_an_installed_certificate_deletes_it_and_its_key_from_the_keychain() 
         .map(|certificate| certificate.reference().label().to_owned())
         .collect();
     assert_eq!(labels, vec!["SE QUEDA"]);
+    assert!(!MacosToken.installed_in_the_system(home.path(), gone.reference()));
+}
+
+#[test]
+fn a_keychain_certificate_rfirma_did_not_install_is_not_installed_in_the_system() {
+    let keychain = TemporaryKeychain::create();
+    let key = an_rsa_key();
+    keychain.holds_an_identity(&a_certificate("DE SAFARI", &key, None, false), &key);
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+
+    let listed = keychain.listed();
+
+    assert!(!MacosToken.installed_in_the_system(home.path(), listed[0].reference()));
 }
 
 #[test]

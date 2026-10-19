@@ -16,13 +16,11 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
-| Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
 La firma trifásica (ADR-0001) funciona de extremo a extremo con una clave en memoria: PAdES,
 CAdES y XAdES pasan por el puente y el validador de AutoFirma da por válidas las PAdES. El PIN
 de una tarjeta por PKCS#11 lo pide una alerta de AppKit con campo seguro, modal sobre la ventana
-que lo pidió (ADR-0047); el Almacén de macOS ya lista los certificados del llavero, pero aún no
-firma con ellos como firma el de CNG en Windows.
+que lo pidió (ADR-0047).
 
 ## En macOS, la API de macOS siempre que se pueda
 

@@ -217,9 +217,9 @@ una tarjeta criptográfica que Windows copia ahí no son suyos, sino de la
 tarjeta. Windows pide su contraseña o su PIN con su propio diálogo.
 _Avoid_: almacén del sistema, almacén CNG, almacén MY
 
-**Almacén de macOS** (Rust `StoreClass::MacOs`):
-Los certificados con clave privada del llavero de la persona usuaria en macOS. Los de una
-tarjeta que macOS lee con su controlador son de la tarjeta, no suyos. macOS pide su contraseña o
+**Almacén de macOS** (Rust `StoreClass::Macos`):
+Los certificados con clave privada de software del llavero de la persona usuaria en macOS. Los
+que tienen la clave en una tarjeta o un token del sistema no salen. macOS pide su contraseña o
 su PIN con su propio diálogo. «Llavero» sigue reservado para lo que guarda secretos.
 _Avoid_: almacén del sistema, llavero, Keychain
 

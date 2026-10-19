@@ -39,9 +39,8 @@ export type CertificateStatus =
 /**
  * De qué clase es el almacén de donde salió el certificado.
  *
- * `installed` es el `.p12` que se metió en rFirma desde Preferencias:
- * es la única clase que se puede **quitar**, y por eso la lista de esa pantalla
- * se queda exactamente con ella.
+ * `installed` es el Almacén de rFirma, donde va el `.p12` que se instala desde
+ * Preferencias fuera de macOS.
  *
  * Cruza la frontera como **clase en inglés** y nunca como texto ya escrito ni
  * como ruta: el rótulo lo pone el catálogo de esta ventana, igual que hace con
@@ -120,6 +119,8 @@ export interface Certificate {
    * error, es que no está (ADR-0010).
    */
   remembered: boolean;
+  /** Si rFirma lo instaló desde un `.p12`: Preferencias solo enseña y quita estos. */
+  installed: boolean;
 }
 
 /**
@@ -299,7 +300,7 @@ export function emptyCertificateStore(): CertificateStore {
 /**
  * Los que se instalaron en rFirma desde un `.p12`, que son los únicos que
  * Preferencias enseña y los únicos que se pueden quitar. En macOS el `.p12`
- * se instala en el llavero, así que son los del Almacén de macOS.
+ * se instala en el llavero, y el backend marca solo los que puso rFirma.
  *
  * El orden es el mismo del desplegable —alfabético por primera línea— para
  * que la misma persona salga en el mismo sitio en las dos pantallas, y **los
@@ -308,12 +309,7 @@ export function emptyCertificateStore(): CertificateStore {
 export function installedCertificates(
   certificates: readonly Certificate[],
 ): readonly Certificate[] {
-  return certificates
-    .filter(
-      (certificate) =>
-        certificate.stores.includes("installed") || certificate.stores.includes("macos"),
-    )
-    .sort(byHeadlineThenStore);
+  return certificates.filter((certificate) => certificate.installed).sort(byHeadlineThenStore);
 }
 
 /**

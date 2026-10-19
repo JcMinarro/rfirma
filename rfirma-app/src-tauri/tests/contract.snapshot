@@ -270,6 +270,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       stores: Vec<StoreMarkView>
       status: StatusView
       remembered: bool
+      installed: bool
 
   pub enum ReaderStatusView   (serde: etiqueta "kind")
       Unavailable

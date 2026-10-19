@@ -73,6 +73,11 @@ pub trait Token {
         false
     }
 
+    /// Si `reference` es de un `.p12` que rFirma instaló en el sistema, según lo apuntado en `directory`.
+    fn installed_in_the_system(&self, _directory: &Path, _reference: &CertificateRef) -> bool {
+        false
+    }
+
     /// Importa un `.p12` al Almacén de rFirma en ese directorio, cifrado con `pin`, y lo devuelve.
     fn import_pkcs12(
         &self,

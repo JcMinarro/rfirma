@@ -26,6 +26,7 @@ function aCertificate(overrides: Partial<Certificate> = {}): Certificate {
     stores: ["card"],
     status: { kind: "valid", notAfter: Date.UTC(2028, 2, 15, 12) / 1000 },
     remembered: false,
+    installed: false,
     ...overrides,
   };
 }

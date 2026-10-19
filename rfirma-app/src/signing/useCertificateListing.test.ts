@@ -6,7 +6,7 @@ import { announcingCertificateStore } from "./testing/readers";
 import { useCertificateListing } from "./useCertificateListing";
 
 const installed = anInstalledCertificate({ id: "installed" });
-const onToken = anInstalledCertificate({ id: "token", stores: ["card"] });
+const onToken = anInstalledCertificate({ id: "token", stores: ["card"], installed: false });
 
 function aStore(found: Certificate[], overrides: Partial<CertificateStore> = {}): CertificateStore {
   return {
@@ -19,7 +19,7 @@ function aStore(found: Certificate[], overrides: Partial<CertificateStore> = {})
   };
 }
 
-const dnie = anInstalledCertificate({ id: "dnie", stores: ["dnie"] });
+const dnie = anInstalledCertificate({ id: "dnie", stores: ["dnie"], installed: false });
 
 async function listed(store: CertificateStore) {
   const hook = renderHook(() => useCertificateListing(store));

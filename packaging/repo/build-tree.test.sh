@@ -539,7 +539,7 @@ actualizacion_de_macos_de_pega "$con_candidata/v0.4.11-rc.1" "0.4.11-rc.1"
 "$construye" "$con_candidata" "$tmp/arbol-rc-mac" "$tmp/rfirma.asc" "$SIN_FIRMA" > /dev/null 2>&1 \
     || fail "la construccion con una candidata de macOS en la serie falla"
 if [ "$(jq -r .version "$tmp/arbol-rc-mac/macos/latest.json")" = "0.4.10" ] \
-    && [ -z "$(find "$tmp/arbol-rc-mac/macos" -name '*rc*' -print -quit)" ]; then
+    && [ -z "$(find "$tmp/arbol-rc-mac/macos" -name '*-rc*' -print -quit)" ]; then
     ok "una candidata no aparece en macos/ ni en su latest.json"
 else
     fail "una candidata aparece en macos/ o en su latest.json"

@@ -29,6 +29,7 @@ function aCertificate(overrides: Partial<Certificate> = {}): Certificate {
     stores: ["card"],
     status: { kind: "valid", notAfter: 1_894_752_000 },
     remembered: false,
+    installed: false,
     ...overrides,
   };
 }
@@ -236,19 +237,19 @@ describe("installedCertificates", () => {
    * nadie no es un gesto de esta aplicación (ID-198).
    */
   it("keeps only the ones installed in rFirma", () => {
-    const installed = aCertificate({ id: "installed", stores: ["installed"] });
+    const installed = aCertificate({ id: "installed", stores: ["installed"], installed: true });
     const profile = aCertificate({ id: "firefox", stores: [browserStore("Firefox")] });
     const shared = aCertificate({ id: "nssdb", stores: ["nssdb"] });
 
     expect(installedCertificates([profile, installed, shared])).toEqual([installed]);
   });
 
-  /** En macOS el `.p12` instalado vive en el llavero, y desde Preferencias se quita de allí. */
-  it("keeps the ones in the macOS store, where a .p12 is installed on a Mac", () => {
-    const keychain = aCertificate({ id: "keychain", stores: ["macos"] });
-    const windows = aCertificate({ id: "windows", stores: ["windows"] });
+  /** En macOS el `.p12` instalado vive en el llavero, junto a los que no puso rFirma. */
+  it("keeps only the macOS store ones that rFirma installed", () => {
+    const fromRfirma = aCertificate({ id: "rfirma", stores: ["macos"], installed: true });
+    const fromSafari = aCertificate({ id: "safari", stores: ["macos"] });
 
-    expect(installedCertificates([windows, keychain])).toEqual([keychain]);
+    expect(installedCertificates([fromSafari, fromRfirma])).toEqual([fromRfirma]);
   });
 
   /** Un caducado se queda: que desaparezca no le explica nada a quien lo instaló. */
@@ -256,6 +257,7 @@ describe("installedCertificates", () => {
     const expired = aCertificate({
       id: "expired",
       stores: ["installed"],
+      installed: true,
       status: { kind: "expired", notAfter: 0 },
     });
 
@@ -266,11 +268,13 @@ describe("installedCertificates", () => {
     const ada = aCertificate({
       id: "ada",
       stores: ["installed"],
+      installed: true,
       holderName: "Ada Lovelace Byron",
     });
     const grace = aCertificate({
       id: "grace",
       stores: ["installed"],
+      installed: true,
       holderName: "Grace Hopper Murray",
     });
 

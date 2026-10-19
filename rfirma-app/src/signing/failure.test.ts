@@ -18,6 +18,7 @@ function withStatus(status: Certificate["status"]): Certificate {
     stores: ["card"],
     status,
     remembered: false,
+    installed: false,
   };
 }
 

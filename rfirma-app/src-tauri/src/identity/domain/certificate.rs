@@ -418,6 +418,8 @@ pub struct ListedCertificate {
     pub status: CertificateStatus,
     /// Si alguna de sus copias fue la usada en la última firma.
     pub remembered: bool,
+    /// Si rFirma lo instaló desde un `.p12` y, por tanto, se puede quitar.
+    pub installed: bool,
 }
 
 #[cfg(test)]

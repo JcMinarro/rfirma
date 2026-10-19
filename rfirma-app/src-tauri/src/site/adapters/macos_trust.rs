@@ -89,28 +89,8 @@ impl TrustStores for MacosUserTrust {
 
     fn withdraw(&self, profile: &Path, certificate_der: &[u8]) -> Result<(), TrustError> {
         let certificate = certificate_in(profile, certificate_der)?;
-        let status = unsafe {
-            SecTrustSettingsRemoveTrustSettings(
-                certificate.as_concrete_TypeRef(),
-                kSecTrustSettingsDomainUser,
-            )
-        };
-        if status != errSecSuccess && status != errSecItemNotFound {
-            return Err(refused_or_failed(
-                Situation::TrustNotWithdrawn,
-                "SecTrustSettingsRemoveTrustSettings",
-                status,
-            ));
-        }
-        for copy in local_cas_in_the_keychain()?
-            .into_iter()
-            .filter(|copy| copy.to_der() == certificate_der)
-        {
-            copy.delete().map_err(|error| {
-                refused_or_failed(Situation::TrustNotWithdrawn, "SecItemDelete", error.code())
-            })?;
-        }
-        Ok(())
+        untrusted(&certificate)?;
+        delete_the_copies_of(certificate_der)
     }
 
     fn local_cas(&self, profile: &Path) -> Result<Vec<Vec<u8>>, TrustError> {
@@ -121,6 +101,35 @@ impl TrustStores for MacosUserTrust {
             .filter(|der| has_the_local_ca_subject(der))
             .collect())
     }
+}
+
+fn untrusted(certificate: &SecCertificate) -> Result<(), TrustError> {
+    let status = unsafe {
+        SecTrustSettingsRemoveTrustSettings(
+            certificate.as_concrete_TypeRef(),
+            kSecTrustSettingsDomainUser,
+        )
+    };
+    if status == errSecSuccess || status == errSecItemNotFound {
+        return Ok(());
+    }
+    Err(refused_or_failed(
+        Situation::TrustNotWithdrawn,
+        "SecTrustSettingsRemoveTrustSettings",
+        status,
+    ))
+}
+
+fn delete_the_copies_of(certificate_der: &[u8]) -> Result<(), TrustError> {
+    for copy in local_cas_in_the_keychain()?
+        .into_iter()
+        .filter(|copy| copy.to_der() == certificate_der)
+    {
+        copy.delete().map_err(|error| {
+            refused_or_failed(Situation::TrustNotWithdrawn, "SecItemDelete", error.code())
+        })?;
+    }
+    Ok(())
 }
 
 fn the_user_trust(profile: &Path) -> Result<(), TrustError> {

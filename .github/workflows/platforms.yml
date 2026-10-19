@@ -94,6 +94,7 @@ jobs:
           rust: lint
           node: true
           java: graalvm
+          tools: llvm-cov crap
           save-cache: ${{ inputs.save-cache }}
 
       - name: Cache de librfirma_crypto.dylib
@@ -119,5 +120,6 @@ jobs:
       - name: rustfmt y clippy
         run: just lint-rust
 
-      - name: Pruebas de --lib y del canal local
+      # Los adaptadores de macOS solo compilan aqui: Linux los oculta de su puerta CRAP (ADR-0014, ADR-0040).
+      - name: Pruebas de --lib y del canal local, y CRAP de los adaptadores de macOS
         run: just test-macos

@@ -208,3 +208,37 @@ fn on_linux_store_apple_is_refused_without_opening_any_store() {
     assert_eq!(outcome.exit_code, REFUSED);
     assert!(!stores.opened.get());
 }
+
+struct SoftwareAndTokenIdentities;
+
+impl CertificateStores for SoftwareAndTokenIdentities {
+    fn certificates(&self) -> Result<Vec<TokenCertificate>, TokenError> {
+        let in_the_keychain = |label: &str| {
+            CertificateRef::new(Store::module("keychain:login"), "token", label, None)
+        };
+        Ok(vec![
+            TokenCertificate::new(in_the_keychain("SOFTWARE"), Vec::new()),
+            TokenCertificate::new(
+                in_the_keychain("EN_TOKEN").with_key_provider("com.apple.pivtoken"),
+                Vec::new(),
+            ),
+        ])
+    }
+
+    fn discovered_module(&self, _library: &str) -> Option<PathBuf> {
+        None
+    }
+}
+
+#[test]
+fn on_macos_the_command_line_leaves_out_the_identities_with_their_key_in_a_system_token() {
+    for words in [
+        &["listaliases", "-store", "apple"][..],
+        &["listaliases"][..],
+    ] {
+        let outcome = listed_on(Platform::MacOs, words, &SoftwareAndTokenIdentities);
+
+        assert_eq!(outcome.exit_code, SUCCEEDED, "{words:?}");
+        assert_eq!(outcome.stdout, b"SOFTWARE\n", "{words:?}");
+    }
+}

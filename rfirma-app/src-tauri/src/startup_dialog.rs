@@ -61,6 +61,7 @@ fn show_macos_alert(failure: &StartupFailure) {
     use objc2_foundation::NSString;
 
     let Some(mtm) = MainThreadMarker::new() else {
+        eprintln!("{}", detail_text(failure));
         return;
     };
     let _ = NSApplication::sharedApplication(mtm);

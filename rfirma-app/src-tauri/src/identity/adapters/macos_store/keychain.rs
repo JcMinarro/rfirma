@@ -89,9 +89,13 @@ pub fn sign(
         .map_err(|error| refused(&error))
 }
 
-/// Mete el `.p12` en el llavero de `store`, o en el de inicio de sesión si es la lista de búsqueda; antes lo prueba aparte y, si no sirve, no deja nada.
-pub fn import_pkcs12(store: &Store, pkcs12: &[u8], password: &str) -> Result<(), TokenError> {
-    only_if_it_brings_a_usable_identity(pkcs12, password)?;
+/// Mete el `.p12` en el llavero de `store`, o en el de inicio de sesión si es la lista de búsqueda, y da las huellas de sus identidades; antes lo prueba aparte y, si no sirve, no deja nada.
+pub fn import_pkcs12(
+    store: &Store,
+    pkcs12: &[u8],
+    password: &str,
+) -> Result<Vec<Vec<u8>>, TokenError> {
+    let thumbprints = only_if_it_brings_a_usable_identity(pkcs12, password)?;
     let mut options = Pkcs12ImportOptions::new();
     options.passphrase(password);
     if let Some(mut keychains) = scope_of(store)? {
@@ -99,7 +103,7 @@ pub fn import_pkcs12(store: &Store, pkcs12: &[u8], password: &str) -> Result<(),
     }
     options
         .import(pkcs12)
-        .map(|_| ())
+        .map(|_| thumbprints)
         .map_err(|error| rejected_pkcs12(&error))
 }
 
@@ -109,16 +113,18 @@ pub fn remove(reference: &CertificateRef) -> Result<(), TokenError> {
     identity.delete().map_err(|error| failure(&error))
 }
 
-fn only_if_it_brings_a_usable_identity(pkcs12: &[u8], password: &str) -> Result<(), TokenError> {
+fn only_if_it_brings_a_usable_identity(
+    pkcs12: &[u8],
+    password: &str,
+) -> Result<Vec<Vec<u8>>, TokenError> {
     let scratch = ScratchKeychain::create()?;
     let imported = Pkcs12ImportOptions::new()
         .passphrase(password)
         .keychain(scratch.keychain.clone())
         .import(pkcs12)
         .map_err(|error| rejected_pkcs12(&error))?;
-    let mut brought_a_key = false;
+    let mut thumbprints = Vec::new();
     for identity in imported.iter().filter_map(|item| item.identity.as_ref()) {
-        brought_a_key = true;
         let certificate = identity.certificate().map_err(|error| failure(&error))?;
         let der = certificate.to_der();
         let candidate = certificate_in(&Store::module(""), &der, None);
@@ -131,9 +137,10 @@ fn only_if_it_brings_a_usable_identity(pkcs12: &[u8], password: &str) -> Result<
                 ),
             ));
         }
+        thumbprints.push(candidate.reference().cka_id().unwrap_or_default().to_vec());
     }
-    if brought_a_key {
-        return Ok(());
+    if !thumbprints.is_empty() {
+        return Ok(thumbprints);
     }
     Err(TokenError::new(
         Situation::Pkcs12NoPrivateKey,

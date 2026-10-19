@@ -165,3 +165,40 @@ fn a_card_certificate_reaching_the_keychain_on_a_token_is_listed_once_by_pkcs11(
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].store, StoreClass::Card);
 }
+
+#[test]
+fn only_what_rfirma_installed_is_marked_as_installed() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let installed_dir = home.path().join("certificates");
+    let installed = the_installed_store(&installed_dir);
+    let found = vec![
+        in_the_keychain("DE-RFIRMA", &TestAuthority::root("DE RFIRMA").der()),
+        in_the_keychain("DE-SAFARI", &TestAuthority::root("DE SAFARI").der()),
+        a_copy_in(
+            &installed,
+            "DEL-ALMACEN",
+            &TestAuthority::root("DEL ALMACEN").der(),
+        ),
+    ];
+    let token =
+        StoresWith::holding(found.clone(), found).having_installed_in_the_system("DE-RFIRMA");
+
+    let rows = listed_rows(
+        &token,
+        &[the_macos_store(), Store::nss(INSTALLED, &installed_dir)],
+        &installed_dir,
+        &ListedCertificates::new(),
+        &ListedCertificates::new(),
+        &NoMemory,
+        &LastListing::default(),
+    )
+    .expect("los almacenes deberian listarse");
+
+    let mut marked: Vec<&str> = rows
+        .iter()
+        .filter(|row| row.installed)
+        .map(|row| row.label.as_str())
+        .collect();
+    marked.sort_unstable();
+    assert_eq!(marked, vec!["DE-RFIRMA", "DEL-ALMACEN"]);
+}
