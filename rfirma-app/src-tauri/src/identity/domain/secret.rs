@@ -23,7 +23,10 @@ impl SecretName {
         match store {
             // En Windows el PIN lo pide el propio sistema, pero si hay que nombrarlo es el de la tarjeta.
             StoreClass::Card | StoreClass::Windows => Self::Pin,
-            StoreClass::Browser(_) | StoreClass::Nssdb | StoreClass::Installed => Self::Password,
+            StoreClass::Browser(_)
+            | StoreClass::Nssdb
+            | StoreClass::Installed
+            | StoreClass::Macos => Self::Password,
         }
     }
 }

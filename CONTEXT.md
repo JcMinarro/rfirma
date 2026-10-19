@@ -205,8 +205,8 @@ y se abren por separado, así que uno que no cargue no deja sin certificados a
 los demás. El mismo certificado —mismo emisor y número de serie— en varios
 almacenes se muestra una vez, con la lista de almacenes donde está; se firma con
 la copia recordada o, si no la hay, con la del primer almacén por este orden:
-tarjeta, Almacén de Windows, Almacén de rFirma, NSS del sistema, familia Firefox,
-familia Chromium; dentro de cada familia, nativo, snap y flatpak.
+tarjeta, Almacén de Windows o Almacén de macOS, Almacén de rFirma, NSS del sistema,
+familia Firefox, familia Chromium; dentro de cada familia, nativo, snap y flatpak.
 No hay **almacén activo**: la persona elige un certificado, nunca un almacén.
 _Avoid_: keystore, repositorio de certificados, llavero, «el conjunto de
 certificados de la máquina», almacén activo
@@ -216,6 +216,12 @@ Los certificados personales que Windows guarda para la persona usuaria. Los de
 una tarjeta criptográfica que Windows copia ahí no son suyos, sino de la
 tarjeta. Windows pide su contraseña o su PIN con su propio diálogo.
 _Avoid_: almacén del sistema, almacén CNG, almacén MY
+
+**Almacén de macOS** (Rust `StoreClass::MacOs`):
+Los certificados con clave privada del llavero de la persona usuaria en macOS. Los de una
+tarjeta que macOS lee con su controlador son de la tarjeta, no suyos. macOS pide su contraseña o
+su PIN con su propio diálogo. «Llavero» sigue reservado para lo que guarda secretos.
+_Avoid_: almacén del sistema, llavero, Keychain
 
 **Almacén NSS** (Rust `StoreClass::Nssdb`):
 El almacén de un navegador —el perfil de Firefox, la base de datos de Chrome—,

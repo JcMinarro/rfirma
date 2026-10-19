@@ -152,6 +152,7 @@ fn store_name_of(certificate: &TokenCertificate) -> String {
     match reference.store().class() {
         StoreClass::Card => format!("pkcs11:{}", reference.module().display()),
         StoreClass::Windows => "windows".to_owned(),
+        StoreClass::Macos => "apple".to_owned(),
         StoreClass::Browser(_) | StoreClass::Nssdb | StoreClass::Installed => "mozilla".to_owned(),
     }
 }
