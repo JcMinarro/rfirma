@@ -1,4 +1,4 @@
-//! Adaptadores del puerto `SecretPrompter`: diálogo nativo GTK3, sus pendientes de Windows y macOS y los de pruebas (ADR-0001, ADR-0014, ADR-0035, ADR-0040).
+//! Adaptadores del puerto `SecretPrompter`: diálogo nativo GTK3, alerta de AppKit, el pendiente de Windows y los de pruebas (ADR-0001, ADR-0014, ADR-0035, ADR-0040).
 
 use std::sync::Mutex;
 #[cfg(target_os = "linux")]
@@ -11,6 +11,8 @@ use crate::identity::domain::secret::PinWarning;
 use crate::identity::ports::OriginWindow;
 use crate::identity::ports::{SecretPromptError, SecretPromptRequest, SecretPrompter};
 
+#[cfg(target_os = "macos")]
+mod appkit;
 mod texts;
 
 pub use texts::{localize, DialogI18n};
@@ -292,34 +294,6 @@ impl SecretPrompter for PendingWindowsPinDialog {
     }
 }
 
-/// El diálogo nativo del PIN en macOS, que aún no existe: toda petición falla.
-#[cfg(target_os = "macos")]
-#[derive(Clone, Default)]
-pub struct PendingMacosPinDialog;
-
-#[cfg(target_os = "macos")]
-impl PendingMacosPinDialog {
-    /// Crea el adaptador pendiente.
-    pub fn new() -> Self {
-        Self
-    }
-
-    /// No vincula nada: el diálogo de macOS no tiene ventana a la que atarse todavía.
-    pub fn attach(&self, _app: tauri::AppHandle) {}
-}
-
-#[cfg(target_os = "macos")]
-impl SecretPrompter for PendingMacosPinDialog {
-    fn prompt_secret(
-        &self,
-        _request: &SecretPromptRequest,
-    ) -> Result<ProtectedSecret, SecretPromptError> {
-        Err(SecretPromptError::Failed(
-            "la solicitud del PIN aún no está disponible en macOS".to_owned(),
-        ))
-    }
-}
-
 /// El diálogo nativo del PIN de esta plataforma.
 #[cfg(target_os = "linux")]
 pub type NativePinDialog = GtkSecretPrompter;
@@ -328,7 +302,7 @@ pub type NativePinDialog = GtkSecretPrompter;
 pub type NativePinDialog = PendingWindowsPinDialog;
 /// El diálogo nativo del PIN de esta plataforma.
 #[cfg(target_os = "macos")]
-pub type NativePinDialog = PendingMacosPinDialog;
+pub type NativePinDialog = appkit::AppKitPinDialog;
 
 /// Adaptador de pruebas que suministra un secreto fijo preconfigurado.
 pub struct PreconfiguredSecretPrompter {
