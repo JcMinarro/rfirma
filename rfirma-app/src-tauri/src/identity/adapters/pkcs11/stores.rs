@@ -76,7 +76,7 @@ pub fn discovered_modules(
         candidate_modules_under(&usr.join("lib"))
             .into_iter()
             .chain(registered),
-        |path| path.is_file(),
+        loadable_by_this_process,
     )
 }
 
@@ -203,6 +203,23 @@ fn environment_p11kit_directories(home: Option<&Path>, channel: Channel) -> Vec<
         .unwrap_or_default()
 }
 
+/// Si `path` es un fichero que no se declara ELF de otra clase que la de este proceso.
+fn loadable_by_this_process(path: &Path) -> bool {
+    use std::io::Read;
+
+    const ELF_CLASS: u8 = if cfg!(target_pointer_width = "64") {
+        2
+    } else {
+        1
+    };
+    let mut header = [0u8; 5];
+    let read = std::fs::File::open(path).and_then(|mut file| file.read_exact(&mut header));
+    match read {
+        Ok(()) if header.starts_with(b"\x7fELF") => header[4] == ELF_CLASS,
+        _ => path.is_file(),
+    }
+}
+
 /// Localiza la biblioteca softoken de NSS en el sistema.
 pub fn softoken() -> Option<PathBuf> {
     softoken_under(Path::new("/usr/lib"))
@@ -210,7 +227,7 @@ pub fn softoken() -> Option<PathBuf> {
 
 /// Localiza la biblioteca softoken de NSS bajo el directorio de librerías indicado.
 pub fn softoken_under(usr_lib: &Path) -> Option<PathBuf> {
-    present_among(candidate_softokens_under(usr_lib), |path| path.is_file())
+    present_among(candidate_softokens_under(usr_lib), loadable_by_this_process)
         .into_iter()
         .next()
 }
