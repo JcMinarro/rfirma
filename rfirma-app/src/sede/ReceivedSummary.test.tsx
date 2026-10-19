@@ -117,6 +117,21 @@ describe("ReceivedSummary", () => {
     );
   });
 
+  it("says a remote batch keeps its documents at the site", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} remoteBatch />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos\.$/,
+    );
+  });
+
+  it("puts SHA-1 and the remote batch in the same box, each with its tone", () => {
+    renderWithCatalog(<ReceivedSummary documents={[]} remoteBatch sha1ToAllow />);
+    expect(admonitions()).toHaveLength(1);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^Esta sede usa un método de firma poco seguro\.Los documentos se quedan en el servidor de la sede, y rFirma no puede enseñártelos\.$/,
+    );
+  });
+
   it("leaves the invalid signatures and those of other people out when asked for yours only", () => {
     const documents = withYourSignature([RESOLUTION_DOCUMENT], yourSignature("sameCertificate"));
     renderWithCatalog(

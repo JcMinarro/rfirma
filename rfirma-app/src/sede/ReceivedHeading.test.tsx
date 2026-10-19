@@ -31,15 +31,22 @@ describe("ReceivedHeading", () => {
     );
   });
 
+  it("counts a single signature of a remote batch in the singular", () => {
+    renderWithCatalog(
+      <ReceivedHeading received={{ kind: "remoteBatch", count: 1 }} onDownload={vi.fn()} />,
+    );
+    expect(screen.getByText("Vas a hacer 1 firma")).toBeInTheDocument();
+  });
+
   it("leaves only the download, without the count, when the documents are listed below", () => {
     renderWithCatalog(<ReceivedHeading received={BATCH} onDownload={vi.fn()} withoutCount />);
     expect(screen.queryByText(/^Vas a firmar/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Descargar todo" })).toBeInTheDocument();
   });
 
-  it("gives a remote batch only its count", () => {
+  it("counts the signatures of a remote batch, not documents, and gives it no download", () => {
     renderWithCatalog(<ReceivedHeading received={REMOTE_BATCH} onDownload={vi.fn()} />);
-    expect(screen.getByText("Vas a firmar 4 documentos")).toBeInTheDocument();
+    expect(screen.getByText("Vas a hacer 4 firmas")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });
