@@ -8,16 +8,21 @@ use openssl::hash::MessageDigest;
 use openssl::nid::Nid;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::{PKey, Private};
-use openssl::rsa::Rsa;
+use openssl::rsa::{Padding as RsaPadding, Rsa};
+use openssl::sign::{RsaPssSaltlen, Verifier};
 use openssl::x509::extension::BasicConstraints;
 use openssl::x509::{X509Name, X509};
 use security_framework::certificate::SecCertificate;
 use security_framework::import_export::Pkcs12ImportOptions;
 use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 
+use super::keychain::situation_of;
 use super::{keychain_store, stores_besides, user_store, MacosToken};
 use crate::identity::application::certificates::certificates_with_their_chains;
-use crate::identity::domain::certificate::TokenCertificate;
+use crate::identity::domain::algorithm::{KeyKind, SignatureAlgorithm};
+use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
+use crate::identity::domain::error::Situation;
+use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, StoreSecret};
 use crate::identity::domain::store::{Store, StoreClass};
 use crate::identity::ports::Token;
@@ -76,6 +81,13 @@ impl TemporaryKeychain {
             .keychain(self.keychain.clone())
             .import(&pkcs12)
             .expect("el .p12 deberia entrar en el llavero de pruebas");
+    }
+
+    fn holding(key: &PKey<Private>) -> (Self, TokenCertificate) {
+        let keychain = Self::create();
+        keychain.holds_an_identity(&a_certificate("FIRMANTE", key, None, false), key);
+        let listed = keychain.listed().remove(0);
+        (keychain, listed)
     }
 
     fn holds_a_certificate(&self, certificate: &X509) {
@@ -282,4 +294,172 @@ fn common_name_of(der: &[u8]) -> String {
         .data()
         .to_string()
         .expect("el nombre comun deberia leerse")
+}
+
+const DATA: &[u8] = b"lo que Java manda firmar";
+
+fn signed(certificate: &TokenCertificate, algorithm: SignatureAlgorithm) -> Vec<u8> {
+    MacosToken
+        .sign_with_secret(
+            certificate.reference(),
+            &ProtectedSecret::new(b""),
+            algorithm,
+            DATA,
+        )
+        .expect("el llavero deberia firmar")
+}
+
+fn verifies(
+    certificate: &TokenCertificate,
+    algorithm: SignatureAlgorithm,
+    signature: &[u8],
+) -> bool {
+    let key = X509::from_der(certificate.der())
+        .and_then(|certificate| certificate.public_key())
+        .expect("el certificado deberia traer su clave publica");
+    let digest = match algorithm {
+        SignatureAlgorithm::Sha1Rsa | SignatureAlgorithm::Sha1Ecdsa => MessageDigest::sha1(),
+        SignatureAlgorithm::Sha384Rsa
+        | SignatureAlgorithm::Sha384RsaPss
+        | SignatureAlgorithm::Sha384Ecdsa => MessageDigest::sha384(),
+        SignatureAlgorithm::Sha512Rsa
+        | SignatureAlgorithm::Sha512RsaPss
+        | SignatureAlgorithm::Sha512Ecdsa => MessageDigest::sha512(),
+        _ => MessageDigest::sha256(),
+    };
+    let mut verifier = Verifier::new(digest, &key).expect("verificador");
+    if algorithm.name().ends_with("MGF1") {
+        verifier.set_rsa_padding(RsaPadding::PKCS1_PSS).unwrap();
+        verifier
+            .set_rsa_pss_saltlen(RsaPssSaltlen::DIGEST_LENGTH)
+            .unwrap();
+        verifier.set_rsa_mgf1_md(digest).unwrap();
+    }
+    verifier.verify_oneshot(signature, DATA).unwrap_or(false)
+}
+
+fn algorithms_for(kind: KeyKind) -> Vec<SignatureAlgorithm> {
+    SignatureAlgorithm::ALL
+        .into_iter()
+        .filter(|algorithm| algorithm.key_kind() == kind)
+        .collect()
+}
+
+#[test]
+fn signs_with_rsa_pkcs1_and_pss_through_the_keychain_with_every_hash_sha1_included() {
+    let (_keychain, certificate) = TemporaryKeychain::holding(&an_rsa_key());
+
+    for algorithm in algorithms_for(KeyKind::Rsa) {
+        let signature = signed(&certificate, algorithm);
+
+        assert!(
+            verifies(&certificate, algorithm, &signature),
+            "{algorithm:?}"
+        );
+    }
+}
+
+#[test]
+fn signs_with_ecdsa_through_the_keychain_in_der_with_every_hash_sha1_included() {
+    let (_keychain, certificate) = TemporaryKeychain::holding(&an_elliptic_curve_key());
+
+    for algorithm in algorithms_for(KeyKind::Ec) {
+        let signature = signed(&certificate, algorithm);
+
+        assert_eq!(signature[0], 0x30, "ECDSA viaja en DER, no en r||s");
+        assert!(
+            verifies(&certificate, algorithm, &signature),
+            "{algorithm:?}"
+        );
+    }
+}
+
+#[test]
+fn a_keychain_key_offers_only_the_algorithms_of_its_kind() {
+    let (_keychain, certificate) = TemporaryKeychain::holding(&an_rsa_key());
+
+    assert_eq!(
+        MacosToken.offers(certificate.reference(), SignatureAlgorithm::Sha256RsaPss),
+        Ok(())
+    );
+    assert_eq!(
+        MacosToken
+            .offers(certificate.reference(), SignatureAlgorithm::Sha256Ecdsa)
+            .map_err(|error| error.situation()),
+        Err(Situation::MechanismNotOffered)
+    );
+}
+
+#[test]
+fn a_certificate_gone_from_the_keychain_is_not_found_when_signing() {
+    let (keychain, certificate) = TemporaryKeychain::holding(&an_rsa_key());
+    let other = TemporaryKeychain::create();
+    let moved = CertificateRef::new(
+        keychain_store(&other.path),
+        certificate.reference().token_label(),
+        certificate.reference().label(),
+        certificate
+            .reference()
+            .cka_id()
+            .unwrap_or_default()
+            .to_vec(),
+    );
+    drop(keychain);
+
+    assert_eq!(
+        MacosToken
+            .sign_with_secret(
+                &moved,
+                &ProtectedSecret::new(b""),
+                SignatureAlgorithm::Sha256Rsa,
+                DATA
+            )
+            .map_err(|error| error.situation()),
+        Err(Situation::CertificateNotFound)
+    );
+}
+
+const OS_STATUS: &str = "NSOSStatusErrorDomain";
+const CRYPTO_TOKEN_KIT: &str = "CryptoTokenKit";
+
+#[test]
+fn denying_the_macos_dialog_is_the_person_cancelling() {
+    assert_eq!(situation_of(OS_STATUS, -128), Situation::PinEntryCancelled);
+    assert_eq!(
+        situation_of(CRYPTO_TOKEN_KIT, -4),
+        Situation::PinEntryCancelled
+    );
+}
+
+#[test]
+fn system_errors_map_to_their_situations() {
+    assert_eq!(situation_of(OS_STATUS, -25293), Situation::IncorrectPin);
+    assert_eq!(situation_of(CRYPTO_TOKEN_KIT, -5), Situation::IncorrectPin);
+    assert_eq!(
+        situation_of(OS_STATUS, 0x8010_006B_u32 as i64),
+        Situation::IncorrectPin
+    );
+    assert_eq!(
+        situation_of(OS_STATUS, 0x8010_006C_u32 as i64),
+        Situation::PinLocked
+    );
+    assert_eq!(situation_of(CRYPTO_TOKEN_KIT, -7), Situation::TokenAbsent);
+    assert_eq!(
+        situation_of(OS_STATUS, 0x8010_0069_u32 as i64),
+        Situation::TokenAbsent
+    );
+    assert_eq!(
+        situation_of(OS_STATUS, 0x8010_000C_u32 as i64),
+        Situation::TokenAbsent
+    );
+    assert_eq!(
+        situation_of(OS_STATUS, -25300),
+        Situation::CertificateNotFound
+    );
+    assert_eq!(
+        situation_of(CRYPTO_TOKEN_KIT, -6),
+        Situation::CertificateNotFound
+    );
+    assert_eq!(situation_of(OS_STATUS, -4), Situation::Unknown);
+    assert_eq!(situation_of("NSCocoaErrorDomain", -128), Situation::Unknown);
 }

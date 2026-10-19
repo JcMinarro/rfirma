@@ -12,11 +12,10 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | --- | --- |
 | OpenSSL del sistema | `openssl` con `vendored`, como en Windows: el binario no depende del de Homebrew y compila en cruzado. |
 | Canal TLS local con `native-tls` | rustls, como en Windows (ADR-0036). |
-| Token PKCS#11 y sus almacenes | `MacosToken`: el llavero por Security.framework para el Almacén de macOS, que todavía no firma, y el `RealToken` de Linux para los módulos, que solo encuentra si `RFIRMA_PKCS11_MODULE` lo nombra. |
+| Token PKCS#11 y sus almacenes | `MacosToken`: el llavero por Security.framework para el Almacén de macOS, que firma el resumen con la clave del llavero, y el `RealToken` de Linux para los módulos, que solo encuentra si `RFIRMA_PKCS11_MODULE` lo nombra. |
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
-| Manejadores de `afirma://` por GIO | `PendingMacosLaunchServices`: la lista no está disponible y elegir falla. |
 | Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
 La firma trifásica (ADR-0001) funciona de extremo a extremo con una clave en memoria: PAdES,
