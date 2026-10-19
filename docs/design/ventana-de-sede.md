@@ -230,6 +230,10 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
   nombre es «Una huella del documento»; no hay «Ver documento», «Descargar»,
   «Abrir con…» ni «Copiar SHA-256», y en una lista su fila no lleva menú. La
   huella no se reconoce por su tamaño: la marca la dice el backend.
+  En un lote local la marca es de cada elemento, según sus `extraparams`
+  efectivos (los suyos o, sin ellos, los del lote). Un elemento de huella se ve en
+  la lista con ese nombre, sin menú y sin vista previa, el aviso sale una sola vez y
+  el `.zip` de «Descargar todo» lleva solo los documentos.
 - **La compacta no lista nada: resume.** Dice cuánto se firma y, si los hay, los hechos de las firmas previas: cuántos
   documentos traen firmas de otras personas, cuántos firmaste tú, con el
   certificado elegido o con otro tuyo, y cuántos tienen alguna que no es
@@ -520,7 +524,7 @@ conoce ningún puerto de Tauri; `SedeWindow` es la parte conectada a
 | 0 y 2b · avisos previos | `SedeGuards.stories.tsx`: la página desactualizada y confirmar lo que señala el validador |
 | 1 y 3 · espera, firmando, guardar y cargar | `SedePassing.stories.tsx`: los momentos de paso |
 | 1c · marcar el área | `SedeAreaMarking.stories.tsx`: con la geometría de la ampliada |
-| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, lote remoto con SHA-1, uno, varios, huella, servidor de la sede, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma); las piezas en «Dominio/Sede» |
+| 2 · consentimiento | `SedeConsent.stories.tsx`: `Compact*` a 520 × 420 (lote remoto, lote remoto con SHA-1, uno, varios, huella, servidor de la sede, cuenta atrás) y `Expanded*` a 1080 × 660 (varios, uno, XML, factura, imagen, sin vista previa, firmas PAdES con hallazgo, firmas XAdES con contrafirma, lote local con huellas); las piezas en «Dominio/Sede» |
 | 4 · desenlace | `SedeEnding.stories.tsx`: los finales y los rechazos |
 | 5 · sin certificado | `SedeMissingCertificate.stories.tsx`: las causas y el fallo al instalar |
 

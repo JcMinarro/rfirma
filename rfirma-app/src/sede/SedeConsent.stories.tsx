@@ -13,6 +13,7 @@ import {
   HASH_DOCUMENT,
   INVOICE_DOCUMENT,
   LOCAL_BATCH_DOCUMENTS,
+  MIXED_LOCAL_BATCH_DOCUMENTS,
   REMOTE_BATCH,
   RESOLUTION_DOCUMENT,
   receivedActions,
@@ -28,6 +29,7 @@ const DOCUMENTS = {
   one: [RESOLUTION_DOCUMENT],
   untitled: [UNTITLED_DOCUMENT],
   localBatch: LOCAL_BATCH_DOCUMENTS,
+  mixedLocalBatch: MIXED_LOCAL_BATCH_DOCUMENTS,
   invoice: [INVOICE_DOCUMENT],
   hash: [HASH_DOCUMENT],
 };
@@ -171,6 +173,7 @@ const meta = {
         one: "Un documento",
         untitled: "Un documento sin título",
         localBatch: "Lote local",
+        mixedLocalBatch: "Lote local con huellas",
         invoice: "Una factura",
         remoteBatch: "Lote remoto",
       },
@@ -279,6 +282,11 @@ export const CompactCountdown: Story = { decorators: compact, args: { countdown:
 export const ExpandedSeveralDocuments: Story = {
   ...expanded,
   args: { view: "expanded", pendingActions: true },
+};
+
+export const ExpandedMixedLocalBatch: Story = {
+  ...expanded,
+  args: { view: "expanded", pendingActions: true, received: "mixedLocalBatch" },
 };
 
 export const ExpandedOneDocument: Story = {

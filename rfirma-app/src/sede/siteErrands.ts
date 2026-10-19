@@ -2,7 +2,10 @@
 
 import type { Certificate, ReaderNews } from "../signing/certificate";
 import type { StageResult } from "../signing/flow";
-import type { PreviousSignaturesReport } from "../signing/previousSignatures";
+import {
+  NO_PREVIOUS_SIGNATURES,
+  type PreviousSignaturesReport,
+} from "../signing/previousSignatures";
 import type { StoreSecret } from "../signing/secret";
 import type { PdfDocument } from "../viewer/pdf";
 import type {
@@ -260,6 +263,9 @@ export function siteErrands(commands: SiteCommands): SiteErrandPort {
   };
 
   const readBatchItem = async (item: LocalBatchItem) => {
+    if (item.precalculatedHash) {
+      return batchDocumentOf(item, NO_PREVIOUS_SIGNATURES, { kind: "none" });
+    }
     const [previousSignatures, content] = await Promise.all([
       commands.previousSignatures(item.document),
       commands.readContent(item.document, item.detected),

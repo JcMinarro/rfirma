@@ -214,6 +214,7 @@ export function batchDocumentOf(
     sha256: item.sha256,
     detected: item.detected,
     previousSignatures,
+    precalculatedHash: item.precalculatedHash,
   };
 }
 

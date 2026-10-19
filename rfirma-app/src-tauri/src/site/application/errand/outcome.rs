@@ -306,6 +306,8 @@ pub struct LocalBatchItem {
     pub format: Format,
     /// La operación que el lote pide sobre el elemento.
     pub round: SignatureRound,
+    /// Si los `extraparams` efectivos del elemento declaran `precalculatedHashAlgorithm`: lo recibido es una huella.
+    pub precalculated_hash: bool,
 }
 
 /// Datos del consentimiento del lote local, que enseña qué es cada elemento antes de firmar.

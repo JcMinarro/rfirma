@@ -452,9 +452,15 @@ describe("el lote local: cada elemento como documento", () => {
     sha256: DOCUMENT_SHA256,
     detected: "pdf",
     previousSignatures: NO_PREVIOUS_SIGNATURES,
+    precalculatedHash: false,
     ...overrides,
   });
-  const item = { signing: "pdf", round: { kind: "sign" }, sha256: DOCUMENT_SHA256 } as const;
+  const item = {
+    signing: "pdf",
+    round: { kind: "sign" },
+    sha256: DOCUMENT_SHA256,
+    precalculatedHash: false,
+  } as const;
   const view: SiteErrandView = {
     origin: "sede.ejemplo.gob.es",
     stage: {

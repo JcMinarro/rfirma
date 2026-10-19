@@ -1,3 +1,4 @@
+cd /home/sergio/Developer/SideProjects/rfirma/.claude/worktrees/wf_ca41397d-203-12/rfirma-app/src-tauri && cargo run -q --example contract -- "/home/sergio/Developer/SideProjects/rfirma/.claude/worktrees/wf_ca41397d-203-12/rfirma-app/src-tauri/src"
 ORDENES DE TAURI                          (<contexto>/adapters/tauri*.rs)
   Sin el estado inyectado (State<...>, AppHandle): no cruza.
 
@@ -432,7 +433,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Waiting
       AskingForConsent { certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize }
       MarkingTheArea { document: String }
-      AskingToSign { document: String, name: Option<String>, detected: DocumentTypeView, sha256: String, signing: SigningKindView, round: SignatureRoundView, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool, precalculatedHash: bool }
+      AskingToSign { document: String, name: Option<String>, detected: DocumentTypeView, sha256: String, signing: SigningKindView, round: SignatureRoundView, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool, precalculatedHash: bool, throughTheSiteServer: bool }
       AskingToConfirm { messageCode: String }
       AskingToSignTheBatch { signs: usize, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
       AskingToSignTheLocalBatch { items: Vec<LocalBatchItemView>, certificates: Vec<CertificateView>, narrowed: bool, notAccepted: usize, alreadyChosen: Option<String>, withoutAsking: bool, sha1Allowed: bool, sha1ToAllow: bool }
@@ -474,6 +475,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       sha256: String
       signing: SigningKindView
       round: SignatureRoundView
+      precalculatedHash: bool
 
   pub enum SiteOutcomeView   (serde: etiqueta "kind")
       Refused { situation: RefusalSituationView, detail: String }

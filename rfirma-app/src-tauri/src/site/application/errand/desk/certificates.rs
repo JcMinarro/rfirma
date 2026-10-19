@@ -177,6 +177,10 @@ fn kept_as_an_item<E: FilterEngine, P: PolicyEngine>(
         document: ReceivedDocument::kept_as(handle, Some(sign.id().to_owned()), sign.document()),
         format: Format::from(sign.effective_format()),
         round: sign.round(),
+        precalculated_hash: sign
+            .extra_params()
+            .iter()
+            .any(|(key, _)| key == super::PRECALCULATED_HASH_KEY),
     })
 }
 
