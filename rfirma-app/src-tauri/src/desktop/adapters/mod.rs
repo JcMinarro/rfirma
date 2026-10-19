@@ -1,5 +1,6 @@
 //! Adaptadores de `desktop`: todo lo que toca el mundo, incluidas las órdenes y las vistas de Tauri.
 
+pub mod card_drivers;
 pub mod channel;
 pub mod choice;
 pub mod command_line_ports;
