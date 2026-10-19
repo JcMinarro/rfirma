@@ -193,9 +193,9 @@ glib = "0.18"
 # secretos dentro del flatpak, Secret Service por D-Bus fuera de él (ADR-0034).
 oo7 = "0.5"
 
-# El vigilante de lectores y tarjetas: `libpcsclite` en Linux y `winscard.dll`
-# en Windows (ADR-0048).
-[target.'cfg(any(target_os = "linux", windows))'.dependencies]
+# El vigilante de lectores y tarjetas: `libpcsclite` en Linux, `winscard.dll`
+# en Windows y `PCSC.framework` en macOS (ADR-0048).
+[target.'cfg(any(target_os = "linux", windows, target_os = "macos"))'.dependencies]
 pcsc = "2.9"
 
 # Windows no trae OpenSSL: se compila desde las fuentes, y solo alli (ADR-0035).
