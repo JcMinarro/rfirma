@@ -1,4 +1,4 @@
-//! Capa de acceso a tokens criptográficos y firma nativa PKCS#11: `RealToken`, el adaptador del puerto `Token` en Linux y macOS, y el que usa `WindowsToken` para los módulos PKCS#11 (ADR-0001).
+//! Capa de acceso a tokens criptográficos y firma nativa PKCS#11: `RealToken`, el adaptador del puerto `Token` en Linux, y el que usan `WindowsToken` y `MacosToken` para los módulos PKCS#11 (ADR-0001).
 
 mod listing;
 mod mechanism;
