@@ -285,6 +285,8 @@ export type ErrandStage =
       sha1Allowed: boolean;
       /** Si la sede pide SHA-1 y la persona no lo permite todavía: no se firma sin que lo permita. */
       sha1ToAllow: boolean;
+      /** Si el servidor trifásico de la sede prepara la firma con el documento enviado. */
+      throughSiteServer: boolean;
     }
   /**
    * Entre que la persona acepta y que la firma vuelve a la sede. Dos momentos,

@@ -52,6 +52,8 @@ export type SiteStageView =
       sha1Allowed: boolean;
       /** La petición pide SHA-1 y la persona no lo permite todavía. */
       sha1ToAllow: boolean;
+      /** El servidor trifásico de la sede prepara la firma. */
+      throughTheSiteServer: boolean;
     }
   | {
       kind: "askingToConfirm";

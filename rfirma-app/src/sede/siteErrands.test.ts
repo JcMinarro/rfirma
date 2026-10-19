@@ -572,6 +572,7 @@ describe("la selección automática que pide la sede", () => {
     stage: {
       sha1Allowed: false,
       sha1ToAllow: false,
+      throughTheSiteServer: false,
       kind: "askingToSign",
       document: "asa-opaca-1",
       name: null,
