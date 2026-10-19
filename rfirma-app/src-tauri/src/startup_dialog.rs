@@ -1,4 +1,4 @@
-//! Diálogo nativo que enseña un fallo de arranque y sale del proceso (GTK en Linux, `MessageBoxW` en Windows, pendiente en macOS); capa fina, sin pruebas (ADR-0035, ADR-0040).
+//! Diálogo nativo que enseña un fallo de arranque y sale del proceso (GTK en Linux, `MessageBoxW` en Windows, `NSAlert` en macOS); capa fina, sin pruebas (ADR-0035, ADR-0040).
 
 use crate::startup_failure::StartupFailure;
 use crate::startup_failure::REPOSITORY_ADDRESS;
@@ -50,14 +50,25 @@ pub fn report_and_exit(failure: &StartupFailure) -> ! {
     #[cfg(windows)]
     show_windows_dialog(failure);
     #[cfg(target_os = "macos")]
-    pending_macos_dialog(failure);
+    show_macos_alert(failure);
     std::process::exit(1);
 }
 
-/// El diálogo de macOS aún no existe: el detalle y la dirección del repositorio van a `stderr`.
 #[cfg(target_os = "macos")]
-fn pending_macos_dialog(failure: &StartupFailure) {
-    eprintln!("{}", detail_text(failure));
+fn show_macos_alert(failure: &StartupFailure) {
+    use objc2::MainThreadMarker;
+    use objc2_app_kit::{NSAlert, NSAlertStyle, NSApplication};
+    use objc2_foundation::NSString;
+
+    let Some(mtm) = MainThreadMarker::new() else {
+        return;
+    };
+    let _ = NSApplication::sharedApplication(mtm);
+    let alert = NSAlert::new(mtm);
+    alert.setAlertStyle(NSAlertStyle::Critical);
+    alert.setMessageText(&NSString::from_str(failure.phrase()));
+    alert.setInformativeText(&NSString::from_str(&detail_text(failure)));
+    alert.runModal();
 }
 
 #[cfg(windows)]
