@@ -1,17 +1,20 @@
-//! El llavero de macOS leído con Security.framework: las identidades con su certificado y el token de su clave, sin abrirla (ADR-0001).
+//! El llavero de macOS por Security.framework: las identidades se listan sin abrir su clave, y el resumen lo firma el sistema (ADR-0001).
 
 use core_foundation::base::{CFType, TCFType};
+use core_foundation::error::CFError;
 use core_foundation::string::CFString;
 use openssl::hash::{hash, MessageDigest};
 use security_framework::certificate::SecCertificate;
 use security_framework::identity::SecIdentity;
 use security_framework::item::{ItemClass, ItemSearchOptions, Limit, Reference, SearchResult};
-use security_framework::key::SecKey;
+use security_framework::key::{Algorithm, SecKey};
 use security_framework::os::macos::keychain::SecKeychain;
 use security_framework_sys::item::kSecAttrTokenID;
 
 use super::SEARCH_LIST;
+use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
+use crate::identity::domain::ecdsa;
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::store::{Store, MACOS_STORE_PREFIX};
 
@@ -54,6 +57,120 @@ pub fn every_certificate(store: &Store) -> Result<Vec<TokenCertificate>, TokenEr
             _ => None,
         })
         .collect())
+}
+
+/// Comprueba que la clave del certificado es de la clase que exige el algoritmo.
+pub fn offers(reference: &CertificateRef, algorithm: SignatureAlgorithm) -> Result<(), TokenError> {
+    let (certificate, _) = identity_of(reference)?;
+    if certificate.key_kind() == Some(algorithm.key_kind()) {
+        return Ok(());
+    }
+    Err(TokenError::new(
+        Situation::MechanismNotOffered,
+        format!(
+            "la clave de {} no sirve para {}",
+            reference.label(),
+            algorithm.name()
+        ),
+    ))
+}
+
+/// Resume `data` y firma el resumen con la clave del certificado; macOS pide permiso o el PIN si hace falta.
+pub fn sign(
+    reference: &CertificateRef,
+    algorithm: SignatureAlgorithm,
+    data: &[u8],
+) -> Result<Vec<u8>, TokenError> {
+    let (_, identity) = identity_of(reference)?;
+    let key = identity.private_key().map_err(|error| failure(&error))?;
+    let digest = ecdsa::digest(algorithm, data)?;
+    key.create_signature(over_a_digest(algorithm), &digest)
+        .map_err(|error| refused(&error))
+}
+
+/// La situación del catálogo que corresponde a un error de Security.framework, CryptoTokenKit o PC/SC.
+pub fn situation_of(domain: &str, code: i64) -> Situation {
+    match (domain, code as i32) {
+        (OS_STATUS_DOMAIN, -128) | (TOKEN_DOMAIN, -4) => Situation::PinEntryCancelled,
+        (OS_STATUS_DOMAIN, -25293 | WRONG_CHV) | (TOKEN_DOMAIN, -5) => Situation::IncorrectPin,
+        (OS_STATUS_DOMAIN, CHV_BLOCKED) => Situation::PinLocked,
+        (OS_STATUS_DOMAIN, NO_SMARTCARD | REMOVED_CARD) | (TOKEN_DOMAIN, -7) => {
+            Situation::TokenAbsent
+        }
+        (OS_STATUS_DOMAIN, ITEM_NOT_FOUND) | (TOKEN_DOMAIN, -6) => Situation::CertificateNotFound,
+        _ => Situation::Unknown,
+    }
+}
+
+const OS_STATUS_DOMAIN: &str = "NSOSStatusErrorDomain";
+const TOKEN_DOMAIN: &str = "CryptoTokenKit";
+const WRONG_CHV: i32 = 0x8010_006B_u32 as i32;
+const CHV_BLOCKED: i32 = 0x8010_006C_u32 as i32;
+const NO_SMARTCARD: i32 = 0x8010_000C_u32 as i32;
+const REMOVED_CARD: i32 = 0x8010_0069_u32 as i32;
+
+fn refused(error: &CFError) -> TokenError {
+    let domain = error.domain().to_string();
+    let situation = situation_of(&domain, error.code() as i64);
+    let detail = if situation == Situation::PinEntryCancelled {
+        format!(
+            "has cancelado la petición de macOS ({domain} {})",
+            error.code()
+        )
+    } else {
+        format!(
+            "macOS no ha firmado ({domain} {}): {}",
+            error.code(),
+            error.description()
+        )
+    };
+    TokenError::new(situation, detail)
+}
+
+/// El algoritmo de Security.framework que firma un resumen ya calculado.
+fn over_a_digest(algorithm: SignatureAlgorithm) -> Algorithm {
+    match algorithm {
+        SignatureAlgorithm::Sha1Rsa => Algorithm::RSASignatureDigestPKCS1v15SHA1,
+        SignatureAlgorithm::Sha256Rsa => Algorithm::RSASignatureDigestPKCS1v15SHA256,
+        SignatureAlgorithm::Sha384Rsa => Algorithm::RSASignatureDigestPKCS1v15SHA384,
+        SignatureAlgorithm::Sha512Rsa => Algorithm::RSASignatureDigestPKCS1v15SHA512,
+        SignatureAlgorithm::Sha256RsaPss => Algorithm::RSASignatureDigestPSSSHA256,
+        SignatureAlgorithm::Sha384RsaPss => Algorithm::RSASignatureDigestPSSSHA384,
+        SignatureAlgorithm::Sha512RsaPss => Algorithm::RSASignatureDigestPSSSHA512,
+        SignatureAlgorithm::Sha1Ecdsa => Algorithm::ECDSASignatureDigestX962SHA1,
+        SignatureAlgorithm::Sha256Ecdsa => Algorithm::ECDSASignatureDigestX962SHA256,
+        SignatureAlgorithm::Sha384Ecdsa => Algorithm::ECDSASignatureDigestX962SHA384,
+        SignatureAlgorithm::Sha512Ecdsa => Algorithm::ECDSASignatureDigestX962SHA512,
+    }
+}
+
+/// La identidad del llavero cuyo certificado tiene la huella de `reference`.
+fn identity_of(reference: &CertificateRef) -> Result<(TokenCertificate, SecIdentity), TokenError> {
+    let not_there = || {
+        TokenError::new(
+            Situation::CertificateNotFound,
+            format!("el llavero ya no tiene {}", reference.label()),
+        )
+    };
+    let thumbprint = reference.cka_id().ok_or_else(not_there)?;
+    let store = reference.store();
+    let found = {
+        let _no_prompt =
+            SecKeychain::disable_user_interaction().map_err(|error| failure(&error))?;
+        found(ItemClass::identity(), &scope_of(&store)?)?
+    };
+    found
+        .into_iter()
+        .find_map(|reference| match reference {
+            Reference::Identity(identity) => {
+                let der = identity.certificate().ok()?.to_der();
+                let certificate = certificate_in(&store, &der, None);
+                (certificate.reference().cka_id() == Some(thumbprint))
+                    .then_some((certificate, identity))
+            }
+            _ => None,
+        })
+        .ok_or_else(not_there)
 }
 
 /// Los llaveros donde se busca: ninguno en concreto es la lista de búsqueda de la persona usuaria.
