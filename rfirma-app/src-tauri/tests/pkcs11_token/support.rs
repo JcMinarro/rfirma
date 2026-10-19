@@ -1,6 +1,5 @@
 //! Fixtures del token de pruebas y ayudantes de firma/verificación para `pkcs11_token.rs`.
 
-use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use openssl::hash::MessageDigest;
@@ -16,6 +15,9 @@ use rsa::pkcs8::DecodePublicKey;
 use rsa::RsaPublicKey;
 use sha2::Sha256;
 use x509_cert::der::{Decode, Encode};
+
+#[path = "../support/softhsm.rs"]
+mod softhsm;
 
 pub(crate) const TOKEN: &str = "rfirma-test";
 pub(crate) const PIN: &str = "1234";
@@ -34,19 +36,7 @@ pub(crate) const REPRESENTATIVE_LEGAL_ENTITY: &str = "FNMT-REPRESENTANTE-PJ";
 pub(crate) const PRESIGN: &[u8] =
     b"31 5f 30 18 06 09 2a 86 SignedAttributes de mentira, sin hashear";
 
-pub(crate) fn module() -> PathBuf {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. Las pruebas de grada B necesitan SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+pub(crate) use softhsm::the_softhsm_module as module;
 
 pub(crate) fn certificates() -> Vec<TokenCertificate> {
     let found = pkcs11::list_certificates(module()).expect("no se ha podido listar el token");

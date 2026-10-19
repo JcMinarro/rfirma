@@ -25,6 +25,9 @@ use rfirma_lib::signing::domain::{
 use rfirma_lib::site::domain::protocol::AskedAlgorithm;
 use rfirma_lib::site::ports::composed_for;
 
+#[path = "../support/softhsm.rs"]
+mod softhsm;
+
 pub(crate) const TOKEN: &str = "rfirma-test";
 pub(crate) const PIN: &str = "1234";
 /// Contraseña del `.p12` del kit de pruebas.
@@ -60,19 +63,7 @@ pub(crate) fn bridge() -> NativeBridge {
     NativeBridge::open_at(&library()).expect("la librería debería cargarse")
 }
 
-pub(crate) fn module() -> PathBuf {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. La grada C necesita SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+pub(crate) use softhsm::the_softhsm_module as module;
 
 pub(crate) fn signing_certificate() -> TokenCertificate {
     certificate_labelled(ACTIVE)

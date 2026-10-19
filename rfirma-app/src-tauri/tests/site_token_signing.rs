@@ -1,7 +1,5 @@
 //! Pruebas de integración del puerto de firma del lote contra el módulo PKCS#11 SoftHSM (ADR-0014).
 
-use std::path::PathBuf;
-
 use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
 use openssl::sign::Verifier;
@@ -20,6 +18,9 @@ use rsa::RsaPublicKey;
 use sha2::{Sha256, Sha512};
 use x509_cert::der::{Decode, Encode};
 
+#[path = "support/softhsm.rs"]
+mod softhsm;
+
 const TOKEN: &str = "rfirma-test";
 const PIN: &str = "1234";
 const ACTIVE: &str = "FNMT-ACTIVO-99999999R";
@@ -28,19 +29,7 @@ const ACTIVE: &str = "FNMT-ACTIVO-99999999R";
 const FIRST: &[u8] = b"31 5f 30 18 SignedAttributes del primer documento del lote";
 const SECOND: &[u8] = b"31 5f 30 18 SignedAttributes del segundo documento del lote";
 
-fn module() -> PathBuf {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. Las pruebas de grada B necesitan SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+use softhsm::the_softhsm_module as module;
 
 fn certificate() -> TokenCertificate {
     let found = pkcs11::list_certificates(module()).expect("no se ha podido listar el token");
