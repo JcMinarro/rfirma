@@ -16,7 +16,6 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
-| Manejadores de `afirma://` por GIO | `PendingMacosLaunchServices`: la lista no está disponible y elegir falla. |
 | Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
 La firma trifásica (ADR-0001) funciona de extremo a extremo con una clave en memoria: PAdES,
