@@ -85,7 +85,7 @@ pub fn narrate_startup_outcome(mut outcome: TrustOutcome, profiles: &[PathBuf]) 
 /// La marca que lleva la CA local de cada canal de distribución.
 pub fn mark_of(channel: Channel) -> ChannelMark {
     match channel {
-        Channel::Native => ChannelMark::Native,
+        Channel::Native | Channel::MacOs => ChannelMark::Native,
         Channel::Flatpak => ChannelMark::Flatpak,
         Channel::Windows => ChannelMark::Windows,
     }

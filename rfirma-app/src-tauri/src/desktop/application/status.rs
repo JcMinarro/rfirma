@@ -22,7 +22,7 @@ const OUR_NAME: &str = "rFirma";
 pub fn update_destination_for(channel: Channel) -> &'static str {
     match channel {
         Channel::Flatpak => REPOSITORY,
-        Channel::Native => RELEASES,
+        Channel::Native | Channel::MacOs => RELEASES,
         Channel::Windows => WINDOWS,
     }
 }

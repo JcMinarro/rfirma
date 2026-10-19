@@ -74,9 +74,10 @@ nunca.
 | `/apt/` | con `dists/stable/main/binary-amd64/` |
 | `/rpm/` | con `repodata/` |
 | `/windows/` | el `-setup.exe` y su `.sig` de cada versión, y `latest.json` |
+| `/macos/` | el `.app.tar.gz` y su `.sig` de cada versión que lo trae, y `latest.json` |
 
 Estas rutas van dentro del `.flatpakref` y del `.flatpakrepo`, de las órdenes de alta publicadas y del *endpoint*
-del *updater* embebido en cada instalación de Windows, así que se fijan aquí.
+del *updater* embebido en cada instalación de Windows y de macOS, así que se fijan aquí.
 
 **apt con una sola suite**, no repositorio plano: el plano es más barato y **no admite
 `Suites:`/`Components:` en un fichero `.sources` deb822**, que es el formato obligado para

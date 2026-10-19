@@ -61,10 +61,26 @@ done
 "$script" write "$signed"
 [ "$(jq -r '.[] | select(.format == "minisign") | "\(.platform) \(.file) \(.signable)"' "$signed/paquetes.json")" \
     = "windows rfirma_1.0.0_x64-setup.exe.sig false" ] || fail "firma de actualizacion: una fila de windows, no firmable"
-[ "$("$script" platform-files "$signed" windows | wc -l)" = 2 ] || fail "firma de actualizacion: viaja con el instalador"
-[ "$("$script" files "$signed" | wc -l)" = 3 ] || fail "files lista tambien la firma de actualizacion"
+[ "$("$script" platform-files "$signed" windows | wc -l | tr -d ' ')" = 2 ] || fail "firma de actualizacion: viaja con el instalador"
+[ "$("$script" files "$signed" | wc -l | tr -d ' ')" = 3 ] || fail "files lista tambien la firma de actualizacion"
 [ "$("$script" packages "$signed" | tr '\n' ' ')" = "me.sgomez.rfirma.flatpak rfirma_1.0.0_x64-setup.exe " ] \
     || fail "packages: los paquetes sin la firma de actualizacion"
+
+macos="$tmp/macos"
+mkdir "$macos"
+for f in rfirma_1.0.0_aarch64.dmg rfirma_1.0.0_aarch64.app.tar.gz rfirma_1.0.0_aarch64.app.tar.gz.sig; do
+    : > "$macos/$f"
+done
+"$script" write "$macos"
+[ "$("$script" files "$macos" updater)" = rfirma_1.0.0_aarch64.app.tar.gz ] \
+    || fail "actualizacion de macos: el .app.tar.gz es su propio formato"
+[ "$("$script" files "$macos" minisign)" = rfirma_1.0.0_aarch64.app.tar.gz.sig ] \
+    || fail "actualizacion de macos: su .sig es una firma de actualizacion"
+[ "$("$script" platform-files "$macos" macos | wc -l | tr -d ' ')" = 3 ] \
+    || fail "actualizacion de macos: viaja con el dmg"
+[ -z "$("$script" signable "$macos")" ] || fail "actualizacion de macos: nada firmable con gpg"
+[ "$("$script" packages "$macos")" = rfirma_1.0.0_aarch64.dmg ] \
+    || fail "packages: el dmg, sin lo que solo baja el actualizador"
 
 unknown="$tmp/unknown"
 mkdir "$unknown"

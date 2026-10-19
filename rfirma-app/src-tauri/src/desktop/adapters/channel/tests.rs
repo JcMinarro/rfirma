@@ -1,5 +1,6 @@
 use super::*;
 use crate::desktop::domain::handlers::OUR_DESKTOP_FILE;
+use crate::desktop::domain::platform::Platform;
 use std::fs;
 
 #[test]
@@ -27,13 +28,43 @@ fn windows_is_its_own_channel_whatever_the_marker_says() {
     let marker = directory.path().join(".flatpak-info");
     fs::write(&marker, b"[Application]\n").expect("deberia escribirse");
 
-    assert_eq!(Channel::on_platform(true, &marker), Channel::Windows);
-    assert_eq!(Channel::on_platform(false, &marker), Channel::Flatpak);
+    assert_eq!(
+        Channel::on_platform(Platform::Windows, &marker),
+        Channel::Windows
+    );
+    assert_eq!(
+        Channel::on_platform(Platform::Linux, &marker),
+        Channel::Flatpak
+    );
 }
 
 #[test]
-fn only_the_windows_channel_installs_from_the_app() {
+fn macos_is_its_own_channel_whatever_the_marker_says() {
+    let directory = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let marker = directory.path().join(".flatpak-info");
+    fs::write(&marker, b"[Application]\n").expect("deberia escribirse");
+
+    assert_eq!(
+        Channel::on_platform(Platform::MacOs, &marker),
+        Channel::MacOs
+    );
+}
+
+#[test]
+fn a_homebrew_installation_does_not_turn_off_the_updater() {
+    let directory = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let caskroom = directory.path().join("opt/homebrew/Caskroom/rfirma");
+    fs::create_dir_all(&caskroom).expect("deberia crearse");
+
+    let channel = Channel::on_platform(Platform::MacOs, &caskroom.join(".flatpak-info"));
+
+    assert!(channel.installs_from_the_app());
+}
+
+#[test]
+fn windows_and_macos_install_from_the_app_and_linux_does_not() {
     assert!(Channel::Windows.installs_from_the_app());
+    assert!(Channel::MacOs.installs_from_the_app());
     assert!(!Channel::Native.installs_from_the_app());
     assert!(!Channel::Flatpak.installs_from_the_app());
 }
