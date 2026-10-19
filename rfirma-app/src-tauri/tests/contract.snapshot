@@ -533,6 +533,7 @@ TIPOS QUE CRUZAN                          (<contexto>/adapters/views*.rs y order
       Card
       Installed
       Windows
+      Macos
 
   pub enum Theme   [signing/application/configuration_memory.rs]
       System

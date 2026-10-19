@@ -200,6 +200,7 @@ crossing! {
         Card,
         Installed,
         Windows,
+        Macos,
     }
 }
 

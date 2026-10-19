@@ -122,6 +122,9 @@ fn brand_of(
     if crate::site::adapters::is_the_system_root_store(profile) {
         return StoreBrand::Windows;
     }
+    if crate::site::adapters::is_the_macos_user_trust(profile) {
+        return StoreBrand::Macos;
+    }
     brand_of_class(StoreClass::of_nss_owner(owner))
 }
 
@@ -148,12 +151,23 @@ fn measured_local_ca_certificate_signal(
     site: &SiteRoot,
     restart_firefox_notice: bool,
 ) -> crate::desktop::domain::status::SignalRow {
-    let detail = site
-        .measure_local_ca_trust()
-        .unwrap_or_default()
+    local_ca_signal_of(
+        site.measure_local_ca_trust().unwrap_or_default(),
+        |profile| site.trust.owner_of(profile),
+        restart_firefox_notice,
+    )
+}
+
+/// La señal del certificado de rFirma con lo medido en cada almacén, rotulado con su marca.
+fn local_ca_signal_of(
+    readings: Vec<crate::site::ProfileTrust>,
+    owner_of: impl Fn(&std::path::Path) -> Option<crate::identity::domain::browsers::NssOwner>,
+    restart_firefox_notice: bool,
+) -> crate::desktop::domain::status::SignalRow {
+    let detail = readings
         .into_iter()
         .map(|reading| StoreDetail {
-            brand: brand_of(&reading.profile, site.trust.owner_of(&reading.profile)),
+            brand: brand_of(&reading.profile, owner_of(&reading.profile)),
             trusted: reading.trusted,
         })
         .collect();

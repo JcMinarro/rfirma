@@ -17,7 +17,6 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
 | Manejadores de `afirma://` por GIO | `PendingMacosLaunchServices`: la lista no está disponible y elegir falla. |
-| CA local en los almacenes NSS (ADR-0005) | `PendingMacosKeychainTrust`, sin perfiles: la CA consta como no instalada. |
 | Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
 La firma trifásica (ADR-0001) funciona de extremo a extremo con una clave en memoria: PAdES,
@@ -108,5 +107,5 @@ dependencia en todas las plataformas para algo que en Linux y Windows ya resuelv
   el `Info.plist` embebido, y llamarla dos veces falla al enlazar.
 - Los códigos con que macOS rechaza un certificado de sede no reconocido (ADR-0039) se añaden a
   los de OpenSSL y Schannel, sin condicional de sistema.
-- Sin llavero ni CA local, el navegador no confía en el canal local de un trámite de sede en
-  macOS sin instalar la CA a mano.
+- La CA local (ADR-0005) se confía en el dominio de la persona usuaria, con el diálogo de
+  contraseña de macOS; Safari, Chrome y Firefox 120 o posterior la leen de ahí, sin perfiles NSS.

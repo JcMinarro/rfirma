@@ -230,6 +230,10 @@ block2 = "0.6"
 objc2 = "0.6"
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSAlert", "NSApplication", "NSButton", "NSControl", "NSResponder", "NSSecureTextField", "NSTextField", "NSView", "NSWindow"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSGeometry", "NSString"] }
+# La CA local en la confianza de la persona usuaria (ADR-0040).
+core-foundation = "0.10"
+security-framework = "3"
+security-framework-sys = "2"
 
 [target.'cfg(not(windows))'.dev-dependencies]
 # La tarjeta falsa de las pruebas: no se compila en Windows y nunca llega a un paquete (ADR-0004).
