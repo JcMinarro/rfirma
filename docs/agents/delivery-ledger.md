@@ -22,3 +22,4 @@
 2026-10-19 spec=#2000 sub=#2008 model=sonnet effort=medium pr=#2049 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
 2026-10-19 spec=#2000 sub=#2020 model=sonnet effort=medium pr=#2050 verdict=CLEAN cycles=0 mergefix=0 wave=2 outcome=integrated
 2026-10-19 spec=#2000 sub=#2000 model=opus effort=medium pr=#2042 verdict=— cycles=1 mergefix=0 wave=— outcome=escalated
+2026-10-19 spec=#2000 sub=#2000 model=opus effort=medium pr=#2042 verdict=CLEAN cycles=1 mergefix=0 wave=— outcome=merged
