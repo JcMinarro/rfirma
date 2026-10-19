@@ -15,16 +15,16 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | Token PKCS#11 y sus almacenes | El mismo `RealToken` de Linux; solo encuentra módulo si `RFIRMA_PKCS11_MODULE` lo nombra. |
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
-| Diálogo GTK del PIN | `PendingMacosPinDialog`: falla con un mensaje en castellano. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
 | Manejadores de `afirma://` por GIO | `PendingMacosLaunchServices`: la lista no está disponible y elegir falla. |
 | CA local en los almacenes NSS (ADR-0005) | `PendingMacosKeychainTrust`, sin perfiles: la CA consta como no instalada. |
 | Diálogo GTK de fallo de arranque | El texto sale por la salida de error. |
 
 La firma trifásica (ADR-0001) funciona de extremo a extremo con una clave en memoria: PAdES,
-CAdES y XAdES pasan por el puente y el validador de AutoFirma da por válidas las PAdES. Lo que
-falta para firmar con una tarjeta es el diálogo del PIN; para el almacén del sistema, un adaptador
-del llavero de macOS como el de CNG en Windows.
+CAdES y XAdES pasan por el puente y el validador de AutoFirma da por válidas las PAdES. El PIN
+de una tarjeta por PKCS#11 lo pide una alerta de AppKit con campo seguro, modal sobre la ventana
+que lo pidió (ADR-0047); para el almacén del sistema falta un adaptador del llavero de macOS como
+el de CNG en Windows.
 
 ## `afirma://` llega como evento, no como argumento
 
@@ -108,5 +108,5 @@ dependencia en todas las plataformas para algo que en Linux y Windows ya resuelv
   el `Info.plist` embebido, y llamarla dos veces falla al enlazar.
 - Los códigos con que macOS rechaza un certificado de sede no reconocido (ADR-0039) se añaden a
   los de OpenSSL y Schannel, sin condicional de sistema.
-- Sin diálogo del PIN, llavero ni CA local, un trámite de sede en macOS no puede todavía firmar
-  con tarjeta ni el navegador confía en el canal local sin instalar la CA a mano.
+- Sin llavero ni CA local, el navegador no confía en el canal local de un trámite de sede en
+  macOS sin instalar la CA a mano.
