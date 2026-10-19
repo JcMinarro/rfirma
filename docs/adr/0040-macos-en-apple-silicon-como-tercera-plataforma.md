@@ -26,6 +26,30 @@ de una tarjeta por PKCS#11 lo pide una alerta de AppKit con campo seguro, modal 
 que lo pidió (ADR-0047); para el almacén del sistema falta un adaptador del llavero de macOS como
 el de CNG en Windows.
 
+## En macOS, la API de macOS siempre que se pueda, salvo el DNIe
+
+Como en Windows (ADR-0035), para certificados, PIN, tarjetas y confianza rFirma usa lo que macOS
+ofrece (Security.framework, CryptoTokenKit a través del llavero, LaunchServices): es lo que la
+persona ya conoce y evita mantener un camino propio. De la regla salen:
+
+- **Los certificados con clave privada del llavero** salen como «Almacén de macOS» y se firman por
+  la API del sistema: Rust calcula el resumen y macOS lo firma (ADR-0001). La contraseña o el PIN
+  los pide macOS con su diálogo.
+- **Las tarjetas que macOS ya sabe leer** (PIV o con controlador del sistema) entran por ese mismo
+  camino y se tratan como tarjeta.
+- **«Instalar certificado» importa el `.p12` al llavero de inicio de sesión** (ADR-0034); en macOS
+  no hay Almacén de rFirma.
+- **La CA local va a la confianza de la persona usuaria** (ADR-0005), con el diálogo de contraseña
+  del sistema, y `afirma://` se gestiona por LaunchServices.
+
+**La excepción es el DNIe**, que va por PKCS#11: macOS no trae controlador del sistema para él y
+la DGP solo publica un módulo PKCS#11 para Mac. Solo para él, rFirma carga el módulo de OpenSC o el
+de la DGP y pide el PIN con un diálogo propio nativo, que lee el estado del PIN antes de pedirlo
+(ADR-0047). Nadie debe meter PKCS#11 para todo ni quitar la excepción sin conocer este motivo.
+
+El orden de almacenes pasa a ser: tarjeta, Almacén de macOS (o de Windows), Almacén de rFirma,
+NSS del sistema, familia Firefox, familia Chromium.
+
 ## `afirma://` llega como evento, no como argumento
 
 LaunchServices no pasa la URL en la línea de órdenes: abre la aplicación y se la entrega con un
@@ -64,6 +88,24 @@ equipo, porque todo Mac con Apple Silicon puede actualizar a ella.
 El `.dmg` pasa por la misma puerta del contenido que los demás paquetes
 (`packaging/verifica-contenido.sh`): una sola `librfirma_crypto.dylib` y ningún auxiliar de AWT.
 
+## Sin cuenta de Apple Developer: tap de Homebrew y actualizador propio
+
+No hay cuenta de Apple Developer: el paquete no se firma con Developer ID ni se notariza, y
+mantiene la firma ad hoc y el *hardened runtime* apagado, que además deja cargar módulos PKCS#11
+de terceros. Con firma ad hoc, cada versión es otra identidad de código para macOS, y el
+«Permitir siempre» del llavero puede volver a pedirse tras cada actualización.
+
+- **Distribución:** un tap de Homebrew propio del proyecto, con un cask que instala el `.app`
+  publicado en la Release; se actualiza en cada versión. Las instrucciones de instalación,
+  incluido `xattr -c /Applications/rFirma.app` para abrir la aplicación ante el aviso de
+  Gatekeeper la primera vez, van en la documentación del tap y en la de rFirma.
+- **Actualización:** rFirma se actualiza sola con el canal de Windows: la entrega publica el
+  paquete de actualización firmado con minisign y su entrada en `latest.json`. El cask declara
+  `auto_updates: true`, así que `brew upgrade` no lo toca, y rFirma no trata una instalación por
+  Homebrew como gestionada por paquete. La descarga del actualizador no lleva la marca de
+  cuarentena, así que el aviso de Gatekeeper solo sale en la primera instalación; está por
+  verificar con la firma ad hoc.
+
 ## GraalVM: la 25.0.2 en el CI, la 25.0.1 en un Mac Intel
 
 El CI construye con la 25.0.2 fijada (ADR-0035) en `macos-14`, que es Apple Silicon. La 25.0.2 no
@@ -82,8 +124,8 @@ GraalVM se busca en `GRAALVM_HOME`, después en `JAVA_HOME` y por último con
 25.0.1 en un runner Intel. Los Mac Intel son una plataforma que Apple ya no vende.
 
 **Notarizar con un Developer ID**: quita el aviso de Gatekeeper, pero exige una cuenta de pago de
-Apple y secretos de firma en el CI. Queda para cuando haya quien la mantenga; el instalador de
-Windows tampoco está firmado.
+Apple y secretos de firma en el CI. No hay cuenta de Apple Developer; el instalador de Windows tampoco
+está firmado.
 
 **Instalar la `.dylib` en `Contents/Resources`**: funciona igual para `dlopen`, pero
 `Frameworks` es donde macOS espera el código cargable y donde `codesign` lo firma al sellar el
