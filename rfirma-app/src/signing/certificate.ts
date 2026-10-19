@@ -298,7 +298,8 @@ export function emptyCertificateStore(): CertificateStore {
 
 /**
  * Los que se instalaron en rFirma desde un `.p12`, que son los únicos que
- * Preferencias enseña y los únicos que se pueden quitar.
+ * Preferencias enseña y los únicos que se pueden quitar. En macOS el `.p12`
+ * se instala en el llavero, así que son los del Almacén de macOS.
  *
  * El orden es el mismo del desplegable —alfabético por primera línea— para
  * que la misma persona salga en el mismo sitio en las dos pantallas, y **los
@@ -308,7 +309,10 @@ export function installedCertificates(
   certificates: readonly Certificate[],
 ): readonly Certificate[] {
   return certificates
-    .filter((certificate) => certificate.stores.includes("installed"))
+    .filter(
+      (certificate) =>
+        certificate.stores.includes("installed") || certificate.stores.includes("macos"),
+    )
     .sort(byHeadlineThenStore);
 }
 

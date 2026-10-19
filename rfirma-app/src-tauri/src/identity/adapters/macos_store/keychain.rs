@@ -6,9 +6,10 @@ use core_foundation::string::CFString;
 use openssl::hash::{hash, MessageDigest};
 use security_framework::certificate::SecCertificate;
 use security_framework::identity::SecIdentity;
+use security_framework::import_export::Pkcs12ImportOptions;
 use security_framework::item::{ItemClass, ItemSearchOptions, Limit, Reference, SearchResult};
 use security_framework::key::{Algorithm, SecKey};
-use security_framework::os::macos::keychain::SecKeychain;
+use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 use security_framework_sys::item::kSecAttrTokenID;
 
 use super::SEARCH_LIST;
@@ -86,6 +87,125 @@ pub fn sign(
     let digest = ecdsa::digest(algorithm, data)?;
     key.create_signature(over_a_digest(algorithm), &digest)
         .map_err(|error| refused(&error))
+}
+
+/// Mete el `.p12` en el llavero de `store`, o en el de inicio de sesión si es la lista de búsqueda; antes lo prueba aparte y, si no sirve, no deja nada.
+pub fn import_pkcs12(store: &Store, pkcs12: &[u8], password: &str) -> Result<(), TokenError> {
+    only_if_it_brings_a_usable_identity(pkcs12, password)?;
+    let mut options = Pkcs12ImportOptions::new();
+    options.passphrase(password);
+    if let Some(mut keychains) = scope_of(store)? {
+        options.keychain(keychains.remove(0));
+    }
+    options
+        .import(pkcs12)
+        .map(|_| ())
+        .map_err(|error| rejected_pkcs12(&error))
+}
+
+/// Quita del llavero el certificado de `reference` y su clave privada.
+pub fn remove(reference: &CertificateRef) -> Result<(), TokenError> {
+    let (_, identity) = identity_of(reference)?;
+    identity.delete().map_err(|error| failure(&error))
+}
+
+fn only_if_it_brings_a_usable_identity(pkcs12: &[u8], password: &str) -> Result<(), TokenError> {
+    let scratch = ScratchKeychain::create()?;
+    let imported = Pkcs12ImportOptions::new()
+        .passphrase(password)
+        .keychain(scratch.keychain.clone())
+        .import(pkcs12)
+        .map_err(|error| rejected_pkcs12(&error))?;
+    let mut brought_a_key = false;
+    for identity in imported.iter().filter_map(|item| item.identity.as_ref()) {
+        brought_a_key = true;
+        let certificate = identity.certificate().map_err(|error| failure(&error))?;
+        let der = certificate.to_der();
+        let candidate = certificate_in(&Store::module(""), &der, None);
+        if candidate.key_kind().is_none() {
+            return Err(TokenError::new(
+                Situation::KeyKindUnsupported,
+                format!(
+                    "{}: la clave no es RSA ni de curva eliptica",
+                    candidate.reference().label()
+                ),
+            ));
+        }
+    }
+    if brought_a_key {
+        return Ok(());
+    }
+    Err(TokenError::new(
+        Situation::Pkcs12NoPrivateKey,
+        "el fichero no ha dejado ningun certificado con clave privada dentro",
+    ))
+}
+
+fn rejected_pkcs12(error: &security_framework::base::Error) -> TokenError {
+    match error.code() {
+        WRONG_PKCS12_PASSWORD | AUTH_FAILED => TokenError::new(
+            Situation::IncorrectPkcs12Password,
+            format!(
+                "la contrasena del .p12 no es la correcta ({})",
+                error.code()
+            ),
+        ),
+        _ => failure(error),
+    }
+}
+
+const WRONG_PKCS12_PASSWORD: i32 = -25264;
+const AUTH_FAILED: i32 = -25293;
+
+/// Un llavero desechable donde probar un `.p12` sin tocar el de la persona.
+struct ScratchKeychain {
+    directory: std::path::PathBuf,
+    keychain: SecKeychain,
+}
+
+impl ScratchKeychain {
+    fn create() -> Result<Self, TokenError> {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |elapsed| elapsed.as_nanos());
+        let directory =
+            std::env::temp_dir().join(format!("rfirma-p12-{}-{unique}", std::process::id()));
+        std::fs::create_dir(&directory).map_err(|error| {
+            TokenError::new(
+                Situation::Unknown,
+                format!("no se ha podido preparar un llavero temporal: {error}"),
+            )
+        })?;
+        let created = CreateOptions::new()
+            .password(SCRATCH_PASSWORD)
+            .create(directory.join("scratch.keychain-db"));
+        match created {
+            Ok(keychain) => Ok(Self {
+                directory,
+                keychain,
+            }),
+            Err(error) => {
+                let _ = std::fs::remove_dir_all(&directory);
+                Err(failure(&error))
+            }
+        }
+    }
+}
+
+impl Drop for ScratchKeychain {
+    fn drop(&mut self) {
+        unsafe {
+            SecKeychainDelete(self.keychain.as_concrete_TypeRef().cast());
+        }
+        let _ = std::fs::remove_dir_all(&self.directory);
+    }
+}
+
+const SCRATCH_PASSWORD: &str = "rfirma-scratch";
+
+#[link(name = "Security", kind = "framework")]
+extern "C" {
+    fn SecKeychainDelete(keychain: *mut std::ffi::c_void) -> i32;
 }
 
 /// La situación del catálogo que corresponde a un error de Security.framework, CryptoTokenKit o PC/SC.

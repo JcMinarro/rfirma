@@ -8,7 +8,31 @@ use crate::signing::SigningRoot;
 use super::views::{CertificateView, ReaderStatusView};
 use crate::crossing::Failure;
 use crate::identity::application::certificates::PasswordPrompt;
-use crate::identity::ports::OriginWindow;
+use crate::identity::domain::keyring::KeyringError;
+use crate::identity::domain::protected_secret::ProtectedSecret;
+use crate::identity::ports::{Keyring, OriginWindow};
+
+/// El llavero que no se usa cuando instalar y quitar es cosa del sistema.
+struct SystemManaged;
+
+impl Keyring for SystemManaged {
+    fn pin(&self) -> Result<ProtectedSecret, KeyringError> {
+        Err(KeyringError::NoKeyring)
+    }
+
+    fn create_pin(&self) -> Result<ProtectedSecret, KeyringError> {
+        Err(KeyringError::NoKeyring)
+    }
+}
+
+fn keyring_for_installing(
+    identity: &IdentityRoot,
+) -> Result<Box<dyn Keyring + Send + Sync>, KeyringError> {
+    if identity.token.installs_in_the_system() {
+        return Ok(Box::new(SystemManaged));
+    }
+    (identity.keyring)()
+}
 
 /// Certificados de los tokens conectados.
 #[tauri::command]
@@ -62,7 +86,7 @@ pub fn install_certificate_over(
         return Ok(false);
     };
     let (file_name, pkcs12) = read_the_file(chosen)?;
-    let keyring = (identity.keyring)()?;
+    let keyring = keyring_for_installing(identity)?;
 
     super::failures::installed_unless_cancelled(
         crate::identity::application::certificates::install_pkcs12_asking_its_password(
@@ -84,7 +108,7 @@ pub fn install_certificate_over(
 /// Desinstala un certificado PKCS#12 previamente instalado.
 #[tauri::command(async)]
 pub fn remove_certificate(id: String, identity: State<'_, IdentityRoot>) -> Result<(), Failure> {
-    let keyring = (identity.keyring)()?;
+    let keyring = keyring_for_installing(&identity)?;
     Ok(
         crate::identity::application::certificates::remove_installed(
             identity.token.as_ref(),

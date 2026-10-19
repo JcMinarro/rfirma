@@ -16,7 +16,7 @@ use security_framework::certificate::SecCertificate;
 use security_framework::import_export::Pkcs12ImportOptions;
 use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 
-use super::keychain::situation_of;
+use super::keychain::{import_pkcs12 as install, situation_of};
 use super::{keychain_store, stores_besides, user_store, MacosToken};
 use crate::identity::application::certificates::certificates_with_their_chains;
 use crate::identity::domain::algorithm::{KeyKind, SignatureAlgorithm};
@@ -66,21 +66,21 @@ impl TemporaryKeychain {
     }
 
     fn holds_an_identity(&self, certificate: &X509, key: &PKey<Private>) {
-        let pkcs12 = Pkcs12::builder()
-            .name("rfirma-test")
-            .pkey(key)
-            .cert(certificate)
-            .key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC)
-            .cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC)
-            .mac_md(MessageDigest::sha1())
-            .build2(PASSWORD)
-            .and_then(|pkcs12| pkcs12.to_der())
-            .expect("deberia construirse el .p12 de pruebas");
         Pkcs12ImportOptions::new()
             .passphrase(PASSWORD)
             .keychain(self.keychain.clone())
-            .import(&pkcs12)
+            .import(&pkcs12_of(certificate, Some(key), PASSWORD))
             .expect("el .p12 deberia entrar en el llavero de pruebas");
+    }
+
+    fn every(&self) -> Vec<TokenCertificate> {
+        MacosToken
+            .every_certificate(&self.store())
+            .expect("el llavero deberia listarse")
+    }
+
+    fn store(&self) -> Store {
+        keychain_store(&self.path)
     }
 
     fn holding(key: &PKey<Private>) -> (Self, TokenCertificate) {
@@ -103,6 +103,23 @@ impl Drop for TemporaryKeychain {
             SecKeychainDelete(self.keychain.as_concrete_TypeRef().cast());
         }
     }
+}
+
+fn pkcs12_of(certificate: &X509, key: Option<&PKey<Private>>, password: &str) -> Vec<u8> {
+    let mut builder = Pkcs12::builder();
+    builder
+        .name("rfirma-test")
+        .cert(certificate)
+        .key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC)
+        .cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC)
+        .mac_md(MessageDigest::sha1());
+    if let Some(key) = key {
+        builder.pkey(key);
+    }
+    builder
+        .build2(password)
+        .and_then(|pkcs12| pkcs12.to_der())
+        .expect("deberia construirse el .p12 de pruebas")
 }
 
 fn an_rsa_key() -> PKey<Private> {
@@ -462,4 +479,88 @@ fn system_errors_map_to_their_situations() {
     );
     assert_eq!(situation_of(OS_STATUS, -4), Situation::Unknown);
     assert_eq!(situation_of("NSCocoaErrorDomain", -128), Situation::Unknown);
+}
+
+#[test]
+fn installing_a_pkcs12_puts_its_identity_in_the_keychain_for_rsa_and_elliptic_curve() {
+    let keychain = TemporaryKeychain::create();
+    let rsa = an_rsa_key();
+    let ec = an_elliptic_curve_key();
+
+    for (name, key) in [("INSTALADO RSA", &rsa), ("INSTALADO CURVA", &ec)] {
+        let pkcs12 = pkcs12_of(&a_certificate(name, key, None, false), Some(key), "clave");
+        install(&keychain.store(), &pkcs12, "clave").expect("deberia instalarse");
+    }
+
+    let mut labels: Vec<String> = keychain
+        .listed()
+        .iter()
+        .map(|certificate| certificate.reference().label().to_owned())
+        .collect();
+    labels.sort();
+    assert_eq!(labels, vec!["INSTALADO CURVA", "INSTALADO RSA"]);
+}
+
+#[test]
+fn a_wrong_pkcs12_password_installs_nothing() {
+    let keychain = TemporaryKeychain::create();
+    let key = an_rsa_key();
+    let pkcs12 = pkcs12_of(
+        &a_certificate("FIRMA", &key, None, false),
+        Some(&key),
+        "clave",
+    );
+
+    let failure = install(&keychain.store(), &pkcs12, "otra").expect_err("la clave es otra");
+
+    assert_eq!(failure.situation(), Situation::IncorrectPkcs12Password);
+    assert!(keychain.listed().is_empty());
+}
+
+#[test]
+fn a_pkcs12_without_a_private_key_installs_nothing() {
+    let keychain = TemporaryKeychain::create();
+    let key = an_rsa_key();
+    let pkcs12 = pkcs12_of(
+        &a_certificate("SIN CLAVE", &key, None, false),
+        None,
+        "clave",
+    );
+
+    let failure = install(&keychain.store(), &pkcs12, "clave").expect_err("no trae clave");
+
+    assert_eq!(failure.situation(), Situation::Pkcs12NoPrivateKey);
+    assert!(keychain.every().is_empty());
+}
+
+#[test]
+fn removing_an_installed_certificate_deletes_it_and_its_key_from_the_keychain() {
+    let keychain = TemporaryKeychain::create();
+    let (kept_key, gone_key) = (an_rsa_key(), an_rsa_key());
+    keychain.holds_an_identity(
+        &a_certificate("SE QUEDA", &kept_key, None, false),
+        &kept_key,
+    );
+    keychain.holds_an_identity(&a_certificate("SE VA", &gone_key, None, false), &gone_key);
+    let gone = keychain
+        .listed()
+        .into_iter()
+        .find(|certificate| certificate.reference().label() == "SE VA")
+        .expect("deberia estar en el llavero");
+
+    MacosToken
+        .remove_certificate(Path::new(""), gone.reference(), &ProtectedSecret::new(b""))
+        .expect("deberia quitarse");
+
+    let labels: Vec<String> = keychain
+        .listed()
+        .iter()
+        .map(|certificate| certificate.reference().label().to_owned())
+        .collect();
+    assert_eq!(labels, vec!["SE QUEDA"]);
+}
+
+#[test]
+fn macos_installs_pkcs12_in_the_system() {
+    assert!(MacosToken.installs_in_the_system());
 }
