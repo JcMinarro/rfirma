@@ -173,5 +173,6 @@ pub(super) fn store_of(class: StoreClass, reference: &CertificateRef) -> String 
         StoreClass::Browser(owner) => owner.label(),
         StoreClass::Nssdb => "NSS del sistema".to_owned(),
         StoreClass::Windows => "Windows".to_owned(),
+        StoreClass::Macos => "Almacén de macOS".to_owned(),
     }
 }

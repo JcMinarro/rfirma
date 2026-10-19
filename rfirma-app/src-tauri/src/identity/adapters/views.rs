@@ -79,6 +79,7 @@ crossing! {
         Installed,
         Nssdb,
         Windows,
+        Macos,
         /// El almacén NSS que comparten los navegadores Chromium nativos.
         SharedChromium,
         /// El almacén NSS de un navegador, con el canal por el que llegó si no es nativo.
@@ -97,6 +98,7 @@ impl StoreMarkView {
             StoreClass::Installed => Self::Installed,
             StoreClass::Nssdb => Self::Nssdb,
             StoreClass::Windows => Self::Windows,
+            StoreClass::Macos => Self::Macos,
             StoreClass::Browser(owner) => match owner.browser_name() {
                 Some(name) => Self::Browser {
                     name: name.to_owned(),

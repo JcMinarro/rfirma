@@ -4,6 +4,8 @@ pub mod failures;
 pub mod folder;
 #[cfg(target_os = "linux")]
 pub mod keyring;
+#[cfg(target_os = "macos")]
+pub mod macos_store;
 #[cfg(any(target_os = "linux", windows))]
 pub mod pcsc;
 #[cfg(target_os = "macos")]
@@ -46,14 +48,20 @@ pub const SPEAKS_PCSC: bool = cfg!(any(target_os = "linux", windows));
 pub use readers::UnavailableReaderWatch as DesktopReaderWatch;
 
 /// El token de esta plataforma.
-#[cfg(unix)]
+#[cfg(target_os = "macos")]
+pub use macos_store::MacosToken as DesktopToken;
+/// El token de esta plataforma.
+#[cfg(target_os = "linux")]
 pub use pkcs11::RealToken as DesktopToken;
 /// El token de esta plataforma.
 #[cfg(windows)]
 pub use windows_store::WindowsToken as DesktopToken;
 
 /// Los almacenes de certificados de esta plataforma.
-#[cfg(unix)]
+#[cfg(target_os = "macos")]
+pub use macos_store::from_environment as desktop_stores;
+/// Los almacenes de certificados de esta plataforma.
+#[cfg(target_os = "linux")]
 pub use pkcs11::stores::from_environment as desktop_stores;
 /// Los almacenes de certificados de esta plataforma.
 #[cfg(windows)]

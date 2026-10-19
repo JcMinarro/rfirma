@@ -185,6 +185,7 @@ pub fn brand_of_class(class: StoreClass) -> StoreBrand {
         StoreClass::Card => StoreBrand::Card,
         StoreClass::Installed => StoreBrand::Installed,
         StoreClass::Windows => StoreBrand::Windows,
+        StoreClass::Macos => StoreBrand::Macos,
         StoreClass::Nssdb => StoreBrand::Nssdb,
         StoreClass::Browser(owner) => match owner.browser_name() {
             Some(name) => StoreBrand::Browser {
