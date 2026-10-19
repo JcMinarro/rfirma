@@ -1,7 +1,5 @@
 //! Ciclo de persistencia del certificado recordado entre sesiones contra token SoftHSM (ADR-0014).
 
-use std::path::PathBuf;
-
 use rfirma_lib::desktop::adapters::paths::Paths;
 use rfirma_lib::identity::adapters::pkcs11;
 use rfirma_lib::identity::application::certificates::{rows_of, ListedCertificates};
@@ -9,24 +7,15 @@ use rfirma_lib::identity::domain::certificate::{CertificateRef, TokenCertificate
 use rfirma_lib::signing::adapters::memory::Memory;
 use rfirma_lib::signing::application::configuration_memory::Configuration;
 
+#[path = "support/softhsm.rs"]
+mod softhsm;
+
 const TOKEN: &str = "rfirma-test";
 const ACTIVE: &str = "FNMT-ACTIVO-99999999R";
 /// Certificados gemelos que comparten `CKA_LABEL` pero difieren en `CKA_ID`.
 const TWIN: &str = "FNMT-GEMELO-99999999R";
 
-fn module() -> PathBuf {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. Las pruebas de grada B necesitan SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+use softhsm::the_softhsm_module as module;
 
 fn certificates() -> Vec<TokenCertificate> {
     let found = pkcs11::list_certificates(module()).expect("no se ha podido listar el token");

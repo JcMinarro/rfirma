@@ -63,24 +63,24 @@
 
 set -euo pipefail
 
-module="${RFIRMA_PKCS11_MODULE:-/usr/lib/softhsm/libsofthsm2.so}"
 pin="1234"
 so_pin="3737"
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$here/platform.sh"
 kit="$here/../fnmt"
 
 for tool in softhsm2-util pkcs11-tool openssl; do
     command -v "$tool" >/dev/null || {
         echo "falta: $tool" >&2
-        echo "  sudo apt install -y softhsm2 opensc openssl" >&2
+        echo "  $install_tools" >&2
         exit 1
     }
 done
 
 [ -f "$module" ] || {
     echo "falta el modulo PKCS#11: $module" >&2
-    echo "  sudo apt install -y softhsm2" >&2
+    echo "  $install_softhsm" >&2
     exit 1
 }
 

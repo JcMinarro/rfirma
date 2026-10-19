@@ -39,7 +39,7 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fnmt="$here/../testdata/fnmt"
 site_driver="$here/../testdata/site-driver"
-module="${RFIRMA_PKCS11_MODULE:-/usr/lib/softhsm/libsofthsm2.so}"
+source "$here/../testdata/softhsm/platform.sh"
 
 subject="${1:-}"
 store="${3:-rsa}"
@@ -109,7 +109,7 @@ if $with_token; then
     for tool in softhsm2-util pkcs11-tool openssl; do
         command -v "$tool" >/dev/null || {
             echo "falta: $tool" >&2
-            echo "  sudo apt install -y softhsm2 opensc openssl" >&2
+            echo "  $install_tools" >&2
             exit 1
         }
     done
@@ -135,7 +135,7 @@ export SOFTHSM2_CONF="$softhsm_conf"
 if $with_token; then
     [ -f "$module" ] || {
         echo "falta el modulo PKCS#11: $module" >&2
-        echo "  sudo apt install -y softhsm2" >&2
+        echo "  $install_softhsm" >&2
         exit 1
     }
     if [ "$store" = token ]; then
