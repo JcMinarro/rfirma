@@ -608,4 +608,5 @@ fn an_entity_certificate_without_a_natural_person_holder_carries_no_entity_name(
 mod copies;
 mod macos_store;
 mod removal;
+mod system_install;
 mod windows_store;

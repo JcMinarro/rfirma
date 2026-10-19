@@ -1052,6 +1052,9 @@ msgstr "Fitxer instal·lat"
 msgid "status.storeBrands.windows"
 msgstr "Magatzem de Windows"
 
+msgid "status.storeBrands.macos"
+msgstr "Magatzem de macOS"
+
 msgid "status.notices.restartFirefox"
 msgstr "Reinicia el Firefox perquè tingui efecte."
 

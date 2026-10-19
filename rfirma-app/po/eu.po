@@ -1053,6 +1053,9 @@ msgstr "Instalatutako fitxategia"
 msgid "status.storeBrands.windows"
 msgstr "Windows biltegia"
 
+msgid "status.storeBrands.macos"
+msgstr "macOS biltegia"
+
 msgid "status.notices.restartFirefox"
 msgstr "Berrabiarazi Firefox eragina izan dezan."
 

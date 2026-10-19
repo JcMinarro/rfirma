@@ -1037,6 +1037,9 @@ msgstr ""
 msgid "status.storeBrands.windows"
 msgstr ""
 
+msgid "status.storeBrands.macos"
+msgstr ""
+
 msgid "status.notices.restartFirefox"
 msgstr ""
 

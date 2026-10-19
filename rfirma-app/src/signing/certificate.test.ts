@@ -243,6 +243,14 @@ describe("installedCertificates", () => {
     expect(installedCertificates([profile, installed, shared])).toEqual([installed]);
   });
 
+  /** En macOS el `.p12` instalado vive en el llavero, y desde Preferencias se quita de allí. */
+  it("keeps the ones in the macOS store, where a .p12 is installed on a Mac", () => {
+    const keychain = aCertificate({ id: "keychain", stores: ["macos"] });
+    const windows = aCertificate({ id: "windows", stores: ["windows"] });
+
+    expect(installedCertificates([windows, keychain])).toEqual([keychain]);
+  });
+
   /** Un caducado se queda: que desaparezca no le explica nada a quien lo instaló. */
   it("keeps an expired one, unlike the dropdown's available group", () => {
     const expired = aCertificate({
