@@ -16,7 +16,8 @@ use application::errand::ErrandDesk;
 pub use application::errand::LiveErrand;
 use application::site::CodecTable;
 use application::startup::{HeldChannel, LocalCaTrust};
-use application::trust::{ProfileTrust, TrustOutcome, WithdrawOutcome};
+pub use application::trust::ProfileTrust;
+use application::trust::{TrustOutcome, WithdrawOutcome};
 use domain::tls_error::TlsError;
 use domain::trust::Moment;
 

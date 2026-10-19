@@ -7,6 +7,9 @@ use crate::identity::domain::browsers::NssOwner;
 /// Prefijo con el que se nombran los almacenes de Windows: ningún módulo PKCS#11 se llama así.
 pub const WINDOWS_STORE_PREFIX: &str = "cng:";
 
+/// Prefijo con el que se nombran los llaveros de macOS: ningún módulo PKCS#11 se llama así.
+pub const MACOS_STORE_PREFIX: &str = "keychain:";
+
 /// Los proveedores de Windows que guardan la clave en una tarjeta: el KSP de los minidrivers y su CSP.
 const CARD_KEY_PROVIDERS: [&str; 2] = [
     "Microsoft Smart Card Key Storage Provider",
@@ -33,6 +36,8 @@ pub enum StoreClass {
     Installed,
     /// Almacén de certificados personales de Windows, servido por CNG (ADR-0035).
     Windows,
+    /// Los certificados con clave privada del llavero de macOS (ADR-0040).
+    Macos,
 }
 
 impl StoreClass {
@@ -44,13 +49,13 @@ impl StoreClass {
         }
     }
 
-    /// Qué copia de un mismo certificado se prefiere: tarjeta, Windows, Almacén de rFirma, NSS del sistema, Firefox, Chrome.
+    /// Qué copia de un mismo certificado se prefiere: tarjeta, Windows o macOS, Almacén de rFirma, NSS del sistema, Firefox, Chrome.
     pub fn preference(self) -> u8 {
         match self {
             Self::Browser(owner) if owner.is_firefox_family() => 4,
             Self::Browser(_) => 5,
             Self::Card => 0,
-            Self::Windows => 1,
+            Self::Windows | Self::Macos => 1,
             Self::Installed => 2,
             Self::Nssdb => 3,
         }
@@ -148,6 +153,9 @@ impl Store {
         if self.is_windows() {
             return StoreClass::Windows;
         }
+        if self.is_named(MACOS_STORE_PREFIX) {
+            return StoreClass::Macos;
+        }
         if self.profile().is_none() {
             return StoreClass::Card;
         }
@@ -156,9 +164,13 @@ impl Store {
 
     /// Si es un almacén de Windows y no un módulo PKCS#11.
     fn is_windows(&self) -> bool {
+        self.is_named(WINDOWS_STORE_PREFIX)
+    }
+
+    fn is_named(&self, prefix: &str) -> bool {
         self.module
             .to_str()
-            .is_some_and(|module| module.starts_with(WINDOWS_STORE_PREFIX))
+            .is_some_and(|module| module.starts_with(prefix))
     }
 
     /// Directorio del perfil NSS si está configurado.
