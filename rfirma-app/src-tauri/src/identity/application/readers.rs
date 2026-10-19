@@ -45,7 +45,7 @@ pub fn watches_the_readers(platform: Platform, channel: Channel) -> bool {
     match platform {
         Platform::Linux => matches!(channel, Channel::Native | Channel::Flatpak),
         Platform::Windows => channel == Channel::Windows,
-        Platform::MacOs => channel == Channel::Native,
+        Platform::MacOs => false,
     }
 }
 
