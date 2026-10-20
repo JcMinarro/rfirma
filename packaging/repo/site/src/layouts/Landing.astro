@@ -30,7 +30,7 @@ const application = {
   description,
   url: canonical.href,
   inLanguage: locale,
-  operatingSystem: "Linux, Windows",
+  operatingSystem: "Linux, Windows, macOS",
   applicationCategory: "SecurityApplication",
   offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
   downloadUrl: new URL("#instalacion", canonical).href,
@@ -100,7 +100,7 @@ const structuredData = JSON.stringify(application).replaceAll("<", "\\u003c");
       import { mountGuidedDemo } from "../scripts/guided-demo";
       import { mountInstallTabs } from "../scripts/install-tabs";
       import { mountReveal } from "../scripts/reveal";
-      import { mountWindowsDownload } from "../scripts/windows-download";
+      import { mountServerDownload, type DownloadSystem } from "../scripts/server-download";
 
       const demo = document.querySelector<HTMLElement>(".demo");
       if (demo) {
@@ -119,9 +119,8 @@ const structuredData = JSON.stringify(application).replaceAll("<", "\\u003c");
         }
       }
 
-      const windowsDownload = document.querySelector<HTMLAnchorElement>("[data-windows-download]");
-      if (windowsDownload) {
-        void mountWindowsDownload(windowsDownload);
+      for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-server-download]")) {
+        void mountServerDownload(link, link.dataset.serverDownload as DownloadSystem);
       }
 
       mountReveal(Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]")));

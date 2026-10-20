@@ -42,7 +42,7 @@
 #   /apt/               con dists/stable/main/binary-amd64/
 #   /rpm/               con repodata/
 #   /windows/           el `-setup.exe` y el `.sig` de cada version, y `latest.json`
-#   /macos/             el `.app.tar.gz` y el `.sig` de cada version que lo trae, y
+#   /macos/             el `.dmg`, el `.app.tar.gz` y el `.sig` de cada version que los trae, y
 #                       `latest.json`
 #
 # APT CON SUITE `stable` Y NO REPOSITORIO PLANO (ID-175): el plano es mas
@@ -465,13 +465,16 @@ jq -n \
     > "$arbol/windows/latest.json"
 
 # ----------------------------------------------------------------- 5. macos --
-# Como `windows/`, con las versiones estables que traen la actualizacion de macOS.
+# Como `windows/`, con las versiones estables que traen la actualizacion de macOS y su `.dmg`.
 echo "  macos: colocando las actualizaciones y latest.json"
 ultima_app=""
 for i in "${!versiones[@]}"; do
     [[ "${versiones[$i]}" == *-* ]] && continue
     [ -n "${app_de[$i]}" ] || continue
     cp "$serie/${versiones[$i]}/${app_de[$i]}" "$serie/${versiones[$i]}/${app_de[$i]}.sig" "$arbol/macos/"
+    while IFS= read -r nombre; do
+        cp "$serie/${versiones[$i]}/$nombre" "$arbol/macos/"
+    done < <(paquetes_del_formato "$serie/${versiones[$i]}" dmg)
     ultima_app="$i"
 done
 if [ -z "$ultima_app" ]; then
