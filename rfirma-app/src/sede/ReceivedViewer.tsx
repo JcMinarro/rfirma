@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
 import { Icon } from "../design-system/icons";
 import { DocumentViewer } from "../viewer/DocumentViewer";
+import type { ZoomMode } from "../viewer/zoom";
 import { opensOutside, type ReceivedDocument, receivedName } from "./received";
 import { SignaturesStrip } from "./SignaturesStrip";
 import { indentedXml } from "./xml";
@@ -52,6 +53,7 @@ function Content({
           pdf={content.pdf}
           placement={null}
           canPlace={false}
+          initialZoom={FIT_WIDTH}
           onOpen={noop}
         />
       );
@@ -132,5 +134,8 @@ function dataUrl(mediaType: string, bytes: Uint8Array): string {
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return `data:${mediaType};base64,${btoa(binary)}`;
 }
+
+// La columna del visor es más estrecha que la ventana principal: a lo alto, la hoja se queda pequeña.
+const FIT_WIDTH: ZoomMode = { kind: "fit-width" };
 
 function noop() {}

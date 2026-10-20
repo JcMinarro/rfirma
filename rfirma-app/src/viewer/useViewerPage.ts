@@ -31,6 +31,7 @@ interface UseViewerPageArgs {
   pdf: PdfDocument | null;
   placement: Placement | null;
   stamped: PdfDocument | null;
+  initialZoom?: ZoomMode;
 }
 
 /**
@@ -39,7 +40,12 @@ interface UseViewerPageArgs {
  * [`useViewerBox`](./useViewerBox.ts), que es quien coloca el recuadro sobre
  * lo que esto pinta.
  */
-export function useViewerPage({ pdf, placement, stamped }: UseViewerPageArgs) {
+export function useViewerPage({
+  pdf,
+  placement,
+  stamped,
+  initialZoom = DEFAULT_ZOOM,
+}: UseViewerPageArgs) {
   const canvas = useRef<HTMLCanvasElement>(null);
   // La parte visible: la que se mide para ajustar, la que se desplaza al
   // anclar el zoom al puntero y la que dice si el recuadro se ve o no.
@@ -63,7 +69,7 @@ export function useViewerPage({ pdf, placement, stamped }: UseViewerPageArgs) {
   // Cómo se mira, que no es lo mismo que cuánto se amplía: sobrevive al cambio
   // de página, al redimensionado y al documento siguiente, sea un modo de
   // ajuste o un porcentaje fijado a mano.
-  const [mode, setMode] = useState<ZoomMode>(DEFAULT_ZOOM);
+  const [mode, setMode] = useState<ZoomMode>(initialZoom);
   const [viewport, setViewport] = useState<Viewport | null>(null);
   // La página **sin escalar**, en puntos: el divisor de todo ajuste. Sale de la
   // misma pintada, así que no hay una segunda lectura del documento.

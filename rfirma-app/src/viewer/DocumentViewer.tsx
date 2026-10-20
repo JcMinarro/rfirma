@@ -17,7 +17,7 @@ import { GRIP_PX } from "./signatureBox";
 import type { DocumentFailure } from "./source";
 import { useViewerBox } from "./useViewerBox";
 import { useViewerPage } from "./useViewerPage";
-import { ZOOM_MAX, ZOOM_MIN } from "./zoom";
+import { ZOOM_MAX, ZOOM_MIN, type ZoomMode } from "./zoom";
 
 /** Las cuatro esquinas, con la clase que las coloca. */
 const GRIPS = [
@@ -118,6 +118,8 @@ interface DocumentViewerProps {
   onComposeStamp?: () => void;
   /** Dónde va el hueco punteado de la rúbrica que falta por cargar. */
   rubricGap?: RubricGap | null;
+  /** El modo de zoom de partida, si no es `DEFAULT_ZOOM`. */
+  initialZoom?: ZoomMode;
 }
 
 /**
@@ -156,6 +158,7 @@ export function DocumentViewer({
   stamp,
   onComposeStamp,
   rubricGap = null,
+  initialZoom,
 }: DocumentViewerProps) {
   const { t, i18n } = useTranslation();
   const {
@@ -176,7 +179,7 @@ export function DocumentViewer({
     navigate,
     stepZoom,
     commitTyped,
-  } = useViewerPage({ pdf, placement, stamped });
+  } = useViewerPage({ pdf, placement, stamped, initialZoom });
 
   useEffect(() => {
     onPageChange?.(page);
