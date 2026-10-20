@@ -90,6 +90,16 @@ pub fn show_the_site_window(app: &tauri::AppHandle) {
     }
 }
 
+/// Quita el icono del Dock si la ventana de sede no está a la vista: al reabrir, macOS lo devuelve al Dock.
+pub fn out_of_the_dock_unless_shown(app: &tauri::AppHandle) {
+    let shown = app
+        .get_webview_window(SITE_WINDOW)
+        .is_some_and(|window| window.is_visible().unwrap_or(false));
+    if !shown {
+        super::show_in_the_dock(app, false);
+    }
+}
+
 /// Puerto de ventana para la aplicación Tauri.
 #[derive(Clone)]
 pub struct TauriSiteWindow {

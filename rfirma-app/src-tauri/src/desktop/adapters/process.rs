@@ -137,9 +137,9 @@ fn yielded_to(child: u32) -> bool {
 fn yield_the_foreground_to(_: &tauri::AppHandle, _: u32) {}
 
 /// Abre el escritorio cuando macOS reactiva un proceso de sede: Spotlight y el Dock reabren la instancia viva en vez de lanzar otra.
-pub fn launch_the_desktop_on_reopen(app: &tauri::AppHandle, event: &tauri::RunEvent) {
+pub fn launch_the_desktop_on_reopen(app: &tauri::AppHandle, event: &tauri::RunEvent) -> bool {
     if !reopened(event) {
-        return;
+        return false;
     }
     let launched = std::env::current_exe()
         .and_then(|executable| std::process::Command::new(executable).spawn());
@@ -150,6 +150,7 @@ pub fn launch_the_desktop_on_reopen(app: &tauri::AppHandle, event: &tauri::RunEv
         }
         Err(error) => eprintln!("rfirma: no se puede abrir el escritorio ({error})"),
     }
+    true
 }
 
 #[cfg(target_os = "macos")]

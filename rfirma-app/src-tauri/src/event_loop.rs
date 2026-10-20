@@ -25,8 +25,10 @@ pub(crate) fn build_and_run(
             if !desktop::adapters::process::launch_the_delivered_urls(app, &event, window_is_up) {
                 serving.only_for_links.store(true, Ordering::SeqCst);
             }
-            if serving.reopens_the_desktop {
-                desktop::adapters::process::launch_the_desktop_on_reopen(app, &event);
+            if serving.reopens_the_desktop
+                && desktop::adapters::process::launch_the_desktop_on_reopen(app, &event)
+            {
+                site::adapters::window::out_of_the_dock_unless_shown(app);
             }
             erase_the_scratch_folder_on_exit(app, &event);
         });
