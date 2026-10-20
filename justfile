@@ -126,6 +126,7 @@ check-repo: check-version fmt-check
     {{ root }}/packaging/repo/publish-tree.test.sh
     {{ root }}/packaging/windows/sign-updater.test.sh
     {{ root }}/packaging/verify-packages.test.sh
+    {{ root }}/packaging/macos/verify-cask.test.sh
     {{ root }}/packaging/check_launchers.py
     python3 -m unittest discover -s {{ root }}/packaging -p 'test_check_launchers.py'
     python3 -m unittest discover -s {{ root }}/scripts/tests -p 'test_*.py'
