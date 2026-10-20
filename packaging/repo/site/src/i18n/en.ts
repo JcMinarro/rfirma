@@ -154,16 +154,16 @@ export const en: Dictionary = {
     "To leave no rFirma certificate behind in your browser, click <em>Withdraw certificate</em> in the status panel before uninstalling.",
   "install.windows.title": "rFirma for Windows",
   "install.windows.body":
-    "Per-user installer, no administrator rights needed. It uses the Windows certificate store (MS-CAPI / CNG) directly and, once installed, updates from within the app: every new version arrives with its minisign signature, which is checked before installing it.",
+    "Installs for your user only, without administrator rights. It uses the certificates you already have in Windows and updates itself.",
   "install.windows.download": "Download the Windows installer",
   "install.windows.note":
-    'Verify what you download: get <code>SHA256SUMS</code> from the <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> and check that the installer\'s hash matches its line. The installer is not Authenticode-signed, so SmartScreen will warn you when you open it.',
+    'Windows will warn you that the installer isn\'t signed: click “More info” and “Run anyway”. To check the download, compare its hash with the one in <code>SHA256SUMS</code>, in the <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma for macOS",
   "install.macos.body":
-    "Requires macOS 15.4 or later and an Apple Silicon Mac. With Homebrew, rFirma installs with this command and updates from within the app.",
+    "For Apple Silicon Macs with macOS 15.4 or later. Install it with Homebrew, or download the .dmg and drag rFirma to Applications. It then updates itself.",
   "install.macos.download": "Download the macOS .dmg",
   "install.macos.note":
-    "The first time, whether you install with Homebrew or download the <code>.dmg</code>, macOS flags the app as downloaded from the internet and warns you when you open it. To clear the flag, run this command after installing:",
+    "The first time, macOS won't open it because it isn't signed by Apple. To allow it, run this in Terminal:",
 
   "transparency.kicker": "Transparency",
   "transparency.title": "All the code, in the open",

@@ -154,16 +154,16 @@ export const ca: Dictionary = {
     "Per no deixar el certificat de rFirma al navegador, prem <em>Retira el certificat</em> al panell d'estat abans de desinstal·lar.",
   "install.windows.title": "rFirma per a Windows",
   "install.windows.body":
-    "Instal·lador per al teu usuari, sense permisos d'administrador. Fa servir directament l'emmagatzem de certificats de Windows (MS-CAPI / CNG) i, un cop instal·lat, s'actualitza des de la mateixa aplicació: cada versió nova arriba amb la seua signatura minisign, que es comprova abans d'instal·lar-la.",
+    "S'instal·la només per al teu usuari, sense permisos d'administrador. Fa servir els certificats que ja tens a Windows i s'actualitza sola.",
   "install.windows.download": "Descarrega l'instal·lador de Windows",
   "install.windows.note":
-    'Verifica el que descarregues: baixa <code>SHA256SUMS</code> de la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> i comprova que el hash de l\'instal·lador coincideix amb la seua línia. L\'instal·lador no està signat amb Authenticode, així que SmartScreen t\'avisarà en obrir-lo.',
+    'Windows t\'avisarà que l\'instal·lador no està signat: prem «Més informació» i «Executa igualment». Si vols comprovar la baixada, compara el seu hash amb el de <code>SHA256SUMS</code>, a la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma per a macOS",
   "install.macos.body":
-    "Requereix macOS 15.4 o posterior i un Mac amb Apple Silicon. Amb Homebrew, rFirma s'instal·la amb aquesta ordre i s'actualitza des de la mateixa aplicació.",
+    "Per a Mac amb Apple Silicon i macOS 15.4 o posterior. Instal·la-la amb Homebrew o baixa el .dmg i arrossega rFirma a Aplicacions. Després s'actualitza sola.",
   "install.macos.download": "Descarrega el .dmg de macOS",
   "install.macos.note":
-    "La primera vegada, tant si instal·les amb Homebrew com si descarregues el <code>.dmg</code>, macOS marca l'aplicació com a descarregada d'internet i t'avisa en obrir-la. Per llevar la marca, executa aquesta ordre després d'instal·lar-la:",
+    "La primera vegada, macOS no la deixa obrir perquè no està signada per Apple. Per permetre-ho, executa això al Terminal:",
 
   "transparency.kicker": "Transparència",
   "transparency.title": "Tot el codi, a la vista",

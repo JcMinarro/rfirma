@@ -153,16 +153,16 @@ export const gl: Dictionary = {
     "Para non deixar o certificado de rFirma no navegador, preme <em>Retirar certificado</em> no panel de estado antes de desinstalar.",
   "install.windows.title": "rFirma para Windows",
   "install.windows.body":
-    "Instalador para o teu usuario, sen permisos de administrador. Usa directamente o almacén de certificados de Windows (MS-CAPI / CNG) e, unha vez instalado, actualízase desde a propia aplicación: cada versión nova chega coa súa sinatura minisign, que se comproba antes de instalala.",
+    "Instálase só para o teu usuario, sen permisos de administrador. Usa os certificados que xa tes en Windows e actualízase soa.",
   "install.windows.download": "Descargar o instalador de Windows",
   "install.windows.note":
-    'Verifica o que descargas: baixa <code>SHA256SUMS</code> da <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> e comproba que o hash do instalador coincide coa súa liña. O instalador non está asinado con Authenticode, así que SmartScreen avisarache ao abrilo.',
+    'Windows avisará de que o instalador non está asinado: preme «Máis información» e «Executar de todos os xeitos». Se queres comprobar a descarga, compara o seu hash co de <code>SHA256SUMS</code>, na <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma para macOS",
   "install.macos.body":
-    "Require macOS 15.4 ou posterior e un Mac con Apple Silicon. Con Homebrew, rFirma instálase con esta orde e actualízase desde a propia aplicación.",
+    "Para Mac con Apple Silicon e macOS 15.4 ou posterior. Instálaa con Homebrew ou descarga o .dmg e arrastra rFirma a Aplicacións. Despois actualízase soa.",
   "install.macos.download": "Descargar o .dmg de macOS",
   "install.macos.note":
-    "A primeira vez, tanto se instalas con Homebrew como se descargas o <code>.dmg</code>, macOS marca a aplicación como descargada de internet e avisa ao abrila. Para quitar a marca, executa esta orde despois de instalala:",
+    "A primeira vez, macOS non a deixa abrir porque non está asinada por Apple. Para permitilo, executa isto no Terminal:",
 
   "transparency.kicker": "Transparencia",
   "transparency.title": "Todo o código, á vista",

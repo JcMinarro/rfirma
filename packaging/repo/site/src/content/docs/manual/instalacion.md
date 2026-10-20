@@ -85,51 +85,45 @@ rFirma pide esos accesos porque los necesita para firmar:
 
 ## Windows
 
-Descarga el instalador `rFirma_*_x64-setup.exe` de la
-[última Release](https://github.com/sgomez/rfirma/releases/latest). Se instala para tu
-usuario, sin permisos de administrador, y usa directamente el almacén de certificados
-de Windows.
+Descarga el instalador desde la [web](https://rfirma.sgomez.me/#instalacion) o la
+[última Release](https://github.com/sgomez/rfirma/releases/latest). Se instala solo para
+tu usuario, sin permisos de administrador, y usa los certificados que ya tienes en
+Windows.
 
-El instalador no está firmado con Authenticode, así que SmartScreen avisará al abrirlo.
-Antes de ejecutarlo, comprueba que el fichero descargado es el publicado: baja
-`SHA256SUMS` de la misma Release y compara el hash con la línea del instalador.
+Windows avisará de que el instalador no está firmado: pulsa «Más información» y
+«Ejecutar de todas formas». Si quieres comprobar la descarga, compara su hash con el de
+`SHA256SUMS`, en la Release:
 
 ```powershell
 Get-FileHash .\rFirma_*_x64-setup.exe -Algorithm SHA256
 Select-String rFirma_ .\SHA256SUMS
 ```
 
-Una vez instalado, rFirma se actualiza desde la propia aplicación: cada versión nueva
-llega con su firma minisign, que se comprueba antes de instalarla.
+Después, rFirma se actualiza sola.
 
 ## macOS
 
-Necesitas macOS 15.4 o posterior y un Mac con Apple Silicon. La vía principal es
-Homebrew:
+Necesitas un Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Homebrew:
 
 ```bash
 brew install --cask sgomez/rfirma/rfirma
 ```
 
-También puedes descargar `rfirma_<versión>_aarch64.dmg` de la
-[última Release](https://github.com/sgomez/rfirma/releases/latest) y arrastrar
-`rfirma.app` a Aplicaciones.
+O descarga el `.dmg` desde la [web](https://rfirma.sgomez.me/#instalacion) y arrastra
+rFirma a Aplicaciones.
 
-La primera vez, por cualquiera de las dos vías, macOS marca la aplicación como bajada
-de internet y avisa al abrirla. Homebrew te muestra esta orden al instalar; quita la
-marca antes de abrirla:
+La primera vez, macOS no la deja abrir porque no está firmada por Apple. Para
+permitirlo, ejecuta esto en el Terminal:
 
 ```bash
 xattr -c /Applications/rfirma.app
 ```
 
-Las actualizaciones las hace rFirma desde la propia aplicación, con ambas vías. Tras
-actualizar, el llavero puede volver a pedirte permiso para que rFirma use tus
-certificados; es esperable.
+Después, rFirma se actualiza sola. Tras cada actualización, el llavero puede volver a
+pedirte permiso para usar tus certificados.
 
-Antes de ejecutar `brew uninstall`, retira desde rFirma lo que dejó en tu usuario: el
-certificado de la CA local y el manejador de `afirma://`. Homebrew solo borra la
-aplicación.
+Antes de `brew uninstall`, retira desde rFirma el certificado de la CA local y el
+manejador de `afirma://`: Homebrew solo borra la aplicación.
 
 ## La huella de la clave GPG
 

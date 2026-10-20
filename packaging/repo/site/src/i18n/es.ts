@@ -151,16 +151,16 @@ export const es = {
     "Para no dejar el certificado de rFirma en el navegador, pulsa <em>Retirar certificado</em> en el panel de estado antes de desinstalar.",
   "install.windows.title": "rFirma para Windows",
   "install.windows.body":
-    "Instalador para tu usuario, sin permisos de administrador. Usa directamente el almacén de certificados de Windows (MS-CAPI / CNG) y, una vez instalado, se actualiza desde la propia aplicación: cada versión nueva llega con su firma minisign, que se comprueba antes de instalarla.",
+    "Se instala solo para tu usuario, sin permisos de administrador. Usa los certificados que ya tienes en Windows y se actualiza sola.",
   "install.windows.download": "Descargar el instalador de Windows",
   "install.windows.note":
-    'Verifica lo que descargas: baja <code>SHA256SUMS</code> de la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> y comprueba que el hash del instalador coincide con su línea. El instalador no está firmado con Authenticode, así que SmartScreen avisará al abrirlo.',
+    'Windows avisará de que el instalador no está firmado: pulsa «Más información» y «Ejecutar de todas formas». Si quieres comprobar la descarga, compara su hash con el de <code>SHA256SUMS</code>, en la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma para macOS",
   "install.macos.body":
-    "Requiere macOS 15.4 o posterior y un Mac con Apple Silicon. Con Homebrew, rFirma se instala con esta orden y se actualiza desde la propia aplicación.",
+    "Para Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Homebrew o descarga el .dmg y arrastra rFirma a Aplicaciones. Después se actualiza sola.",
   "install.macos.download": "Descargar el .dmg de macOS",
   "install.macos.note":
-    "La primera vez, tanto si instalas con Homebrew como si descargas el <code>.dmg</code>, macOS marca la aplicación como descargada de internet y avisa al abrirla. Para quitar la marca, ejecuta esta orden tras instalarla:",
+    "La primera vez, macOS no la deja abrir porque no está firmada por Apple. Para permitirlo, ejecuta esto en el Terminal:",
 
   "transparency.kicker": "Transparencia",
   "transparency.title": "Todo el código, a la vista",
