@@ -365,9 +365,9 @@ de la ventana real; las decisiones de abajo son las de cada momento.
 ### Marcar el área
 
 - **Es el único momento en que la ventana crece**, porque en la caja útil no cabe
-  una página que se pueda marcar. Se reparte como la ventana principal: visor a
-  la izquierda y barra a la derecha con el bloque «En qué páginas» del panel de
-  firma.
+  una página que se pueda marcar. Se reparte como la ampliada: la columna a la
+  izquierda, con el bloque «En qué páginas» del panel de firma, y el visor a la
+  derecha.
 - **Ni modelo ni rúbrica**: lo que va dentro del recuadro lo pone la sede
   (ADR-0019).
 - **Cerrar con la cruz es pulsar cancelar**, como cerrar el diálogo del área en el
