@@ -81,12 +81,13 @@ actualizacion_de_macos_de_pega() {
     local dir="$1" version="$2"
     echo "app $version" > "$dir/rFirma_${version}_aarch64.app.tar.gz"
     printf 'firma mac de %s\n' "$version" > "$dir/rFirma_${version}_aarch64.app.tar.gz.sig"
+    echo "dmg $version" > "$dir/rFirma_${version}_aarch64.dmg"
     "$raiz/scripts/packages-manifest.sh" write "$dir"
 }
 
 sin_actualizacion_de_macos() {
     local dir="$1"
-    rm -f "$dir"/*.app.tar.gz "$dir"/*.app.tar.gz.sig
+    rm -f "$dir"/*.app.tar.gz "$dir"/*.app.tar.gz.sig "$dir"/*.dmg
     jq 'map(select(.platform != "macos"))' "$dir/paquetes.json" > "$dir/paquetes.json.nuevo"
     mv "$dir/paquetes.json.nuevo" "$dir/paquetes.json"
 }
@@ -289,6 +290,7 @@ echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_x64-setup.exe.sig"
 echo "de mas" > "$serie/v0.4.10/subido-a-mano.exe"
 echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_aarch64.app.tar.gz"
 echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_aarch64.app.tar.gz.sig"
+echo "de mas" > "$serie/v0.4.10/rFirma_9.9.9_aarch64.dmg"
 
 # ---------------------------------------------------------------------------
 # El arbol, dos veces y en dos directorios distintos
@@ -506,16 +508,17 @@ fi
 # ---------------------------------------------------------------------------
 # /macos/: la actualizacion y latest.json
 # ---------------------------------------------------------------------------
-# macos_has_the_update_and_signature_of_every_version_that_brings_it
+# macos_has_the_dmg_update_and_signature_of_every_version_that_brings_them
 faltan_de_macos=0
 for version in 0.4.2 0.4.10; do
-    for fichero in "rFirma_${version}_aarch64.app.tar.gz" "rFirma_${version}_aarch64.app.tar.gz.sig"; do
+    for fichero in "rFirma_${version}_aarch64.dmg" "rFirma_${version}_aarch64.app.tar.gz" "rFirma_${version}_aarch64.app.tar.gz.sig"; do
         [ -f "$tmp/arbol/macos/$fichero" ] || { faltan_de_macos=1; echo "  falta $fichero" >&2; }
     done
 done
 if [ "$faltan_de_macos" -eq 0 ] && [ -z "$(find "$tmp/arbol/macos" -name '*0.4.0*' -print -quit)" ] \
-    && [ ! -e "$tmp/arbol/macos/rFirma_9.9.9_aarch64.app.tar.gz" ]; then
-    ok "macos/ trae la actualizacion y su .sig de cada version que la trae, y nada fuera del manifiesto"
+    && [ ! -e "$tmp/arbol/macos/rFirma_9.9.9_aarch64.app.tar.gz" ] \
+    && [ ! -e "$tmp/arbol/macos/rFirma_9.9.9_aarch64.dmg" ]; then
+    ok "macos/ trae el .dmg, la actualizacion y su .sig de cada version que los trae, y nada fuera del manifiesto"
 else
     fail "macos/ no trae lo que dicen los manifiestos de la serie"
 fi
