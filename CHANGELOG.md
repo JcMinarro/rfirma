@@ -8,6 +8,21 @@ Desde la v0.11.2 cada sección la genera `just release <version>` a partir de
 los títulos de las PR fusionadas en `main` desde la etiqueta anterior: los
 `feat`, `fix` y `perf` que no son de ámbito interno.
 
+## [0.16.0] - 2026-10-20
+
+### Added
+- Sign -format facturae firma la factura y cosign la rechaza (#1979).
+- La ventana de -certgui lee la elección de la terminal (#1980).
+- RFirma en macOS: firmar con los certificados del llavero y la integración con el sistema (#2042).
+- El .dmg se abre con fondo y una flecha hacia Applications (#2064).
+
+### Fixed
+- La landing se presenta como alternativa a AutoFirma y no anuncia macOS (#1916).
+- El descubrimiento elige un libsoftokn3.so de 32 bits si hay NSS multiarch instalado (#1989).
+- Los documentos se abren a la derecha y la ventana no se mueve al ampliarse (#2051).
+- Los certificados de pruebas se instalan en macOS, en el SoftHSM de Homebrew y en un llavero aparte (#2056).
+- La ventana de sede queda delante del escritorio, no deja iconos en el Dock y Spotlight abre el escritorio con una sede abierta (#2057).
+
 ## [0.15.0] - 2026-10-12
 
 ### Added
