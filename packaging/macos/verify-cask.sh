@@ -34,6 +34,7 @@ cp "$tmp/cask.rb" "$(brew --repository "$tap")/Casks/rfirma.rb"
 brew install --cask "$tap/rfirma"
 app="$applications/rfirma.app"
 [ -d "$app" ] || { echo "$app no existe tras instalar" >&2; exit 1; }
+xattr -c "$app"
 "$app/Contents/MacOS/rfirma" --version
 
 brew uninstall --cask "$tap/rfirma"

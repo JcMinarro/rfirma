@@ -30,15 +30,17 @@ case "$1" in
     install)
         cp "$FAKE_REPO/Casks/rfirma.rb" "$FAKE_INSTALLED_CASK"
         mkdir -p "$APPLICATIONS_DIR/rfirma.app/Contents/MacOS"
-        printf '#!/bin/sh\necho "rfirma 1.0.0"\n' > "$APPLICATIONS_DIR/rfirma.app/Contents/MacOS/rfirma"
+        printf '#!/bin/sh\necho "$*" > "$FAKE_LAUNCH_LOG"\n' > "$APPLICATIONS_DIR/rfirma.app/Contents/MacOS/rfirma"
         chmod +x "$APPLICATIONS_DIR/rfirma.app/Contents/MacOS/rfirma"
         ;;
     uninstall) [ -n "${FAKE_KEEP_APP:-}" ] || rm -rf "$APPLICATIONS_DIR/rfirma.app" ;;
 esac
 BREW
 chmod +x "$tmp/bin/brew"
+printf '#!/bin/sh\n' > "$tmp/bin/xattr"
+chmod +x "$tmp/bin/xattr"
 
-export PATH="$tmp/bin:$PATH" FAKE_REPO="$tmp/repo" FAKE_BREW_LOG="$tmp/brew.log"
+export PATH="$tmp/bin:$PATH" FAKE_REPO="$tmp/repo" FAKE_BREW_LOG="$tmp/brew.log" FAKE_LAUNCH_LOG="$tmp/launch.log"
 export FAKE_INSTALLED_CASK="$tmp/installed.rb" APPLICATIONS_DIR="$tmp/apps" CASK_SOURCE="$tmp/cask.rb"
 
 fail() { echo "FALLO  $*" >&2; exit 1; }
@@ -48,6 +50,7 @@ grep -q '^tap-new --no-git' "$tmp/brew.log" || fail "el tap de usar y tirar debe
 grep -qF "url \"file://$tmp/rfirma_1.0.0_aarch64.dmg\"" "$tmp/installed.rb" || fail "el cask debe apuntar al dmg local"
 grep -q "sha256 \"$expected_sha\"" "$tmp/installed.rb" || fail "el cask debe llevar el sha256 del dmg local"
 grep -q 'app "rfirma.app"' "$tmp/installed.rb" || fail "el resto del cask debe quedar igual"
+[ "$(cat "$tmp/launch.log")" = "--version" ] || fail "debe arrancar la app con --version"
 grep -q '^uninstall --cask' "$tmp/brew.log" || fail "debe desinstalar"
 [ ! -e "$tmp/apps/rfirma.app" ] || fail "la app debe haberse retirado"
 

@@ -265,9 +265,6 @@ jobs:
       - name: Empaqueta la .app y el .dmg
         run: just bundle
 
-      - name: Instala y desinstala el cask con ese .dmg
-        run: packaging/macos/verify-cask.sh rfirma-app/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-
       - name: Sube el .dmg y la actualizacion
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -278,9 +275,28 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  # El cask pide macOS 15 (Sequoia) y la app 15.4 (ADR-0040): no se prueba en el runner de compilacion.
+  verify-cask:
+    name: Cask de macOS
+    needs: macos
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bundle-macos
+          path: dmg
+
+      - name: Instala y desinstala el cask con ese .dmg
+        run: packaging/macos/verify-cask.sh dmg/*.dmg
+
   collect-packages:
     name: Reune y verifica paquetes
-    needs: [native-bridge, test-native, flatpak, bundle, windows, macos]
+    needs: [native-bridge, test-native, flatpak, bundle, windows, macos, verify-cask]
     if: |
       always() &&
       !cancelled() &&
@@ -289,6 +305,7 @@ jobs:
       needs.flatpak.result == 'success' &&
       needs.windows.result == 'success' &&
       needs.macos.result == 'success' &&
+      needs.verify-cask.result == 'success' &&
       (needs.bundle.result == 'success' || needs.bundle.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 10
