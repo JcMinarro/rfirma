@@ -231,6 +231,12 @@ knip: po-import
 certs action:
     ./testdata/softhsm/certs.sh {{ action }}
 
+# Instala o quita los certificados de pruebas en un llavero aparte de macOS, el que ve la app instalada: `just keychain-certs install|uninstall`.
+[macos]
+[group('dev')]
+keychain-certs action:
+    ./testdata/keychain/certs.sh {{ action }}
+
 # Descarga (a etiqueta y sha fijados) el autoscript.js del banco de conformidad.
 [group('ci')]
 [script('bash')]

@@ -15,7 +15,6 @@
 
 set -euo pipefail
 
-module="${RFIRMA_PKCS11_MODULE:-/usr/lib/softhsm/libsofthsm2.so}"
 kit="${RFIRMA_TEST_CERTS:-$HOME/.local/share/rfirma-test-certs}"
 token_label="rfirma-kit"
 pin="1234"
@@ -31,6 +30,7 @@ selection=(
 )
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$here/platform.sh"
 
 delete_token() {
     if softhsm2-util --show-slots | grep -q "Label:[[:space:]]*$1[[:space:]]*$"; then

@@ -35,7 +35,9 @@ pub use rfirma_lib::Roots;
 pub use base64::Engine;
 pub use std::sync::Arc;
 
-pub const CARD_MODULE: &str = "/usr/lib/softhsm/libsofthsm2.so";
+#[path = "../support/softhsm.rs"]
+mod softhsm;
+
 pub const CARD_ACTIVE: &str = "FNMT-ACTIVO-99999999R";
 pub const KIT_PASSWORD: &str = "1234";
 
@@ -128,16 +130,7 @@ pub fn the_token_alone() -> std::sync::MutexGuard<'static, ()> {
         .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
-pub fn the_card_module() -> PathBuf {
-    let module = PathBuf::from(CARD_MODULE);
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. Estas pruebas necesitan SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+pub use softhsm::the_softhsm_module as the_card_module;
 
 /// La configuración de SoftHSM de quien corre la prueba, que el binario no encontraría con otra casa.
 pub fn the_softhsm_configuration() -> Option<PathBuf> {

@@ -22,10 +22,12 @@ use rfirma_lib::identity::IdentityRoot;
 use rfirma_lib::memory_error::MemoryError;
 use rfirma_lib::signing::ports::Signer;
 
+#[path = "support/softhsm.rs"]
+mod softhsm;
+
 const KIT_PASSWORD: &str = "1234";
 const KEYRING_PIN: &str = "pin-de-pruebas-del-almacen-de-rfirma";
 
-const CARD_MODULE: &str = "/usr/lib/softhsm/libsofthsm2.so";
 const CARD_ACTIVE: &str = "FNMT-ACTIVO-99999999R";
 
 fn repository_root() -> PathBuf {
@@ -152,14 +154,7 @@ fn installed_certificate(installed: &Path) -> CertificateRef {
 }
 
 fn card_certificate() -> CertificateRef {
-    let module = PathBuf::from(CARD_MODULE);
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. Las pruebas de grada B necesitan SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    pkcs11::list_certificates(Store::module(module))
+    pkcs11::list_certificates(Store::module(softhsm::the_softhsm_module()))
         .expect("no se ha podido listar el token")
         .into_iter()
         .find(|certificate| certificate.reference().label() == CARD_ACTIVE)

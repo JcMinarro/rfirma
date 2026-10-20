@@ -2,20 +2,7 @@
 
 use super::*;
 
-/// El módulo PKCS#11 del token de pruebas.
-pub fn the_test_module() -> PathBuf {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    assert!(
-        module.is_file(),
-        "falta el modulo PKCS#11 en {}. La grada C necesita SoftHSM:\n  \
-         sudo apt install -y softhsm2 opensc\n  just certs install",
-        module.display()
-    );
-    module
-}
+pub use super::softhsm::the_softhsm_module as the_test_module;
 
 /// Las cinco raíces de un rFirma en marcha que solo ve el token de pruebas y recuerda bajo esa
 /// carpeta, para que el caso arranque siempre sin certificado recordado.

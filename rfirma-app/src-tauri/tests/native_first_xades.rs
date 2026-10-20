@@ -11,6 +11,9 @@ use rfirma_lib::signing::application::cycle::{self, SigningRequest};
 use rfirma_lib::signing::domain::bridge::{Format, SignatureOperation, XadesVariant};
 use rfirma_lib::signing::domain::{AdmissibleDocument, SignatureConfig, Waivers};
 
+#[path = "support/softhsm.rs"]
+mod softhsm;
+
 const PIN: &str = "1234";
 /// Certificado activo del kit de pruebas.
 const ACTIVE: &str = "FNMT-ACTIVO-99999999R";
@@ -28,11 +31,7 @@ fn bridge() -> NativeBridge {
 }
 
 fn signing_certificate() -> TokenCertificate {
-    let module = PathBuf::from(
-        std::env::var("RFIRMA_PKCS11_MODULE")
-            .unwrap_or_else(|_| "/usr/lib/softhsm/libsofthsm2.so".to_owned()),
-    );
-    pkcs11::list_certificates(module)
+    pkcs11::list_certificates(softhsm::the_softhsm_module())
         .expect("no se ha podido listar el token")
         .into_iter()
         .find(|certificate| certificate.reference().label() == ACTIVE)

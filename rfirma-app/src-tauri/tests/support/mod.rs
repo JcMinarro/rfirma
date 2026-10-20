@@ -1,6 +1,7 @@
 //! Andamiaje compartido del banco de conformidad (ADR-0014): el cliente publicado bajo Node y el canal que abre rFirma para atenderlo.
 
 mod desk;
+mod softhsm;
 pub use desk::*;
 
 pub use std::io::{BufRead, BufReader};
