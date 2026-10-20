@@ -244,14 +244,15 @@ autoscript:
     set -euo pipefail
     destino="{{ root }}/testdata/conformance/autoscript-{{ autofirma_version }}.js"
     sha="$AUTOSCRIPT_SHA256"
-    if [ -f "$destino" ] && echo "$sha  $destino" | sha256sum --check --status; then
+    sha_of() { sha256sum "$1" | cut -d' ' -f1; }
+    if [ -f "$destino" ] && [ "$(sha_of "$destino")" = "$sha" ]; then
         echo "autoscript.js v{{ autofirma_version }} ya esta en testdata/conformance/"
         exit 0
     fi
     mkdir -p "$(dirname "$destino")"
     curl -sSL --fail --max-time 120 -o "$destino.parcial" "{{ autoscript_url }}"
-    if ! echo "$sha  $destino.parcial" | sha256sum --check --status; then
-        obtenido="$(sha256sum "$destino.parcial" | cut -d' ' -f1)"
+    obtenido="$(sha_of "$destino.parcial")"
+    if [ "$obtenido" != "$sha" ]; then
         rm -f "$destino.parcial"
         echo "autoscript.js no cuadra con el sha fijado:" >&2
         echo "  esperado $sha" >&2
