@@ -279,8 +279,10 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
   el visor sin cambiar su ancho. **Escape cierra el panel y no cancela el
   trámite.**
 - **La ampliada es la misma ventana a 1080 × 660**, el tamaño de marcar el área,
-  y se centra al crecer como en ese momento: ni Wayland ni el compositor dejan
-  colocarla, así que la columna no puede quedarse quieta mientras crece.
+  con la columna a la izquierda y el visor a la derecha. La ventana no se mueve:
+  crece desde su esquina superior izquierda, que es lo único que hacen igual X11
+  y Wayland, así que la columna se queda donde estaba y el documento aparece a
+  su lado.
 - **Los desplegables se abren hacia abajo**, el selector y el menú «⋯» de la
   lista, porque los dos viven arriba de su columna.
 - **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en

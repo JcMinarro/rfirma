@@ -181,7 +181,7 @@ function SedeConsentCompact({
               title={viewLabel}
               onClick={onExpand}
             >
-              <Icon name="expandSide" size={20} />
+              <Icon name="collapseSide" size={20} />
               <span className="sede-received__view-label">{viewLabel}</span>
             </Button>
           )}
@@ -216,7 +216,7 @@ function SedeConsentCompact({
   );
 }
 
-/** La ventana ampliada: el documento a la izquierda, a todo lo alto, y el consentimiento en una columna de 400 px: el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
+/** La ventana ampliada: el consentimiento en una columna de 400 px a la izquierda y el documento a la derecha, a todo lo alto; en la columna, el desplegable, el aviso de lo que ya firmaste tú y los documentos. */
 function SedeConsentExpanded({
   origin,
   sha1ToAllow,
@@ -248,15 +248,6 @@ function SedeConsentExpanded({
 
   return (
     <div className="sede-received-wide">
-      <div className="sede-received-wide__viewer">
-        {shown !== undefined && (
-          <ReceivedViewer
-            document={shown}
-            defaultSignaturesOpen={signaturesOpen}
-            onOpenWith={actions.onOpenWith}
-          />
-        )}
-      </div>
       <div className="sede-received-wide__side">
         <SedeBody
           flush
@@ -272,7 +263,7 @@ function SedeConsentExpanded({
                 title={t("sede.consent.hideDocuments")}
                 onClick={onCollapse}
               >
-                <Icon name="collapseSide" size={20} />
+                <Icon name="expandSide" size={20} />
               </Button>
               {consent.footer}
             </>
@@ -307,6 +298,15 @@ function SedeConsentExpanded({
             </nav>
           </ReceivedColumn>
         </SedeBody>
+      </div>
+      <div className="sede-received-wide__viewer">
+        {shown !== undefined && (
+          <ReceivedViewer
+            document={shown}
+            defaultSignaturesOpen={signaturesOpen}
+            onOpenWith={actions.onOpenWith}
+          />
+        )}
       </div>
     </div>
   );

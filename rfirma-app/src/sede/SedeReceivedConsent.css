@@ -89,5 +89,5 @@
   flex: none;
   flex-direction: column;
   width: 400px;
-  border-left: 1px solid var(--rf-border-subtle);
+  border-right: 1px solid var(--rf-border-subtle);
 }
