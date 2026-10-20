@@ -26,7 +26,6 @@ export const RFIRMA_ICONS: IconFamily = {
     ...SHARED_GLYPHS,
     add: plus,
     close: stroked(OWN, <path d="M6 6l12 12M18 6 6 18" />, 1.8),
-    collapseSide: sidePanel("M13 8l4 4-4 4"),
     collapsed: chevronRight,
     copy: stroked(
       OWN,
@@ -51,7 +50,6 @@ export const RFIRMA_ICONS: IconFamily = {
         <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
       </>,
     ),
-    expandSide: sidePanel("M17 8l-4 4 4 4"),
     expanded: chevronDown,
     externalLink: stroked(
       OWN,
@@ -75,6 +73,7 @@ export const RFIRMA_ICONS: IconFamily = {
       OWN,
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
     ),
+    hideSidePanel: sidePanel("M17 8l-4 4 4 4"),
     info: stroked(
       OWN,
       <>
@@ -131,6 +130,7 @@ export const RFIRMA_ICONS: IconFamily = {
       1.8,
     ),
     selected: check,
+    showSidePanel: sidePanel("M13 8l4 4-4 4"),
     signed: stroked(OWN, <path d="M5 12.5l4.5 4.5L19 7.5" />, 2),
     signedByYou: stroked(
       OWN,

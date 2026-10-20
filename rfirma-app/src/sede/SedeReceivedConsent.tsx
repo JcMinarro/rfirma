@@ -181,7 +181,7 @@ function SedeConsentCompact({
               title={viewLabel}
               onClick={onExpand}
             >
-              <Icon name="collapseSide" size={20} />
+              <Icon name="showSidePanel" size={20} />
               <span className="sede-received__view-label">{viewLabel}</span>
             </Button>
           )}
@@ -263,7 +263,7 @@ function SedeConsentExpanded({
                 title={t("sede.consent.hideDocuments")}
                 onClick={onCollapse}
               >
-                <Icon name="expandSide" size={20} />
+                <Icon name="hideSidePanel" size={20} />
               </Button>
               {consent.footer}
             </>
