@@ -36,7 +36,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          "El momento 1c de la ventana de sede, marcar dónde va la firma visible, con el mismo esqueleto que el consentimiento ampliado a 1080 × 660. El documento ocupa la izquierda con el visor y la barra de la ventana principal; la columna de 400 px lleva arriba quién pide la firma, debajo el título y el bloque «Colocación», y en el pie «Cancelar» y «Continuar», donde el consentimiento pone «Cancelar» y «Firmar».",
+          "El momento 1c de la ventana de sede, marcar dónde va la firma visible, con el mismo esqueleto que el consentimiento ampliado a 1080 × 660. El documento ocupa la derecha con el visor y la barra de la ventana principal; la columna de 400 px, a la izquierda, lleva arriba quién pide la firma, debajo el título y el bloque «Colocación», y en el pie «Cancelar» y «Continuar», donde el consentimiento pone «Cancelar» y «Firmar».",
           "Si el documento no se puede abrir, el visor queda vacío, la columna lo dice con un aviso de error bajo el título y «Continuar» no se puede pulsar.",
           "Úsalo como referencia del momento 1c hasta que sustituya al actual; los controles cambian los datos, no la pantalla.",
         ].join("\n\n"),

@@ -345,10 +345,11 @@ de la ventana real; las decisiones de abajo son las de cada momento.
   reintentar va en el pie, a la izquierda.
 - **Firmando y guardar o cargar enseñan solo el título**, y la barra al firmar.
   Un destino donde no se puede escribir es un `Admonition` de error.
-- **Marcar el área tiene la geometría de la ampliada**: el visor a la izquierda
-  y la columna de 400 px con cabecera y pie, sin frase de ayuda. El recuadro
-  aparece ya en su posición estándar y «Continuar» está habilitado desde el
-  principio, porque la posición estándar ya es una respuesta válida.
+- **Marcar el área tiene la geometría de la ampliada**: la columna de 400 px a
+  la izquierda, con cabecera y pie, y el visor a la derecha, sin frase de
+  ayuda. El recuadro aparece ya en su posición estándar y «Continuar» está
+  habilitado desde el principio, porque la posición estándar ya es una
+  respuesta válida.
 - **«En qué páginas» lleva el estilo del rótulo «Certificado»**, y un documento
   ilegible es un `Admonition` de error.
 - **La página desactualizada es una sola frase**, «Puede tener errores o no ser

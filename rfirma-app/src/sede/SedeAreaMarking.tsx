@@ -27,7 +27,7 @@ interface SedeAreaMarkingProps {
   onCancel: () => void;
 }
 
-/** El documento a la izquierda, con su barra, y en la columna de 400 px quién pide la firma, la colocación y el pie del consentimiento ampliado. */
+/** En la columna de 400 px a la izquierda, quién pide la firma, la colocación y el pie del consentimiento ampliado, y el documento a la derecha, con su barra. */
 export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAreaMarkingProps) {
   const { t } = useTranslation();
   const standardRectOn = useMemo(() => (pdf === null ? null : standardRectOnPageOf(pdf)), [pdf]);
@@ -59,20 +59,6 @@ export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAre
 
   return (
     <div className="sede-received-wide">
-      <div className="sede-received-wide__viewer">
-        <div className="sede-area-marking__viewer">
-          {pdf !== null && (
-            <DocumentViewer
-              pdf={pdf}
-              placement={placement}
-              onMove={moveBox}
-              onTrace={sealPage}
-              onPageChange={viewPage}
-              onOpen={noop}
-            />
-          )}
-        </div>
-      </div>
       <div className="sede-received-wide__side">
         <SedeBody
           flush
@@ -111,6 +97,20 @@ export function SedeAreaMarking({ pdf, origin, asks, onMark, onCancel }: SedeAre
             </div>
           </div>
         </SedeBody>
+      </div>
+      <div className="sede-received-wide__viewer">
+        <div className="sede-area-marking__viewer">
+          {pdf !== null && (
+            <DocumentViewer
+              pdf={pdf}
+              placement={placement}
+              onMove={moveBox}
+              onTrace={sealPage}
+              onPageChange={viewPage}
+              onOpen={noop}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
