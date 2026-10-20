@@ -51,10 +51,16 @@ pub fn make_the_command_line_readable() {
 }
 
 /// Lanza un proceso de sede por cada URL `afirma://` que traiga el evento, y dice si este sigue.
-pub fn launch_the_delivered_urls(event: &tauri::RunEvent, already_serving: bool) -> bool {
+pub fn launch_the_delivered_urls(
+    app: &tauri::AppHandle,
+    event: &tauri::RunEvent,
+    already_serving: bool,
+) -> bool {
     let delivered = delivered_urls(urls_of(event), already_serving);
     for url in &delivered.site_launches {
-        launch_a_site_process(url);
+        if let Some(child) = launch_a_site_process(url) {
+            yield_the_foreground_to(app, child);
+        }
     }
     delivered.this_process_goes_on
 }
@@ -72,16 +78,107 @@ fn urls_of(_: &tauri::RunEvent) -> Vec<String> {
     Vec::new()
 }
 
-fn launch_a_site_process(url: &str) {
+fn launch_a_site_process(url: &str) -> Option<u32> {
     let launched = std::env::current_exe()
         .and_then(|executable| std::process::Command::new(executable).arg(url).spawn());
     match launched {
         Ok(mut child) => {
+            let id = child.id();
             std::thread::spawn(move || child.wait());
+            Some(id)
         }
-        Err(error) => eprintln!("rfirma: no se puede abrir la llamada de sede ({error})"),
+        Err(error) => {
+            eprintln!("rfirma: no se puede abrir la llamada de sede ({error})");
+            None
+        }
     }
 }
+
+/// Cuánto se espera a que macOS registre el proceso de sede para cederle el primer plano.
+#[cfg(target_os = "macos")]
+const YIELD_ATTEMPTS: u32 = 40;
+#[cfg(target_os = "macos")]
+const YIELD_INTERVAL: std::time::Duration = std::time::Duration::from_millis(50);
+
+/// Cede el primer plano al proceso de sede: macOS trae al frente este, y sin cederlo la ventana de escritorio tapa la de sede.
+#[cfg(target_os = "macos")]
+fn yield_the_foreground_to(app: &tauri::AppHandle, child: u32) {
+    let app = app.clone();
+    std::thread::spawn(move || {
+        for _ in 0..YIELD_ATTEMPTS {
+            let (sent, received) = std::sync::mpsc::channel();
+            let asked = app.run_on_main_thread(move || {
+                let _ = sent.send(yielded_to(child));
+            });
+            if asked.is_err() || received.recv().unwrap_or(true) {
+                return;
+            }
+            std::thread::sleep(YIELD_INTERVAL);
+        }
+    });
+}
+
+#[cfg(target_os = "macos")]
+fn yielded_to(child: u32) -> bool {
+    use objc2::MainThreadMarker;
+    use objc2_app_kit::{NSApplication, NSRunningApplication};
+
+    let (Some(main_thread), Ok(pid)) = (MainThreadMarker::new(), i32::try_from(child)) else {
+        return true;
+    };
+    let Some(running) = NSRunningApplication::runningApplicationWithProcessIdentifier(pid) else {
+        return false;
+    };
+    NSApplication::sharedApplication(main_thread).yieldActivationToApplication(&running);
+    true
+}
+
+#[cfg(not(target_os = "macos"))]
+fn yield_the_foreground_to(_: &tauri::AppHandle, _: u32) {}
+
+/// Abre el escritorio cuando macOS reactiva un proceso de sede: Spotlight y el Dock reabren la instancia viva en vez de lanzar otra.
+pub fn launch_the_desktop_on_reopen(app: &tauri::AppHandle, event: &tauri::RunEvent) {
+    if !reopened(event) {
+        return;
+    }
+    let launched = std::env::current_exe()
+        .and_then(|executable| std::process::Command::new(executable).spawn());
+    match launched {
+        Ok(mut child) => {
+            yield_the_foreground_to_this_bundle(app);
+            std::thread::spawn(move || child.wait());
+        }
+        Err(error) => eprintln!("rfirma: no se puede abrir el escritorio ({error})"),
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn reopened(event: &tauri::RunEvent) -> bool {
+    matches!(event, tauri::RunEvent::Reopen { .. })
+}
+
+#[cfg(not(target_os = "macos"))]
+fn reopened(_: &tauri::RunEvent) -> bool {
+    false
+}
+
+/// Cede el primer plano a cualquier instancia de rFirma: el escritorio puede ser uno nuevo o el que ya estaba abierto.
+#[cfg(target_os = "macos")]
+fn yield_the_foreground_to_this_bundle(app: &tauri::AppHandle) {
+    use objc2::MainThreadMarker;
+    use objc2_app_kit::NSApplication;
+    use objc2_foundation::NSString;
+
+    if let Some(main_thread) = MainThreadMarker::new() {
+        NSApplication::sharedApplication(main_thread)
+            .yieldActivationToApplicationWithBundleIdentifier(&NSString::from_str(
+                &app.config().identifier,
+            ));
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn yield_the_foreground_to_this_bundle(_: &tauri::AppHandle) {}
 
 /// Imprime la ayuda, el diagnóstico o la versión si la línea de órdenes los pide, y dice si lo hizo.
 pub fn printed_the_informative_text(command_line: &[String]) -> bool {

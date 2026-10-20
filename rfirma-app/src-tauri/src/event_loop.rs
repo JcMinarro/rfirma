@@ -22,8 +22,11 @@ pub(crate) fn build_and_run(
         })
         .run(move |app, event| {
             let window_is_up = serving.window_is_up.load(Ordering::SeqCst);
-            if !desktop::adapters::process::launch_the_delivered_urls(&event, window_is_up) {
+            if !desktop::adapters::process::launch_the_delivered_urls(app, &event, window_is_up) {
                 serving.only_for_links.store(true, Ordering::SeqCst);
+            }
+            if serving.reopens_the_desktop {
+                desktop::adapters::process::launch_the_desktop_on_reopen(app, &event);
             }
             erase_the_scratch_folder_on_exit(app, &event);
         });
@@ -46,6 +49,7 @@ fn erase_the_scratch_folder_on_exit(app: &tauri::AppHandle, event: &tauri::RunEv
 pub(crate) struct Serving {
     pub(crate) window_is_up: AtomicBool,
     pub(crate) only_for_links: AtomicBool,
+    pub(crate) reopens_the_desktop: bool,
 }
 
 impl Serving {
@@ -53,6 +57,7 @@ impl Serving {
         Self {
             window_is_up: AtomicBool::new(true),
             only_for_links: AtomicBool::new(false),
+            reopens_the_desktop: true,
         }
     }
 }
