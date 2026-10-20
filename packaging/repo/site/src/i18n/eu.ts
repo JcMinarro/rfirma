@@ -143,6 +143,7 @@ export const eu: Dictionary = {
   "install.copy.flatpak.aria": "Kopiatu Flatpaken agindua",
   "install.copy.apt.aria": "Kopiatu APTrako aginduak",
   "install.copy.dnf.aria": "Kopiatu DNFrako aginduak",
+  "install.copy.macos.aria": "Kopiatu Homebrewen agindua",
   "install.flatpak.body":
     "APT edo DNF erabiltzen ez duten Linux banaketentzat gomendatua. Flathub gehitzen duzu, <code>org.gnome.Platform</code> runtimea handik datorrelako, eta rFirmaren urruneko biltegia, beste edozein biltegi bezala: horrela rFirma GNOME Software-n bilatzean ere agertzen da. <code>flatpak</code> eta <code>xdg-desktop-portal</code> instalatuta izatea besterik ez duzu behar.",
   "install.apt.body":
@@ -153,18 +154,18 @@ export const eu: Dictionary = {
     "Argibide zehatzak, gakoaren hatz-marka eta egiaztapena eskuliburuan (gaztelaniaz)",
   "install.uninstall":
     "rFirma-ren ziurtagiria nabigatzailean ez uzteko, sakatu <em>Ziurtagiria kendu</em> egoera-panelean, desinstalatu aurretik.",
-  "install.soon": "Garatzen",
   "install.windows.title": "rFirma Windowsentzat",
   "install.windows.body":
-    "Zure erabiltzailearentzako instalatzailea, administratzaile-baimenik gabe. Windowseko ziurtagiri-biltegia (MS-CAPI / CNG) zuzenean erabiltzen du eta, instalatu ondoren, aplikazioak berak eguneratzen du: bertsio berri bakoitza bere minisign sinadurarekin dator, eta instalatu aurretik egiaztatzen da.",
+    "Zure erabiltzailearentzat bakarrik instalatzen da, administratzaile-baimenik gabe. Windowsen dituzun ziurtagiriak erabiltzen ditu eta bere kabuz eguneratzen da.",
   "install.windows.download": "Deskargatu Windowseko instalatzailea",
   "install.windows.note":
-    'Egiaztatu deskargatzen duzuna: jaitsi <code>SHA256SUMS</code> <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>-tik eta begiratu instalatzailearen hash-a bere lerroarekin bat datorrela. Instalatzailea ez dago Authenticode-rekin sinatuta, beraz SmartScreen-ek abisua emango dizu irekitzean.',
-  "install.macos.title": "macOSentzako euskarria prestatzen",
+    'Windowsek abisatuko dizu instalatzailea ez dagoela sinatuta: sakatu «Informazio gehiago» eta «Exekutatu hala ere». Deskarga egiaztatu nahi baduzu, alderatu bere hash-a <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>-ko <code>SHA256SUMS</code>-ekoarekin:',
+  "install.macos.title": "rFirma macOSentzat",
   "install.macos.body":
-    "macOSentzako bertsio natiboa garapen aktiboan dago. Apple-ren Keychain eta CryptoTokenKit-ekin integratuko da, sistemaren identitate digitaletara sarbide fluidoa eta segurua izateko.",
+    "macOS 15.4 edo berriagoa duten Apple Silicon Mac-entzat. Instalatu Homebrew-rekin edo .dmg-arekin. Gero bere kabuz eguneratzen da.",
+  "install.macos.download": "Deskargatu macOSeko .dmg-a",
   "install.macos.note":
-    '<code>.dmg</code> disko-irudi gisa eta <code>Homebrew</code> formularen bidez banatuko da. Proiektuaren aurrerapena <a href="https://github.com/sgomez/rfirma" target="_blank" rel="noopener noreferrer">GitHub</a>en jarrai dezakezu.',
+    "Lehen aldian, macOSek ez du irekitzen uzten, Applek ez duelako sinatu. Baimentzeko, exekutatu hau Terminalean:",
 
   "transparency.kicker": "Gardentasuna",
   "transparency.title": "Kode osoa, ikusgai",

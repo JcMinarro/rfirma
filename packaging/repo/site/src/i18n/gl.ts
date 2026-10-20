@@ -140,6 +140,7 @@ export const gl: Dictionary = {
   "install.copy.flatpak.aria": "Copiar orde de Flatpak",
   "install.copy.apt.aria": "Copiar ordes para APT",
   "install.copy.dnf.aria": "Copiar ordes para DNF",
+  "install.copy.macos.aria": "Copiar orde de Homebrew",
   "install.flatpak.body":
     "Recomendada para as distribucións de Linux que non usan APT nin DNF. Das de alta Flathub, de onde sae o runtime <code>org.gnome.Platform</code>, e o remoto de rFirma, coma un repositorio máis: así rFirma tamén aparece ao buscar en GNOME Software. Só precisas ter instalados <code>flatpak</code> e <code>xdg-desktop-portal</code>.",
   "install.apt.body":
@@ -150,18 +151,18 @@ export const gl: Dictionary = {
     "Instrucións detalladas, pegada da clave e verificación, no manual (en castelán)",
   "install.uninstall":
     "Para non deixar o certificado de rFirma no navegador, preme <em>Retirar certificado</em> no panel de estado antes de desinstalar.",
-  "install.soon": "En desenvolvemento",
   "install.windows.title": "rFirma para Windows",
   "install.windows.body":
-    "Instalador para o teu usuario, sen permisos de administrador. Usa directamente o almacén de certificados de Windows (MS-CAPI / CNG) e, unha vez instalado, actualízase desde a propia aplicación: cada versión nova chega coa súa sinatura minisign, que se comproba antes de instalala.",
+    "Instálase só para o teu usuario, sen permisos de administrador. Usa os certificados que xa tes en Windows e actualízase soa.",
   "install.windows.download": "Descargar o instalador de Windows",
   "install.windows.note":
-    'Verifica o que descargas: baixa <code>SHA256SUMS</code> da <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> e comproba que o hash do instalador coincide coa súa liña. O instalador non está asinado con Authenticode, así que SmartScreen avisarache ao abrilo.',
-  "install.macos.title": "Soporte para macOS en preparación",
+    'Windows avisará de que o instalador non está asinado: preme «Máis información» e «Executar de todos os xeitos». Se queres comprobar a descarga, compara o seu hash co de <code>SHA256SUMS</code>, na <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
+  "install.macos.title": "rFirma para macOS",
   "install.macos.body":
-    "A versión nativa para macOS está en fase de desenvolvemento activo. Integrarase co Keychain de Apple e CryptoTokenKit para un acceso fluído e seguro ás identidades dixitais do sistema.",
+    "Para Mac con Apple Silicon e macOS 15.4 ou posterior. Instálaa con Homebrew ou co .dmg. Despois actualízase soa.",
+  "install.macos.download": "Descargar o .dmg de macOS",
   "install.macos.note":
-    'Distribuirase como imaxe de disco <code>.dmg</code> e mediante fórmula de <code>Homebrew</code>. Podes seguir o avance do proxecto en <a href="https://github.com/sgomez/rfirma" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+    "A primeira vez, macOS non a deixa abrir porque non está asinada por Apple. Para permitilo, executa isto no Terminal:",
 
   "transparency.kicker": "Transparencia",
   "transparency.title": "Todo o código, á vista",

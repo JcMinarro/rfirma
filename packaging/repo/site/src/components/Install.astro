@@ -126,7 +126,7 @@ flatpak install rfirma me.sgomez.rfirma</pre>
         <div>
           <a
             href="https://github.com/sgomez/rfirma/releases/latest"
-            data-windows-download
+            data-server-download="windows"
             class="rf-btn rf-btn--pill"
             data-btn-brand
             style="text-decoration:none;padding:0 24px;min-height:44px;font-size:.9375rem"
@@ -144,21 +144,37 @@ Select-String rFirma_ .\SHA256SUMS</pre>
 
     <div id="panel-macos" role="tabpanel" aria-labelledby="tab-macos" style="padding-top:24px" hidden>
       <div class="rf-card" style="background:#ffffff;border-color:var(--rf-border-strong);gap:12px">
-        <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span
-            class="rf-badge"
-            style="border-color:var(--rf-warning-border);background:var(--rf-warning-bg);color:var(--rf-warning-text)"
-            >{t("install.soon")}</span
-          >
-          <strong style="font-size:1rem">{t("install.macos.title")}</strong>
-        </span>
+        <strong style="font-size:1rem">{t("install.macos.title")}</strong>
         <p style="margin:0;font-size:.9375rem;line-height:1.6;color:var(--rf-text-muted)">
           {t("install.macos.body")}
         </p>
+        <div style="position:relative">
+          <button
+            type="button"
+            class="install-copy"
+            data-copy-for="code-macos"
+            aria-label={t("install.copy.macos.aria")}
+          >
+            <span class="install-copy__idle">{t("install.copy")}</span>
+            <span class="install-copy__done">{t("install.copied")}</span>
+          </button>
+          <pre id="code-macos" class="install-code">brew install --cask sgomez/rfirma/rfirma</pre>
+        </div>
+        <div>
+          <a
+            href="https://github.com/sgomez/rfirma/releases/latest"
+            data-server-download="macos"
+            class="rf-btn rf-btn--pill"
+            data-btn-brand
+            style="text-decoration:none;padding:0 24px;min-height:44px;font-size:.9375rem"
+            >{t("install.macos.download")}</a
+          >
+        </div>
         <p
           style="margin:0;font-size:.875rem;line-height:1.6;color:var(--rf-text-muted)"
           set:html={t("install.macos.note")}
         />
+        <pre class="install-code">xattr -c /Applications/rfirma.app</pre>
       </div>
     </div>
 

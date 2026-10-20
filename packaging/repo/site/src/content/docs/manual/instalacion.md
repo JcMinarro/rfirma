@@ -85,28 +85,44 @@ rFirma pide esos accesos porque los necesita para firmar:
 
 ## Windows
 
-Descarga el instalador `rFirma_*_x64-setup.exe` de la
-[última Release](https://github.com/sgomez/rfirma/releases/latest). Se instala para tu
-usuario, sin permisos de administrador, y usa directamente el almacén de certificados
-de Windows.
+Descarga el instalador desde la [web](https://rfirma.sgomez.me/#instalacion) o la
+[última Release](https://github.com/sgomez/rfirma/releases/latest). Se instala solo para
+tu usuario, sin permisos de administrador, y usa los certificados que ya tienes en
+Windows.
 
-El instalador no está firmado con Authenticode, así que SmartScreen avisará al abrirlo.
-Antes de ejecutarlo, comprueba que el fichero descargado es el publicado: baja
-`SHA256SUMS` de la misma Release y compara el hash con la línea del instalador.
+Windows avisará de que el instalador no está firmado: pulsa «Más información» y
+«Ejecutar de todas formas». Si quieres comprobar la descarga, compara su hash con el de
+`SHA256SUMS`, en la Release:
 
 ```powershell
 Get-FileHash .\rFirma_*_x64-setup.exe -Algorithm SHA256
 Select-String rFirma_ .\SHA256SUMS
 ```
 
-Una vez instalado, rFirma se actualiza desde la propia aplicación: cada versión nueva
-llega con su firma minisign, que se comprueba antes de instalarla.
+Después, rFirma se actualiza sola.
 
 ## macOS
 
-La versión para macOS está en preparación y todavía no se puede instalar. Se
-integrará con el llavero de Apple. Puedes seguir el avance en el
-[repositorio](https://github.com/sgomez/rfirma).
+Necesitas un Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Homebrew:
+
+```bash
+brew install --cask sgomez/rfirma/rfirma
+```
+
+O descarga el `.dmg` desde la [web](https://rfirma.sgomez.me/#instalacion).
+
+La primera vez, macOS no la deja abrir porque no está firmada por Apple. Para
+permitirlo, ejecuta esto en el Terminal:
+
+```bash
+xattr -c /Applications/rfirma.app
+```
+
+Después, rFirma se actualiza sola. Tras cada actualización, el llavero puede volver a
+pedirte permiso para usar tus certificados.
+
+Antes de `brew uninstall`, retira desde rFirma el certificado de la CA local y el
+manejador de `afirma://`: Homebrew solo borra la aplicación.
 
 ## La huella de la clave GPG
 
