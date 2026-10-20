@@ -337,3 +337,21 @@ gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env release   # la pide sin e
 
 Al terminar, con la copia fuera de línea hecha, `shred -u "$DIR/rfirma-actualizaciones.key";
 rm -rf "$DIR"`.
+
+## El token del tap de Homebrew
+
+`publish.yml` lanza `update-cask.yml` de `sgomez/homebrew-rfirma` al terminar, para que el cask
+apunte a la versión recién publicada. Lo hace con el secreto `HOMEBREW_TAP_TOKEN` del entorno
+`release`: un fine-grained PAT que solo ve ese repositorio y solo puede lanzar sus workflows.
+Sin él, el cask espera al cron diario del tap.
+
+GitHub no deja crear un fine-grained PAT desde la consola. Esta orden abre el formulario
+relleno; en *Repository access* hay que elegir a mano **Only select repositories** →
+`sgomez/homebrew-rfirma` y comprobar *Actions: Read and write*:
+
+```bash
+open "https://github.com/settings/personal-access-tokens/new?name=homebrew-rfirma-dispatch&description=publish.yml+lanza+update-cask.yml&target_name=sgomez&expires_in=365&actions=write"
+gh secret set HOMEBREW_TAP_TOKEN --env release   # lo pide sin eco
+```
+
+Caduca al año: se renueva con las mismas órdenes.

@@ -80,6 +80,11 @@ jobs:
           RSYNC_RSH: "ssh -i ~/.ssh/publish -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
         run: packaging/repo/publish-tree.sh arbol "$TAG" "$DESTINO"
 
+      - name: Actualiza el cask de Homebrew
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: gh workflow run update-cask.yml -R sgomez/homebrew-rfirma
+
       - name: Resumen
         env:
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
