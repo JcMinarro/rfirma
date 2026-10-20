@@ -141,6 +141,7 @@ export const ca: Dictionary = {
   "install.copy.flatpak.aria": "Copiar l'ordre de Flatpak",
   "install.copy.apt.aria": "Copiar les ordres per a APT",
   "install.copy.dnf.aria": "Copiar les ordres per a DNF",
+  "install.copy.macos.aria": "Copiar l'ordre d'Homebrew",
   "install.flatpak.body":
     "Recomanada per a les distribucions de Linux que no fan servir APT ni DNF. Dones d'alta Flathub, d'on surt el runtime <code>org.gnome.Platform</code>, i el remot de rFirma, com un repositori més: així rFirma també apareix en cercar a GNOME Software. Només cal tenir instal·lats <code>flatpak</code> i <code>xdg-desktop-portal</code>.",
   "install.apt.body":
@@ -151,18 +152,18 @@ export const ca: Dictionary = {
     "Instruccions detallades, empremta de la clau i verificació, al manual (en castellà)",
   "install.uninstall":
     "Per no deixar el certificat de rFirma al navegador, prem <em>Retira el certificat</em> al panell d'estat abans de desinstal·lar.",
-  "install.soon": "En desenvolupament",
   "install.windows.title": "rFirma per a Windows",
   "install.windows.body":
     "Instal·lador per al teu usuari, sense permisos d'administrador. Fa servir directament l'emmagatzem de certificats de Windows (MS-CAPI / CNG) i, un cop instal·lat, s'actualitza des de la mateixa aplicació: cada versió nova arriba amb la seua signatura minisign, que es comprova abans d'instal·lar-la.",
   "install.windows.download": "Descarrega l'instal·lador de Windows",
   "install.windows.note":
     'Verifica el que descarregues: baixa <code>SHA256SUMS</code> de la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> i comprova que el hash de l\'instal·lador coincideix amb la seua línia. L\'instal·lador no està signat amb Authenticode, així que SmartScreen t\'avisarà en obrir-lo.',
-  "install.macos.title": "Suport per a macOS en preparació",
+  "install.macos.title": "rFirma per a macOS",
   "install.macos.body":
-    "La versió nativa per a macOS està en fase de desenvolupament actiu. S'integrarà amb el Keychain d'Apple i CryptoTokenKit per a un accés fluid i segur a les identitats digitals del sistema.",
+    "Requereix macOS 15.4 o posterior i un Mac amb Apple Silicon. Amb Homebrew, rFirma s'instal·la amb aquesta ordre i s'actualitza des de la mateixa aplicació.",
+  "install.macos.download": "Descarrega el .dmg de macOS",
   "install.macos.note":
-    'Es distribuirà com a imatge de disc <code>.dmg</code> i mitjançant fórmula de <code>Homebrew</code>. Pots seguir l\'avenç del projecte a <a href="https://github.com/sgomez/rfirma" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+    "Si descarregues el <code>.dmg</code> a mà en lloc d'usar Homebrew, macOS el marca com a descarregat d'internet i t'avisa en obrir-lo. Per llevar la marca, executa aquesta ordre després de copiar l'aplicació a Aplicacions:",
 
   "transparency.kicker": "Transparència",
   "transparency.title": "Tot el codi, a la vista",

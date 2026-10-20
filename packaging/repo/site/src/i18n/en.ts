@@ -141,6 +141,7 @@ export const en: Dictionary = {
   "install.copy.flatpak.aria": "Copy the Flatpak command",
   "install.copy.apt.aria": "Copy the APT commands",
   "install.copy.dnf.aria": "Copy the DNF commands",
+  "install.copy.macos.aria": "Copy the Homebrew command",
   "install.flatpak.body":
     "Recommended for Linux distributions that use neither APT nor DNF. You add Flathub, where the <code>org.gnome.Platform</code> runtime comes from, and rFirma's remote, like any other repository: rFirma then also shows up when you search in GNOME Software. You only need <code>flatpak</code> and <code>xdg-desktop-portal</code> installed.",
   "install.apt.body":
@@ -151,18 +152,18 @@ export const en: Dictionary = {
     "Detailed steps, key fingerprint and verification are in the manual (in Spanish)",
   "install.uninstall":
     "To leave no rFirma certificate behind in your browser, click <em>Withdraw certificate</em> in the status panel before uninstalling.",
-  "install.soon": "In development",
   "install.windows.title": "rFirma for Windows",
   "install.windows.body":
     "Per-user installer, no administrator rights needed. It uses the Windows certificate store (MS-CAPI / CNG) directly and, once installed, updates from within the app: every new version arrives with its minisign signature, which is checked before installing it.",
   "install.windows.download": "Download the Windows installer",
   "install.windows.note":
     'Verify what you download: get <code>SHA256SUMS</code> from the <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a> and check that the installer\'s hash matches its line. The installer is not Authenticode-signed, so SmartScreen will warn you when you open it.',
-  "install.macos.title": "macOS support in the works",
+  "install.macos.title": "rFirma for macOS",
   "install.macos.body":
-    "The native version for macOS is in active development. It will integrate with Apple's Keychain and CryptoTokenKit for smooth, secure access to the system's digital identities.",
+    "Requires macOS 15.4 or later and an Apple Silicon Mac. With Homebrew, rFirma installs with this command and updates from within the app.",
+  "install.macos.download": "Download the macOS .dmg",
   "install.macos.note":
-    'It will be distributed as a <code>.dmg</code> disk image and through a <code>Homebrew</code> formula. You can follow the project\'s progress on <a href="https://github.com/sgomez/rfirma" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+    "If you download the <code>.dmg</code> by hand instead of using Homebrew, macOS flags it as downloaded from the internet and warns you when you open it. To clear the flag, run this command after copying the app to Applications:",
 
   "transparency.kicker": "Transparency",
   "transparency.title": "All the code, in the open",

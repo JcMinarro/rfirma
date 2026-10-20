@@ -104,9 +104,30 @@ llega con su firma minisign, que se comprueba antes de instalarla.
 
 ## macOS
 
-La versión para macOS está en preparación y todavía no se puede instalar. Se
-integrará con el llavero de Apple. Puedes seguir el avance en el
-[repositorio](https://github.com/sgomez/rfirma).
+Necesitas macOS 15.4 o posterior y un Mac con Apple Silicon. La vía principal es
+Homebrew:
+
+```bash
+brew install --cask sgomez/rfirma/rfirma
+```
+
+También puedes descargar `rfirma_<versión>_aarch64.dmg` de la
+[última Release](https://github.com/sgomez/rfirma/releases/latest) y arrastrar
+`rfirma.app` a Aplicaciones. Con Homebrew, rFirma se abre sin el aviso de Gatekeeper.
+Con la descarga directa, macOS marca la aplicación como bajada de internet; quita la
+marca antes de abrirla:
+
+```bash
+xattr -c /Applications/rfirma.app
+```
+
+Las actualizaciones las hace rFirma desde la propia aplicación, con ambas vías. Tras
+actualizar, el llavero puede volver a pedirte permiso para que rFirma use tus
+certificados; es esperable.
+
+Antes de ejecutar `brew uninstall`, retira desde rFirma lo que dejó en tu usuario: el
+certificado de la CA local y el manejador de `afirma://`. Homebrew solo borra la
+aplicación.
 
 ## La huella de la clave GPG
 
