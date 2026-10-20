@@ -264,6 +264,9 @@ jobs:
 
       - name: Empaqueta la .app y el .dmg
         run: just bundle
+        env:
+          # Con CI=true, el bundler de Tauri no maqueta la ventana del .dmg con Finder.
+          TAURI_BUNDLER_DMG_IGNORE_CI: 'true'
 
       - name: Sube el .dmg y la actualizacion
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
