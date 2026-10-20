@@ -14,7 +14,7 @@ const root = resolve(here, "../..");
 const theDesignSystem = join(root, "rfirma-app/src/design-system/bundle");
 const port = Number(process.env.RFIRMA_SEDE_PORT ?? "8443");
 const HOST = "sede.localhost";
-const theLocalCa = join(process.env.XDG_DATA_HOME || join(homedir(), ".local/share"), "rfirma");
+const theLocalCa = join(dataDirectory(), "rfirma");
 const autoscript = process.env.RFIRMA_AUTOSCRIPT;
 
 const TYPES = {
@@ -33,6 +33,18 @@ const PAGES = {
   "/logo.svg": join(root, "packaging/repo/site/public/favicon.svg"),
   "/autoscript.js": autoscript,
 };
+
+/** La carpeta de datos donde rFirma guarda su CA local, la misma que resuelve `desktop/adapters/paths.rs`. */
+function dataDirectory() {
+  switch (process.platform) {
+    case "win32":
+      return process.env.APPDATA;
+    case "darwin":
+      return join(homedir(), "Library/Application Support");
+    default:
+      return process.env.XDG_DATA_HOME || join(homedir(), ".local/share");
+  }
+}
 
 /** El fichero del sistema de diseño que pide `path`, sin salir de su carpeta. */
 function inTheDesignSystem(path) {
