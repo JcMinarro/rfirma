@@ -228,7 +228,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 block2 = "0.6"
 objc2 = "0.6"
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSAlert", "NSApplication", "NSButton", "NSControl", "NSResponder", "NSSecureTextField", "NSTextField", "NSView", "NSWindow", "NSWorkspace"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "libc", "NSAlert", "NSApplication", "NSButton", "NSControl", "NSResponder", "NSRunningApplication", "NSSecureTextField", "NSTextField", "NSView", "NSWindow", "NSWorkspace"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSError", "NSFileManager", "NSGeometry", "NSString", "NSURL"] }
 # El Almacén de macOS: las identidades del llavero por Security.framework (ADR-0040).
 security-framework = "3.7"

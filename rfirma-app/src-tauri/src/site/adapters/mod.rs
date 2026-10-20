@@ -134,6 +134,16 @@ pub fn desktop_trust_stores() -> Box<dyn TrustStores + Send + Sync> {
     Box::new(macos_trust::MacosUserTrust)
 }
 
+/// Pone o quita el icono del Dock: el proceso de sede lo quita mientras su ventana está oculta, aunque siga sirviendo el canal (ADR-0024).
+#[cfg(target_os = "macos")]
+pub fn show_in_the_dock(app: &::tauri::AppHandle, visible: bool) {
+    let _ = app.set_dock_visibility(visible);
+}
+
+/// Sin Dock fuera de macOS.
+#[cfg(not(target_os = "macos"))]
+pub fn show_in_the_dock(_: &::tauri::AppHandle, _: bool) {}
+
 const CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
 /// El cliente de los servicios de la sede: límite al conectar, ninguno a la respuesta (ADR-0037) y las cookies de la operación (ADR-0038).

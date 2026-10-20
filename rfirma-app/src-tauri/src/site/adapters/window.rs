@@ -84,8 +84,19 @@ fn handle_close_requested(app: &tauri::AppHandle, event: &tauri::WindowEvent) {
 /// Muestra y da foco a la ventana de diálogo de sede.
 pub fn show_the_site_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window(SITE_WINDOW) {
+        super::show_in_the_dock(app, true);
         let _ = window.show();
         let _ = window.set_focus();
+    }
+}
+
+/// Quita el icono del Dock si la ventana de sede no está a la vista: al reabrir, macOS lo devuelve al Dock.
+pub fn out_of_the_dock_unless_shown(app: &tauri::AppHandle) {
+    let shown = app
+        .get_webview_window(SITE_WINDOW)
+        .is_some_and(|window| window.is_visible().unwrap_or(false));
+    if !shown {
+        super::show_in_the_dock(app, false);
     }
 }
 
@@ -115,6 +126,7 @@ impl crate::site::application::startup::SiteWindow for TauriSiteWindow {
     fn hide(&self) {
         if let Some(window) = self.app.get_webview_window(SITE_WINDOW) {
             let _ = window.hide();
+            super::show_in_the_dock(&self.app, false);
         }
     }
 
