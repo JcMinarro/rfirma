@@ -109,8 +109,7 @@ Necesitas un Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Home
 brew install --cask sgomez/rfirma/rfirma
 ```
 
-O descarga el `.dmg` desde la [web](https://rfirma.sgomez.me/#instalacion) y arrastra
-rFirma a Aplicaciones.
+O descarga el `.dmg` desde la [web](https://rfirma.sgomez.me/#instalacion).
 
 La primera vez, macOS no la deja abrir porque no está firmada por Apple. Para
 permitirlo, ejecuta esto en el Terminal:

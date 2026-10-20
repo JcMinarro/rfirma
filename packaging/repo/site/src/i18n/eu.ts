@@ -162,7 +162,7 @@ export const eu: Dictionary = {
     'Windowsek abisatuko dizu instalatzailea ez dagoela sinatuta: sakatu «Informazio gehiago» eta «Exekutatu hala ere». Deskarga egiaztatu nahi baduzu, alderatu bere hash-a <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>-ko <code>SHA256SUMS</code>-ekoarekin:',
   "install.macos.title": "rFirma macOSentzat",
   "install.macos.body":
-    "macOS 15.4 edo berriagoa duten Apple Silicon Mac-entzat. Instalatu Homebrew-rekin, edo deskargatu .dmg-a eta arrastatu rFirma Aplikazioak karpetara. Gero bere kabuz eguneratzen da.",
+    "macOS 15.4 edo berriagoa duten Apple Silicon Mac-entzat. Instalatu Homebrew-rekin edo .dmg-arekin. Gero bere kabuz eguneratzen da.",
   "install.macos.download": "Deskargatu macOSeko .dmg-a",
   "install.macos.note":
     "Lehen aldian, macOSek ez du irekitzen uzten, Applek ez duelako sinatu. Baimentzeko, exekutatu hau Terminalean:",

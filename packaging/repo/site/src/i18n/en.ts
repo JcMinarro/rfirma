@@ -160,7 +160,7 @@ export const en: Dictionary = {
     'Windows will warn you that the installer isn\'t signed: click “More info” and “Run anyway”. To check the download, compare its hash with the one in <code>SHA256SUMS</code>, in the <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma for macOS",
   "install.macos.body":
-    "For Apple Silicon Macs with macOS 15.4 or later. Install it with Homebrew, or download the .dmg and drag rFirma to Applications. It then updates itself.",
+    "For Apple Silicon Macs with macOS 15.4 or later. Install it with Homebrew or the .dmg. It then updates itself.",
   "install.macos.download": "Download the macOS .dmg",
   "install.macos.note":
     "The first time, macOS won't open it because it isn't signed by Apple. To allow it, run this in Terminal:",

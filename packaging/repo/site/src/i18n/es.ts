@@ -157,7 +157,7 @@ export const es = {
     'Windows avisará de que el instalador no está firmado: pulsa «Más información» y «Ejecutar de todas formas». Si quieres comprobar la descarga, compara su hash con el de <code>SHA256SUMS</code>, en la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma para macOS",
   "install.macos.body":
-    "Para Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Homebrew o descarga el .dmg y arrastra rFirma a Aplicaciones. Después se actualiza sola.",
+    "Para Mac con Apple Silicon y macOS 15.4 o posterior. Instálala con Homebrew o con el .dmg. Después se actualiza sola.",
   "install.macos.download": "Descargar el .dmg de macOS",
   "install.macos.note":
     "La primera vez, macOS no la deja abrir porque no está firmada por Apple. Para permitirlo, ejecuta esto en el Terminal:",

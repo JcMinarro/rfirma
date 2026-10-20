@@ -160,7 +160,7 @@ export const ca: Dictionary = {
     'Windows t\'avisarà que l\'instal·lador no està signat: prem «Més informació» i «Executa igualment». Si vols comprovar la baixada, compara el seu hash amb el de <code>SHA256SUMS</code>, a la <a href="https://github.com/sgomez/rfirma/releases/latest" target="_blank" rel="noopener noreferrer">Release</a>:',
   "install.macos.title": "rFirma per a macOS",
   "install.macos.body":
-    "Per a Mac amb Apple Silicon i macOS 15.4 o posterior. Instal·la-la amb Homebrew o baixa el .dmg i arrossega rFirma a Aplicacions. Després s'actualitza sola.",
+    "Per a Mac amb Apple Silicon i macOS 15.4 o posterior. Instal·la-la amb Homebrew o amb el .dmg. Després s'actualitza sola.",
   "install.macos.download": "Descarrega el .dmg de macOS",
   "install.macos.note":
     "La primera vegada, macOS no la deixa obrir perquè no està signada per Apple. Per permetre-ho, executa això al Terminal:",
