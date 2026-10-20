@@ -275,7 +275,7 @@ outline +paths:
 
 # La prueba de Rust que tocas, sobre el arbol de compilacion de las recetas: `just test-one-rust <filtro>`.
 [group('checklist')]
-test-one-rust *args:
+test-one-rust *args: vcpkg-libs
     cd {{ tauri }} && RFIRMA_LIB_DIR="{{ test_native_lib_dir }}" cargo test {{ args }}
 
 # El fichero de vitest que tocas, con el reportero callado: `just test-one-ts <fichero>`.
@@ -285,7 +285,7 @@ test-one-ts *args:
 
 # Lo que la ventana puede pedirle al backend, generado de las fuentes.
 [group('dev')]
-contract src=(tauri / "src"):
+contract src=(tauri / "src"): vcpkg-libs
     cd {{ tauri }} && cargo run -q --example contract -- "{{ src }}"
 
 # Biome sobre rfirma-app y la consola de la suite; la landing va en su carril.
@@ -331,7 +331,7 @@ fmt-check-rust:
 
 # rustfmt y clippy sobre rfirma-app/src-tauri y el módulo PKCS#11 falso de sus pruebas, que en Windows no compila.
 [private]
-lint-rust: fmt-check-rust build-ts
+lint-rust: fmt-check-rust vcpkg-libs build-ts
     cd {{ tauri }} && cargo clippy {{ rust_workspace }} --all-targets --all-features -- -D warnings
 
 # Dependencias de Cargo.toml que no usa nadie. No compila: analiza el fuente.
@@ -352,7 +352,7 @@ build-ts: po-import
 
 # Compila el binario de la aplicacion.
 [group('ci')]
-build-rust: build-ts
+build-rust: vcpkg-libs build-ts
     cd {{ tauri }} && cargo build --release --features custom-protocol
 
 # Falla nombrando `just native` si la libreria nativa no esta; RFIRMA_SKIP_NATIVE=1 la salta (ADR-0013).
@@ -396,14 +396,14 @@ test-native: (certs "install") check-native build-ts llvm-cov-tag
 
 # Pruebas de --lib y del canal local en una pasada instrumentada, y la puerta CRAP de `windows_allow` (ADR-0035).
 [group('ci')]
-test-windows: build-ts
+test-windows: vcpkg-libs build-ts
     mkdir -p "{{ coverage_out }}/windows"
     cd {{ tauri }} && {{ no_debuginfo }} cargo llvm-cov --all-features --lib --test channel_client --test channel_operations --test service_acknowledgement --lcov --output-path "{{ coverage_out }}/windows/lcov.info"
     cd {{ tauri }} && cargo crap --path '{{ windows_allow }}' --lcov "{{ coverage_out }}/windows/lcov.info" --threshold 30 --fail-above
 
 # La prueba de humo del binario de consola de Windows: `rfirma.com` desde cmd, PowerShell y Git Bash (ADR-0041).
 [group('ci')]
-smoke-console: build-ts
+smoke-console: vcpkg-libs build-ts
     cd {{ tauri }} && {{ no_debuginfo }} cargo build --features console --bin rfirma --bin rfirma-console
     {{ root }}/scripts/console-smoke.sh "$CARGO_TARGET_DIR/debug"
 
@@ -494,6 +494,22 @@ vcpkg:
     cd "{{ tauri }}"
     "$(cygpath -u "$vcpkg_root")/vcpkg" install --triplet x64-windows-static --no-print-usage
 
+# `just vcpkg` si faltan las bibliotecas que enlaza build.rs; si están, no las toca, ni a las que restaura la caché del CI.
+[windows]
+[private]
+[script('bash')]
+vcpkg-libs:
+    set -euo pipefail
+    lib="{{ tauri }}/vcpkg_installed/x64-windows-static/lib"
+    if [ ! -f "$lib/libxslt.lib" ] || [ ! -f "$lib/libxml2.lib" ]; then
+        "{{ just_executable() }}" --justfile "{{ justfile() }}" vcpkg
+    fi
+
+[linux]
+[macos]
+[private]
+vcpkg-libs:
+
 # Escribe el paquetes.json de un directorio de paquetes (ADR-0015).
 [group('ci')]
 packages-manifest dir:
@@ -559,7 +575,7 @@ bundle quick="false": check-native build-ts
 # Construye el instalador NSIS con el bundler de Tauri, y el runtime de Visual C++ y rfirma.com al lado (ADR-0035, ADR-0041).
 [windows]
 [group('ci')]
-bundle: check-native build-ts
+bundle: vcpkg-libs check-native build-ts
     #!/usr/bin/env bash
     set -euo pipefail
     # La ruta que citan los recursos de tauri.windows.json, no el CARGO_TARGET_DIR.
@@ -686,7 +702,7 @@ storybook-a11y: po-import
 
 # Abre la ventana con recarga en caliente; los argumentos van a la aplicacion.
 [group('dev')]
-dev *args: check-native po-import
+dev *args: vcpkg-libs check-native po-import
     cd {{ app }} && RFIRMA_LIB_DIR="$(dirname "{{ native_lib }}")" pnpm exec tauri dev -- -- {{ args }}
 
 # Como `dev`, con la tarjeta falsa de las pruebas como unico almacen: `tries` intentos (0, bloqueada)
