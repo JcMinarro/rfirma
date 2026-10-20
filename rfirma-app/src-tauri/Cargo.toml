@@ -269,3 +269,8 @@ too_many_lines = "warn"
 
 [profile.release]
 strip = true
+
+# Con debug assertions, pcsc entra en pánico ante códigos ajenos a PC/SC, como el 0x458 de Win32
+# que devuelve WinSCard al sacar la tarjeta; sin ellas, informa de `UnknownError`.
+[profile.dev.package.pcsc]
+debug-assertions = false
