@@ -167,7 +167,7 @@ fn size_for(moment: &Moment, expanded: bool) -> (f64, f64) {
     }
 }
 
-/// Lleva la ventana al tamaño del momento, centrándola al crecer.
+/// Lleva la ventana al tamaño del momento sin moverla: crece y encoge desde su esquina superior izquierda.
 fn fit_to(window: &tauri::WebviewWindow, moment: &Moment, expanded: bool) {
     let (width, height) = size_for(moment, expanded);
     let scale = window.scale_factor().unwrap_or(1.0);
@@ -178,7 +178,6 @@ fn fit_to(window: &tauri::WebviewWindow, moment: &Moment, expanded: bool) {
         return;
     }
     let _ = window.set_size(tauri::LogicalSize::new(width, height));
-    let _ = window.center();
 }
 
 /// Amplía u oculta la ventana del consentimiento y la lleva al tamaño que le toca.

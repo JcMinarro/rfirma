@@ -13,7 +13,7 @@ const meta = {
         component: [
           "La cabecera de 56 px de la ventana de sede: «Te pide la firma», o «Te pide tus datos» si pide los del certificado, y el dominio, en una línea con elipsis; sin origen válido, «Una página sin identificar», y desde la terminal, «Una orden de terminal».",
           "En el desenlace va sin etiqueta, con `asks={null}`, y desde la terminal también, porque la orden la escribe la propia persona: solo el nombre, a la misma altura.",
-          "Úsala arriba del consentimiento, en la ventana compacta a todo lo ancho y en la ampliada encima de la columna derecha.",
+          "Úsala arriba del consentimiento, en la ventana compacta a todo lo ancho y en la ampliada encima de la columna izquierda.",
           "No le pongas el esquema, la ruta ni un aviso: el origen se nombra a secas y sirve para atribuir, nunca para afirmar.",
         ].join("\n\n"),
       },

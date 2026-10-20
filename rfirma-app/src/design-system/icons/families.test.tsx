@@ -55,15 +55,15 @@ describe("icon families", () => {
       .filter(([, glyph]) => glyph.origin.family !== "Heroicons")
       .map(([name]) => name);
     expect(own.sort()).toEqual([
-      "collapseSide",
       "documentImage",
       "documentPdf",
       "documentXml",
-      "expandSide",
+      "hideSidePanel",
       "loading",
       "rubric",
       "sealed",
       "sealedWarning",
+      "showSidePanel",
     ]);
   });
 

@@ -279,8 +279,10 @@ enseña. El consentimiento real es `SedeConsentCompact` y `SedeConsentExpanded`,
   el visor sin cambiar su ancho. **Escape cierra el panel y no cancela el
   trámite.**
 - **La ampliada es la misma ventana a 1080 × 660**, el tamaño de marcar el área,
-  y se centra al crecer como en ese momento: ni Wayland ni el compositor dejan
-  colocarla, así que la columna no puede quedarse quieta mientras crece.
+  con la columna a la izquierda y el visor a la derecha. La ventana no se mueve:
+  crece desde su esquina superior izquierda, que es lo único que hacen igual X11
+  y Wayland, así que la columna se queda donde estaba y el documento aparece a
+  su lado.
 - **Los desplegables se abren hacia abajo**, el selector y el menú «⋯» de la
   lista, porque los dos viven arriba de su columna.
 - **El pie no mueve sus botones**: «Ver documentos» en la compacta y «Ocultar» en
@@ -343,10 +345,11 @@ de la ventana real; las decisiones de abajo son las de cada momento.
   reintentar va en el pie, a la izquierda.
 - **Firmando y guardar o cargar enseñan solo el título**, y la barra al firmar.
   Un destino donde no se puede escribir es un `Admonition` de error.
-- **Marcar el área tiene la geometría de la ampliada**: el visor a la izquierda
-  y la columna de 400 px con cabecera y pie, sin frase de ayuda. El recuadro
-  aparece ya en su posición estándar y «Continuar» está habilitado desde el
-  principio, porque la posición estándar ya es una respuesta válida.
+- **Marcar el área tiene la geometría de la ampliada**: la columna de 400 px a
+  la izquierda, con cabecera y pie, y el visor a la derecha, sin frase de
+  ayuda. El recuadro aparece ya en su posición estándar y «Continuar» está
+  habilitado desde el principio, porque la posición estándar ya es una
+  respuesta válida.
 - **«En qué páginas» lleva el estilo del rótulo «Certificado»**, y un documento
   ilegible es un `Admonition` de error.
 - **La página desactualizada es una sola frase**, «Puede tener errores o no ser
@@ -362,9 +365,9 @@ de la ventana real; las decisiones de abajo son las de cada momento.
 ### Marcar el área
 
 - **Es el único momento en que la ventana crece**, porque en la caja útil no cabe
-  una página que se pueda marcar. Se reparte como la ventana principal: visor a
-  la izquierda y barra a la derecha con el bloque «En qué páginas» del panel de
-  firma.
+  una página que se pueda marcar. Se reparte como la ampliada: la columna a la
+  izquierda, con el bloque «En qué páginas» del panel de firma, y el visor a la
+  derecha.
 - **Ni modelo ni rúbrica**: lo que va dentro del recuadro lo pone la sede
   (ADR-0019).
 - **Cerrar con la cruz es pulsar cancelar**, como cerrar el diálogo del área en el
