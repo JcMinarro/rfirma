@@ -6,7 +6,6 @@ let height: CGFloat = 400
 let appCenter = CGPoint(x: 180, y: 170)
 let applicationsCenter = CGPoint(x: 480, y: 170)
 let teal = NSColor(srgbRed: 0x06 / 255, green: 0x77 / 255, blue: 0x81 / 255, alpha: 1)
-let slate = NSColor(srgbRed: 0x47 / 255, green: 0x55 / 255, blue: 0x69 / 255, alpha: 1)
 
 func drawArrow() {
     let startX = appCenter.x + 88
@@ -30,19 +29,6 @@ func drawArrow() {
     head.stroke()
 }
 
-func drawCaption() {
-    let paragraph = NSMutableParagraphStyle()
-    paragraph.alignment = .center
-    let caption = NSAttributedString(
-        string: "Arrastra rFirma a Applications para instalarla",
-        attributes: [
-            .font: NSFont.systemFont(ofSize: 15, weight: .medium),
-            .foregroundColor: slate,
-            .paragraphStyle: paragraph,
-        ])
-    caption.draw(in: CGRect(x: 0, y: height - 320, width: width, height: 22))
-}
-
 func render(scale: CGFloat, to url: URL) throws {
     let bitmap = NSBitmapImageRep(
         bitmapDataPlanes: nil, pixelsWide: Int(width * scale), pixelsHigh: Int(height * scale),
@@ -54,7 +40,6 @@ func render(scale: CGFloat, to url: URL) throws {
     NSColor(srgbRed: 0xf8 / 255, green: 0xfa / 255, blue: 0xfc / 255, alpha: 1).setFill()
     CGRect(x: 0, y: 0, width: width, height: height).fill()
     drawArrow()
-    drawCaption()
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: url)
 }
