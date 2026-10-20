@@ -163,7 +163,7 @@ export const ca: Dictionary = {
     "Requereix macOS 15.4 o posterior i un Mac amb Apple Silicon. Amb Homebrew, rFirma s'instal·la amb aquesta ordre i s'actualitza des de la mateixa aplicació.",
   "install.macos.download": "Descarrega el .dmg de macOS",
   "install.macos.note":
-    "Si descarregues el <code>.dmg</code> a mà en lloc d'usar Homebrew, macOS el marca com a descarregat d'internet i t'avisa en obrir-lo. Per llevar la marca, executa aquesta ordre després de copiar l'aplicació a Aplicacions:",
+    "La primera vegada, tant si instal·les amb Homebrew com si descarregues el <code>.dmg</code>, macOS marca l'aplicació com a descarregada d'internet i t'avisa en obrir-la. Per llevar la marca, executa aquesta ordre després d'instal·lar-la:",
 
   "transparency.kicker": "Transparència",
   "transparency.title": "Tot el codi, a la vista",

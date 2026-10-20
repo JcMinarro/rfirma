@@ -165,7 +165,7 @@ export const eu: Dictionary = {
     "macOS 15.4 edo berriagoa eta Apple Silicon duen Mac bat behar da. Homebrew-rekin, rFirma agindu honekin instalatzen da eta aplikazioak berak eguneratzen du.",
   "install.macos.download": "Deskargatu macOSeko .dmg-a",
   "install.macos.note":
-    "<code>.dmg</code>-a Homebrew erabili beharrean eskuz deskargatzen baduzu, macOSek internetetik deskargatutako gisa markatzen du eta abisua ematen du irekitzean. Marka kentzeko, exekutatu agindu hau aplikazioa Aplikazioak karpetara kopiatu ondoren:",
+    "Lehen aldian, Homebrew-rekin instalatu zein <code>.dmg</code>-a deskargatu, macOSek aplikazioa internetetik deskargatutako gisa markatzen du eta abisua ematen du irekitzean. Marka kentzeko, exekutatu agindu hau instalatu ondoren:",
 
   "transparency.kicker": "Gardentasuna",
   "transparency.title": "Kode osoa, ikusgai",

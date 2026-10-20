@@ -163,7 +163,7 @@ export const en: Dictionary = {
     "Requires macOS 15.4 or later and an Apple Silicon Mac. With Homebrew, rFirma installs with this command and updates from within the app.",
   "install.macos.download": "Download the macOS .dmg",
   "install.macos.note":
-    "If you download the <code>.dmg</code> by hand instead of using Homebrew, macOS flags it as downloaded from the internet and warns you when you open it. To clear the flag, run this command after copying the app to Applications:",
+    "The first time, whether you install with Homebrew or download the <code>.dmg</code>, macOS flags the app as downloaded from the internet and warns you when you open it. To clear the flag, run this command after installing:",
 
   "transparency.kicker": "Transparency",
   "transparency.title": "All the code, in the open",

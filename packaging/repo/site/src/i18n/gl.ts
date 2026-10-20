@@ -162,7 +162,7 @@ export const gl: Dictionary = {
     "Require macOS 15.4 ou posterior e un Mac con Apple Silicon. Con Homebrew, rFirma instálase con esta orde e actualízase desde a propia aplicación.",
   "install.macos.download": "Descargar o .dmg de macOS",
   "install.macos.note":
-    "Se descargas o <code>.dmg</code> a man en lugar de usar Homebrew, macOS márcao como descargado de internet e avisa ao abrilo. Para quitar a marca, executa esta orde despois de copiar a aplicación a Aplicacións:",
+    "A primeira vez, tanto se instalas con Homebrew como se descargas o <code>.dmg</code>, macOS marca a aplicación como descargada de internet e avisa ao abrila. Para quitar a marca, executa esta orde despois de instalala:",
 
   "transparency.kicker": "Transparencia",
   "transparency.title": "Todo o código, á vista",

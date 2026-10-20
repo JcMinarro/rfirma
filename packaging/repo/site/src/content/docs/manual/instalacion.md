@@ -113,8 +113,10 @@ brew install --cask sgomez/rfirma/rfirma
 
 También puedes descargar `rfirma_<versión>_aarch64.dmg` de la
 [última Release](https://github.com/sgomez/rfirma/releases/latest) y arrastrar
-`rfirma.app` a Aplicaciones. Con Homebrew, rFirma se abre sin el aviso de Gatekeeper.
-Con la descarga directa, macOS marca la aplicación como bajada de internet; quita la
+`rfirma.app` a Aplicaciones.
+
+La primera vez, por cualquiera de las dos vías, macOS marca la aplicación como bajada
+de internet y avisa al abrirla. Homebrew te muestra esta orden al instalar; quita la
 marca antes de abrirla:
 
 ```bash

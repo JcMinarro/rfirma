@@ -160,7 +160,7 @@ export const es = {
     "Requiere macOS 15.4 o posterior y un Mac con Apple Silicon. Con Homebrew, rFirma se instala con esta orden y se actualiza desde la propia aplicación.",
   "install.macos.download": "Descargar el .dmg de macOS",
   "install.macos.note":
-    "Si descargas el <code>.dmg</code> a mano en lugar de usar Homebrew, macOS lo marca como descargado de internet y avisa al abrirlo. Para quitar la marca, ejecuta esta orden tras copiar la aplicación a Aplicaciones:",
+    "La primera vez, tanto si instalas con Homebrew como si descargas el <code>.dmg</code>, macOS marca la aplicación como descargada de internet y avisa al abrirla. Para quitar la marca, ejecuta esta orden tras instalarla:",
 
   "transparency.kicker": "Transparencia",
   "transparency.title": "Todo el código, a la vista",
