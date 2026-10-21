@@ -6,10 +6,10 @@ use openssl::rsa::Rsa;
 use openssl::x509::extension::BasicConstraints;
 use openssl::x509::{X509Name, X509};
 use rdnie::{Session, INTERMEDIATE_CA_LABEL, SIGNATURE_LABEL};
-use rdnie_emulator::{EmulatedDnie, HolderCertificate};
+use rdnie_emulator::{EmulatedDnie, HolderCertificate, DNIE_3_ATR, DNIE_4_ATR};
 use rsa::traits::PublicKeyParts;
 
-use super::{dnie_store, CardOpener, DnieToken};
+use super::{dnie_store, seen_dnie, CardOpener, DnieToken};
 use crate::identity::adapters::macos_store::MacosToken;
 use crate::identity::application::certificates::{certificates_with_their_chains, on_the_desktop};
 use crate::identity::application::tests::a_dnie_der;
@@ -271,6 +271,49 @@ fn the_macos_token_hands_the_dnie_store_to_the_dnie() {
     );
 }
 
+fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02X}")).collect()
+}
+
+#[test]
+fn describes_the_dnie_it_sees_by_its_atr_version_and_key_set() {
+    use rdnie::KeyGeneration;
+
+    let cases: [(&str, fn() -> EmulatedDnie, &[u8], &str); 2] = [
+        ("3.0", EmulatedDnie::dnie_3, &DNIE_3_ATR, "segundo"),
+        ("4.0", EmulatedDnie::dnie_4, &DNIE_4_ATR, "segundo"),
+    ];
+    for (version, card, atr, key_set) in cases {
+        let seen = seen_dnie(&Emulated(Box::new(card))).expect("hay un DNIe");
+
+        assert_eq!(seen.atr, hex(atr), "{version}");
+        assert_eq!(seen.version, version);
+        assert_eq!(seen.key_set, key_set, "{version}");
+    }
+    let first = seen_dnie(&Emulated(Box::new(|| {
+        EmulatedDnie::dnie_3().with_key_generation(KeyGeneration::First)
+    })))
+    .expect("hay un DNIe");
+    assert_eq!(first.key_set, "primero");
+}
+
+#[test]
+fn sees_no_dnie_in_another_card() {
+    const ANOTHER_CARD: [u8; 11] = [
+        0x3B, 0x8F, 0x80, 0x01, 0x80, 0x4F, 0x0C, 0xA0, 0x00, 0x00, 0x03,
+    ];
+
+    assert!(seen_dnie(&Emulated(Box::new(|| EmulatedDnie::new(&ANOTHER_CARD)))).is_none());
+}
+
+#[test]
+fn the_rdnie_version_is_the_one_in_the_lockfile() {
+    assert!(
+        super::RDNIE_VERSION.starts_with("0."),
+        "{}",
+        super::RDNIE_VERSION
+    );
+}
 mod failures;
 mod in_the_reader;
 mod prompting;

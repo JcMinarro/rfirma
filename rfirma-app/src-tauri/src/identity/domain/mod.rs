@@ -12,4 +12,5 @@ pub mod keyring;
 pub mod protected_secret;
 pub mod readers;
 pub mod secret;
+pub mod seen_dnie;
 pub mod store;

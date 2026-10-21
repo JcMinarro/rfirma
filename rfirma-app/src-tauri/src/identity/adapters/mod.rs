@@ -77,3 +77,21 @@ pub use pkcs11::stores::from_environment as desktop_stores;
 /// Los almacenes de certificados de esta plataforma.
 #[cfg(windows)]
 pub use windows_store::from_environment as desktop_stores;
+
+/// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
+#[cfg(target_os = "macos")]
+pub fn this_dnie() -> Option<crate::identity::domain::seen_dnie::SeenDnie> {
+    macos_store::seen_dnie(&macos_store::PcscCard)
+}
+/// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
+#[cfg(not(target_os = "macos"))]
+pub fn this_dnie() -> Option<crate::identity::domain::seen_dnie::SeenDnie> {
+    None
+}
+
+/// La versión de rdnie compilada; sin ella fuera de macOS.
+#[cfg(target_os = "macos")]
+pub const RDNIE_VERSION: &str = macos_store::RDNIE_VERSION;
+/// La versión de rdnie compilada; sin ella fuera de macOS.
+#[cfg(not(target_os = "macos"))]
+pub const RDNIE_VERSION: &str = "no incluido";

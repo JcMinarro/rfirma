@@ -11,6 +11,7 @@ use crate::identity::domain::ecdsa;
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, StoreSecret};
+use crate::identity::domain::seen_dnie::SeenDnie;
 use crate::identity::domain::store::{Store, DNIE_STORE_PREFIX};
 use crate::identity::ports::Token;
 
@@ -151,6 +152,32 @@ impl<O: CardOpener> DnieToken<O> {
         }
         Ok(found)
     }
+}
+
+/// La versión de rdnie que fija `Cargo.lock`.
+pub const RDNIE_VERSION: &str = env!("RFIRMA_RDNIE_VERSION");
+
+const DNIE_4_CHIP: [u8; 2] = [0x4C, 0x34];
+const CHIP_TYPE: std::ops::Range<usize> = 13..15;
+
+/// El DNIe que abre `opener`; `None` si no hay ninguno legible.
+pub fn seen_dnie<O: CardOpener>(opener: &O) -> Option<SeenDnie> {
+    let session = opener.open().ok()?;
+    let key_set = match session.key_generation() {
+        rdnie::KeyGeneration::First => "primero",
+        _ => "segundo",
+    };
+    let atr = session.into_transport().reset().ok()?;
+    let version = if atr.get(CHIP_TYPE) == Some(&DNIE_4_CHIP[..]) {
+        "4.0"
+    } else {
+        "3.0"
+    };
+    Some(SeenDnie {
+        atr: atr.iter().map(|byte| format!("{byte:02X}")).collect(),
+        version: version.to_owned(),
+        key_set: key_set.to_owned(),
+    })
 }
 
 fn in_the_store(store: &Store, label: &str, der: Vec<u8>) -> TokenCertificate {

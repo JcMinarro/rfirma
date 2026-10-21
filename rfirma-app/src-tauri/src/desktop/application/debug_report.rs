@@ -5,8 +5,10 @@ use std::path::{Path, PathBuf};
 use crate::identity::domain::browsers::NssOwner;
 use crate::identity::domain::readers::Reader;
 
+pub use crate::identity::domain::seen_dnie::SeenDnie;
 use pkcs11::module_lines;
 pub use pkcs11::{DiscardReason, ModuleStatus, Pkcs11Module, Pkcs11Modules};
+pub use stores::{MacosStores, WindowsStores};
 
 /// Qué se sabe de la librería nativa tras intentar cargarla de verdad.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -73,24 +75,6 @@ pub struct NssStores {
     pub profiles: Vec<NssProfile>,
     /// Si el Almacén de rFirma está instalado.
     pub rfirma_store_installed: bool,
-}
-
-/// Lo que solo existe en Windows: el almacén del sistema y los minidrivers de tarjeta.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct WindowsStores {
-    /// Si el almacén raíz del usuario confía en el canal local; nunca es un perfil ignorado.
-    pub local_channel: NssProfileState,
-    /// Tipos de tarjeta que Windows tiene dados de alta.
-    pub minidrivers: Vec<String>,
-}
-
-/// Lo que solo existe en macOS: la confianza del usuario y los controladores de tarjeta del sistema.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MacosStores {
-    /// Si la confianza del usuario en el Almacén de macOS acepta el canal local.
-    pub local_channel: NssProfileState,
-    /// Controladores de tarjeta que macOS tiene instalados.
-    pub card_drivers: Vec<String>,
 }
 
 /// Dónde y con qué instalador está el flatpak.

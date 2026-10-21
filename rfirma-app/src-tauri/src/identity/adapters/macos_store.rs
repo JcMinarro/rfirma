@@ -7,7 +7,7 @@ mod keychain;
 use std::path::Path;
 use std::sync::Arc;
 
-pub use dnie::{dnie_store, CardOpener, DnieToken, PcscCard};
+pub use dnie::{dnie_store, seen_dnie, CardOpener, DnieToken, PcscCard, RDNIE_VERSION};
 
 use super::pkcs11::RealToken;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
