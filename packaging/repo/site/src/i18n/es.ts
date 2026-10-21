@@ -102,7 +102,7 @@ export const es = {
   "comparison.pin.rfirma": "Diálogo nativo y memoria protegida",
   "comparison.dnie.label": "Firma con DNIe",
   "comparison.dnie.autofirma": "Sí, con jMulticard",
-  "comparison.dnie.rfirma": "Sí, con autodetección en caliente",
+  "comparison.dnie.rfirma": "Sí, con autodetección en caliente, también en macOS",
   "comparison.store.label": "Certificados <code>.p12</code>",
   "comparison.store.autofirma": "Eliges el fichero en un diálogo",
   "comparison.store.rfirma": "Almacén cifrado propio",
