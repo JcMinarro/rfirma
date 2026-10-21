@@ -10,6 +10,9 @@ pub const WINDOWS_STORE_PREFIX: &str = "cng:";
 /// Prefijo con el que se nombran los llaveros de macOS: ningún módulo PKCS#11 se llama así.
 pub const MACOS_STORE_PREFIX: &str = "keychain:";
 
+/// Prefijo con el que se nombra el almacén del DNIe leído con rdnie: ningún módulo PKCS#11 se llama así.
+pub const DNIE_STORE_PREFIX: &str = "dnie:";
+
 /// Los proveedores de Windows que guardan la clave en una tarjeta: el KSP de los minidrivers y su CSP.
 const CARD_KEY_PROVIDERS: [&str; 2] = [
     "Microsoft Smart Card Key Storage Provider",

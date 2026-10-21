@@ -20,7 +20,7 @@ use crate::desktop::ports::{
 use crate::documents::domain::document::Document;
 use crate::identity::adapters::failures::situation_name;
 use crate::identity::adapters::pkcs11::stores::discovered_module_named;
-use crate::identity::adapters::{desktop_stores, DesktopToken};
+use crate::identity::adapters::{desktop_stores, desktop_token};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::holder::prompted_holder_of;
@@ -64,7 +64,7 @@ impl SeenStores {
 
 impl CertificateStores for SeenStores {
     fn certificates(&self) -> Result<Vec<TokenCertificate>, TokenError> {
-        DesktopToken.list_across(&self.stores)
+        desktop_token().list_across(&self.stores)
     }
 
     fn discovered_module(&self, library: &str) -> Option<PathBuf> {
