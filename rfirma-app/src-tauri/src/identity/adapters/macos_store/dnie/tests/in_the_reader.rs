@@ -92,5 +92,5 @@ pub(super) fn a_wrong_pin() -> ProtectedSecret {
 
 /// El certificado de firma del DNIe, nombrado sin leer la tarjeta.
 pub(super) fn the_signing_certificate() -> CertificateRef {
-    CertificateRef::new(&dnie_store(), "DNIe", SIGNATURE_LABEL, None)
+    CertificateRef::new(dnie_store(), "DNIe", SIGNATURE_LABEL, None)
 }
