@@ -37,7 +37,7 @@ pub struct ChosenCopy {
 }
 
 impl ChosenCopy {
-    /// La recordada si está entre las copias; si no, la primera por preferencia de almacén y, dentro, de dueño.
+    /// La recordada si está entre las copias; si no, la primera por preferencia de almacén y, dentro, la del DNIe y la de dueño.
     pub fn among(
         mut copies: Vec<TokenCertificate>,
         class_of: impl Fn(&CertificateRef) -> StoreClass,
@@ -62,6 +62,7 @@ impl ChosenCopy {
                 .min_by_key(|&copy| {
                     (
                         classes[copy].preference(),
+                        !copies[copy].reference().store().is_the_dnie(),
                         copies[copy].reference().owner().map(NssOwner::preference),
                     )
                 })
