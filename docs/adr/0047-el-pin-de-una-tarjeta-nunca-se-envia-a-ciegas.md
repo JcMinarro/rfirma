@@ -54,7 +54,17 @@ del minidriver: rFirma no lee ni el contador ni el estado de bloqueo, ni tiene d
 del PIN. Traduce el error que devuelve Windows: PIN incorrecto, tarjeta bloqueada o diálogo
 cancelado por la persona.
 
-## Por qué no hay contador exacto de intentos
+## El DNIe por rdnie da los intentos restantes exactos
+
+En macOS el DNIe no va por PKCS#11 sino por rdnie (ADR-0040), que lee los
+intentos restantes con un VERIFY sin PIN, sin gastar ninguno. Ahí las reglas 1,
+3 y 4 se cumplen con el número exacto: con cero no hay diálogo y el caso de uso
+termina como PIN bloqueado; con más, el diálogo dice siempre cuántos quedan, y
+resalta el aviso con uno o dos. rdnie vuelve a leerlos justo antes de enviar el
+PIN y no lo envía si han cambiado: eso corta el ciclo como cualquier otro fallo
+(regla 6). Las reglas 5 y 6 valen igual.
+
+## Por qué PKCS#11 no da un número exacto
 
 PKCS#11 no tiene contador de reintentos: solo las tres banderas de la regla 3 y
 la de bloqueo, y cada módulo enciende las que quiere. Con el DNIe por OpenSC
@@ -66,15 +76,14 @@ tarjeta se usara con otro programa, así que no se da.
 
 ## Por qué el DNIe real no entra en ninguna grada automática
 
-Cada prueba con un PIN erróneo gasta intentos de una tarjeta personal, y un
-DNIe no puede vivir en el CI: no hay emulador, porque el chip lleva un sistema
-operativo propietario, y SoftHSM ni se bloquea ni da las señales del DNIe. Las
-reglas se prueban en la grada B (ADR-0014) contra un módulo PKCS#11 falso del
-workspace, `fake-pkcs11`, que se porta como el DNIe medido y tiene otro perfil
+Cada prueba con un PIN erróneo gasta intentos de una tarjeta personal. El camino
+PKCS#11 se prueba en la grada B (ADR-0014) contra un módulo falso del workspace,
+`fake-pkcs11`, que se porta como el DNIe medido por OpenSC y tiene otro perfil
 con las tres señales; entra por la misma costura que SoftHSM y nunca llega a un
-paquete (ADR-0004). El DNIe real solo se usa a mano, en la suite de
-conformidad, y solo en el camino feliz: nunca se teclea un PIN erróneo a
-propósito.
+paquete (ADR-0004). El camino rdnie se prueba contra `rdnie-emulator`, que
+habla el protocolo del DNIe con un titular ficticio y solo es dependencia de
+pruebas. El DNIe real solo se usa a mano, en la suite de conformidad, y solo en
+el camino feliz: nunca se teclea un PIN erróneo a propósito.
 
 ## Consequences
 
@@ -87,9 +96,6 @@ propósito.
 
 ## Considered Options
 
-- **Leer el contador del DNIe por APDU, como jmulticard.** Descartada por
-  ahora: saltarse PKCS#11 ata rFirma a una tarjeta y a un lector, y queda fuera
-  de este ADR.
 - **Probar con una tarjeta simulada (jCardSim con IsoApplet, u opcard con
   `vpicc`).** Descartada: probaría la cadena OpenSC → lector, pero ninguna
   imita el DNIe entero, y el módulo falso ya basta para las reglas.
