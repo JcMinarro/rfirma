@@ -69,16 +69,14 @@ function readerText(
 
 function CardHelp({ platform }: { platform: CardHelpPlatform }) {
   const { t } = useTranslation();
-  if (platform === "other") return null;
+  if (platform === "other" || platform === "macos") return null;
   return <span className="reader-line__help">{cardHelpText(platform, t)}</span>;
 }
 
-function cardHelpText(platform: Exclude<CardHelpPlatform, "other">, t: TFunction): string {
+function cardHelpText(platform: "windows" | "linux", t: TFunction): string {
   switch (platform) {
     case "windows":
       return t("panel.certificate.reader.unreadableHelp.windows");
-    case "macos":
-      return t("panel.certificate.reader.unreadableHelp.macos");
     case "linux":
       return t("panel.certificate.reader.unreadableHelp.linux");
   }
