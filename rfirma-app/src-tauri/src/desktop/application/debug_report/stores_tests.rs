@@ -150,6 +150,8 @@ fn report_with_macos(trust: NssProfileState, drivers: Vec<&str>) -> String {
     report.macos_stores = Some(MacosStores {
         local_channel: trust,
         card_drivers: drivers.into_iter().map(str::to_owned).collect(),
+        dnie: None,
+        rdnie_version: "0.1.1".to_owned(),
     });
     debug_report_text(&report, &ana())
 }
@@ -164,13 +166,13 @@ fn macos_replaces_the_nss_stores_with_the_macos_store_and_card_drivers() {
     );
 
     assert!(
-        text.ends_with(
+        text.contains(
             "Almacén de macOS\n  \
                Confianza del usuario: confía en el canal local · hasta 2027-03-14\n\
              \n\
              Controladores de tarjeta\n  \
                ifd-ccid: instalado\n  \
-               ifd-gempc: instalado"
+               ifd-gempc: instalado\n"
         ),
         "{text}"
     );
@@ -192,7 +194,49 @@ fn macos_without_card_drivers_says_none() {
     let text = report_with_macos(NssProfileState::DoesNotTrustLocalChannel, Vec::new());
 
     assert!(
-        text.ends_with("Controladores de tarjeta\n  tarjetas: ninguno instalado"),
+        text.contains("Controladores de tarjeta\n  tarjetas: ninguno instalado\n"),
+        "{text}"
+    );
+}
+
+fn report_with_dnie(dnie: Option<SeenDnie>) -> String {
+    let mut report = a_flatpak_report();
+    report.pcsc = None;
+    report.macos_stores = Some(MacosStores {
+        local_channel: NssProfileState::DoesNotTrustLocalChannel,
+        card_drivers: Vec::new(),
+        dnie,
+        rdnie_version: "0.1.1".to_owned(),
+    });
+    debug_report_text(&report, &ana())
+}
+
+#[test]
+fn macos_says_the_dnie_it_sees_with_nothing_of_the_holder() {
+    let text = report_with_dnie(Some(SeenDnie {
+        atr: "3B7F96000000".to_owned(),
+        version: "4.0".to_owned(),
+        key_set: "segundo".to_owned(),
+    }));
+
+    assert!(
+        text.ends_with(
+            "DNIe\n  \
+               ATR: 3B7F96000000\n  \
+               versión: 4.0\n  \
+               juego de claves: segundo\n  \
+               rdnie: 0.1.1"
+        ),
+        "{text}"
+    );
+}
+
+#[test]
+fn macos_without_a_dnie_says_none_and_still_the_rdnie_version() {
+    let text = report_with_dnie(None);
+
+    assert!(
+        text.ends_with("DNIe\n  tarjeta: no hay DNIe\n  rdnie: 0.1.1"),
         "{text}"
     );
 }

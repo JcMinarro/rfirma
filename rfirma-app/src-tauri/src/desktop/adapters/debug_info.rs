@@ -285,6 +285,8 @@ fn macos_stores(channel: Channel) -> Option<MacosStores> {
     (channel == Channel::MacOs).then(|| MacosStores {
         local_channel: user_trust_state(),
         card_drivers: crate::desktop::adapters::card_drivers::system_card_drivers(),
+        dnie: identity_adapters::this_dnie(),
+        rdnie_version: identity_adapters::RDNIE_VERSION.to_owned(),
     })
 }
 
