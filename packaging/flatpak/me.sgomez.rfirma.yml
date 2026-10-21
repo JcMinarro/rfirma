@@ -347,6 +347,8 @@ modules:
         /app/share/icons/hicolor/scalable/apps/me.sgomez.rfirma.svg
       - install -Dm644 src-tauri/icons/icon-symbolic.svg
         /app/share/icons/hicolor/symbolic/apps/me.sgomez.rfirma-symbolic.svg
+      - install -Dm644 -t /app/share/licenses/me.sgomez.rfirma
+        EUPL-1.2.md EUPL-1.1.pdf heroicons-MIT.txt
     sources:
       - type: dir
         path: ../../rfirma-app
@@ -360,6 +362,13 @@ modules:
         path: me.sgomez.rfirma.desktop
       - type: file
         path: me.sgomez.rfirma.metainfo.xml
+      - type: file
+        path: ../../LICENSE.md
+        dest-filename: EUPL-1.2.md
+      - type: file
+        path: ../licenses/EUPL-1.1.pdf
+      - type: file
+        path: ../licenses/heroicons-MIT.txt
       # Las dependencias de cargo, vendorizadas. Va AL FINAL: son 955 entradas
       # y arriba estan las que se leen a mano.
       - cargo-sources.json

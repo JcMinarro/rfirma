@@ -7,7 +7,10 @@
       "../../rfirma-native-bridge/target/lib/rfirma/rfirma_crypto.dll": "rfirma_crypto.dll",
       "target/windows-runtime/vcruntime140.dll": "vcruntime140.dll",
       "target/windows-runtime/vcruntime140_1.dll": "vcruntime140_1.dll",
-      "target/windows-runtime/rfirma.com": "rfirma.com"
+      "target/windows-runtime/rfirma.com": "rfirma.com",
+      "../../LICENSE.md": "licenses/EUPL-1.2.md",
+      "../../packaging/licenses/EUPL-1.1.pdf": "licenses/EUPL-1.1.pdf",
+      "../../packaging/licenses/heroicons-MIT.txt": "licenses/heroicons-MIT.txt"
     },
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },

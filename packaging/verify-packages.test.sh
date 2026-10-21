@@ -115,6 +115,7 @@ Recommends: opensc, pcscd
         : > "$staging/usr/lib/rfirma/librfirma_crypto.so"
         : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
         : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.2.md"
+        : > "$staging/usr/share/doc/rfirma/licenses/heroicons-MIT.txt"
         [ -z "$library" ] || : > "$staging/usr/lib/rfirma/$library"
         dpkg-deb --build --root-owner-group "$staging" "$out" > /dev/null
     }
