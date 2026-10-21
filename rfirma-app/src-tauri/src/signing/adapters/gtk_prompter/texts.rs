@@ -118,9 +118,36 @@ fn incorrect_secret_text(lang: Language, secret: &SecretName) -> String {
     }
 }
 
-fn pin_warning_text(lang: Language, warning: PinWarning) -> Option<&'static str> {
+fn attempts_left_text(lang: Language, left: u32) -> String {
+    match (lang, left) {
+        (Language::Spanish, 1) => {
+            "Te queda 1 intento: si el PIN no es correcto, la tarjeta se bloqueará.".to_string()
+        }
+        (Language::Spanish, _) => format!("Te quedan {left} intentos."),
+        (Language::Catalan, 1) => {
+            "Et queda 1 intent: si el PIN no és correcte, la targeta es bloquejarà.".to_string()
+        }
+        (Language::Catalan, _) => format!("Et queden {left} intents."),
+        (Language::Basque, 1) => {
+            "Saiakera 1 geratzen zaizu: PINa zuzena ez bada, txartela blokeatu egingo da."
+                .to_string()
+        }
+        (Language::Basque, _) => format!("{left} saiakera geratzen zaizkizu."),
+        (Language::Galician, 1) => {
+            "Quédache 1 intento: se o PIN non é correcto, a tarxeta bloquearase.".to_string()
+        }
+        (Language::Galician, _) => format!("Quédanche {left} intentos."),
+        (Language::English, 1) => {
+            "1 try left: if the PIN is wrong, the card will be locked.".to_string()
+        }
+        (Language::English, _) => format!("{left} tries left."),
+    }
+}
+
+fn pin_warning_text(lang: Language, warning: PinWarning) -> Option<String> {
     let text = match (lang, warning) {
         (_, PinWarning::Quiet) => return None,
+        (_, PinWarning::AttemptsLeft(left)) => return Some(attempts_left_text(lang, left)),
         (Language::Spanish, PinWarning::FinalTry) => {
             "Último intento: si el PIN no es correcto, la tarjeta se bloqueará."
         }
@@ -152,7 +179,7 @@ fn pin_warning_text(lang: Language, warning: PinWarning) -> Option<&'static str>
             "There has already been a failed try with this card."
         }
     };
-    Some(text)
+    Some(text.to_owned())
 }
 
 /// Traduce los textos del diálogo a uno de los 5 idiomas oficiales de rFirma (ADR-0009).
@@ -170,8 +197,7 @@ pub fn localize(request: &SecretPromptRequest) -> DialogI18n {
         incorrect_secret: incorrect_secret_text(request.language, &request.secret),
         pin_warning: (request.secret == SecretName::Pin)
             .then(|| pin_warning_text(request.language, request.pin_warning))
-            .flatten()
-            .map(str::to_owned),
+            .flatten(),
         accept,
         cancel,
     }

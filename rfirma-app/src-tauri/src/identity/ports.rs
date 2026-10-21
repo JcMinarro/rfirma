@@ -262,8 +262,8 @@ pub enum PromptedError<E> {
     Attempt(E),
 }
 
-/// Pide el secreto hasta que `attempt` lo acepta, releyendo antes de cada diálogo el aviso del PIN; un secreto rechazado no se reenvía (ADR-0001, ADR-0047).
-pub fn prompted_until_accepted<T, E>(
+/// Pide el secreto hasta que `attempt` lo acepta, releyendo antes de cada diálogo el aviso del PIN; sin intentos restantes no hay diálogo, y un secreto rechazado no se reenvía (ADR-0001, ADR-0047).
+pub fn prompted_until_accepted<T, E: From<TokenError>>(
     prompter: &dyn SecretPrompter,
     mut request: SecretPromptRequest,
     mut warning: impl FnMut() -> Result<PinWarning, E>,
@@ -271,7 +271,9 @@ pub fn prompted_until_accepted<T, E>(
     rejected: impl Fn(&E) -> bool,
 ) -> Result<(ProtectedSecret, T), PromptedError<E>> {
     loop {
-        request.pin_warning = warning().map_err(PromptedError::Attempt)?;
+        request.pin_warning = warning()
+            .and_then(|read| read.unless_locked().map_err(E::from))
+            .map_err(PromptedError::Attempt)?;
         let secret = prompter
             .prompt_secret(&request)
             .map_err(PromptedError::Prompt)?;

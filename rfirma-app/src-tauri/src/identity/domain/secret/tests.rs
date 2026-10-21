@@ -1,5 +1,33 @@
 use super::*;
 use crate::identity::domain::browsers::NssOwner;
+use crate::identity::domain::error::Situation;
+
+#[test]
+fn one_or_two_attempts_left_stand_out_like_the_final_try_and_more_do_not() {
+    assert!(PinWarning::FinalTry.stands_out());
+    assert!(PinWarning::AttemptsLeft(1).stands_out());
+    assert!(PinWarning::AttemptsLeft(2).stands_out());
+    assert!(!PinWarning::AttemptsLeft(3).stands_out());
+    assert!(!PinWarning::CountLow.stands_out());
+    assert!(!PinWarning::Quiet.stands_out());
+}
+
+#[test]
+fn no_attempts_left_is_a_locked_pin_and_any_other_warning_lets_the_dialog_open() {
+    let locked = PinWarning::AttemptsLeft(0)
+        .unless_locked()
+        .expect_err("con cero no hay diálogo");
+    assert_eq!(locked.situation(), Situation::PinLocked);
+    assert_eq!(locked.attempts_left(), Some(0));
+
+    for open in [
+        PinWarning::AttemptsLeft(3),
+        PinWarning::FinalTry,
+        PinWarning::Quiet,
+    ] {
+        assert_eq!(open.unless_locked(), Ok(open));
+    }
+}
 
 #[test]
 fn a_store_that_asks_for_no_session_needs_no_secret() {

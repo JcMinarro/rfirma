@@ -38,6 +38,19 @@ fn the_terminal_warns_softly_of_earlier_failed_tries() {
 }
 
 #[test]
+fn the_terminal_says_the_exact_attempts_left_before_asking_for_the_pin() {
+    assert_eq!(
+        prompt_for(&asked(PinWarning::AttemptsLeft(3))),
+        "rfirma: te quedan 3 intentos.\nPIN de «CertFirmaDigital»: "
+    );
+    assert_eq!(
+        prompt_for(&asked(PinWarning::AttemptsLeft(1))),
+        "rfirma: te queda 1 intento: si el PIN no es correcto, la tarjeta se bloqueará.\n\
+         PIN de «CertFirmaDigital»: "
+    );
+}
+
+#[test]
 fn after_a_wrong_pin_the_terminal_says_so_before_the_warning() {
     let mut retry = asked(PinWarning::FinalTry);
     retry.incorrect = true;
