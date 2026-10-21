@@ -268,3 +268,8 @@ fn the_macos_token_hands_the_dnie_store_to_the_dnie() {
         vec![AUTHENTICATION_LABEL, SIGNATURE_LABEL]
     );
 }
+
+mod failures;
+mod in_the_reader;
+mod prompting;
+mod signing;

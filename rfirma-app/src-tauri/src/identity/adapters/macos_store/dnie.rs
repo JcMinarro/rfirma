@@ -1,14 +1,16 @@
-//! `DnieToken`, el DNIe leído con rdnie detrás del puerto `Token`: sus certificados y la CA intermedia, sin PIN, de la tarjeta que abre quien se le dé (ADR-0040).
+//! `DnieToken`, el DNIe leído con rdnie detrás del puerto `Token`: lista sin PIN, da los intentos restantes y firma el resumen, abriendo la tarjeta en cada operación y nunca entre ellas (ADR-0040, ADR-0047).
 
 use std::path::Path;
+use std::sync::{Mutex, MutexGuard};
 
-use rdnie::{PcscTransport, Session, Transport, INTERMEDIATE_CA_LABEL};
+use rdnie::{HashAlgorithm, PcscTransport, Pin, Session, Transport, INTERMEDIATE_CA_LABEL};
 
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
+use crate::identity::domain::ecdsa;
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::protected_secret::ProtectedSecret;
-use crate::identity::domain::secret::StoreSecret;
+use crate::identity::domain::secret::{PinWarning, StoreSecret};
 use crate::identity::domain::store::{Store, DNIE_STORE_PREFIX};
 use crate::identity::ports::Token;
 
@@ -49,15 +51,75 @@ impl CardOpener for PcscCard {
 }
 
 /// El adaptador de [`Token`] para el almacén del DNIe.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct DnieToken<O> {
     opener: O,
+    login: Mutex<Login>,
+}
+
+/// Lo que el adaptador recuerda entre llamadas, sin retener la tarjeta.
+#[derive(Debug, Default)]
+struct Login {
+    shown_attempts: Option<u8>,
+    depth: usize,
+    cut: Option<TokenError>,
 }
 
 impl<O: CardOpener> DnieToken<O> {
     /// El DNIe que abre `opener`.
     pub fn new(opener: O) -> Self {
-        Self { opener }
+        Self {
+            opener,
+            login: Mutex::new(Login::default()),
+        }
+    }
+
+    fn login(&self) -> MutexGuard<'_, Login> {
+        self.login
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    fn session(&self) -> Result<Session<O::Card>, TokenError> {
+        self.opener.open().map_err(|error| token_error(&error))
+    }
+
+    fn attempts_left(&self) -> Result<u8, TokenError> {
+        match self.session()?.pin_retries() {
+            Err(rdnie::Error::PinBlocked) => Ok(0),
+            read => read.map_err(|error| token_error(&error)),
+        }
+    }
+
+    fn signed(
+        &self,
+        reference: &CertificateRef,
+        secret: &ProtectedSecret,
+        algorithm: SignatureAlgorithm,
+        data: &[u8],
+        shown: Option<u8>,
+    ) -> Result<Vec<u8>, TokenError> {
+        let hash = hash_of(algorithm)?;
+        let digest = ecdsa::digest(algorithm, data)?;
+        let pin = pin_of(secret)?;
+        let mut session = self.session()?;
+        let key = session
+            .certificates()
+            .map_err(|error| token_error(&error))?
+            .into_iter()
+            .find(|certificate| certificate.label == reference.label())
+            .ok_or_else(|| {
+                TokenError::new(
+                    Situation::CertificateNotFound,
+                    format!("el DNIe no tiene la clave de {}", reference.label()),
+                )
+            })?
+            .key;
+        let left = session.pin_retries().map_err(|error| token_error(&error))?;
+        unchanged_since_shown(left, shown)?;
+        session
+            .sign(&digest, hash, &key, pin)
+            .map_err(|error| token_error(&error))
     }
 
     fn read(
@@ -103,17 +165,54 @@ fn is_no_readable_dnie(error: &rdnie::Error) -> bool {
 
 fn token_error(error: &rdnie::Error) -> TokenError {
     let situation = match error {
-        rdnie::Error::CardRemoved | rdnie::Error::CardReset => Situation::TokenAbsent,
+        rdnie::Error::WrongPin { retries_left } => {
+            return TokenError::new(Situation::IncorrectPin, error.to_string())
+                .with_attempts_left(u32::from(*retries_left));
+        }
+        rdnie::Error::InvalidPinFormat => Situation::IncorrectPin,
+        rdnie::Error::PinBlocked => Situation::PinLocked,
+        rdnie::Error::CardRemoved
+        | rdnie::Error::CardReset
+        | rdnie::Error::NoCard
+        | rdnie::Error::NoReader => Situation::TokenAbsent,
         _ => Situation::Unknown,
     };
     TokenError::new(situation, error.to_string())
 }
 
-fn not_yet_signing() -> TokenError {
-    TokenError::new(
-        Situation::MechanismNotOffered,
-        "el DNIe por rdnie todavia no firma",
-    )
+fn pin_of(secret: &ProtectedSecret) -> Result<Pin, TokenError> {
+    secret
+        .expose_secret()
+        .map(|pin| Pin::new(pin.to_owned()))
+        .map_err(|_| TokenError::new(Situation::IncorrectPin, "el PIN no es texto"))
+}
+
+fn hash_of(algorithm: SignatureAlgorithm) -> Result<HashAlgorithm, TokenError> {
+    match algorithm {
+        SignatureAlgorithm::Sha256Rsa => Ok(HashAlgorithm::Sha256),
+        SignatureAlgorithm::Sha384Rsa => Ok(HashAlgorithm::Sha384),
+        SignatureAlgorithm::Sha512Rsa => Ok(HashAlgorithm::Sha512),
+        other => Err(TokenError::new(
+            Situation::MechanismNotOffered,
+            format!("el DNIe por rdnie no firma con {}", other.name()),
+        )),
+    }
+}
+
+fn unchanged_since_shown(left: u8, shown: Option<u8>) -> Result<(), TokenError> {
+    match shown {
+        Some(shown) if shown != left => Err(TokenError::new(
+            Situation::Unknown,
+            format!("los intentos han pasado de {shown} a {left} tras leerlos: el PIN no se envia"),
+        )),
+        _ => Ok(()),
+    }
+}
+
+fn has_a_length_the_dnie_admits(secret: &ProtectedSecret) -> bool {
+    secret
+        .expose_secret()
+        .is_ok_and(|pin| (8..=16).contains(&pin.encode_utf16().count()))
 }
 
 impl<O: CardOpener> Token for DnieToken<O> {
@@ -137,30 +236,73 @@ impl<O: CardOpener> Token for DnieToken<O> {
         Ok(StoreSecret::TypedOnScreen)
     }
 
+    fn pin_warning(&self, _reference: &CertificateRef) -> Result<PinWarning, TokenError> {
+        let left = self.attempts_left()?;
+        self.login().shown_attempts = Some(left);
+        Ok(PinWarning::AttemptsLeft(u32::from(left)))
+    }
+
     fn offers(
         &self,
         _reference: &CertificateRef,
-        _algorithm: SignatureAlgorithm,
+        algorithm: SignatureAlgorithm,
     ) -> Result<(), TokenError> {
-        Err(not_yet_signing())
+        hash_of(algorithm).map(|_| ())
     }
 
     fn accepts_the_secret(
         &self,
         _reference: &CertificateRef,
-        _secret: &ProtectedSecret,
+        secret: &ProtectedSecret,
     ) -> Result<(), TokenError> {
-        Err(not_yet_signing())
+        if let Some(cut) = self.login().cut.clone() {
+            return Err(cut);
+        }
+        if !has_a_length_the_dnie_admits(secret) {
+            return Err(token_error(&rdnie::Error::InvalidPinFormat));
+        }
+        let left = self.attempts_left()?;
+        let shown = self.login().shown_attempts;
+        unchanged_since_shown(left, shown)?;
+        PinWarning::AttemptsLeft(u32::from(left))
+            .unless_locked()
+            .map(|_| ())
     }
 
     fn sign_with_secret(
         &self,
-        _reference: &CertificateRef,
-        _secret: &ProtectedSecret,
-        _algorithm: SignatureAlgorithm,
-        _data: &[u8],
+        reference: &CertificateRef,
+        secret: &ProtectedSecret,
+        algorithm: SignatureAlgorithm,
+        data: &[u8],
     ) -> Result<Vec<u8>, TokenError> {
-        Err(not_yet_signing())
+        let shown = {
+            let mut login = self.login();
+            if let Some(cut) = login.cut.clone() {
+                return Err(cut);
+            }
+            login.shown_attempts.take()
+        };
+        let signed = self.signed(reference, secret, algorithm, data, shown);
+        if let Err(failure) = &signed {
+            let mut login = self.login();
+            if login.depth > 0 {
+                login.cut = Some(failure.clone());
+            }
+        }
+        signed
+    }
+
+    fn hold_one_login(&self, _reference: &CertificateRef) {
+        self.login().depth += 1;
+    }
+
+    fn release_the_login(&self, _reference: &CertificateRef) {
+        let mut login = self.login();
+        login.depth = login.depth.saturating_sub(1);
+        if login.depth == 0 {
+            login.cut = None;
+        }
     }
 
     fn import_pkcs12(
