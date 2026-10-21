@@ -36,7 +36,9 @@ fn the_dnie(card: impl Fn() -> EmulatedDnie + Send + Sync + 'static) -> DnieToke
     DnieToken::new(Emulated(Box::new(card)))
 }
 
-fn the_two_versions() -> [(&'static str, fn() -> EmulatedDnie); 2] {
+type Version = (&'static str, fn() -> EmulatedDnie);
+
+fn the_two_versions() -> [Version; 2] {
     [
         ("DNIe 3.0", EmulatedDnie::dnie_3),
         ("DNIe 4.0", EmulatedDnie::dnie_4),
@@ -268,3 +270,8 @@ fn the_macos_token_hands_the_dnie_store_to_the_dnie() {
         vec![AUTHENTICATION_LABEL, SIGNATURE_LABEL]
     );
 }
+
+mod failures;
+mod in_the_reader;
+mod prompting;
+mod signing;
