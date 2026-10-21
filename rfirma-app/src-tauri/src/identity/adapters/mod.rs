@@ -57,6 +57,17 @@ pub use pkcs11::RealToken as DesktopToken;
 #[cfg(windows)]
 pub use windows_store::WindowsToken as DesktopToken;
 
+/// El token de esta plataforma, con el lector del DNIe en macOS.
+#[cfg(target_os = "macos")]
+pub fn desktop_token() -> DesktopToken {
+    DesktopToken::default()
+}
+/// El token de esta plataforma.
+#[cfg(any(target_os = "linux", windows))]
+pub fn desktop_token() -> DesktopToken {
+    DesktopToken
+}
+
 /// Los almacenes de certificados de esta plataforma.
 #[cfg(target_os = "macos")]
 pub use macos_store::from_environment as desktop_stores;
@@ -66,3 +77,21 @@ pub use pkcs11::stores::from_environment as desktop_stores;
 /// Los almacenes de certificados de esta plataforma.
 #[cfg(windows)]
 pub use windows_store::from_environment as desktop_stores;
+
+/// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
+#[cfg(target_os = "macos")]
+pub fn this_dnie() -> crate::identity::domain::seen_dnie::DnieInTheReader {
+    macos_store::seen_dnie(&macos_store::PcscCard)
+}
+/// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
+#[cfg(not(target_os = "macos"))]
+pub fn this_dnie() -> crate::identity::domain::seen_dnie::DnieInTheReader {
+    crate::identity::domain::seen_dnie::DnieInTheReader::Absent
+}
+
+/// La versión de rdnie compilada; sin ella fuera de macOS.
+#[cfg(target_os = "macos")]
+pub const RDNIE_VERSION: &str = macos_store::RDNIE_VERSION;
+/// La versión de rdnie compilada; sin ella fuera de macOS.
+#[cfg(not(target_os = "macos"))]
+pub const RDNIE_VERSION: &str = "no incluido";

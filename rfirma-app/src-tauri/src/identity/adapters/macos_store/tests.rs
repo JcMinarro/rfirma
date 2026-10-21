@@ -17,7 +17,7 @@ use security_framework::import_export::Pkcs12ImportOptions;
 use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 
 use super::keychain::{import_pkcs12 as install, situation_of};
-use super::{installs, keychain_store, stores_besides, user_store, MacosToken};
+use super::{dnie_store, installs, keychain_store, stores_besides, user_store, MacosToken};
 use crate::identity::application::certificates::certificates_with_their_chains;
 use crate::identity::domain::algorithm::{KeyKind, SignatureAlgorithm};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -60,7 +60,7 @@ impl TemporaryKeychain {
     }
 
     fn listed(&self) -> Vec<TokenCertificate> {
-        MacosToken
+        MacosToken::default()
             .list(&keychain_store(&self.path))
             .expect("el llavero deberia listarse")
     }
@@ -74,7 +74,7 @@ impl TemporaryKeychain {
     }
 
     fn every(&self) -> Vec<TokenCertificate> {
-        MacosToken
+        MacosToken::default()
             .every_certificate(&self.store())
             .expect("el llavero deberia listarse")
     }
@@ -204,14 +204,17 @@ fn the_user_store_is_the_macos_store_and_not_a_card() {
 }
 
 #[test]
-fn the_macos_store_comes_before_the_pkcs11_stores_unless_a_module_is_named() {
+fn the_macos_store_comes_before_the_pkcs11_stores_unless_a_module_is_named_and_the_dnie_after() {
     let card = Store::module("/opt/homebrew/lib/opensc-pkcs11.so");
 
     assert_eq!(
         stores_besides(vec![card.clone()], false),
-        vec![user_store(), card.clone()]
+        vec![user_store(), card.clone(), dnie_store()]
     );
-    assert_eq!(stores_besides(vec![card.clone()], true), vec![card]);
+    assert_eq!(
+        stores_besides(vec![card.clone()], true),
+        vec![card, dnie_store()]
+    );
 }
 
 #[test]
@@ -222,8 +225,14 @@ fn macos_asks_for_the_secret_and_never_warns_about_the_pin() {
     let listed = keychain.listed();
     let reference = listed[0].reference();
 
-    assert_eq!(MacosToken.secret_of(reference), Ok(StoreSecret::NotNeeded));
-    assert_eq!(MacosToken.pin_warning(reference), Ok(PinWarning::Quiet));
+    assert_eq!(
+        MacosToken::default().secret_of(reference),
+        Ok(StoreSecret::NotNeeded)
+    );
+    assert_eq!(
+        MacosToken::default().pin_warning(reference),
+        Ok(PinWarning::Quiet)
+    );
 }
 
 #[test]
@@ -288,8 +297,9 @@ fn the_chain_of_a_keychain_certificate_is_completed_with_its_issuer_from_the_key
     keychain.holds_a_certificate(&intermediate);
     keychain.holds_an_identity(&signer, &key);
 
-    let offered = certificates_with_their_chains(&MacosToken, &[keychain_store(&keychain.path)])
-        .expect("el llavero deberia listarse");
+    let offered =
+        certificates_with_their_chains(&MacosToken::default(), &[keychain_store(&keychain.path)])
+            .expect("el llavero deberia listarse");
 
     assert_eq!(offered.len(), 1);
     let chain: Vec<String> = offered[0]
@@ -316,7 +326,7 @@ fn common_name_of(der: &[u8]) -> String {
 const DATA: &[u8] = b"lo que Java manda firmar";
 
 fn signed(certificate: &TokenCertificate, algorithm: SignatureAlgorithm) -> Vec<u8> {
-    MacosToken
+    MacosToken::default()
         .sign_with_secret(
             certificate.reference(),
             &ProtectedSecret::new(b""),
@@ -404,11 +414,11 @@ fn a_keychain_key_offers_only_the_algorithms_of_its_kind() {
     let (_keychain, certificate) = TemporaryKeychain::holding(&an_rsa_key());
 
     assert_eq!(
-        MacosToken.offers(certificate.reference(), SignatureAlgorithm::Sha256RsaPss),
+        MacosToken::default().offers(certificate.reference(), SignatureAlgorithm::Sha256RsaPss),
         Ok(())
     );
     assert_eq!(
-        MacosToken
+        MacosToken::default()
             .offers(certificate.reference(), SignatureAlgorithm::Sha256Ecdsa)
             .map_err(|error| error.situation()),
         Err(Situation::MechanismNotOffered)
@@ -432,7 +442,7 @@ fn a_certificate_gone_from_the_keychain_is_not_found_when_signing() {
     drop(keychain);
 
     assert_eq!(
-        MacosToken
+        MacosToken::default()
             .sign_with_secret(
                 &moved,
                 &ProtectedSecret::new(b""),
@@ -580,9 +590,9 @@ fn removing_an_installed_certificate_deletes_it_and_its_key_from_the_keychain() 
     let home = tempfile::tempdir().expect("deberia haber directorio temporal");
     let thumbprint = gone.reference().cka_id().expect("lleva huella").to_vec();
     installs::record(home.path(), &[thumbprint]).expect("deberia apuntarse");
-    assert!(MacosToken.installed_in_the_system(home.path(), gone.reference()));
+    assert!(MacosToken::default().installed_in_the_system(home.path(), gone.reference()));
 
-    MacosToken
+    MacosToken::default()
         .remove_certificate(home.path(), gone.reference(), &ProtectedSecret::new(b""))
         .expect("deberia quitarse");
 
@@ -592,7 +602,7 @@ fn removing_an_installed_certificate_deletes_it_and_its_key_from_the_keychain() 
         .map(|certificate| certificate.reference().label().to_owned())
         .collect();
     assert_eq!(labels, vec!["SE QUEDA"]);
-    assert!(!MacosToken.installed_in_the_system(home.path(), gone.reference()));
+    assert!(!MacosToken::default().installed_in_the_system(home.path(), gone.reference()));
 }
 
 #[test]
@@ -604,10 +614,10 @@ fn a_keychain_certificate_rfirma_did_not_install_is_not_installed_in_the_system(
 
     let listed = keychain.listed();
 
-    assert!(!MacosToken.installed_in_the_system(home.path(), listed[0].reference()));
+    assert!(!MacosToken::default().installed_in_the_system(home.path(), listed[0].reference()));
 }
 
 #[test]
 fn macos_installs_pkcs12_in_the_system() {
-    assert!(MacosToken.installs_in_the_system());
+    assert!(MacosToken::default().installs_in_the_system());
 }

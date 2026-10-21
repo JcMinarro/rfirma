@@ -82,11 +82,29 @@ no sale del almacén.
 - Con un `.p12`, la contraseña se pide al pulsar **Firmar**.
 - Si el almacén no necesita sesión, no se pide nada.
 - Si te equivocas, el campo se marca como erróneo y la ventana vuelve a pedirlo.
-  rFirma no cuenta los intentos que quedan: no los conoce.
+  Solo con el DNIe en macOS rFirma sabe cuántos intentos quedan y te lo dice antes de
+  que escribas el PIN.
 
-rFirma no admite todavía las tarjetas criptográficas, entre ellas el DNIe: hoy se firma
-con los certificados de los almacenes del sistema, los de los navegadores, los de un
-módulo PKCS#11 que ya tengas configurado y los `.p12`.
+### El DNIe en macOS
+
+En macOS, rFirma lee el DNIe 3.0 y 4.0 **por contacto**, en un lector de tarjetas,
+sin instalar ningún controlador ni programa más. Al meter el DNIe, sus certificados
+aparecen en la lista. No funciona por NFC ni con el DNIe 1.0 o 2.0.
+
+El diálogo del PIN dice cuántos intentos te quedan. Si no te queda ninguno, rFirma no
+pide el PIN y avisa de que el DNIe está bloqueado: se desbloquea en un punto de
+actualización del DNIe.
+
+### Otras tarjetas en macOS
+
+Para firmar con otra tarjeta, instala el módulo PKCS#11 de su fabricante y nómbralo
+en la variable de entorno `RFIRMA_PKCS11_MODULE`, con la ruta completa del módulo:
+
+```bash
+RFIRMA_PKCS11_MODULE=/ruta/al/modulo-pkcs11.dylib open -a rfirma
+```
+
+Sin ella, rFirma solo avisa de que no puede leer esa tarjeta.
 
 ## 5. Firmar y encontrar el documento
 

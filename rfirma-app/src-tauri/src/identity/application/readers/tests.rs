@@ -229,14 +229,14 @@ fn with_no_full_listing_yet_every_store_is_opened() {
 }
 
 #[test]
-fn the_readers_are_watched_on_linux_and_windows_and_not_on_macos() {
+fn the_readers_are_watched_on_linux_windows_and_macos() {
     use crate::desktop::domain::channel::Channel;
     use crate::desktop::domain::platform::Platform;
 
     assert!(watches_the_readers(Platform::Linux, Channel::Native));
     assert!(watches_the_readers(Platform::Linux, Channel::Flatpak));
     assert!(watches_the_readers(Platform::Windows, Channel::Windows));
-    assert!(!watches_the_readers(Platform::MacOs, Channel::Native));
+    assert!(watches_the_readers(Platform::MacOs, Channel::MacOs));
 }
 
 const CARD_KSP: &str = "Microsoft Smart Card Key Storage Provider";
@@ -476,4 +476,77 @@ fn a_change_in_the_readers_lists_the_macos_store_and_the_card_modules_again() {
     asked.dedup();
     assert!(asked.contains(&the_macos_store()));
     assert!(asked.contains(&Store::module(CARD)));
+}
+
+const AUTHENTICATING_WITH_THE_DNIE: &str = "AUTENTICACION DEL DNIE";
+
+fn the_dnie_store() -> Store {
+    Store::module(format!(
+        "{}pcsc",
+        crate::identity::domain::store::DNIE_STORE_PREFIX
+    ))
+}
+
+fn in_the_dnie(label: &str, der: Vec<u8>) -> TokenCertificate {
+    TokenCertificate::new(
+        CertificateRef::new(the_dnie_store(), "DNIe", label, None),
+        der,
+    )
+}
+
+/// macOS con un certificado en el llavero y el almacén del DNIe, que enseña lo que lee del lector.
+fn macos_with_a_reader(on_the_card: Vec<TokenCertificate>) -> (WindowsWithACard, Arranged) {
+    let (card, _) = WindowsWithACard::of(Vec::new());
+    let card_in = std::sync::Arc::clone(&card.card_in);
+    let in_the_keychain = in_macos(
+        IN_SOFTWARE,
+        TestAuthority::root("Firmante en el disco").der(),
+    );
+    let token = Counting::showing(move |store| {
+        if *store != the_dnie_store() {
+            return vec![in_the_keychain.clone()];
+        }
+        if card_in.load(std::sync::atomic::Ordering::SeqCst) {
+            on_the_card.clone()
+        } else {
+            Vec::new()
+        }
+    });
+    let arranged = Arranged::over(token, vec![the_macos_store(), the_dnie_store()]);
+    (card, arranged)
+}
+
+#[test]
+fn putting_the_dnie_in_on_macos_makes_it_ready_and_adds_only_its_signing_certificate() {
+    let dnie = crate::identity::application::tests::a_dnie_der;
+    let (card, arranged) = macos_with_a_reader(vec![
+        in_the_dnie(ON_THE_DNIE, dnie("ADA LOVELACE", true)),
+        in_the_dnie(AUTHENTICATING_WITH_THE_DNIE, dnie("ADA LOVELACE", false)),
+    ]);
+
+    let heard = followed(&arranged, &card, &[false, true, false]);
+
+    assert_eq!(
+        heard.iter().map(|news| news.reader).collect::<Vec<_>>(),
+        vec![
+            ReaderStatus::NoCard,
+            ReaderStatus::Reading,
+            ReaderStatus::Ready(ReadyCard::Dnie),
+            ReaderStatus::NoCard,
+        ]
+    );
+    assert_eq!(labels_in(&heard[2]), vec![ON_THE_DNIE, IN_SOFTWARE]);
+    assert_eq!(labels_in(&heard[3]), vec![IN_SOFTWARE]);
+}
+
+#[test]
+fn another_card_on_macos_that_no_named_module_reads_is_unreadable() {
+    let (card, arranged) = macos_with_a_reader(Vec::new());
+
+    let heard = followed(&arranged, &card, &[true]);
+
+    assert_eq!(
+        heard.iter().map(|news| news.reader).collect::<Vec<_>>(),
+        vec![ReaderStatus::Reading, ReaderStatus::Unreadable]
+    );
 }

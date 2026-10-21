@@ -103,7 +103,7 @@ export const gl: Dictionary = {
   "comparison.pin.rfirma": "Diálogo nativo e memoria protexida",
   "comparison.dnie.label": "Sinatura co DNIe",
   "comparison.dnie.autofirma": "Si, con jMulticard",
-  "comparison.dnie.rfirma": "Si, con detección automática en quente",
+  "comparison.dnie.rfirma": "Si, con detección automática en quente, tamén en macOS",
   "comparison.store.label": "Certificados en ficheiro <code>.p12</code>",
   "comparison.store.autofirma": "Eliges o ficheiro nun diálogo",
   "comparison.store.rfirma": "Almacén propio e cifrado",

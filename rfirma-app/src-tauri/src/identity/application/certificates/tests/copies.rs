@@ -228,6 +228,27 @@ fn the_card_copy_is_preferred_to_a_windows_copy_that_does_not_say_where_its_key_
 }
 
 #[test]
+fn the_dnie_copy_is_preferred_to_a_pkcs11_module_copy_and_the_row_is_listed_once() {
+    let dnie = Store::module("dnie:pcsc");
+    let module = Store::module(CARD);
+
+    assert_eq!(the_copy_signed_with(&[&module, &dnie]), 1);
+    assert_eq!(the_copy_signed_with(&[&dnie, &module]), 0);
+
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let der = TestAuthority::root("EIDAS CERTIFICADO PRUEBAS - 99999999R").der();
+    let rows = rows_of(
+        copies_of(&der, &[&module, &dnie]),
+        &home.path().join("certificates"),
+        &ListedCertificates::new(),
+        &ListedCertificates::new(),
+        &a_memory(home.path()),
+    );
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].store, StoreClass::Card);
+}
+
+#[test]
 fn the_installed_store_is_preferred_to_the_browsers() {
     let home = tempfile::tempdir().expect("deberia haber directorio temporal");
     let der = TestAuthority::root("EIDAS CERTIFICADO PRUEBAS - 99999999R").der();

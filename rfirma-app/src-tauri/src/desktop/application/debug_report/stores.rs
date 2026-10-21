@@ -1,6 +1,28 @@
 //! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers y el de macOS con sus controladores.
 
-use super::{section, MacosStores, NssProfileState, NssStores, ReportOwner, WindowsStores};
+use super::{section, DnieInTheReader, NssProfileState, NssStores, ReportOwner};
+
+/// Lo que solo existe en Windows: el almacén del sistema y los minidrivers de tarjeta.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WindowsStores {
+    /// Si el almacén raíz del usuario confía en el canal local; nunca es un perfil ignorado.
+    pub local_channel: NssProfileState,
+    /// Tipos de tarjeta que Windows tiene dados de alta.
+    pub minidrivers: Vec<String>,
+}
+
+/// Lo que solo existe en macOS: la confianza del usuario y los controladores de tarjeta del sistema.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MacosStores {
+    /// Si la confianza del usuario en el Almacén de macOS acepta el canal local.
+    pub local_channel: NssProfileState,
+    /// Controladores de tarjeta que macOS tiene instalados.
+    pub card_drivers: Vec<String>,
+    /// Lo que rFirma ve en el lector.
+    pub dnie: DnieInTheReader,
+    /// Versión de rdnie con la que se compiló.
+    pub rdnie_version: String,
+}
 
 pub(super) fn windows_sections(stores: Option<&WindowsStores>) -> [Option<String>; 2] {
     let Some(stores) = stores else {
@@ -22,9 +44,9 @@ pub(super) fn windows_sections(stores: Option<&WindowsStores>) -> [Option<String
     ]
 }
 
-pub(super) fn macos_sections(stores: Option<&MacosStores>) -> [Option<String>; 2] {
+pub(super) fn macos_sections(stores: Option<&MacosStores>) -> [Option<String>; 3] {
     let Some(stores) = stores else {
-        return [None, None];
+        return [None, None, None];
     };
     let trust = format!(
         "Confianza del usuario: {}",
@@ -42,7 +64,23 @@ pub(super) fn macos_sections(stores: Option<&MacosStores>) -> [Option<String>; 2
     [
         section("Almacén de macOS", &[trust]),
         section("Controladores de tarjeta", &drivers),
+        section("DNIe", &dnie_lines(stores)),
     ]
+}
+
+fn dnie_lines(stores: &MacosStores) -> Vec<String> {
+    let card = match &stores.dnie {
+        DnieInTheReader::Seen(dnie) => vec![
+            format!("ATR: {}", dnie.atr),
+            format!("versión: {}", dnie.version),
+            format!("juego de claves: {}", dnie.key_set),
+        ],
+        DnieInTheReader::Absent => vec!["tarjeta: no hay DNIe".to_owned()],
+        DnieInTheReader::Unopened(error) => vec![format!("tarjeta: rdnie no la abre · {error}")],
+    };
+    card.into_iter()
+        .chain(std::iter::once(format!("rdnie: {}", stores.rdnie_version)))
+        .collect()
 }
 
 pub(super) fn nss_lines(stores: &NssStores, owner: &ReportOwner) -> Vec<String> {

@@ -10,6 +10,7 @@ const PO_LANGUAGES: [&str; 5] = ["es", "ca", "eu", "gl", "en"];
 fn main() {
     write_the_catalog();
     record_the_commit();
+    record_the_rdnie_version();
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
     link_libxslt(&target_os);
     if target_os != "windows" {
@@ -110,4 +111,20 @@ fn record_the_commit() {
     if let Some(commit) = git(&["rev-parse", "--short", "HEAD"]).filter(|c| !c.is_empty()) {
         println!("cargo:rustc-env=RFIRMA_GIT_COMMIT={commit}");
     }
+}
+
+fn record_the_rdnie_version() {
+    let lock = crate_dir().join("Cargo.lock");
+    println!("cargo:rerun-if-changed={}", lock.display());
+    let text = std::fs::read_to_string(lock).unwrap_or_default();
+    let version = text
+        .split("[[package]]")
+        .find(|package| package.contains("\nname = \"rdnie\"\n"))
+        .and_then(|package| {
+            package
+                .lines()
+                .find_map(|line| line.strip_prefix("version = "))
+        })
+        .map_or("desconocida", |quoted| quoted.trim_matches('"'));
+    println!("cargo:rustc-env=RFIRMA_RDNIE_VERSION={version}");
 }

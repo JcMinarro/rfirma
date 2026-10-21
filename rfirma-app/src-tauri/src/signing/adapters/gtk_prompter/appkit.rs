@@ -7,7 +7,8 @@ use block2::RcBlock;
 use objc2::rc::{autoreleasepool, Retained};
 use objc2::MainThreadMarker;
 use objc2_app_kit::{
-    NSAlert, NSAlertFirstButtonReturn, NSModalResponse, NSSecureTextField, NSWindow,
+    NSAlert, NSAlertFirstButtonReturn, NSFont, NSModalResponse, NSSecureTextField, NSTextField,
+    NSView, NSWindow,
 };
 use objc2_foundation::{NSPoint, NSRect, NSSize, NSString};
 
@@ -22,6 +23,7 @@ use crate::identity::ports::{
 pub struct AlertTexts {
     pub message: String,
     pub informative: String,
+    pub highlighted: Option<String>,
     pub accept: &'static str,
     pub cancel: &'static str,
 }
@@ -67,19 +69,20 @@ impl<A: SecureAlert + Send + Sync> SecretPrompter for SecureAlertPrompter<A> {
 fn texts_of(request: &SecretPromptRequest) -> AlertTexts {
     let i18n = localize(request);
     let incorrect = request.incorrect_secret.then_some(i18n.incorrect_secret);
-    let informative = [
-        i18n.holder_name,
-        i18n.id_number,
-        incorrect,
-        i18n.pin_warning,
-    ]
-    .into_iter()
-    .flatten()
-    .collect::<Vec<_>>()
-    .join("\n");
+    let (quiet_warning, highlighted) = if request.pin_warning.stands_out() {
+        (None, i18n.pin_warning)
+    } else {
+        (i18n.pin_warning, None)
+    };
+    let informative = [i18n.holder_name, i18n.id_number, incorrect, quiet_warning]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>()
+        .join("\n");
     AlertTexts {
         message: i18n.title,
         informative,
+        highlighted,
         accept: i18n.accept,
         cancel: i18n.cancel,
     }
@@ -159,12 +162,40 @@ fn alert_with(mtm: MainThreadMarker, texts: &AlertTexts) -> AlertParts {
     let cancel = alert.addButtonWithTitle(&NSString::from_str(texts.cancel));
     cancel.setKeyEquivalent(&NSString::from_str("\u{1b}"));
 
-    let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(240.0, 24.0));
-    let field = NSSecureTextField::initWithFrame(mtm.alloc(), frame);
-    alert.setAccessoryView(Some(&field));
+    let field = NSSecureTextField::initWithFrame(mtm.alloc(), at(0.0, FIELD_HEIGHT));
+    match &texts.highlighted {
+        Some(warning) => alert.setAccessoryView(Some(&in_bold_above(mtm, warning, &field))),
+        None => alert.setAccessoryView(Some(&field)),
+    }
     alert.layout();
     alert.window().setInitialFirstResponder(Some(&field));
     AlertParts { alert, field }
+}
+
+const ACCESSORY_WIDTH: f64 = 240.0;
+const FIELD_HEIGHT: f64 = 24.0;
+const GAP: f64 = 8.0;
+
+fn at(y: f64, height: f64) -> NSRect {
+    NSRect::new(NSPoint::new(0.0, y), NSSize::new(ACCESSORY_WIDTH, height))
+}
+
+fn in_bold_above(
+    mtm: MainThreadMarker,
+    warning: &str,
+    field: &NSSecureTextField,
+) -> Retained<NSView> {
+    let label = NSTextField::wrappingLabelWithString(&NSString::from_str(warning), mtm);
+    label.setFont(Some(
+        &NSFont::boldSystemFontOfSize(NSFont::systemFontSize()),
+    ));
+    label.setPreferredMaxLayoutWidth(ACCESSORY_WIDTH);
+    let label_height = label.fittingSize().height;
+    label.setFrame(at(FIELD_HEIGHT + GAP, label_height));
+    let accessory = NSView::initWithFrame(mtm.alloc(), at(0.0, FIELD_HEIGHT + GAP + label_height));
+    accessory.addSubview(&label);
+    accessory.addSubview(field);
+    accessory
 }
 
 fn run_app_modal(parts: &AlertParts) -> AlertAnswer {
