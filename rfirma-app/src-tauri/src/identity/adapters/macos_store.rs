@@ -72,7 +72,7 @@ impl MacosToken {
     }
 
     fn beyond_the_keychain(&self, store: &Store) -> &dyn Token {
-        if dnie::is_the_dnie(store) {
+        if store.is_the_dnie() {
             return self.dnie.as_ref();
         }
         &RealToken
