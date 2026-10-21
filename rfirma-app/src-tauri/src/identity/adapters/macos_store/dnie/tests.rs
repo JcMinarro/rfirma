@@ -1,0 +1,270 @@
+use openssl::asn1::Asn1Time;
+use openssl::bn::BigNum;
+use openssl::hash::MessageDigest;
+use openssl::pkey::PKey;
+use openssl::rsa::Rsa;
+use openssl::x509::extension::BasicConstraints;
+use openssl::x509::{X509Name, X509};
+use rdnie::{Session, INTERMEDIATE_CA_LABEL, SIGNATURE_LABEL};
+use rdnie_emulator::{EmulatedDnie, HolderCertificate};
+use rsa::traits::PublicKeyParts;
+
+use super::{dnie_store, CardOpener, DnieToken};
+use crate::identity::adapters::macos_store::MacosToken;
+use crate::identity::application::certificates::{certificates_with_their_chains, on_the_desktop};
+use crate::identity::application::tests::a_dnie_der;
+use crate::identity::domain::certificate::TokenCertificate;
+use crate::identity::domain::store::StoreClass;
+use crate::identity::ports::Token;
+
+const AUTHENTICATION_LABEL: &str = "CertAutenticacion";
+
+/// El emulador de rdnie como tarjeta: una nueva en cada apertura, con la sesión que confía en su raíz.
+struct Emulated(Box<dyn Fn() -> EmulatedDnie + Send + Sync>);
+
+impl CardOpener for Emulated {
+    type Card = EmulatedDnie;
+
+    fn open(&self) -> Result<Session<EmulatedDnie>, rdnie::Error> {
+        let card = (self.0)();
+        let root = card.component_root();
+        Session::open_trusting(card, root)
+    }
+}
+
+fn the_dnie(card: impl Fn() -> EmulatedDnie + Send + Sync + 'static) -> DnieToken<Emulated> {
+    DnieToken::new(Emulated(Box::new(card)))
+}
+
+fn the_two_versions() -> [(&'static str, fn() -> EmulatedDnie); 2] {
+    [
+        ("DNIe 3.0", EmulatedDnie::dnie_3),
+        ("DNIe 4.0", EmulatedDnie::dnie_4),
+    ]
+}
+
+fn labels_of(found: &[TokenCertificate]) -> Vec<String> {
+    let mut labels: Vec<String> = found
+        .iter()
+        .map(|certificate| certificate.reference().label().to_owned())
+        .collect();
+    labels.sort();
+    labels
+}
+
+fn modulus_of(der: &[u8]) -> Vec<u8> {
+    X509::from_der(der)
+        .and_then(|certificate| certificate.public_key())
+        .and_then(|key| key.rsa())
+        .expect("el certificado deberia traer una clave RSA")
+        .n()
+        .to_vec()
+}
+
+fn listed_by(token: &dyn Token) -> Vec<TokenCertificate> {
+    token.list(&dnie_store()).expect("el DNIe deberia listarse")
+}
+
+#[test]
+fn the_dnie_store_is_a_card() {
+    assert_eq!(dnie_store().class(), StoreClass::Card);
+}
+
+#[test]
+fn lists_the_signing_and_the_authentication_certificates_without_a_pin() {
+    for (version, card) in the_two_versions() {
+        let emulated = card();
+        let signing_key = emulated.signing_public_key().n().to_bytes_be();
+        let authentication_key = emulated.authentication_public_key().n().to_bytes_be();
+
+        let found = listed_by(&the_dnie(card));
+
+        assert_eq!(
+            labels_of(&found),
+            vec![AUTHENTICATION_LABEL, SIGNATURE_LABEL],
+            "{version}"
+        );
+        let key_of = |label: &str| {
+            found
+                .iter()
+                .find(|certificate| certificate.reference().label() == label)
+                .map(|certificate| modulus_of(certificate.der()))
+        };
+        assert_eq!(key_of(SIGNATURE_LABEL), Some(signing_key), "{version}");
+        assert_eq!(
+            key_of(AUTHENTICATION_LABEL),
+            Some(authentication_key),
+            "{version}"
+        );
+        assert!(
+            found
+                .iter()
+                .all(|certificate| certificate.reference().store() == dnie_store()),
+            "{version}"
+        );
+    }
+}
+
+#[test]
+fn another_card_in_the_reader_lists_nothing() {
+    const ANOTHER_CARD: [u8; 11] = [
+        0x3B, 0x8F, 0x80, 0x01, 0x80, 0x4F, 0x0C, 0xA0, 0x00, 0x00, 0x03,
+    ];
+
+    let found = listed_by(&the_dnie(|| EmulatedDnie::new(&ANOTHER_CARD)));
+
+    assert!(found.is_empty());
+}
+
+#[test]
+fn a_card_taken_out_while_listing_lists_nothing_and_says_the_card_is_gone() {
+    use rdnie_emulator::Step;
+
+    let failure = the_dnie(|| EmulatedDnie::dnie_3().removing_card_at(Step::Certificates))
+        .list(&dnie_store())
+        .expect_err("la tarjeta se ha ido");
+
+    assert_eq!(
+        failure.situation(),
+        crate::identity::domain::error::Situation::TokenAbsent
+    );
+}
+
+/// Los certificados de un DNIe de la Dirección General de la Policía, con la CA intermedia que los emite.
+#[derive(Clone)]
+struct OfThePolice {
+    authentication: Vec<u8>,
+    signing: Vec<u8>,
+    intermediate: Vec<u8>,
+}
+
+impl OfThePolice {
+    fn new() -> Self {
+        Self {
+            authentication: a_dnie_der("ADA LOVELACE", false),
+            signing: a_dnie_der("ADA LOVELACE", true),
+            intermediate: the_dnie_intermediate_der(),
+        }
+    }
+
+    fn on(&self, card: EmulatedDnie) -> EmulatedDnie {
+        let mut authentication = HolderCertificate::holder_authentication(1);
+        authentication.der = self.authentication.clone();
+        let mut signing = HolderCertificate::holder_signing(2);
+        signing.der = self.signing.clone();
+        let mut intermediate = HolderCertificate::new(3, 0)
+            .labelled(INTERMEDIATE_CA_LABEL)
+            .without_key();
+        intermediate.der = self.intermediate.clone();
+        card.with_certificates(&[authentication, signing, intermediate])
+    }
+
+    fn in_the(self, card: fn() -> EmulatedDnie) -> DnieToken<Emulated> {
+        the_dnie(move || self.on(card()))
+    }
+}
+
+/// La CA que `a_dnie_der` nombra como emisora, emitida a su vez por una raíz.
+fn the_dnie_intermediate_der() -> Vec<u8> {
+    let key = PKey::from_rsa(Rsa::generate(2048).expect("deberia generarse la clave"))
+        .expect("deberia envolverse la clave");
+    let mut subject = X509Name::builder().expect("deberia construirse un nombre");
+    for (field, value) in [
+        ("C", "ES"),
+        ("O", "DIRECCION GENERAL DE LA POLICIA"),
+        ("OU", "DNIE"),
+        ("CN", "AC DNIE 004"),
+    ] {
+        subject
+            .append_entry_by_text(field, value)
+            .expect("el atributo deberia entrar");
+    }
+    let mut issuer = X509Name::builder().expect("deberia construirse un nombre");
+    issuer
+        .append_entry_by_text("CN", "AC RAIZ DNIE 2")
+        .expect("el atributo deberia entrar");
+    let mut builder = X509::builder().expect("deberia construirse un certificado");
+    builder.set_version(2).expect("la version deberia ponerse");
+    builder
+        .set_serial_number(
+            &BigNum::from_u32(4)
+                .and_then(|serial| serial.to_asn1_integer())
+                .expect("el serie deberia construirse"),
+        )
+        .expect("el serie deberia ponerse");
+    builder
+        .set_subject_name(&subject.build())
+        .expect("el titular deberia ponerse");
+    builder
+        .set_issuer_name(&issuer.build())
+        .expect("el emisor deberia ponerse");
+    builder.set_pubkey(&key).expect("la clave deberia ponerse");
+    builder
+        .set_not_before(&Asn1Time::days_from_now(0).expect("deberia haber fecha"))
+        .expect("el inicio deberia ponerse");
+    builder
+        .set_not_after(&Asn1Time::days_from_now(30).expect("deberia haber fecha"))
+        .expect("el fin deberia ponerse");
+    builder
+        .append_extension(
+            BasicConstraints::new()
+                .critical()
+                .ca()
+                .build()
+                .expect("deberia construirse la extension"),
+        )
+        .expect("la extension deberia ponerse");
+    builder
+        .sign(&key, MessageDigest::sha256())
+        .expect("el certificado deberia firmarse");
+    builder
+        .build()
+        .to_der()
+        .expect("el certificado deberia salir en DER")
+}
+
+#[test]
+fn the_intermediate_ca_completes_the_chain_of_both_certificates_for_a_site() {
+    for (version, card) in the_two_versions() {
+        let police = OfThePolice::new();
+        let dnie = police.clone().in_the(card);
+
+        let offered = certificates_with_their_chains(&dnie, &[dnie_store()])
+            .expect("el DNIe deberia listarse");
+
+        assert_eq!(
+            labels_of(&offered),
+            vec![AUTHENTICATION_LABEL, SIGNATURE_LABEL],
+            "{version}"
+        );
+        for certificate in &offered {
+            assert_eq!(
+                certificate.chain(),
+                vec![certificate.der().to_vec(), police.intermediate.clone()],
+                "{version}"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_signing_panel_offers_only_the_signing_certificate_of_the_dnie() {
+    for (version, card) in the_two_versions() {
+        let dnie = OfThePolice::new().in_the(card);
+
+        let offered = on_the_desktop(listed_by(&dnie));
+
+        assert_eq!(labels_of(&offered), vec![SIGNATURE_LABEL], "{version}");
+        assert!(offered[0].is_from_a_dnie(), "{version}");
+    }
+}
+
+#[test]
+fn the_macos_token_hands_the_dnie_store_to_the_dnie() {
+    let token = MacosToken::with_the_dnie(the_dnie(EmulatedDnie::dnie_4));
+
+    assert_eq!(
+        labels_of(&listed_by(&token)),
+        vec![AUTHENTICATION_LABEL, SIGNATURE_LABEL]
+    );
+}

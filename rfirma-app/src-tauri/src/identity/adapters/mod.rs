@@ -57,6 +57,17 @@ pub use pkcs11::RealToken as DesktopToken;
 #[cfg(windows)]
 pub use windows_store::WindowsToken as DesktopToken;
 
+/// El token de esta plataforma, con el lector del DNIe en macOS.
+#[cfg(target_os = "macos")]
+pub fn desktop_token() -> DesktopToken {
+    DesktopToken::default()
+}
+/// El token de esta plataforma.
+#[cfg(any(target_os = "linux", windows))]
+pub fn desktop_token() -> DesktopToken {
+    DesktopToken
+}
+
 /// Los almacenes de certificados de esta plataforma.
 #[cfg(target_os = "macos")]
 pub use macos_store::from_environment as desktop_stores;

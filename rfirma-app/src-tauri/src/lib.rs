@@ -78,7 +78,7 @@ fn composed_roots(paths: desktop::adapters::paths::Paths, invocation: Option<Inv
     let dialogs = Arc::new(documents::adapters::dialogs::RealPortalDialogs::default());
     let prompter = Arc::new(signing::adapters::gtk_prompter::NativePinDialog::new());
     let identity = IdentityRoot {
-        token: Box::new(identity::adapters::DesktopToken),
+        token: Box::new(identity::adapters::desktop_token()),
         stores: identity::adapters::desktop_stores(),
         installed_certificates: paths.installed_certificates_dir(),
         listed: identity::application::certificates::ListedCertificates::new(),
