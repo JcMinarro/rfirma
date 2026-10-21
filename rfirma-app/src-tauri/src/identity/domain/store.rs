@@ -170,6 +170,11 @@ impl Store {
         self.is_named(WINDOWS_STORE_PREFIX)
     }
 
+    /// Si es el almacén del DNIe leído con rdnie y no un módulo PKCS#11.
+    pub fn is_the_dnie(&self) -> bool {
+        self.is_named(DNIE_STORE_PREFIX)
+    }
+
     fn is_named(&self, prefix: &str) -> bool {
         self.module
             .to_str()

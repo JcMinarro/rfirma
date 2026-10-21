@@ -20,14 +20,6 @@ pub fn dnie_store() -> Store {
     Store::module(format!("{DNIE_STORE_PREFIX}pcsc"))
 }
 
-/// Si el almacén es el del DNIe.
-pub fn is_the_dnie(store: &Store) -> bool {
-    store
-        .path()
-        .to_str()
-        .is_some_and(|module| module.starts_with(DNIE_STORE_PREFIX))
-}
-
 /// Quien abre la tarjeta para cada operación: el lector en producción, el emulador en las pruebas.
 pub trait CardOpener: Send + Sync {
     /// Por dónde viajan las órdenes a la tarjeta.
