@@ -3,6 +3,11 @@
   "bundle": {
     "targets": ["app", "dmg"],
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png"],
+    "resources": {
+      "../../LICENSE.md": "licenses/EUPL-1.2.md",
+      "../../packaging/licenses/EUPL-1.1.pdf": "licenses/EUPL-1.1.pdf",
+      "../../packaging/licenses/heroicons-MIT.txt": "licenses/heroicons-MIT.txt"
+    },
     "macOS": {
       "frameworks": ["../../rfirma-native-bridge/target/lib/rfirma/librfirma_crypto.dylib"],
       "infoPlist": "../../packaging/macos/Info.plist",

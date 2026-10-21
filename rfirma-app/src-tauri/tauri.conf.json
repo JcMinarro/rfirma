@@ -26,7 +26,8 @@
           "/usr/share/kio/servicemenus/rfirma-sign.desktop": "../../packaging/kde/rfirma-sign.desktop",
           "/usr/share/nautilus-python/extensions/rfirma-sign.py": "../../packaging/gnome/rfirma-sign.py",
           "/usr/share/doc/rfirma/licenses/heroicons-MIT.txt": "../../packaging/licenses/heroicons-MIT.txt",
-          "/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf": "../../packaging/licenses/EUPL-1.1.pdf"
+          "/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf": "../../packaging/licenses/EUPL-1.1.pdf",
+          "/usr/share/doc/rfirma/licenses/EUPL-1.2.md": "../../LICENSE.md"
         },
         "depends": ["libpcsclite1", "libxslt1.1"],
         "recommends": ["python3-nautilus", "opensc", "pcscd"],
@@ -38,7 +39,8 @@
           "/usr/share/kio/servicemenus/rfirma-sign.desktop": "../../packaging/kde/rfirma-sign.desktop",
           "/usr/share/nautilus-python/extensions/rfirma-sign.py": "../../packaging/gnome/rfirma-sign.py",
           "/usr/share/doc/rfirma/licenses/heroicons-MIT.txt": "../../packaging/licenses/heroicons-MIT.txt",
-          "/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf": "../../packaging/licenses/EUPL-1.1.pdf"
+          "/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf": "../../packaging/licenses/EUPL-1.1.pdf",
+          "/usr/share/doc/rfirma/licenses/EUPL-1.2.md": "../../LICENSE.md"
         },
         "depends": ["libpcsclite.so.1()(64bit)", "libxslt.so.1()(64bit)"],
         "recommends": ["nautilus-python", "opensc", "pcsc-lite"],

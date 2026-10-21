@@ -136,17 +136,14 @@ exige_relacion() {
     echo "OK  $tipo $nombre"
 }
 
-# La licencia de las hojas de FacturaE que van en el binario (ADR-0051), con las demás de terceros.
-case "$PAQUETE" in
-    *.deb | *.rpm)
-        licencia="$LAB/contenido/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
-        if [ ! -f "$licencia" ]; then
-            echo "FALTA la EUPL 1.1 de las hojas de FacturaE en /usr/share/doc/rfirma/licenses" >&2
-            exit 1
-        fi
-        echo "OK  la EUPL 1.1 de las hojas de FacturaE"
-        ;;
-esac
+# La licencia de rFirma y las de terceros, en todos los formatos: la de las hojas de FacturaE (ADR-0051) y la de los iconos.
+for licencia in EUPL-1.2.md EUPL-1.1.pdf heroicons-MIT.txt; do
+    if [ -z "$(find -L "$LAB/contenido" -path '*licenses/*' -name "$licencia")" ]; then
+        echo "FALTA la licencia $licencia en el paquete" >&2
+        exit 1
+    fi
+    echo "OK  la licencia $licencia"
+done
 
 case "$PAQUETE" in
     *.deb)
