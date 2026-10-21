@@ -114,6 +114,7 @@ Recommends: opensc, pcscd
             "$relations" > "$staging/DEBIAN/control"
         : > "$staging/usr/lib/rfirma/librfirma_crypto.so"
         : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
+        : > "$staging/usr/share/doc/rfirma/licenses/EUPL-1.2.md"
         [ -z "$library" ] || : > "$staging/usr/lib/rfirma/$library"
         dpkg-deb --build --root-owner-group "$staging" "$out" > /dev/null
     }

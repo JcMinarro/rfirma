@@ -136,7 +136,7 @@ exige_relacion() {
     echo "OK  $tipo $nombre"
 }
 
-# La licencia de las hojas de FacturaE que van en el binario (ADR-0051), con las demás de terceros.
+# La licencia de rFirma y la de las hojas de FacturaE que van en el binario (ADR-0051).
 case "$PAQUETE" in
     *.deb | *.rpm)
         licencia="$LAB/contenido/usr/share/doc/rfirma/licenses/EUPL-1.1.pdf"
@@ -145,6 +145,11 @@ case "$PAQUETE" in
             exit 1
         fi
         echo "OK  la EUPL 1.1 de las hojas de FacturaE"
+        if [ ! -f "$LAB/contenido/usr/share/doc/rfirma/licenses/EUPL-1.2.md" ]; then
+            echo "FALTA la EUPL 1.2 de rFirma en /usr/share/doc/rfirma/licenses" >&2
+            exit 1
+        fi
+        echo "OK  la EUPL 1.2 de rFirma"
         ;;
 esac
 
