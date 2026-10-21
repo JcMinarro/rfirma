@@ -12,7 +12,7 @@ como fallaría Linux sin el servicio y dice en su nombre qué falta.
 | --- | --- |
 | OpenSSL del sistema | `openssl` con `vendored`, como en Windows: el binario no depende del de Homebrew y compila en cruzado. |
 | Canal TLS local con `native-tls` | rustls, como en Windows (ADR-0036). |
-| Token PKCS#11 y sus almacenes | `MacosToken`: el llavero por Security.framework para el Almacén de macOS, que firma el resumen con la clave del llavero, y el `RealToken` de Linux para los módulos, que solo encuentra si `RFIRMA_PKCS11_MODULE` lo nombra. |
+| Token PKCS#11 y sus almacenes | `MacosToken`: el llavero por Security.framework para el Almacén de macOS, que firma el resumen con la clave del llavero; el DNIe por rdnie; y el `RealToken` de Linux para los módulos, que solo encuentra si `RFIRMA_PKCS11_MODULE` lo nombra. |
 | `mlock` del secreto | `mlock`; `MADV_DONTDUMP` es solo de Linux. |
 | Cerrojos (Firefox, carpeta de paso) | Los de Unix, sin cambios. |
 | Llavero `oo7` (ADR-0034) | `PendingMacosKeychain`: responde que no hay llavero. |
@@ -36,9 +36,17 @@ propio. De la regla salen:
 - **La CA local va a la confianza de la persona usuaria** (ADR-0005), con el diálogo de contraseña
   del sistema, y `afirma://` se gestiona por LaunchServices.
 
-Las tarjetas y el DNIe en macOS quedan fuera de la regla: están pendientes de #2043, sin decidir, y
-mientras tanto el Almacén de macOS solo lista certificados con clave de software. En macOS no se
-vigilan los lectores ni aparece la línea del lector.
+Las tarjetas quedan fuera de la regla: macOS no trae controlador del DNIe, y ni el módulo de la
+DGP ni OpenSC son una vía fiable en Apple Silicon. Por eso:
+
+- **El DNIe 3.0 y 4.0 por contacto lo lee rFirma por PC/SC con rdnie**, el driver propio del
+  proyecto: certificados sin PIN, intentos restantes antes de pedirlo y firma del resumen en la
+  tarjeta, todo en Rust (ADR-0001). Si un módulo PKCS#11 ve también el DNIe, gana rdnie.
+- **Cualquier otra tarjeta solo entra por PKCS#11 si `RFIRMA_PKCS11_MODULE` nombra su módulo.**
+  Sin él, la línea del lector da el mensaje genérico de tarjeta ilegible, y la variable se
+  explica en la documentación.
+
+Los lectores se vigilan por PC/SC y la línea del lector aparece como en Linux y Windows.
 
 El orden de almacenes pasa a ser: tarjeta, Almacén de Windows o de macOS, Almacén de rFirma,
 NSS del sistema, familia Firefox, familia Chromium.

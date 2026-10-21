@@ -191,6 +191,11 @@ los dos, como en AutoFirma, porque rFirma no sabe si la sede quiere autenticar o
 firmar: solo los filtros de la sede quitan uno u otro.
 _Avoid_: DNI electrónico (en la interfaz), carné, tarjeta del DNI
 
+**Intentos restantes**:
+Cuántas veces más se puede fallar el PIN de una tarjeta criptográfica antes de
+que se bloquee. Con cero, la tarjeta está bloqueada y ya no se pide el PIN.
+_Avoid_: reintentos, contador
+
 **Lector**:
 El dispositivo donde se mete una tarjeta criptográfica. Puede estar sin
 tarjeta, con una tarjeta que se está leyendo, con una lista para usar o con una
