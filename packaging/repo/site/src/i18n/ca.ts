@@ -103,7 +103,7 @@ export const ca: Dictionary = {
   "comparison.pin.rfirma": "Diàleg del sistema i memòria protegida",
   "comparison.dnie.label": "Signatura amb DNIe",
   "comparison.dnie.autofirma": "Sí, amb jMulticard",
-  "comparison.dnie.rfirma": "Sí, el detecta en inserir-lo",
+  "comparison.dnie.rfirma": "Sí, el detecta en inserir-lo, també a macOS",
   "comparison.store.label": "Certificats <code>.p12</code>",
   "comparison.store.autofirma": "Tries el fitxer en un diàleg",
   "comparison.store.rfirma": "Magatzem xifrat propi",

@@ -104,7 +104,7 @@ export const en: Dictionary = {
   "comparison.pin.rfirma": "Native dialogue and protected memory",
   "comparison.dnie.label": "Signing with your DNIe",
   "comparison.dnie.autofirma": "Yes, with jMulticard",
-  "comparison.dnie.rfirma": "Yes, detected as soon as you insert it",
+  "comparison.dnie.rfirma": "Yes, detected as soon as you insert it, on macOS too",
   "comparison.store.label": "<code>.p12</code> certificates",
   "comparison.store.autofirma": "You pick the file in a dialogue",
   "comparison.store.rfirma": "Its own encrypted store",

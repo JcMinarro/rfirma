@@ -105,7 +105,7 @@ export const eu: Dictionary = {
   "comparison.pin.rfirma": "Sistemaren leihoa eta memoria babestua",
   "comparison.dnie.label": "DNIe-arekin sinatzea",
   "comparison.dnie.autofirma": "Bai, jMulticard bidez",
-  "comparison.dnie.rfirma": "Bai, txartela sartu bezain laster antzematen du",
+  "comparison.dnie.rfirma": "Bai, txartela sartu bezain laster antzematen du, macOS-en ere",
   "comparison.store.label": "<code>.p12</code> ziurtagiriak",
   "comparison.store.autofirma": "Fitxategia leiho batean aukeratzen duzu",
   "comparison.store.rfirma": "Biltegi zifratu propioa",
