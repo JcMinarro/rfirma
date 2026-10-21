@@ -55,6 +55,7 @@ struct Login {
     shown_attempts: Option<u8>,
     depth: usize,
     cut: Option<TokenError>,
+    pin: Option<ProtectedSecret>,
 }
 
 impl<O: CardOpener> DnieToken<O> {
@@ -76,11 +77,23 @@ impl<O: CardOpener> DnieToken<O> {
         self.opener.open().map_err(|error| token_error(&error))
     }
 
+    fn keep_while_shared(&self, secret: &ProtectedSecret) {
+        let mut login = self.login();
+        if login.depth > 0 {
+            login.pin = Some(ProtectedSecret::new(secret.as_bytes()));
+        }
+    }
+
     fn attempts_left(&self) -> Result<u8, TokenError> {
         match self.session()?.pin_retries() {
             Err(rdnie::Error::PinBlocked) => Ok(0),
             read => read.map_err(|error| token_error(&error)),
         }
+    }
+
+    #[cfg(test)]
+    fn holds_a_pin(&self) -> bool {
+        self.login().pin.is_some()
     }
 
     fn signed(
@@ -256,9 +269,9 @@ impl<O: CardOpener> Token for DnieToken<O> {
         let left = self.attempts_left()?;
         let shown = self.login().shown_attempts;
         unchanged_since_shown(left, shown)?;
-        PinWarning::AttemptsLeft(u32::from(left))
-            .unless_locked()
-            .map(|_| ())
+        PinWarning::AttemptsLeft(u32::from(left)).unless_locked()?;
+        self.keep_while_shared(secret);
+        Ok(())
     }
 
     fn sign_with_secret(
@@ -280,6 +293,7 @@ impl<O: CardOpener> Token for DnieToken<O> {
             let mut login = self.login();
             if login.depth > 0 {
                 login.cut = Some(failure.clone());
+                login.pin = None;
             }
         }
         signed
@@ -294,6 +308,7 @@ impl<O: CardOpener> Token for DnieToken<O> {
         login.depth = login.depth.saturating_sub(1);
         if login.depth == 0 {
             login.cut = None;
+            login.pin = None;
         }
     }
 

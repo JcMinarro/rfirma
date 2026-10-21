@@ -240,3 +240,32 @@ fn a_batch_asks_again_for_a_pin_of_a_length_the_dnie_does_not_admit() {
     assert_eq!(typist.seen().len(), 2);
     assert_eq!(reader.pins_sent(), 0);
 }
+
+#[test]
+fn the_accepted_pin_is_kept_while_the_shared_login_lasts_and_wiped_when_it_closes() {
+    let reader = InTheReader::new(rdnie_emulator::EmulatedDnie::dnie_3());
+    let dnie = reader.token();
+    let typist = Typist::typing(&reader, vec![the_pin()]);
+
+    dnie.hold_one_login(&the_signing_certificate());
+    let (pin, ()) = accepted_after_the_dialog(&dnie, &typist).expect("PIN aceptado");
+    let held_after_accepting = dnie.holds_a_pin();
+    signed_in_its_own_cycle(&dnie, &pin).expect("firma");
+    let held_after_a_nested_cycle = dnie.holds_a_pin();
+    dnie.release_the_login(&the_signing_certificate());
+
+    assert!(held_after_accepting);
+    assert!(held_after_a_nested_cycle);
+    assert!(!dnie.holds_a_pin());
+}
+
+#[test]
+fn a_pin_accepted_outside_a_shared_login_is_not_kept() {
+    let reader = InTheReader::new(rdnie_emulator::EmulatedDnie::dnie_3());
+    let dnie = reader.token();
+
+    dnie.accepts_the_secret(&the_signing_certificate(), &the_pin())
+        .expect("PIN aceptado");
+
+    assert!(!dnie.holds_a_pin());
+}
