@@ -118,9 +118,30 @@ fn a_card_on_its_final_try_is_warned_and_a_wrong_pin_is_said_again() {
     let _ = prompter.prompt_secret(&request);
     let (texts, _) = prompter.alert.shown();
 
+    assert_eq!(texts.informative, "PIN incorrecto. Vuelve a intentarlo.");
     assert_eq!(
-        texts.informative,
-        "PIN incorrecto. Vuelve a intentarlo.\n\
-         Último intento: si el PIN no es correcto, la tarjeta se bloqueará."
+        texts.highlighted.as_deref(),
+        Some("Último intento: si el PIN no es correcto, la tarjeta se bloqueará.")
     );
+}
+
+#[test]
+fn one_or_two_attempts_left_stand_out_beside_the_field_and_three_stay_in_the_text() {
+    for (left, stands_out) in [(1, true), (2, true), (3, false)] {
+        let alert = ScriptedAlert::answering(AlertAnswer::Dismissed);
+        let prompter = SecureAlertPrompter::over(alert);
+        let mut request = a_pin_request();
+        request.holder = None;
+        request.pin_warning = PinWarning::AttemptsLeft(left);
+
+        let _ = prompter.prompt_secret(&request);
+        let (texts, _) = prompter.alert.shown();
+
+        assert_eq!(texts.highlighted.is_some(), stands_out, "{left}: {texts:?}");
+        assert_eq!(
+            texts.informative.is_empty(),
+            stands_out,
+            "{left}: {texts:?}"
+        );
+    }
 }

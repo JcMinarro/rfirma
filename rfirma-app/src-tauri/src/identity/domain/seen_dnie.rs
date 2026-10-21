@@ -10,3 +10,14 @@ pub struct SeenDnie {
     /// «primero» o «segundo», el juego de claves del canal seguro.
     pub key_set: String,
 }
+
+/// Lo que hay en el lector: ningún DNIe, uno que se ve o una tarjeta que rdnie no abre.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum DnieInTheReader {
+    /// Sin lector, sin tarjeta o con una tarjeta que no es un DNIe.
+    Absent,
+    /// Un DNIe legible.
+    Seen(SeenDnie),
+    /// El error de rdnie al abrirla, que no lleva datos del titular.
+    Unopened(String),
+}

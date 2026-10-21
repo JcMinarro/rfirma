@@ -6,7 +6,7 @@ use openssl::rsa::Rsa;
 use openssl::x509::extension::BasicConstraints;
 use openssl::x509::{X509Name, X509};
 use rdnie::{Session, INTERMEDIATE_CA_LABEL, SIGNATURE_LABEL};
-use rdnie_emulator::{EmulatedDnie, HolderCertificate, DNIE_3_ATR, DNIE_4_ATR};
+use rdnie_emulator::{EmulatedDnie, HolderCertificate, Step, DNIE_3_ATR, DNIE_4_ATR};
 use rsa::traits::PublicKeyParts;
 
 use super::{dnie_store, seen_dnie, CardOpener, DnieToken};
@@ -14,6 +14,7 @@ use crate::identity::adapters::macos_store::MacosToken;
 use crate::identity::application::certificates::{certificates_with_their_chains, on_the_desktop};
 use crate::identity::application::tests::a_dnie_der;
 use crate::identity::domain::certificate::TokenCertificate;
+use crate::identity::domain::seen_dnie::DnieInTheReader;
 use crate::identity::domain::store::StoreClass;
 use crate::identity::ports::Token;
 
@@ -275,25 +276,35 @@ fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02X}")).collect()
 }
 
+type SeenCase = (
+    &'static str,
+    fn() -> EmulatedDnie,
+    &'static [u8],
+    &'static str,
+);
+
 #[test]
 fn describes_the_dnie_it_sees_by_its_atr_version_and_key_set() {
     use rdnie::KeyGeneration;
 
-    let cases: [(&str, fn() -> EmulatedDnie, &[u8], &str); 2] = [
+    let cases: [SeenCase; 2] = [
         ("3.0", EmulatedDnie::dnie_3, &DNIE_3_ATR, "segundo"),
         ("4.0", EmulatedDnie::dnie_4, &DNIE_4_ATR, "segundo"),
     ];
     for (version, card, atr, key_set) in cases {
-        let seen = seen_dnie(&Emulated(Box::new(card))).expect("hay un DNIe");
+        let DnieInTheReader::Seen(seen) = seen_dnie(&Emulated(Box::new(card))) else {
+            panic!("{version}: hay un DNIe");
+        };
 
         assert_eq!(seen.atr, hex(atr), "{version}");
         assert_eq!(seen.version, version);
         assert_eq!(seen.key_set, key_set, "{version}");
     }
-    let first = seen_dnie(&Emulated(Box::new(|| {
+    let DnieInTheReader::Seen(first) = seen_dnie(&Emulated(Box::new(|| {
         EmulatedDnie::dnie_3().with_key_generation(KeyGeneration::First)
-    })))
-    .expect("hay un DNIe");
+    }))) else {
+        panic!("hay un DNIe");
+    };
     assert_eq!(first.key_set, "primero");
 }
 
@@ -303,7 +314,25 @@ fn sees_no_dnie_in_another_card() {
         0x3B, 0x8F, 0x80, 0x01, 0x80, 0x4F, 0x0C, 0xA0, 0x00, 0x00, 0x03,
     ];
 
-    assert!(seen_dnie(&Emulated(Box::new(|| EmulatedDnie::new(&ANOTHER_CARD)))).is_none());
+    assert_eq!(
+        seen_dnie(&Emulated(Box::new(|| EmulatedDnie::new(&ANOTHER_CARD)))),
+        DnieInTheReader::Absent
+    );
+}
+
+#[test]
+fn says_the_rdnie_error_of_a_dnie_that_fails_while_opening() {
+    for (version, card) in the_two_versions() {
+        let seen = seen_dnie(&Emulated(Box::new(move || {
+            card().removing_card_at(Step::Opening)
+        })));
+
+        assert_eq!(
+            seen,
+            DnieInTheReader::Unopened("the card was removed".to_owned()),
+            "{version}"
+        );
+    }
 }
 
 #[test]

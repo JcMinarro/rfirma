@@ -150,7 +150,7 @@ fn report_with_macos(trust: NssProfileState, drivers: Vec<&str>) -> String {
     report.macos_stores = Some(MacosStores {
         local_channel: trust,
         card_drivers: drivers.into_iter().map(str::to_owned).collect(),
-        dnie: None,
+        dnie: DnieInTheReader::Absent,
         rdnie_version: "0.1.1".to_owned(),
     });
     debug_report_text(&report, &ana())
@@ -199,7 +199,7 @@ fn macos_without_card_drivers_says_none() {
     );
 }
 
-fn report_with_dnie(dnie: Option<SeenDnie>) -> String {
+fn report_with_dnie(dnie: DnieInTheReader) -> String {
     let mut report = a_flatpak_report();
     report.pcsc = None;
     report.macos_stores = Some(MacosStores {
@@ -213,7 +213,7 @@ fn report_with_dnie(dnie: Option<SeenDnie>) -> String {
 
 #[test]
 fn macos_says_the_dnie_it_sees_with_nothing_of_the_holder() {
-    let text = report_with_dnie(Some(SeenDnie {
+    let text = report_with_dnie(DnieInTheReader::Seen(SeenDnie {
         atr: "3B7F96000000".to_owned(),
         version: "4.0".to_owned(),
         key_set: "segundo".to_owned(),
@@ -233,10 +233,20 @@ fn macos_says_the_dnie_it_sees_with_nothing_of_the_holder() {
 
 #[test]
 fn macos_without_a_dnie_says_none_and_still_the_rdnie_version() {
-    let text = report_with_dnie(None);
+    let text = report_with_dnie(DnieInTheReader::Absent);
 
     assert!(
         text.ends_with("DNIe\n  tarjeta: no hay DNIe\n  rdnie: 0.1.1"),
+        "{text}"
+    );
+}
+
+#[test]
+fn macos_says_the_rdnie_error_of_a_card_it_cannot_open() {
+    let text = report_with_dnie(DnieInTheReader::Unopened("card answered 6A82".to_owned()));
+
+    assert!(
+        text.ends_with("DNIe\n  tarjeta: rdnie no la abre · card answered 6A82\n  rdnie: 0.1.1"),
         "{text}"
     );
 }

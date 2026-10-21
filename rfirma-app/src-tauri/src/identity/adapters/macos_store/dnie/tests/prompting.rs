@@ -2,7 +2,9 @@ use std::sync::Mutex;
 
 use super::in_the_reader::{a_wrong_pin, the_pin, the_signing_certificate, InTheReader};
 use super::the_two_versions;
+use crate::crossing::Failure;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
+use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, SecretName};
@@ -10,6 +12,7 @@ use crate::identity::ports::{
     prompted_until_accepted, PromptedError, SecretPromptError, SecretPromptRequest, SecretPrompter,
     Token,
 };
+use crate::signing::adapters::prompted_secret::batch_signed_with_one_secret;
 use crate::signing::domain::Language;
 
 /// Lo que vio el diálogo al abrirse: el aviso, si era un reintento y cuántas sesiones tenían la tarjeta.
@@ -193,7 +196,46 @@ fn a_batch_asks_for_the_pin_once_and_every_signature_checks_it_on_the_card() {
 
         assert!(signed.iter().all(Result::is_ok), "{version}: {signed:?}");
         assert_eq!(typist.seen().len(), 1, "{version}");
-        assert_eq!(reader.pins_sent(), 3, "{version}");
+        assert_eq!(reader.pins_sent(), 4, "{version}");
+    }
+}
+
+#[test]
+fn a_batch_asks_again_after_a_wrong_pin_with_the_attempts_left_and_signs_with_the_right_one() {
+    for (version, card) in the_two_versions() {
+        let reader = InTheReader::new(card());
+        let dnie = reader.token();
+        let typist = Typist::typing(&reader, vec![a_wrong_pin(), the_pin()]);
+        let certificate = TokenCertificate::new(the_signing_certificate(), Vec::new());
+
+        let signed = batch_signed_with_one_secret(
+            &dnie,
+            &certificate,
+            &typist,
+            Language::Spanish,
+            &ProtectedSecret::new(b""),
+            |pin| {
+                for _ in 0..3 {
+                    signed_in_its_own_cycle(&dnie, pin).map_err(Failure::from)?;
+                }
+                Ok(())
+            },
+        );
+
+        assert!(signed.is_ok(), "{version}: {signed:?}");
+        let warnings: Vec<_> = typist
+            .seen()
+            .into_iter()
+            .map(|seen| (seen.warning, seen.retry))
+            .collect();
+        assert_eq!(
+            warnings,
+            vec![
+                (PinWarning::AttemptsLeft(3), false),
+                (PinWarning::AttemptsLeft(2), true)
+            ],
+            "{version}"
+        );
     }
 }
 
@@ -202,12 +244,10 @@ fn a_batch_stops_at_the_first_failure_without_spending_more_attempts() {
     for (version, card) in the_two_versions() {
         let reader = InTheReader::new(card());
         let dnie = reader.token();
-        let typist = Typist::typing(&reader, vec![a_wrong_pin()]);
 
         dnie.hold_one_login(&the_signing_certificate());
-        let (pin, ()) = accepted_after_the_dialog(&dnie, &typist).expect("longitud admitida");
         let signed: Vec<_> = (0..3)
-            .map(|_| signed_in_its_own_cycle(&dnie, &pin))
+            .map(|_| signed_in_its_own_cycle(&dnie, &a_wrong_pin()))
             .collect();
         dnie.release_the_login(&the_signing_certificate());
 
@@ -238,34 +278,5 @@ fn a_batch_asks_again_for_a_pin_of_a_length_the_dnie_does_not_admit() {
 
     assert!(accepted.is_ok());
     assert_eq!(typist.seen().len(), 2);
-    assert_eq!(reader.pins_sent(), 0);
-}
-
-#[test]
-fn the_accepted_pin_is_kept_while_the_shared_login_lasts_and_wiped_when_it_closes() {
-    let reader = InTheReader::new(rdnie_emulator::EmulatedDnie::dnie_3());
-    let dnie = reader.token();
-    let typist = Typist::typing(&reader, vec![the_pin()]);
-
-    dnie.hold_one_login(&the_signing_certificate());
-    let (pin, ()) = accepted_after_the_dialog(&dnie, &typist).expect("PIN aceptado");
-    let held_after_accepting = dnie.holds_a_pin();
-    signed_in_its_own_cycle(&dnie, &pin).expect("firma");
-    let held_after_a_nested_cycle = dnie.holds_a_pin();
-    dnie.release_the_login(&the_signing_certificate());
-
-    assert!(held_after_accepting);
-    assert!(held_after_a_nested_cycle);
-    assert!(!dnie.holds_a_pin());
-}
-
-#[test]
-fn a_pin_accepted_outside_a_shared_login_is_not_kept() {
-    let reader = InTheReader::new(rdnie_emulator::EmulatedDnie::dnie_3());
-    let dnie = reader.token();
-
-    dnie.accepts_the_secret(&the_signing_certificate(), &the_pin())
-        .expect("PIN aceptado");
-
-    assert!(!dnie.holds_a_pin());
+    assert_eq!(reader.pins_sent(), 1);
 }

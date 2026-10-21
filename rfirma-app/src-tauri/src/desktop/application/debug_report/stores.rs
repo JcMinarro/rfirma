@@ -1,6 +1,6 @@
 //! Las líneas de los almacenes del informe: los perfiles NSS, y el almacén de Windows con sus minidrivers y el de macOS con sus controladores.
 
-use super::{section, NssProfileState, NssStores, ReportOwner, SeenDnie};
+use super::{section, DnieInTheReader, NssProfileState, NssStores, ReportOwner};
 
 /// Lo que solo existe en Windows: el almacén del sistema y los minidrivers de tarjeta.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -18,8 +18,8 @@ pub struct MacosStores {
     pub local_channel: NssProfileState,
     /// Controladores de tarjeta que macOS tiene instalados.
     pub card_drivers: Vec<String>,
-    /// El DNIe que ve rFirma; `None` si no hay ninguno legible.
-    pub dnie: Option<SeenDnie>,
+    /// Lo que rFirma ve en el lector.
+    pub dnie: DnieInTheReader,
     /// Versión de rdnie con la que se compiló.
     pub rdnie_version: String,
 }
@@ -70,12 +70,13 @@ pub(super) fn macos_sections(stores: Option<&MacosStores>) -> [Option<String>; 3
 
 fn dnie_lines(stores: &MacosStores) -> Vec<String> {
     let card = match &stores.dnie {
-        Some(dnie) => vec![
+        DnieInTheReader::Seen(dnie) => vec![
             format!("ATR: {}", dnie.atr),
             format!("versión: {}", dnie.version),
             format!("juego de claves: {}", dnie.key_set),
         ],
-        None => vec!["tarjeta: no hay DNIe".to_owned()],
+        DnieInTheReader::Absent => vec!["tarjeta: no hay DNIe".to_owned()],
+        DnieInTheReader::Unopened(error) => vec![format!("tarjeta: rdnie no la abre · {error}")],
     };
     card.into_iter()
         .chain(std::iter::once(format!("rdnie: {}", stores.rdnie_version)))

@@ -80,13 +80,13 @@ pub use windows_store::from_environment as desktop_stores;
 
 /// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
 #[cfg(target_os = "macos")]
-pub fn this_dnie() -> Option<crate::identity::domain::seen_dnie::SeenDnie> {
+pub fn this_dnie() -> crate::identity::domain::seen_dnie::DnieInTheReader {
     macos_store::seen_dnie(&macos_store::PcscCard)
 }
 /// El DNIe que ve el lector de esta plataforma; solo macOS lo lee con rdnie.
 #[cfg(not(target_os = "macos"))]
-pub fn this_dnie() -> Option<crate::identity::domain::seen_dnie::SeenDnie> {
-    None
+pub fn this_dnie() -> crate::identity::domain::seen_dnie::DnieInTheReader {
+    crate::identity::domain::seen_dnie::DnieInTheReader::Absent
 }
 
 /// La versión de rdnie compilada; sin ella fuera de macOS.

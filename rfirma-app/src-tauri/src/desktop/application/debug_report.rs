@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use crate::identity::domain::browsers::NssOwner;
 use crate::identity::domain::readers::Reader;
 
-pub use crate::identity::domain::seen_dnie::SeenDnie;
+pub use crate::identity::domain::seen_dnie::{DnieInTheReader, SeenDnie};
 use pkcs11::module_lines;
 pub use pkcs11::{DiscardReason, ModuleStatus, Pkcs11Module, Pkcs11Modules};
 pub use stores::{MacosStores, WindowsStores};

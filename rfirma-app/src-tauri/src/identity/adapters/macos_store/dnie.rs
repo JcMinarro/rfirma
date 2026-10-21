@@ -11,11 +11,12 @@ use crate::identity::domain::ecdsa;
 use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, StoreSecret};
-use crate::identity::domain::seen_dnie::SeenDnie;
+use crate::identity::domain::seen_dnie::{DnieInTheReader, SeenDnie};
 use crate::identity::domain::store::{Store, DNIE_STORE_PREFIX};
 use crate::identity::ports::Token;
 
 const TOKEN_LABEL: &str = "DNIe";
+const PIN_CHECK: &[u8] = b"rfirma: comprobacion del PIN";
 
 /// El almacén del DNIe: de clase tarjeta, sin módulo PKCS#11 detrás.
 pub fn dnie_store() -> Store {
@@ -56,7 +57,6 @@ struct Login {
     shown_attempts: Option<u8>,
     depth: usize,
     cut: Option<TokenError>,
-    pin: Option<ProtectedSecret>,
 }
 
 impl<O: CardOpener> DnieToken<O> {
@@ -78,13 +78,6 @@ impl<O: CardOpener> DnieToken<O> {
         self.opener.open().map_err(|error| token_error(&error))
     }
 
-    fn keep_while_shared(&self, secret: &ProtectedSecret) {
-        let mut login = self.login();
-        if login.depth > 0 {
-            login.pin = Some(ProtectedSecret::new(secret.as_bytes()));
-        }
-    }
-
     fn attempts_left(&self) -> Result<u8, TokenError> {
         match self.session()?.pin_retries() {
             Err(rdnie::Error::PinBlocked) => Ok(0),
@@ -92,9 +85,21 @@ impl<O: CardOpener> DnieToken<O> {
         }
     }
 
-    #[cfg(test)]
-    fn holds_a_pin(&self) -> bool {
-        self.login().pin.is_some()
+    /// rdnie no expone un VERIFY suelto: el PIN se comprueba con una firma que nunca sale de aquí (ADR-0047).
+    fn verified_by_a_discarded_signature(
+        &self,
+        reference: &CertificateRef,
+        secret: &ProtectedSecret,
+        shown: u8,
+    ) -> Result<(), TokenError> {
+        self.signed(
+            reference,
+            secret,
+            SignatureAlgorithm::Sha256Rsa,
+            PIN_CHECK,
+            Some(shown),
+        )
+        .map(|_| ())
     }
 
     fn signed(
@@ -160,20 +165,30 @@ pub const RDNIE_VERSION: &str = env!("RFIRMA_RDNIE_VERSION");
 const DNIE_4_CHIP: [u8; 2] = [0x4C, 0x34];
 const CHIP_TYPE: std::ops::Range<usize> = 13..15;
 
-/// El DNIe que abre `opener`; `None` si no hay ninguno legible.
-pub fn seen_dnie<O: CardOpener>(opener: &O) -> Option<SeenDnie> {
-    let session = opener.open().ok()?;
+/// Lo que hay en el lector de `opener`: el DNIe que se ve, ninguno, o el error de rdnie al abrirlo.
+pub fn seen_dnie<O: CardOpener>(opener: &O) -> DnieInTheReader {
+    match described(opener) {
+        Ok(seen) => DnieInTheReader::Seen(seen),
+        Err(rdnie::Error::NoReader | rdnie::Error::NoCard | rdnie::Error::NotDnie) => {
+            DnieInTheReader::Absent
+        }
+        Err(error) => DnieInTheReader::Unopened(error.to_string()),
+    }
+}
+
+fn described<O: CardOpener>(opener: &O) -> Result<SeenDnie, rdnie::Error> {
+    let session = opener.open()?;
     let key_set = match session.key_generation() {
         rdnie::KeyGeneration::First => "primero",
         _ => "segundo",
     };
-    let atr = session.into_transport().reset().ok()?;
+    let atr = session.into_transport().reset()?;
     let version = if atr.get(CHIP_TYPE) == Some(&DNIE_4_CHIP[..]) {
         "4.0"
     } else {
         "3.0"
     };
-    Some(SeenDnie {
+    Ok(SeenDnie {
         atr: atr.iter().map(|byte| format!("{byte:02X}")).collect(),
         version: version.to_owned(),
         key_set: key_set.to_owned(),
@@ -284,7 +299,7 @@ impl<O: CardOpener> Token for DnieToken<O> {
 
     fn accepts_the_secret(
         &self,
-        _reference: &CertificateRef,
+        reference: &CertificateRef,
         secret: &ProtectedSecret,
     ) -> Result<(), TokenError> {
         if let Some(cut) = self.login().cut.clone() {
@@ -294,11 +309,10 @@ impl<O: CardOpener> Token for DnieToken<O> {
             return Err(token_error(&rdnie::Error::InvalidPinFormat));
         }
         let left = self.attempts_left()?;
-        let shown = self.login().shown_attempts;
+        let shown = self.login().shown_attempts.take();
         unchanged_since_shown(left, shown)?;
         PinWarning::AttemptsLeft(u32::from(left)).unless_locked()?;
-        self.keep_while_shared(secret);
-        Ok(())
+        self.verified_by_a_discarded_signature(reference, secret, left)
     }
 
     fn sign_with_secret(
@@ -320,7 +334,6 @@ impl<O: CardOpener> Token for DnieToken<O> {
             let mut login = self.login();
             if login.depth > 0 {
                 login.cut = Some(failure.clone());
-                login.pin = None;
             }
         }
         signed
@@ -335,7 +348,6 @@ impl<O: CardOpener> Token for DnieToken<O> {
         login.depth = login.depth.saturating_sub(1);
         if login.depth == 0 {
             login.cut = None;
-            login.pin = None;
         }
     }
 
