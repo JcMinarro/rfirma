@@ -160,6 +160,48 @@ fn the_pin_warnings_are_in_all_five_languages_and_count_nothing() {
 }
 
 #[test]
+fn a_card_that_says_its_attempts_left_has_them_said_before_typing() {
+    let mut request = a_request(None, Language::Spanish);
+
+    request.pin_warning = PinWarning::AttemptsLeft(3);
+    assert_eq!(
+        localize(&request).pin_warning.as_deref(),
+        Some("Te quedan 3 intentos.")
+    );
+
+    request.pin_warning = PinWarning::AttemptsLeft(2);
+    assert_eq!(
+        localize(&request).pin_warning.as_deref(),
+        Some("Te quedan 2 intentos.")
+    );
+
+    request.pin_warning = PinWarning::AttemptsLeft(1);
+    assert_eq!(
+        localize(&request).pin_warning.as_deref(),
+        Some("Te queda 1 intento: si el PIN no es correcto, la tarjeta se bloqueará.")
+    );
+}
+
+#[test]
+fn the_attempts_left_are_said_in_all_five_languages() {
+    for lang in Language::ALL {
+        let mut request = a_request(None, lang);
+        let said: Vec<String> = [1, 2, 3]
+            .into_iter()
+            .map(|left| {
+                request.pin_warning = PinWarning::AttemptsLeft(left);
+                localize(&request).pin_warning.expect("aviso con número")
+            })
+            .collect();
+
+        for (left, warning) in [1, 2, 3].into_iter().zip(&said) {
+            assert!(warning.contains(&left.to_string()), "{lang:?}: {warning}");
+        }
+        assert_ne!(said[0], said[1], "{lang:?}");
+    }
+}
+
+#[test]
 fn a_password_is_never_asked_with_a_card_warning() {
     let mut request = a_request(None, Language::Spanish);
     request.secret = SecretName::Password;

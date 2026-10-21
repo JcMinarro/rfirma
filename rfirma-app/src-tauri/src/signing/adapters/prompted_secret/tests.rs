@@ -496,3 +496,150 @@ fn the_main_window_dialog_after_a_failure_carries_the_warning_read_again() {
         .collect();
     assert_eq!(warnings, vec![PinWarning::Quiet, PinWarning::FinalTry]);
 }
+
+/// Un token que da sus intentos restantes exactos, solo acepta `1234` y gasta uno con cada PIN incorrecto.
+struct ATokenThatCountsItsAttempts {
+    left: RefCell<u32>,
+}
+
+impl ATokenThatCountsItsAttempts {
+    fn with(left: u32) -> Self {
+        Self {
+            left: RefCell::new(left),
+        }
+    }
+
+    fn tried(&self, secret: &ProtectedSecret) -> Result<(), TokenError> {
+        if secret.as_bytes() == b"1234" {
+            return Ok(());
+        }
+        *self.left.borrow_mut() -= 1;
+        Err(TokenError::new(Situation::IncorrectPin, "PIN incorrecto")
+            .with_attempts_left(*self.left.borrow()))
+    }
+}
+
+impl Signer for ATokenThatCountsItsAttempts {
+    fn secret_of(&self, _reference: &CertificateRef) -> Result<StoreSecret, TokenError> {
+        Ok(StoreSecret::TypedOnScreen)
+    }
+
+    fn pin_warning(&self, _reference: &CertificateRef) -> Result<PinWarning, TokenError> {
+        Ok(PinWarning::AttemptsLeft(*self.left.borrow()))
+    }
+
+    fn offers(
+        &self,
+        _reference: &CertificateRef,
+        _algorithm: SignatureAlgorithm,
+    ) -> Result<(), TokenError> {
+        Ok(())
+    }
+
+    fn sign_with_secret(
+        &self,
+        _reference: &CertificateRef,
+        secret: &ProtectedSecret,
+        _algorithm: SignatureAlgorithm,
+        data: &[u8],
+    ) -> Result<Vec<u8>, TokenError> {
+        self.tried(secret).map(|()| data.to_vec())
+    }
+
+    fn accepts_the_secret(
+        &self,
+        _reference: &CertificateRef,
+        secret: &ProtectedSecret,
+    ) -> Result<(), TokenError> {
+        self.tried(secret)
+    }
+}
+
+#[test]
+fn a_card_with_no_attempts_left_ends_the_signature_as_a_locked_pin_without_a_dialog() {
+    let certificate = a_certificate("FIRMA", b"der");
+    let signer = ATokenThatCountsItsAttempts::with(0);
+    let session = a_session_with_open_cycle(&signer, &certificate);
+    let prompter = MockSecretPrompter::with_secrets(&[]);
+
+    let failure = sign_on_token_with_prompter(
+        &signer,
+        &session,
+        &prompter,
+        Language::Spanish,
+        OriginWindow::Main,
+    )
+    .expect_err("sin intentos no se firma");
+
+    assert_eq!(failure.situation, "pinLocked");
+    assert_eq!(failure.attempts_left, Some(0));
+    assert!(prompter.recorded_requests().is_empty(), "no hay diálogo");
+}
+
+#[test]
+fn a_batch_on_a_card_with_no_attempts_left_ends_as_a_locked_pin_without_a_dialog() {
+    let prompter = MockSecretPrompter::with_secrets(&[]);
+
+    let failure = secret_for_the_batch(
+        &ATokenThatCountsItsAttempts::with(0),
+        &a_certificate("FIRMA", b"der"),
+        &prompter,
+        Language::Spanish,
+        &ProtectedSecret::from_str(""),
+    )
+    .expect_err("sin intentos no hay secreto del lote");
+
+    assert_eq!(failure.situation, "pinLocked");
+    assert!(prompter.recorded_requests().is_empty(), "no hay diálogo");
+}
+
+#[test]
+fn each_dialog_carries_the_exact_attempts_left_read_again_after_a_wrong_pin() {
+    let certificate = a_certificate("FIRMA", b"der");
+    let signer = ATokenThatCountsItsAttempts::with(3);
+    let session = a_session_with_open_cycle(&signer, &certificate);
+    let prompter = MockSecretPrompter::with_secrets(&["0000", "1234"]);
+
+    sign_on_token_with_prompter(
+        &signer,
+        &session,
+        &prompter,
+        Language::Spanish,
+        OriginWindow::Main,
+    )
+    .expect("firma tras corregir el PIN");
+
+    let warnings: Vec<PinWarning> = prompter
+        .recorded_requests()
+        .iter()
+        .map(|request| request.pin_warning)
+        .collect();
+    assert_eq!(
+        warnings,
+        vec![PinWarning::AttemptsLeft(3), PinWarning::AttemptsLeft(2)]
+    );
+}
+
+#[test]
+fn spending_the_last_attempt_ends_as_a_locked_pin_without_asking_again() {
+    let certificate = a_certificate("FIRMA", b"der");
+    let signer = ATokenThatCountsItsAttempts::with(1);
+    let session = a_session_with_open_cycle(&signer, &certificate);
+    let prompter = MockSecretPrompter::with_secrets(&["0000"]);
+
+    let failure = sign_on_token_with_prompter(
+        &signer,
+        &session,
+        &prompter,
+        Language::Spanish,
+        OriginWindow::Main,
+    )
+    .expect_err("el último intento fallido bloquea");
+
+    assert_eq!(failure.situation, "pinLocked");
+    assert_eq!(
+        prompter.recorded_requests().len(),
+        1,
+        "no se vuelve a pedir"
+    );
+}
