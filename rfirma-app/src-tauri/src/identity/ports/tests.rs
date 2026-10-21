@@ -5,6 +5,7 @@ use super::{
     prompted_until_accepted, Keyring, PromptedError, SecretName, SecretPromptError,
     SecretPromptRequest, SecretPrompter,
 };
+use crate::identity::domain::error::{Situation, TokenError};
 use crate::identity::domain::keyring::{generate_pin, KeyringError};
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::PinWarning;
@@ -46,6 +47,18 @@ fn a_request() -> SecretPromptRequest {
     }
 }
 
+fn rejected() -> TokenError {
+    TokenError::new(Situation::IncorrectPin, "rechazado")
+}
+
+fn unrelated() -> TokenError {
+    TokenError::new(Situation::TokenAbsent, "otro fallo")
+}
+
+fn is_rejected(error: &TokenError) -> bool {
+    error.situation() == Situation::IncorrectPin
+}
+
 #[test]
 fn accepts_the_secret_on_the_first_try() {
     let prompter = AScriptedPrompter::with(vec![Ok(ProtectedSecret::from_str("1234"))]);
@@ -54,7 +67,7 @@ fn accepts_the_secret_on_the_first_try() {
         &prompter,
         a_request(),
         || Ok(PinWarning::Quiet),
-        |secret| -> Result<(), &'static str> {
+        |secret| -> Result<(), TokenError> {
             assert_eq!(secret.expose_secret(), Ok("1234"));
             Ok(())
         },
@@ -82,10 +95,10 @@ fn retries_only_when_the_attempt_says_the_secret_was_rejected() {
             if secret.expose_secret() == Ok("right") {
                 Ok(())
             } else {
-                Err("rejected")
+                Err(rejected())
             }
         },
-        |error| *error == "rejected",
+        is_rejected,
     )
     .expect("el segundo intento acierta");
 
@@ -107,12 +120,12 @@ fn stops_without_retrying_when_the_attempt_is_not_a_rejection() {
         &prompter,
         a_request(),
         || Ok(PinWarning::Quiet),
-        |_| -> Result<(), &'static str> { Err("unrelated failure") },
-        |error| *error == "rejected",
+        |_| -> Result<(), TokenError> { Err(unrelated()) },
+        is_rejected,
     )
     .expect_err("un rechazo que no es de secreto no se reintenta");
 
-    assert!(matches!(error, PromptedError::Attempt("unrelated failure")));
+    assert!(matches!(error, PromptedError::Attempt(failure) if failure == unrelated()));
     assert_eq!(
         prompter.recorded.lock().unwrap().len(),
         1,
@@ -128,7 +141,7 @@ fn a_cancelled_prompt_stops_the_loop_without_attempting() {
         &prompter,
         a_request(),
         || Ok(PinWarning::Quiet),
-        |_| -> Result<(), &'static str> { unreachable!("cancelar no llega a intentarlo") },
+        |_| -> Result<(), TokenError> { unreachable!("cancelar no llega a intentarlo") },
         |_| true,
     )
     .expect_err("cancelar el dialogo aborta");
@@ -137,6 +150,29 @@ fn a_cancelled_prompt_stops_the_loop_without_attempting() {
         error,
         PromptedError::Prompt(SecretPromptError::Cancelled)
     ));
+}
+
+#[test]
+fn a_card_with_no_attempts_left_ends_as_a_locked_pin_without_a_dialog() {
+    let prompter = AScriptedPrompter::with(vec![]);
+
+    let error = prompted_until_accepted(
+        &prompter,
+        a_request(),
+        || Ok(PinWarning::AttemptsLeft(0)),
+        |_| -> Result<(), TokenError> { unreachable!("sin intentos no se envía el PIN") },
+        is_rejected,
+    )
+    .expect_err("sin intentos, el PIN está bloqueado");
+
+    assert!(matches!(
+        error,
+        PromptedError::Attempt(failure) if failure.situation() == Situation::PinLocked
+    ));
+    assert!(
+        prompter.recorded.lock().unwrap().is_empty(),
+        "no hay diálogo"
+    );
 }
 
 /// Un llavero en memoria: sin llavero, con llavero sin PIN, o con un PIN ya guardado.

@@ -121,28 +121,31 @@ intento, así que no hay salto que evitar.
 - **Secreto incorrecto**: el campo toma la clase `error` del tema —el borde que
   el escritorio use para eso, sin glifo— y bajo el campo, en negrita, el
   mensaje de fallo de la palabra del almacén. Nada más.
+- **Intentos restantes**: la tarjeta da el número exacto, como el DNIe por
+  rdnie en macOS (ADR-0047). Sobre el campo, siempre: «Te quedan N intentos.»;
+  con uno, «Te queda 1 intento: si el PIN no es correcto, la tarjeta se
+  bloqueará.». Con uno o dos va en negrita, como el último intento. Con cero
+  no hay diálogo: termina con el mensaje de PIN bloqueado.
 - **Último intento**: la tarjeta declara `CKF_USER_PIN_FINAL_TRY`. Sobre el
   campo y en negrita: «Último intento: si el PIN no es correcto, la tarjeta se
-  bloqueará.» Con el DNIe esa señal solo existe tras un fallo, así que llega en
-  el diálogo de reintento, junto al mensaje de fallo.
+  bloqueará.» Con el DNIe por PKCS#11 esa señal solo existe tras un fallo, así
+  que llega en el diálogo de reintento, junto al mensaje de fallo.
 - **Algún intento fallido**: la tarjeta declara `CKF_USER_PIN_COUNT_LOW`. Sobre
   el campo, sin negrita: «Ya ha habido algún intento fallido con esta tarjeta.»
 
-Los dos avisos son solo del PIN de una tarjeta; una contraseña no los lleva. Las
-señales se vuelven a leer antes de cada diálogo, y una tarjeta que se declara
-bloqueada no abre el diálogo: termina con el mensaje de PIN bloqueado
-(ADR-0047). La terminal de la línea de órdenes da los mismos avisos antes de
-pedir el PIN.
+Los avisos son solo del PIN de una tarjeta; una contraseña no los lleva. Se
+vuelven a leer antes de cada diálogo, y una tarjeta que se declara bloqueada no
+abre el diálogo: termina con el mensaje de PIN bloqueado (ADR-0047). La
+terminal de la línea de órdenes da los mismos avisos antes de pedir el PIN.
 
-**No hay contador de reintentos, y no es un hueco por rellenar: es estructural**
-(ID-191, ADR-0047). La información de token de PKCS#11 no trae los intentos
-restantes, ni con una tarjeta real: solo las dos señales de arriba, y los avisos
-no enseñan ningún número. Hasta la v0.3 esta ficha prometía enseñar los intentos que
-quedaban antes de que la tarjeta se bloquease; el argumento era bueno y el dato
-no existe, así que se retiran los dos. Los avisos no lo sustituyen: dicen lo que
-la tarjeta declara y no cuentan nada.
+**El número solo sale cuando el origen lo da** (ADR-0047). La información de
+token de PKCS#11 no trae los intentos restantes, ni con una tarjeta real: solo
+las dos señales de arriba, que no enseñan ningún número, y el Almacén de
+Windows no deja leer nada. Un número calculado a partir de lo que rFirma ha
+visto sería falso en cuanto la tarjeta se usara con otro programa, así que
+fuera del DNIe por rdnie no se da.
 
-Tampoco cruza: `SecretView` no lleva contador, y el ciclo vuelve a pedir el
+Tampoco cruza: `SecretView` no lleva el número, y el ciclo vuelve a pedir el
 secreto hasta que se acierta, se cancela o la tarjeta se bloquea. Un secreto
 rechazado no se reenvía nunca: cada intento es un tecleo nuevo.
 

@@ -118,11 +118,19 @@ fn prompt_for(asked: &AskedSecret<'_>) -> String {
         ""
     };
     let warning = match asked.warning {
-        PinWarning::Quiet => "",
-        PinWarning::CountLow => "rfirma: ya ha habido algún intento fallido con esta tarjeta.\n",
+        PinWarning::Quiet => String::new(),
+        PinWarning::CountLow => {
+            "rfirma: ya ha habido algún intento fallido con esta tarjeta.\n".to_owned()
+        }
         PinWarning::FinalTry => {
             "rfirma: último intento: si el PIN no es correcto, la tarjeta se bloqueará.\n"
+                .to_owned()
         }
+        PinWarning::AttemptsLeft(1) => {
+            "rfirma: te queda 1 intento: si el PIN no es correcto, la tarjeta se bloqueará.\n"
+                .to_owned()
+        }
+        PinWarning::AttemptsLeft(left) => format!("rfirma: te quedan {left} intentos.\n"),
     };
     format!("{again}{warning}{name} de «{}»: ", asked.alias)
 }
@@ -215,6 +223,7 @@ impl RootsSigner<'_> {
         loop {
             asked.warning = signer
                 .pin_warning(reference)
+                .and_then(PinWarning::unless_locked)
                 .map_err(|error| Failure::from(error).detail)?;
             let typed = request.terminal.secret(&asked)?;
             let Err(failure) = self.signing.sign_on_token(signer, &typed) else {

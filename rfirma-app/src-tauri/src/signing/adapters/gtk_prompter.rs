@@ -151,9 +151,10 @@ fn warning_label(text: &str, warning: PinWarning) -> gtk::Label {
 
     let label = gtk::Label::new(None);
     let escaped = glib::markup_escape_text(text);
-    match warning {
-        PinWarning::FinalTry => label.set_markup(&format!("<b>{escaped}</b>")),
-        PinWarning::CountLow | PinWarning::Quiet => label.set_markup(&escaped),
+    if warning.stands_out() {
+        label.set_markup(&format!("<b>{escaped}</b>"));
+    } else {
+        label.set_markup(&escaped);
     }
     label.set_halign(gtk::Align::Start);
     label.set_xalign(0.0);

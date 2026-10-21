@@ -88,3 +88,23 @@ fn a_missing_keyring_and_a_missing_pin_map_to_distinct_situations() {
         Situation::KeyringPinMissing
     );
 }
+
+#[test]
+fn a_wrong_pin_carries_the_exact_attempts_left_when_the_card_says_them() {
+    let refused = TokenError::new(Situation::IncorrectPin, "PIN incorrecto").with_attempts_left(2);
+
+    assert_eq!(refused.attempts_left(), Some(2));
+    assert_eq!(refused.situation(), Situation::IncorrectPin);
+}
+
+#[test]
+fn the_final_try_is_one_attempt_left_and_a_locked_pin_none() {
+    let refused = TokenError::new(Situation::IncorrectPin, "PIN incorrecto");
+
+    assert_eq!(refused.attempts_left(), None);
+    assert_eq!(refused.clone().on_the_final_try().attempts_left(), Some(1));
+    assert_eq!(
+        TokenError::new(Situation::PinLocked, "bloqueado").attempts_left(),
+        Some(0)
+    );
+}
