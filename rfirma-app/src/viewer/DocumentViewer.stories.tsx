@@ -108,7 +108,7 @@ export const StampFailed: Story = {
     placement: sealed,
     stamp: {
       kind: "failed",
-      failure: { situation: "documentUnreadable", detail: "password required" },
+      failure: { situation: "tokenAbsent", detail: "no card" },
     },
     onComposeStamp: fn(),
   },
