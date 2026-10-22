@@ -444,12 +444,15 @@ fn the_desktop_rows_of(card: &FakeCard) -> Vec<(String, Vec<StoreMarkView>)> {
 
 /// Las etiquetas de lo que se ofrece a una sede o a la línea de órdenes antes de su filtro.
 fn the_site_candidates_of(card: &FakeCard) -> Vec<String> {
-    let mut labels: Vec<String> =
-        certificates_with_their_chains(&RealToken, &[Store::module(card.module())])
-            .expect("la tarjeta falsa deberia listarse")
-            .iter()
-            .map(|certificate| certificate.reference().label().to_owned())
-            .collect();
+    let mut labels: Vec<String> = certificates_with_their_chains(
+        &RealToken,
+        &[Store::module(card.module())],
+        &rfirma_lib::identity::application::readers::LastListing::default(),
+    )
+    .expect("la tarjeta falsa deberia listarse")
+    .iter()
+    .map(|certificate| certificate.reference().label().to_owned())
+    .collect();
     labels.sort();
     labels
 }

@@ -22,6 +22,7 @@ use crate::identity::ports::{CertificateMemory, ReaderWatch, Relisting, Token};
 #[derive(Debug, Default)]
 pub struct LastListing {
     found: Mutex<Option<Vec<TokenCertificate>>>,
+    failed: Mutex<Vec<(Store, TokenError)>>,
 }
 
 impl LastListing {
@@ -33,6 +34,17 @@ impl LastListing {
     /// El último listado completo, si ya hubo alguno.
     pub fn found(&self) -> Option<Vec<TokenCertificate>> {
         lock(&self.found).clone()
+    }
+
+    /// El error con el que falló cada almacén la última vez que se listó.
+    pub fn failures(&self) -> Vec<(Store, TokenError)> {
+        lock(&self.failed).clone()
+    }
+
+    fn note_failures(&self, listed: &[Store], failed: &[(Store, TokenError)]) {
+        let mut noted = lock(&self.failed);
+        noted.retain(|(store, _)| !listed.contains(store));
+        noted.extend(failed.iter().cloned());
     }
 
     /// Saca del último listado el certificado que ya no está, sin abrir ningún almacén.
@@ -68,6 +80,17 @@ impl LastListing {
     }
 }
 
+/// Los certificados de los almacenes, apuntando en `last` el error de cada uno que no se abre; falla solo si no se abre ninguno.
+pub fn heard_across(
+    token: &dyn Token,
+    stores: &[Store],
+    last: &LastListing,
+) -> Result<Vec<TokenCertificate>, TokenError> {
+    let listed = token.list_each(stores);
+    last.note_failures(stores, listed.failed());
+    listed.certificates()
+}
+
 /// El certificado del asa, tomado del último listado; solo si no hay ninguno lista los almacenes y lo guarda (ADR-0011).
 pub fn chosen_from_the_last_listing(
     token: &dyn Token,
@@ -79,12 +102,12 @@ pub fn chosen_from_the_last_listing(
     let found = match last.found() {
         Some(found) => found,
         None => {
-            let found = with_their_chains(token, token.list_across(stores)?);
+            let found = with_their_chains(token, heard_across(token, stores, last)?);
             last.keep(&found);
             found
         }
     };
-    usable_certificate(&found, handle, listed).cloned()
+    usable_certificate(&found, &last.failures(), handle, listed).cloned()
 }
 
 /// Las filas del escritorio de lo encontrado, con las asas conservadas y las instaladas marcadas.
@@ -199,7 +222,7 @@ impl CardListing<'_> {
         let found = if others.is_empty() {
             Vec::new()
         } else {
-            with_their_chains(self.token, self.token.list_across(&others)?)
+            with_their_chains(self.token, heard_across(self.token, &others, self.last)?)
         };
         let found = self
             .last
@@ -222,12 +245,12 @@ impl Relisting for CardListing<'_> {
             .iter()
             .cloned()
             .partition(|store| shows_cards(store, self.installed_dir));
-        let on_the_cards = listed_in(self.token, &cards);
+        let on_the_cards = listed_in(self.token, &cards, self.last);
         let ready = ready_card_among(&only_on_a_card(&on_the_cards, self.installed_dir));
         let mut found = self
             .last
             .other_than_cards(self.installed_dir)
-            .unwrap_or_else(|| listed_in(self.token, &others));
+            .unwrap_or_else(|| listed_in(self.token, &others, self.last));
         found.extend(on_the_cards);
         self.last.keep(&found);
         let rows = rows_keeping_handles(
@@ -296,11 +319,8 @@ fn names_with_a_card(readers: &[Reader]) -> Vec<String> {
 }
 
 /// Lo que enseñan los almacenes; uno que no se abre, o ninguno, no enseña nada.
-fn listed_in(token: &dyn Token, stores: &[Store]) -> Vec<TokenCertificate> {
-    if stores.is_empty() {
-        return Vec::new();
-    }
-    with_their_chains(token, token.list_across(stores).unwrap_or_default())
+fn listed_in(token: &dyn Token, stores: &[Store], last: &LastListing) -> Vec<TokenCertificate> {
+    with_their_chains(token, heard_across(token, stores, last).unwrap_or_default())
 }
 
 /// Si el almacén se vuelve a listar al cambiar los lectores: uno de tarjeta, o el de Windows o macOS, que copian las suyas.

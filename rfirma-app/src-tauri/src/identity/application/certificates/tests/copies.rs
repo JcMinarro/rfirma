@@ -32,7 +32,7 @@ fn twin_copies_of_one_certificate_in_one_token_are_one_row_behind_the_first() {
 
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].stores, vec![StoreClass::Card]);
-    let chosen = certificate_behind(&certificates, &rows[0].id, &listed).expect("la copia");
+    let chosen = certificate_behind(&certificates, &[], &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference().cka_id(), Some([0x01].as_slice()));
 }
 
@@ -88,7 +88,7 @@ fn the_copy_signed_with(stores: &[&Store]) -> usize {
         &ListedCertificates::new(),
         &a_memory(home.path()),
     );
-    let chosen = certificate_behind(&copies, &rows[0].id, &listed).expect("la copia");
+    let chosen = certificate_behind(&copies, &[], &rows[0].id, &listed).expect("la copia");
     copies
         .iter()
         .position(|copy| copy.reference() == chosen.reference())
@@ -204,7 +204,7 @@ fn with_nothing_remembered_the_row_signs_with_the_copy_of_the_preferred_store() 
     );
     assert_eq!(rows[0].store, StoreClass::Card);
     assert!(!rows[0].remembered);
-    let chosen = certificate_behind(&copies, &rows[0].id, &listed).expect("la copia");
+    let chosen = certificate_behind(&copies, &[], &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference(), copies[4].reference());
 }
 
@@ -294,7 +294,7 @@ fn the_remembered_copy_is_the_one_behind_the_row_and_marks_it() {
         "la fila esta recordada por su copia de Firefox"
     );
     assert_eq!(rows[0].store, a_firefox_class());
-    let chosen = certificate_behind(&copies, &rows[0].id, &listed).expect("la copia");
+    let chosen = certificate_behind(&copies, &[], &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference(), copies[1].reference());
 }
 

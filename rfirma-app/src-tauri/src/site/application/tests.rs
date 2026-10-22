@@ -456,7 +456,12 @@ impl Neighbours for Directory<'_> {
         found: &'a [TokenCertificate],
         handle: &str,
     ) -> Result<&'a TokenCertificate, TokenError> {
-        crate::identity::application::certificates::usable_certificate(found, handle, self.listed)
+        crate::identity::application::certificates::usable_certificate(
+            found,
+            &[],
+            handle,
+            self.listed,
+        )
     }
 
     fn automatic_selection_honoured(&self) -> bool {
