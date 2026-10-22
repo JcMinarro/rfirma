@@ -47,7 +47,10 @@ export function StampPill({ state, onCompose }: { state: StampPreview; onCompose
   if (!said) return null;
 
   return (
-    <div className="viewer__stamp" role="status">
+    <div
+      className={said.reason === null ? "viewer__stamp" : "viewer__stamp viewer__stamp--failed"}
+      role="status"
+    >
       <div className="viewer__stamp-text">
         <p className="rf-body viewer__stamp-line" id={lineId}>
           {said.line}

@@ -275,12 +275,16 @@
   align-items: center;
   gap: var(--rf-space-sm);
   min-height: 40px;
-  padding: var(--rf-space-xs) var(--rf-space-sm);
+  padding: 0 var(--rf-space-sm);
   border-radius: var(--rf-radius-pill);
   border: 1px solid var(--rf-border-strong);
   background: var(--rf-surface);
   box-shadow: var(--rf-shadow-elevated);
   white-space: nowrap;
+}
+
+.viewer__stamp--failed {
+  padding-block: var(--rf-space-xs);
 }
 
 .viewer__stamp-line,
