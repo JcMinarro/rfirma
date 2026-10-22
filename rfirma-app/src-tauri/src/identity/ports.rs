@@ -6,9 +6,10 @@ use std::sync::Arc;
 
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
-use crate::identity::domain::error::{Situation, TokenError};
+use crate::identity::domain::error::TokenError;
 use crate::identity::domain::holder::PromptedHolder;
 use crate::identity::domain::keyring::KeyringError;
+use crate::identity::domain::listed::Listed;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::readers::{Reader, ReadyCard};
 use crate::identity::domain::secret::{PinWarning, SecretName, StoreSecret};
@@ -95,33 +96,18 @@ pub trait Token {
         pin: &ProtectedSecret,
     ) -> Result<(), TokenError>;
 
+    /// Lo que responde cada almacén al listarlo: sus certificados o su error.
+    fn list_each(&self, stores: &[Store]) -> Listed {
+        let mut listed = Listed::default();
+        for store in stores {
+            listed.heard(store, self.list(store));
+        }
+        listed
+    }
+
     /// Los certificados de todos los almacenes: falla solo si ninguno se ha podido abrir.
     fn list_across(&self, stores: &[Store]) -> Result<Vec<TokenCertificate>, TokenError> {
-        if stores.is_empty() {
-            return Err(TokenError::new(
-                Situation::ModuleNotFound,
-                "no hay ningun modulo PKCS#11 donde buscar certificados",
-            ));
-        }
-
-        let mut found = Vec::new();
-        let mut any_loaded = false;
-        let mut refused: Option<TokenError> = None;
-
-        for store in stores {
-            match self.list(store) {
-                Ok(certificates) => {
-                    any_loaded = true;
-                    found.extend(certificates);
-                }
-                Err(error) => refused = refused.or(Some(error)),
-            }
-        }
-
-        match refused {
-            Some(error) if !any_loaded => Err(error),
-            _ => Ok(found),
-        }
+        self.list_each(stores).certificates()
     }
 }
 

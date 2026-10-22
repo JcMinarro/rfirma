@@ -19,6 +19,7 @@ use security_framework::os::macos::keychain::{CreateOptions, SecKeychain};
 use super::keychain::{import_pkcs12 as install, situation_of};
 use super::{dnie_store, installs, keychain_store, stores_besides, user_store, MacosToken};
 use crate::identity::application::certificates::certificates_with_their_chains;
+use crate::identity::application::readers::LastListing;
 use crate::identity::domain::algorithm::{KeyKind, SignatureAlgorithm};
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
 use crate::identity::domain::error::Situation;
@@ -297,9 +298,12 @@ fn the_chain_of_a_keychain_certificate_is_completed_with_its_issuer_from_the_key
     keychain.holds_a_certificate(&intermediate);
     keychain.holds_an_identity(&signer, &key);
 
-    let offered =
-        certificates_with_their_chains(&MacosToken::default(), &[keychain_store(&keychain.path)])
-            .expect("el llavero deberia listarse");
+    let offered = certificates_with_their_chains(
+        &MacosToken::default(),
+        &[keychain_store(&keychain.path)],
+        &LastListing::default(),
+    )
+    .expect("el llavero deberia listarse");
 
     assert_eq!(offered.len(), 1);
     let chain: Vec<String> = offered[0]

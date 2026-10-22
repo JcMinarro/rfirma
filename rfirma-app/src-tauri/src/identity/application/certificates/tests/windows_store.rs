@@ -131,7 +131,7 @@ fn of_two_copies_the_one_with_its_key_on_the_card_signs() {
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].store, StoreClass::Card);
     assert_eq!(rows[0].stores, vec![StoreClass::Card, a_firefox_class()]);
-    let chosen = certificate_behind(&found, &rows[0].id, &listed).expect("la copia");
+    let chosen = certificate_behind(&found, &[], &rows[0].id, &listed).expect("la copia");
     assert_eq!(chosen.reference(), found[1].reference());
 }
 
@@ -166,6 +166,7 @@ fn a_site_is_offered_both_dnie_certificates_through_windows() {
     let offered: Vec<String> = certificates_with_their_chains(
         &StoresWith::holding(found.clone(), found),
         &[the_windows_store()],
+        &LastListing::default(),
     )
     .expect("el almacen deberia listarse")
     .iter()

@@ -139,6 +139,54 @@ describe("el estado del sello, flotando sobre la botonera", () => {
     expect(onComposeStamp).toHaveBeenCalled();
   });
 
+  it("says why the stamp could not be drawn, with the title of the failure situation", async () => {
+    const { document, renders } = recordingDocument();
+    renderWithCatalog(
+      <DocumentViewer
+        pdf={document}
+        placement={seated}
+        onOpen={noop}
+        stamp={{ kind: "failed", failure: { situation: "tokenAbsent", detail: "no card" } }}
+        onComposeStamp={vi.fn()}
+      />,
+    );
+    await waitFor(() => expect(renders).toHaveLength(1));
+
+    const pill = screen.getByRole("status");
+
+    expect(pill).toHaveTextContent("No se ha podido dibujar la firma");
+    expect(pill).toHaveTextContent("Falta la tarjeta o el certificado");
+    expect(pill).not.toHaveTextContent("Comprueba");
+  });
+
+  it("grows taller only in the failure pill", async () => {
+    const { document, renders } = recordingDocument();
+    const { rerender } = renderWithCatalog(
+      <DocumentViewer
+        pdf={document}
+        placement={seated}
+        onOpen={noop}
+        stamp={{ kind: "onDemand" }}
+        onComposeStamp={vi.fn()}
+      />,
+    );
+    await waitFor(() => expect(renders).toHaveLength(1));
+
+    expect(screen.getByRole("status")).not.toHaveClass("viewer__stamp--failed");
+
+    rerender(
+      <DocumentViewer
+        pdf={document}
+        placement={seated}
+        onOpen={noop}
+        stamp={{ kind: "failed", failure: { situation: "tokenAbsent", detail: "no card" } }}
+        onComposeStamp={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveClass("viewer__stamp--failed");
+  });
+
   /**
    * ID-111. La vista previa **no es una puerta**: sobre si se puede firmar
    * manda el botón de firmar, que no vive aquí.

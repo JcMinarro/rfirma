@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../design-system/Button";
+import { errorText } from "../errors/errorMessage";
 import type { StampPreview } from "../signing/stampPreview";
 
 /**
@@ -15,9 +16,8 @@ import type { StampPreview } from "../signing/stampPreview";
  * pastilla: no hay sello del que hablar, o ya no hace falta decirlo
  * (docs/design/visor-de-documento.md § «La pastilla bajo la hoja»).
  *
- * **Mide lo mismo tenga botón o no.** El hueco del botón queda reservado
- * incluso vacío, para no saltar al pasar de «sin componer» a «componiendo» o a
- * «fallido».
+ * **Mide lo mismo de ancho tenga botón o no**, y de alto salvo en el fallo, que
+ * añade una segunda línea con el título del motivo.
  */
 export function StampPill({ state, onCompose }: { state: StampPreview; onCompose: () => void }) {
   const { t } = useTranslation();
@@ -31,10 +31,14 @@ export function StampPill({ state, onCompose }: { state: StampPreview; onCompose
     noCertificate: null,
     unplaced: null,
     frozen: null,
-    onDemand: { line: t("viewer.stamp.onDemand"), button: t("viewer.stamp.show") },
-    composing: { line: t("viewer.stamp.composing"), button: null },
+    onDemand: { line: t("viewer.stamp.onDemand"), button: t("viewer.stamp.show"), reason: null },
+    composing: { line: t("viewer.stamp.composing"), button: null, reason: null },
     composed: null,
-    failed: { line: t("viewer.stamp.failed"), button: t("actions.retry") },
+    failed: {
+      line: t("viewer.stamp.failed"),
+      button: t("actions.retry"),
+      reason: state.kind === "failed" ? errorText(state.failure.situation, t).title : null,
+    },
   }[state.kind];
 
   // noCertificate, unplaced, frozen y composed no dicen nada del sello: sin
@@ -43,10 +47,18 @@ export function StampPill({ state, onCompose }: { state: StampPreview; onCompose
   if (!said) return null;
 
   return (
-    <div className="viewer__stamp" role="status">
-      <p className="rf-body viewer__stamp-line" id={lineId}>
-        {said.line}
-      </p>
+    <div
+      className={said.reason === null ? "viewer__stamp" : "viewer__stamp viewer__stamp--failed"}
+      role="status"
+    >
+      <div className="viewer__stamp-text">
+        <p className="rf-body viewer__stamp-line" id={lineId}>
+          {said.line}
+        </p>
+        {said.reason !== null && (
+          <p className="rf-caption rf-text-muted viewer__stamp-reason">{said.reason}</p>
+        )}
+      </div>
       <span className="viewer__stamp-slot">
         {said.button !== null && (
           <Button

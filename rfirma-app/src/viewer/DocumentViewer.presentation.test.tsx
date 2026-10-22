@@ -105,7 +105,7 @@ describe("the stamp pill floating over the button bar", () => {
     {
       name: "failed",
       Story: StampFailed,
-      line: "No se ha podido dibujar la firma visible",
+      line: "No se ha podido dibujar la firma",
       button: "Reintentar",
     },
   ];
