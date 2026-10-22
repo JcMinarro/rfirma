@@ -120,10 +120,15 @@ impl IdentityRoot {
         application::certificates::usable_certificate(found, handle, &self.listed)
     }
 
-    /// El certificado del asa, listado de nuevo y comprobado antes de usarlo.
+    /// El certificado del asa, tomado del último listado y comprobado antes de usarlo.
     pub fn chosen(&self, handle: &str) -> Result<TokenCertificate, TokenError> {
-        let found = self.certificates()?;
-        self.usable(&found, handle).cloned()
+        application::readers::chosen_from_the_last_listing(
+            self.token.as_ref(),
+            &self.all_stores(),
+            &self.last_listing,
+            &self.listed,
+            handle,
+        )
     }
 
     /// Apunta el certificado con el que se acaba de firmar.

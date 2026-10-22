@@ -60,7 +60,7 @@ pub fn listed_rows(
     memory: &dyn CertificateMemory,
     last: &LastListing,
 ) -> Result<Vec<ListedCertificate>, TokenError> {
-    let found = token.list_across(stores)?;
+    let found = with_their_chains(token, token.list_across(stores)?);
     last.keep(&found);
     Ok(rows_keeping_handles(
         on_the_desktop(found),
@@ -95,10 +95,17 @@ pub fn certificates_with_their_chains(
     token: &dyn Token,
     stores: &[Store],
 ) -> Result<Vec<TokenCertificate>, TokenError> {
-    let found = holders_only(token.list_across(stores)?);
+    Ok(with_their_chains(
+        token,
+        holders_only(token.list_across(stores)?),
+    ))
+}
+
+/// Cada certificado con los emisores que su propio almacén aporta.
+pub fn with_their_chains(token: &dyn Token, found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
     let mut neighbours: HashMap<Store, Vec<TokenCertificate>> = HashMap::new();
 
-    Ok(found
+    found
         .into_iter()
         .map(|certificate| {
             let store = certificate.reference().store();
@@ -108,7 +115,7 @@ pub fn certificates_with_their_chains(
             let issuers = issuers_of(&certificate, in_the_store);
             certificate.with_its_issuers(issuers)
         })
-        .collect())
+        .collect()
 }
 
 /// Lo que se enseña en el escritorio: sin autoridades ni el de autenticación del DNIe, como AutoFirma.
@@ -422,6 +429,7 @@ pub fn remove_installed(
     handle: &str,
     listed: &ListedCertificates,
     installed_copies: &ListedCertificates,
+    last: &LastListing,
 ) -> Result<(), InstallError> {
     let reference = match installed_copies.get(handle) {
         Some(installed) => installed,
@@ -440,6 +448,7 @@ pub fn remove_installed(
         keyring.pin()?
     };
     token.remove_certificate(installed_dir, &reference, &pin)?;
+    last.forget(&reference);
     if memory.remembered_certificate().as_ref() == Some(&reference) {
         let _ = memory.forget_the_certificate();
     }

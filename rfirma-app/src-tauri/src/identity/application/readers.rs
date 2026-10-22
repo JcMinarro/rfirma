@@ -7,9 +7,10 @@ use std::thread::JoinHandle;
 use crate::desktop::domain::channel::Channel;
 use crate::desktop::domain::platform::Platform;
 use crate::identity::application::certificates::{
-    on_the_desktop, rows_keeping_handles, ListedCertificates,
+    on_the_desktop, rows_keeping_handles, usable_certificate, with_their_chains, ListedCertificates,
 };
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
+use crate::identity::domain::error::TokenError;
 use crate::identity::domain::readers::{
     ready_card_among, status_of, Listing, Reader, ReaderStatus, ReadyCard,
 };
@@ -28,6 +29,18 @@ impl LastListing {
         *lock(&self.found) = Some(found.to_vec());
     }
 
+    /// El último listado completo, si ya hubo alguno.
+    pub fn found(&self) -> Option<Vec<TokenCertificate>> {
+        lock(&self.found).clone()
+    }
+
+    /// Saca del último listado el certificado que ya no está, sin abrir ningún almacén.
+    pub fn forget(&self, reference: &CertificateRef) {
+        if let Some(found) = lock(&self.found).as_mut() {
+            found.retain(|certificate| certificate.reference() != reference);
+        }
+    }
+
     /// Los certificados del último listado de los almacenes que no enseñan tarjetas, si ya hubo alguno.
     fn other_than_cards(&self, installed_dir: &Path) -> Option<Vec<TokenCertificate>> {
         lock(&self.found).as_ref().map(|found| {
@@ -38,6 +51,25 @@ impl LastListing {
                 .collect()
         })
     }
+}
+
+/// El certificado del asa, tomado del último listado; solo si no hay ninguno lista los almacenes y lo guarda (ADR-0011).
+pub fn chosen_from_the_last_listing(
+    token: &dyn Token,
+    stores: &[Store],
+    last: &LastListing,
+    listed: &ListedCertificates,
+    handle: &str,
+) -> Result<TokenCertificate, TokenError> {
+    let found = match last.found() {
+        Some(found) => found,
+        None => {
+            let found = with_their_chains(token, token.list_across(stores)?);
+            last.keep(&found);
+            found
+        }
+    };
+    usable_certificate(&found, handle, listed).cloned()
 }
 
 /// Si esta plataforma y este canal pueden vigilar lectores (ADR-0048).
@@ -187,7 +219,7 @@ fn listed_in(token: &dyn Token, stores: &[Store]) -> Vec<TokenCertificate> {
     if stores.is_empty() {
         return Vec::new();
     }
-    token.list_across(stores).unwrap_or_default()
+    with_their_chains(token, token.list_across(stores).unwrap_or_default())
 }
 
 /// Si el almacén se vuelve a listar al cambiar los lectores: uno de tarjeta, o el de Windows o macOS, que copian las suyas.
