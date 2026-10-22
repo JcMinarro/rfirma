@@ -26,6 +26,6 @@
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "5.0.1"
+    "vitest": "catalog:"
   }
 }
