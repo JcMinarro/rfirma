@@ -246,6 +246,8 @@ export interface CertificateStore {
    * de curva elíptica.
    */
   install(): Promise<boolean>;
+  /** Vuelve a listar solo los almacenes que no son de tarjeta; las tarjetas las cubre el vigilante de lectores. */
+  listOtherThanCards(): Promise<readonly Certificate[]>;
   /** Quita un `.p12` instalado, por el asa de su fila. */
   remove(id: string): Promise<void>;
   /** Vacía el Almacén de rFirma entero, ya confirmado por la persona (ADR-0034). */
@@ -290,6 +292,7 @@ export interface ReaderNews {
 export function emptyCertificateStore(): CertificateStore {
   return {
     list: async () => [],
+    listOtherThanCards: async () => [],
     install: async () => false,
     remove: async () => {},
     emptyStore: async () => {},

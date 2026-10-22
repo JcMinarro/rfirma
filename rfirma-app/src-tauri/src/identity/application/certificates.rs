@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use crate::documents::domain::handles::Handles;
-use crate::identity::application::readers::LastListing;
+use crate::identity::application::readers::{rows_marking_the_installed, LastListing};
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
 use crate::identity::domain::chain::issuers_of;
 use crate::identity::domain::copies::{copies_of_each_certificate, ChosenCopy};
@@ -62,22 +62,14 @@ pub fn listed_rows(
 ) -> Result<Vec<ListedCertificate>, TokenError> {
     let found = with_their_chains(token, token.list_across(stores)?);
     last.keep(&found);
-    Ok(rows_keeping_handles(
-        on_the_desktop(found),
+    Ok(rows_marking_the_installed(
+        token,
+        found,
         installed_dir,
         listed,
         installed_copies,
         memory,
-    )
-    .into_iter()
-    .map(|mut row| {
-        row.installed = row.installed
-            || listed
-                .get(&row.id)
-                .is_some_and(|reference| token.installed_in_the_system(installed_dir, &reference));
-        row
-    })
-    .collect())
+    ))
 }
 
 /// Si rFirma instaló `reference` desde un `.p12`: en su Almacén o, donde instala el sistema, apuntado por el token.

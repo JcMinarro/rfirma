@@ -53,6 +53,19 @@ pub fn list_certificates(
     .collect())
 }
 
+/// Al recuperar el foco la ventana principal: lista solo los almacenes que no son de tarjeta (ADR-0048).
+#[tauri::command(async)]
+pub fn list_certificates_other_than_cards(
+    identity: State<'_, IdentityRoot>,
+) -> Result<Vec<CertificateView>, Failure> {
+    Ok(identity
+        .card_listing()
+        .relisted_other_than_cards()?
+        .into_iter()
+        .map(CertificateView::from)
+        .collect())
+}
+
 /// El último estado anunciado de los lectores, para la ventana que se monta después del anuncio (ADR-0048).
 #[tauri::command]
 pub fn read_card_readers(identity: State<'_, IdentityRoot>) -> ReaderStatusView {
