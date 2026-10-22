@@ -1,3 +1,6 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
+
 use openssl::asn1::Asn1Time;
 use openssl::bn::BigNum;
 use openssl::hash::MessageDigest;
@@ -248,6 +251,41 @@ fn the_intermediate_ca_completes_the_chain_of_both_certificates_for_a_site() {
             );
         }
     }
+}
+
+#[test]
+fn a_full_listing_with_holders_and_chain_opens_the_card_once() {
+    for (version, card) in the_two_versions() {
+        let police = OfThePolice::new();
+        let opened = Arc::new(AtomicUsize::new(0));
+        let counter = Arc::clone(&opened);
+        let dnie = the_dnie(move || {
+            counter.fetch_add(1, Ordering::SeqCst);
+            police.on(card())
+        });
+
+        let offered = certificates_with_their_chains(&dnie, &[dnie_store()])
+            .expect("el DNIe deberia listarse");
+
+        assert_eq!(offered.len(), 2, "{version}");
+        assert_eq!(opened.load(Ordering::SeqCst), 1, "{version}");
+    }
+}
+
+#[test]
+fn the_chain_of_a_later_listing_is_read_from_the_card_again() {
+    let police = OfThePolice::new();
+    let opened = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&opened);
+    let dnie = the_dnie(move || {
+        counter.fetch_add(1, Ordering::SeqCst);
+        police.on(EmulatedDnie::dnie_3())
+    });
+
+    certificates_with_their_chains(&dnie, &[dnie_store()]).expect("el DNIe deberia listarse");
+    certificates_with_their_chains(&dnie, &[dnie_store()]).expect("el DNIe deberia listarse");
+
+    assert_eq!(opened.load(Ordering::SeqCst), 2);
 }
 
 #[test]
