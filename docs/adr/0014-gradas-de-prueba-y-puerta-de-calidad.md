@@ -492,18 +492,21 @@ Sin lista de ficheros —la etiqueta `ci-full`, más ficheros de los que lista l
 PR, 300 en la comparación de un push), un push sin commit anterior o un fallo de la API— corren
 todos los carriles de Linux. Un PR sin lista corre también los de plataforma; un push, no.
 
-**Qué concierne a una plataforma** es lo que solo ella compila o lo que cambia cómo se compila
-allí: `Cargo.toml`, `Cargo.lock`, `build.rs`, `tauri.conf.json`, `clippy.toml`, el `justfile`,
-`versions.env`, `.github/`, los scripts que corren sus jobs (`bootstrap.sh`, `pinned-version.sh`,
-`install-tools.sh`) y las reglas mismas; `packaging/windows/` y el manifiesto de Windows solo a
-Windows, y `packaging/macos/` solo a macOS. Los ficheros con un `cfg` de plataforma no se
-escriben a mano: «Alcance» los calcula en cada ejecución con `scripts/platform-files.sh` sobre un
-*sparse checkout* de los `.rs` y se los pasa a `ci-lanes.sh`. Cuenta un `cfg` de `windows`,
-`unix`, `target_os` o `target_family` —también `target_os = "linux"`, porque tocar una rama deja
-huérfana la otra— y cuenta **el módulo entero** que un `cfg` de plataforma declara con `mod`:
-`identity/adapters/windows_store/cng.rs` no lleva ningún `cfg`, y solo compila en Windows. Un
-cambio solo en el puente Java no enciende las plataformas: su `.dll` y su `.dylib` las compilan
-la nocturna y la entrega.
+**Qué concierne a una plataforma** es el código que nombra esa plataforma y lo que cambia cómo
+se compila allí: `Cargo.toml`, `build.rs`, `versions.env`, `platforms.yml` y la acción
+`setup-runner`, y los scripts que instalan sus herramientas (`bootstrap.sh`, `pinned-version.sh`,
+`install-tools.sh`); `packaging/windows/` y el manifiesto de Windows solo a Windows, y
+`packaging/macos/` solo a macOS. Los ficheros con un `cfg` de plataforma no se escriben a mano:
+«Alcance» los calcula en cada ejecución con `scripts/platform-files.sh` sobre un *sparse
+checkout* de los `.rs` y se los pasa a `ci-lanes.sh`, cada uno con su plataforma. Un `cfg` que
+nombra `windows` o `not(unix)` es de Windows; uno que nombra `"macos"`, de macOS, y
+`not(target_os = "linux")`, de las dos. Cuenta **el módulo entero** que ese `cfg` declara con
+`mod`: `identity/adapters/windows_store/cng.rs` no lleva ningún `cfg`, y solo compila en
+Windows. Un `cfg` de `unix`, `target_os = "linux"` o `target_family` no enciende ninguna, ni
+`Cargo.lock`, `tauri.conf.json`, `clippy.toml`, el `justfile`, el resto de `.github/` o las
+reglas mismas: los compila o los prueba Linux, y su efecto en otra plataforma lo ve la nocturna.
+Un cambio solo en el puente Java tampoco enciende las plataformas: su `.dll` y su `.dylib` las
+compilan la nocturna y la entrega.
 
 **La nocturna es la red.** Una vez al día, si `main` ha cambiado desde la nocturna anterior,
 corre Windows y macOS enteros sobre `main`. Si sale roja, abre una issue con `needs-triage`, o

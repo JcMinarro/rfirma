@@ -7,8 +7,10 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 printf '%s\n' \
-    rfirma-app/src-tauri/src/desktop/adapters/paths.rs \
-    rfirma-app/src-tauri/src/identity/adapters/windows_store/ \
+    "windows rfirma-app/src-tauri/src/desktop/adapters/paths.rs" \
+    "macos rfirma-app/src-tauri/src/desktop/adapters/paths.rs" \
+    "windows rfirma-app/src-tauri/src/identity/adapters/windows_store/" \
+    "macos rfirma-app/src-tauri/src/identity/adapters/macos_store/" \
     >"$work/platform-files"
 
 check() {
@@ -42,18 +44,19 @@ backend="java=false web=false rust=true native=true landing=false"
 check "sin ficheros" "$all" "$("$lanes" </dev/null | tr '\n' ' ')"
 
 expect "fichero desconocido" "$linux windows=false macos=false" "lefthook.yml"
-expect "justfile" "$all" "justfile"
-expect "workflow" "$all" ".github/workflows/ci.yml"
+expect "justfile" "$linux windows=false macos=false" "justfile"
+expect "workflow" "$linux windows=false macos=false" ".github/workflows/ci.yml"
+expect "workflow de plataformas" "$all" ".github/workflows/platforms.yml"
 expect "accion local" "$all" ".github/actions/setup-runner/action.yml"
 expect "prosa inerte" "$none" "README.md" "docs/research/x.md" "rfirma-conformance/src/main.rs"
 expect "interfaz" "java=false web=true rust=true native=false landing=false windows=false macos=false" "rfirma-app/src/App.tsx"
 expect "backend" "$backend windows=false macos=false" "rfirma-app/src-tauri/src/lib.rs"
 expect "capacidad de tauri" "java=false web=true rust=true native=true landing=false windows=false macos=false" "rfirma-app/src-tauri/capabilities/site.json"
 expect "candado de version" "java=false web=true rust=true native=true landing=false windows=true macos=true" "rfirma-app/src-tauri/Cargo.toml"
-expect "candado de dependencias" "java=false web=true rust=true native=true landing=false windows=true macos=true" "rfirma-app/src-tauri/Cargo.lock"
+expect "candado de dependencias" "java=false web=true rust=true native=true landing=false windows=false macos=false" "rfirma-app/src-tauri/Cargo.lock"
 expect "script de compilacion" "$backend windows=true macos=true" "rfirma-app/src-tauri/build.rs"
-expect "configuracion de tauri" "java=false web=true rust=true native=true landing=false windows=true macos=true" "rfirma-app/src-tauri/tauri.conf.json"
-expect "reglas de clippy" "$backend windows=true macos=true" "rfirma-app/src-tauri/clippy.toml"
+expect "configuracion de tauri" "java=false web=true rust=true native=true landing=false windows=false macos=false" "rfirma-app/src-tauri/tauri.conf.json"
+expect "reglas de clippy" "$backend windows=false macos=false" "rfirma-app/src-tauri/clippy.toml"
 expect "manifiesto de windows" "java=false web=true rust=true native=true landing=false windows=true macos=false" "rfirma-app/src-tauri/windows-app-manifest.xml"
 expect "manifiesto de vcpkg" "java=false web=true rust=true native=true landing=false windows=true macos=false" "rfirma-app/src-tauri/vcpkg.json"
 expect "empaquetado de windows" "java=false web=true rust=false native=false landing=false windows=true macos=false" "packaging/windows/tauri.windows.json"
@@ -68,8 +71,8 @@ expect "bootstrap" "java=true web=true rust=false native=true landing=false wind
 expect "lector de versiones" "java=true web=true rust=true native=true landing=false windows=true macos=true" "scripts/pinned-version.sh"
 expect "instalador de herramientas" "java=false web=true rust=true native=true landing=false windows=true macos=true" "scripts/install-tools.sh"
 expect "versiones fijadas" "java=true web=true rust=true native=true landing=true windows=true macos=true" "versions.env"
-expect "las propias reglas" "$all" "scripts/ci-lanes.sh"
-expect "la lista de plataforma" "java=false web=true rust=false native=true landing=false windows=true macos=true" "scripts/platform-files.sh"
+expect "las propias reglas" "$linux windows=false macos=false" "scripts/ci-lanes.sh"
+expect "la lista de plataforma" "java=false web=true rust=false native=true landing=false windows=false macos=false" "scripts/platform-files.sh"
 expect "otro script" "java=false web=true rust=false native=true landing=false windows=false macos=false" "scripts/token-per-test.sh"
 expect "site-driver" "java=false web=true rust=true native=true landing=false windows=false macos=false" "testdata/site-driver/driver.mjs"
 expect "kit fnmt" "java=true web=false rust=true native=true landing=false windows=false macos=false" "testdata/fnmt/README.md"
@@ -86,8 +89,10 @@ expect "la union de dos" "java=false web=true rust=true native=true landing=fals
 platforms="--platform-files $work/platform-files"
 expect_with "fichero con cfg de plataforma" "$backend windows=true macos=true" "$platforms" \
     "rfirma-app/src-tauri/src/desktop/adapters/paths.rs"
-expect_with "modulo que solo compila una plataforma" "$backend windows=true macos=true" "$platforms" \
+expect_with "modulo que solo compila windows" "$backend windows=true macos=false" "$platforms" \
     "rfirma-app/src-tauri/src/identity/adapters/windows_store/cng.rs"
+expect_with "modulo que solo compila macos" "$backend windows=false macos=true" "$platforms" \
+    "rfirma-app/src-tauri/src/identity/adapters/macos_store/keychain.rs"
 expect_with "prefijo sin su barra" "$backend windows=false macos=false" "$platforms" \
     "rfirma-app/src-tauri/src/identity/adapters/windows_store_other.rs"
 expect_with "backend sin cfg" "$backend windows=false macos=false" "$platforms" \

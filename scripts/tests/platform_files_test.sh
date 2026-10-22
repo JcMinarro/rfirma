@@ -23,6 +23,8 @@ cat >"$tauri/src/adapters/mod.rs" <<'EOF'
 #[allow(dead_code)]
 pub mod store;
 #[cfg(target_os = "linux")] mod gtk;
+#[cfg(not(target_os = "linux"))]
+mod native;
 #[cfg(test)]
 mod tests;
 pub mod shared;
@@ -38,6 +40,10 @@ mod inline {
 EOF
 cat >"$tauri/src/adapters/store/cng.rs" <<'EOF'
 pub fn sign() {}
+EOF
+cat >"$tauri/src/adapters/trust.rs" <<'EOF'
+#[cfg(target_os = "macos")]
+mod keychain;
 EOF
 cat >"$tauri/src/domain/name.rs" <<'EOF'
 #[cfg(feature = "windows-like")]
@@ -56,18 +62,20 @@ cat >"$tauri/target/debug/generated.rs" <<'EOF'
 mod generated;
 EOF
 
-expected="rfirma-app/src-tauri/build.rs
-rfirma-app/src-tauri/src/adapters/gtk.rs
-rfirma-app/src-tauri/src/adapters/gtk/
-rfirma-app/src-tauri/src/adapters/lock.rs
-rfirma-app/src-tauri/src/adapters/lock/windows_tests.rs
-rfirma-app/src-tauri/src/adapters/mod.rs
-rfirma-app/src-tauri/src/adapters/store.rs
-rfirma-app/src-tauri/src/adapters/store/
-rfirma-app/src-tauri/src/domain/family.rs
-rfirma-app/src-tauri/tests/pin_fd.rs
-rfirma-app/src-tauri/tests/support.rs
-rfirma-app/src-tauri/tests/support/"
+expected="macos rfirma-app/src-tauri/src/adapters/mod.rs
+macos rfirma-app/src-tauri/src/adapters/native.rs
+macos rfirma-app/src-tauri/src/adapters/native/
+macos rfirma-app/src-tauri/src/adapters/trust.rs
+macos rfirma-app/src-tauri/src/adapters/trust/keychain.rs
+macos rfirma-app/src-tauri/src/adapters/trust/keychain/
+windows rfirma-app/src-tauri/build.rs
+windows rfirma-app/src-tauri/src/adapters/lock.rs
+windows rfirma-app/src-tauri/src/adapters/lock/windows_tests.rs
+windows rfirma-app/src-tauri/src/adapters/mod.rs
+windows rfirma-app/src-tauri/src/adapters/native.rs
+windows rfirma-app/src-tauri/src/adapters/native/
+windows rfirma-app/src-tauri/src/adapters/store.rs
+windows rfirma-app/src-tauri/src/adapters/store/"
 
 actual="$(cd "$work" && "$platform_files")"
 if [ "$actual" != "$expected" ]; then
@@ -78,16 +86,21 @@ fi
 
 real="$(cd "$root" && "$platform_files")"
 for needle in \
-    rfirma-app/src-tauri/src/identity/adapters/windows_store/ \
-    rfirma-app/src-tauri/src/site/adapters/channel/acceptor.rs; do
+    "windows rfirma-app/src-tauri/src/identity/adapters/windows_store/" \
+    "macos rfirma-app/src-tauri/src/identity/adapters/macos_store/" \
+    "windows rfirma-app/src-tauri/src/site/adapters/channel/acceptor.rs"; do
     grep -qxF "$needle" <<<"$real" || {
         echo "FALLO (repositorio): falta $needle" >&2
         exit 1
     }
 done
-if grep -qxF rfirma-app/src-tauri/src/lib.rs <<<"$real"; then
-    echo "FALLO (repositorio): lib.rs no sabe de plataformas" >&2
-    exit 1
-fi
+for path in \
+    rfirma-app/src-tauri/src/lib.rs \
+    rfirma-app/src-tauri/src/desktop/adapters/titlebar/gtk_titlebar.rs; do
+    if grep -q " $path\$" <<<"$real"; then
+        echo "FALLO (repositorio): $path no es de Windows ni de macOS" >&2
+        exit 1
+    fi
+done
 
 echo "platform_files_test: correcto"

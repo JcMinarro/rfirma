@@ -159,10 +159,10 @@ todos. Las guardas de `rfirma-app/src-tauri/tests` leen `rfirma-app/src`,
 `testdata/` y el `justfile`, así que un PR solo de interfaz sigue pagando
 `Cadena Rust`. La de citas de ADR también lee `docs/adr`, pero ese directorio
 no enciende el carril: la guarda corre en local, en el commit y en el push. Windows y macOS van al revés: corren solo si algún
-fichero les concierne —los `.rs` con un `cfg` de plataforma y los módulos que
-ese `cfg` declara, que `scripts/platform-files.sh` calcula en cada ejecución,
-más `Cargo.toml`, `Cargo.lock`, `build.rs`, la configuración de Tauri, su
-`packaging/`, el `justfile`, `versions.env` y `.github/`—, y en un push nunca:
+fichero les concierne —los `.rs` con un `cfg` que nombra esa plataforma y los
+módulos que ese `cfg` declara, que `scripts/platform-files.sh` calcula en cada
+ejecución, más `Cargo.toml`, `build.rs`, su `packaging/`, `versions.env`,
+`platforms.yml` y `setup-runner`—, y en un push nunca:
 los cubre la nocturna (ADR-0014). Las etiquetas `ci-full`, `ci-windows` y
 `ci-macos` fuerzan sus carriles en el siguiente push; el resumen de `Alcance`
 dice qué corre, qué se omitió y por qué. **Un rojo de Windows o macOS en
