@@ -262,7 +262,7 @@
  * válida, que puede ser más tarde que el simple soltar el gesto (ver el
  * comentario del TSX).
  *
- * La altura es **fija**, tenga botón o no: `.viewer__stamp-slot` reserva su
+ * La altura mínima es **fija**, tenga botón o no: `.viewer__stamp-slot` reserva su
  * sitio incluso vacío, para no saltar al pasar de «congelado» a «sin
  * componer» justo mientras se arrastra el recuadro.
  */
@@ -274,8 +274,8 @@
   display: flex;
   align-items: center;
   gap: var(--rf-space-sm);
-  height: 40px;
-  padding: 0 var(--rf-space-sm);
+  min-height: 40px;
+  padding: var(--rf-space-xs) var(--rf-space-sm);
   border-radius: var(--rf-radius-pill);
   border: 1px solid var(--rf-border-strong);
   background: var(--rf-surface);
@@ -283,7 +283,8 @@
   white-space: nowrap;
 }
 
-.viewer__stamp-line {
+.viewer__stamp-line,
+.viewer__stamp-reason {
   margin: 0;
 }
 

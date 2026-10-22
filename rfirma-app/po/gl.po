@@ -409,7 +409,7 @@ msgid "viewer.stamp.composing"
 msgstr "Compoñendo a sinatura visible…"
 
 msgid "viewer.stamp.failed"
-msgstr "Non se puido debuxar a sinatura visible"
+msgstr "Non se puido debuxar a sinatura"
 
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"

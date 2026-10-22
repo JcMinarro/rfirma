@@ -411,7 +411,7 @@ msgid "viewer.stamp.composing"
 msgstr "Componiendo la firma visible…"
 
 msgid "viewer.stamp.failed"
-msgstr "No se ha podido dibujar la firma visible"
+msgstr "No se ha podido dibujar la firma"
 
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
