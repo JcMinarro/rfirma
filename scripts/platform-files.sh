@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lista los ficheros de rfirma-app/src-tauri con un cfg de plataforma y, con '/' final, los modulos que solo compila una.
+# Lista, como `windows <ruta>` o `macos <ruta>`, los ficheros de rfirma-app/src-tauri con un cfg de esa plataforma y, con '/' final, los modulos que ese cfg declara.
 set -euo pipefail
 
 tauri=rfirma-app/src-tauri
@@ -13,22 +13,33 @@ find "$tauri" -path "$tauri/target" -prune -o -name '*.rs' -type f -print | sort
         sub(/\.rs$/, "", file)
         return file
     }
-    FNR == 1 { gated = 0; path = ""; dir = FILENAME; sub(/\/[^\/]*$/, "", dir); modules = crate_dir(FILENAME) }
+    function platforms_of(line, found, off_linux) {
+        found = ""
+        off_linux = line ~ /not[(][[:space:]]*target_os[[:space:]]*=[[:space:]]*"linux"[[:space:]]*[)]/
+        if (off_linux || line ~ /(^|[^A-Za-z0-9_"-])windows([^A-Za-z0-9_"-]|$)/ || line ~ /"windows"/ || line ~ /not[(][[:space:]]*unix[[:space:]]*[)]/) found = found " windows"
+        if (off_linux || line ~ /"macos"/) found = found " macos"
+        return found
+    }
+    function emit(platforms, path, n, list, i) {
+        n = split(platforms, list, " ")
+        for (i = 1; i <= n; i++) print list[i], path
+    }
+    FNR == 1 { gated = ""; path = ""; dir = FILENAME; sub(/\/[^\/]*$/, "", dir); modules = crate_dir(FILENAME) }
     {
         attribute = $0 ~ /^[[:space:]]*#\[/
         if ($0 ~ /cfg(!|_attr)?[(](.*[^A-Za-z0-9_"-])?(windows|unix|target_os|target_family)([^A-Za-z0-9_"-]|$)/) {
-            print FILENAME
-            if ($0 ~ /^[[:space:]]*#\[cfg[(]/) gated = 1
+            emit(platforms_of($0), FILENAME)
+            if ($0 ~ /^[[:space:]]*#\[cfg[(]/) gated = platforms_of($0)
         }
-        if (gated && $0 ~ /^[[:space:]]*#\[path[[:space:]]*=/) {
+        if (gated != "" && $0 ~ /^[[:space:]]*#\[path[[:space:]]*=/) {
             path = $0; sub(/^[^"]*"/, "", path); sub(/".*/, "", path)
         }
-        if (gated && $0 ~ /(^|[][:space:]])mod[[:space:]]+[A-Za-z0-9_]+[[:space:]]*;/) {
+        if (gated != "" && $0 ~ /(^|[][:space:]])mod[[:space:]]+[A-Za-z0-9_]+[[:space:]]*;/) {
             name = $0; sub(/.*(^|[][:space:]])mod[[:space:]]+/, "", name); sub(/[^A-Za-z0-9_].*/, "", name)
-            if (path != "") print dir "/" path
-            else { print modules "/" name ".rs"; print modules "/" name "/" }
-            gated = 0; path = ""; next
+            if (path != "") emit(gated, dir "/" path)
+            else { emit(gated, modules "/" name ".rs"); emit(gated, modules "/" name "/") }
+            gated = ""; path = ""; next
         }
-        if (!attribute && $0 !~ /^[[:space:]]*(\/\/.*)?$/) { gated = 0; path = "" }
+        if (!attribute && $0 !~ /^[[:space:]]*(\/\/.*)?$/) { gated = ""; path = "" }
     }
 ' | sort -u
