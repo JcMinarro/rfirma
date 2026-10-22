@@ -146,9 +146,11 @@ fn remove(
         &NoMemory,
         installed,
         handle,
-        listed,
-        &ListedCertificates::new(),
-        &rfirma_lib::identity::application::readers::LastListing::default(),
+        certificates::RemovalListing {
+            listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &rfirma_lib::identity::application::readers::LastListing::default(),
+        },
     )?)
 }
 
