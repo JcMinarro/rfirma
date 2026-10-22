@@ -113,9 +113,11 @@ Habla de la vista previa de la firma visible y de nada más. Sus textos son
 Moviendo o redimensionando no lleva aviso: el atenuado ya lo dice mientras dura
 el gesto.
 
-**Mide lo mismo tenga botón o no**: altura fija y el hueco del botón reservado,
-para que no salte bajo la hoja mientras se coloca. No dice nada de colocación:
-eso lo dice el panel.
+**Mide lo mismo de ancho tenga botón o no**: el hueco del botón queda reservado,
+para que no salte bajo la hoja mientras se coloca. Solo el fallo crece en alto:
+bajo `viewer.stamp.failed` lleva una segunda línea, pequeña y atenuada, con el
+título del mensaje de la situación del fallo (el mismo de `errorText`, sin el
+cuerpo). No dice nada de colocación: eso lo dice el panel.
 
 ## La píldora
 

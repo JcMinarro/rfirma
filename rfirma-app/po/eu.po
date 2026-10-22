@@ -412,7 +412,7 @@ msgid "viewer.stamp.composing"
 msgstr "Sinadura ikusgaia osatzen…"
 
 msgid "viewer.stamp.failed"
-msgstr "Ezin izan da sinadura ikusgaia marraztu"
+msgstr "Ezin izan da sinadura marraztu"
 
 #. Línea del aviso de firmas previas: con cuántas firmas se firma.
 msgid "panel.previousSignatures.alongside"
