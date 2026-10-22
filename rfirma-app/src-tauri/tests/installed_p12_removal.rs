@@ -148,6 +148,7 @@ fn remove(
         handle,
         listed,
         &ListedCertificates::new(),
+        &rfirma_lib::identity::application::readers::LastListing::default(),
     )?)
 }
 

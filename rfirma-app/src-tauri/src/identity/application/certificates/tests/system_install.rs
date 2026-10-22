@@ -221,6 +221,7 @@ fn removing_a_macos_store_certificate_asks_the_system_and_forgets_it() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     );
 
     assert_eq!(removed, Ok(()));
@@ -243,6 +244,7 @@ fn a_macos_store_certificate_rfirma_did_not_install_is_not_removed() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect_err("no lo instalo rFirma");
 

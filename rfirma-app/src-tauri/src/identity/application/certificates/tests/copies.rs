@@ -338,6 +338,7 @@ fn a_row_signed_with_a_remembered_browser_copy_still_removes_its_installed_copy(
         &rows[0].id,
         &listed,
         &installed_copies,
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect("la copia instalada deberia poder quitarse aunque la elegida sea de firefox");
 }

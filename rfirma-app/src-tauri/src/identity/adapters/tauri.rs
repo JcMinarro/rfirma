@@ -118,6 +118,7 @@ pub fn remove_certificate(id: String, identity: State<'_, IdentityRoot>) -> Resu
             &id,
             &identity.listed,
             &identity.installed_copies,
+            &identity.last_listing,
         )?,
     )
 }
