@@ -184,6 +184,14 @@ describe("los puertos de firma sobre Tauri", () => {
     expect(invoke).toHaveBeenCalledWith("list_certificates");
   });
 
+  it("lists the stores that are not cards with its own command", async () => {
+    invoke.mockResolvedValue([]);
+
+    await tauriCertificateStore().listOtherThanCards();
+
+    expect(invoke).toHaveBeenCalledWith("list_certificates_other_than_cards");
+  });
+
   it("empties the rFirma store with its own command", async () => {
     invoke.mockResolvedValue(undefined);
 

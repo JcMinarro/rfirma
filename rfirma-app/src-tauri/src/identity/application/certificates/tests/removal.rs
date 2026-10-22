@@ -134,6 +134,7 @@ fn removing_refuses_a_handle_that_is_not_from_the_last_listing() {
         "00000000000000000000000000000000",
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect_err("no es de la ultima busqueda");
 
@@ -158,6 +159,7 @@ fn removing_refuses_a_certificate_from_somewhere_else() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect_err("no viene de un .p12 instalado");
 
@@ -183,6 +185,7 @@ fn removing_asks_the_keyring_for_the_pin_and_propagates_its_refusal() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect_err("sin PIN todavia no hay nada que quitar");
 
@@ -209,6 +212,7 @@ fn removing_propagates_the_token_refusal() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect_err("el token se ha negado");
 
@@ -236,6 +240,7 @@ fn removing_the_remembered_certificate_forgets_it() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect("deberia quitarse");
 
@@ -265,8 +270,34 @@ fn removing_a_different_certificate_leaves_the_remembered_one_alone() {
         &handle,
         &listed,
         &ListedCertificates::new(),
+        &crate::identity::application::readers::LastListing::default(),
     )
     .expect("deberia quitarse");
 
     assert_eq!(memory.remembered_certificate(), Some(remembered));
+}
+
+#[test]
+fn a_removed_p12_leaves_the_last_listing_at_once() {
+    let home = tempfile::tempdir().expect("deberia haber directorio temporal");
+    let installed = home.path().join("certificates");
+    let reference = an_installed_reference(&installed, 0x01);
+    let last = crate::identity::application::readers::LastListing::default();
+    last.keep(&[TokenCertificate::new(reference.clone(), Vec::new())]);
+    let listed = ListedCertificates::new();
+    let handle = listed.mint(reference);
+
+    remove_installed(
+        &RemovalOutcome(Ok(())),
+        &FixedPinKeyring("1234"),
+        &a_memory(home.path()),
+        &installed,
+        &handle,
+        &listed,
+        &ListedCertificates::new(),
+        &last,
+    )
+    .expect("deberia quitarse");
+
+    assert_eq!(last.found().map(|found| found.len()), Some(0));
 }

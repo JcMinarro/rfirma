@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use crate::documents::domain::handles::Handles;
-use crate::identity::application::readers::LastListing;
+use crate::identity::application::readers::{rows_marking_the_installed, LastListing};
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
 use crate::identity::domain::chain::issuers_of;
 use crate::identity::domain::copies::{copies_of_each_certificate, ChosenCopy};
@@ -60,24 +60,16 @@ pub fn listed_rows(
     memory: &dyn CertificateMemory,
     last: &LastListing,
 ) -> Result<Vec<ListedCertificate>, TokenError> {
-    let found = token.list_across(stores)?;
+    let found = with_their_chains(token, token.list_across(stores)?);
     last.keep(&found);
-    Ok(rows_keeping_handles(
-        on_the_desktop(found),
+    Ok(rows_marking_the_installed(
+        token,
+        found,
         installed_dir,
         listed,
         installed_copies,
         memory,
-    )
-    .into_iter()
-    .map(|mut row| {
-        row.installed = row.installed
-            || listed
-                .get(&row.id)
-                .is_some_and(|reference| token.installed_in_the_system(installed_dir, &reference));
-        row
-    })
-    .collect())
+    ))
 }
 
 /// Si rFirma instaló `reference` desde un `.p12`: en su Almacén o, donde instala el sistema, apuntado por el token.
@@ -95,10 +87,17 @@ pub fn certificates_with_their_chains(
     token: &dyn Token,
     stores: &[Store],
 ) -> Result<Vec<TokenCertificate>, TokenError> {
-    let found = holders_only(token.list_across(stores)?);
+    Ok(with_their_chains(
+        token,
+        holders_only(token.list_across(stores)?),
+    ))
+}
+
+/// Cada certificado con los emisores que su propio almacén aporta.
+pub fn with_their_chains(token: &dyn Token, found: Vec<TokenCertificate>) -> Vec<TokenCertificate> {
     let mut neighbours: HashMap<Store, Vec<TokenCertificate>> = HashMap::new();
 
-    Ok(found
+    found
         .into_iter()
         .map(|certificate| {
             let store = certificate.reference().store();
@@ -108,7 +107,7 @@ pub fn certificates_with_their_chains(
             let issuers = issuers_of(&certificate, in_the_store);
             certificate.with_its_issuers(issuers)
         })
-        .collect())
+        .collect()
 }
 
 /// Lo que se enseña en el escritorio: sin autoridades ni el de autenticación del DNIe, como AutoFirma.
@@ -422,6 +421,7 @@ pub fn remove_installed(
     handle: &str,
     listed: &ListedCertificates,
     installed_copies: &ListedCertificates,
+    last: &LastListing,
 ) -> Result<(), InstallError> {
     let reference = match installed_copies.get(handle) {
         Some(installed) => installed,
@@ -440,6 +440,7 @@ pub fn remove_installed(
         keyring.pin()?
     };
     token.remove_certificate(installed_dir, &reference, &pin)?;
+    last.forget(&reference);
     if memory.remembered_certificate().as_ref() == Some(&reference) {
         let _ = memory.forget_the_certificate();
     }

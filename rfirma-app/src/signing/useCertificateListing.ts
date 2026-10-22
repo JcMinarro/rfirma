@@ -49,6 +49,20 @@ export function useCertificateListing(store: CertificateStore) {
     [store],
   );
 
+  useEffect(() => {
+    const onFocus = () => {
+      const mine = ++latestListing.current;
+      store.listOtherThanCards().then(
+        (certificates) => {
+          if (mine === latestListing.current) setListing({ kind: "listed", certificates });
+        },
+        () => {},
+      );
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [store]);
+
   const installed = installedCertificates(listing.kind === "listed" ? listing.certificates : []);
 
   const install = useCallback(async () => {
