@@ -11,6 +11,7 @@ const onToken = anInstalledCertificate({ id: "token", stores: ["card"], installe
 function aStore(found: Certificate[], overrides: Partial<CertificateStore> = {}): CertificateStore {
   return {
     list: vi.fn(async () => [...found]),
+    listOtherThanCards: vi.fn(async () => [...found]),
     install: vi.fn(async () => false),
     remove: vi.fn(async () => {}),
     emptyStore: vi.fn(async () => {}),
@@ -119,6 +120,79 @@ describe("useCertificateListing", () => {
     await act(() => result.current.emptyStore());
 
     expect(result.current.listing).toEqual({ kind: "listed", certificates: [onToken] });
+  });
+});
+
+describe("useCertificateListing · el foco", () => {
+  it("lists only the stores that are not cards when the window regains focus, without a full listing", async () => {
+    const outside = anInstalledCertificate({ id: "outside", stores: ["macos"], installed: false });
+    const store = aStore([onToken], { listOtherThanCards: vi.fn(async () => [onToken, outside]) });
+    const { result } = await listed(store);
+
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    await waitFor(() =>
+      expect(result.current.listing).toEqual({
+        kind: "listed",
+        certificates: [onToken, outside],
+      }),
+    );
+    expect(store.listOtherThanCards).toHaveBeenCalledTimes(1);
+    expect(store.list).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the list it has when listing on focus fails", async () => {
+    const store = aStore([onToken], {
+      listOtherThanCards: async () => Promise.reject(new Error("sin llavero")),
+    });
+    const { result } = await listed(store);
+
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    expect(result.current.listing).toEqual({ kind: "listed", certificates: [onToken] });
+  });
+
+  it("leaves the first search alone when the window regains focus before it answers", async () => {
+    let answer: (found: Certificate[]) => void = () => {};
+    const store = aStore([], {
+      list: () => new Promise<Certificate[]>((resolve) => (answer = resolve)),
+      listOtherThanCards: vi.fn(async () => Promise.reject(new Error("sin llavero"))),
+    });
+    const { result } = renderHook(() => useCertificateListing(store));
+
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    await act(async () => answer([onToken]));
+
+    expect(result.current.listing).toEqual({ kind: "listed", certificates: [onToken] });
+    expect(store.listOtherThanCards).not.toHaveBeenCalled();
+  });
+
+  it("keeps what looking again brings when the window regains focus meanwhile", async () => {
+    let answer: (found: Certificate[]) => void = () => {};
+    const store = aStore([onToken], { listOtherThanCards: vi.fn(async () => [onToken]) });
+    const { result } = await listed(store);
+    store.list = () => new Promise<Certificate[]>((resolve) => (answer = resolve));
+
+    let looking = Promise.resolve();
+    act(() => {
+      looking = result.current.lookAgain();
+    });
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    await act(async () => {
+      answer([onToken, dnie]);
+      await looking;
+    });
+
+    expect(result.current.listing).toEqual({ kind: "listed", certificates: [onToken, dnie] });
+    expect(store.listOtherThanCards).not.toHaveBeenCalled();
   });
 });
 

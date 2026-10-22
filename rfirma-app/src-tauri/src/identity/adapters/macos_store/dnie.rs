@@ -57,6 +57,7 @@ struct Login {
     shown_attempts: Option<u8>,
     depth: usize,
     cut: Option<TokenError>,
+    last_read: Option<(Store, Vec<TokenCertificate>)>,
 }
 
 impl<O: CardOpener> DnieToken<O> {
@@ -133,30 +134,61 @@ impl<O: CardOpener> DnieToken<O> {
             .map_err(|error| token_error(&error))
     }
 
-    fn read(
-        &self,
-        store: &Store,
-        with_the_intermediate: bool,
-    ) -> Result<Vec<TokenCertificate>, TokenError> {
-        let mut session = match self.opener.open() {
-            Ok(session) => session,
-            Err(error) if is_no_readable_dnie(&error) => return Ok(Vec::new()),
-            Err(error) => return Err(token_error(&error)),
+    /// Titulares y CA intermedia en una sola sesión; todo lo leído se queda para la cadena del mismo listado.
+    fn read_holders(&self, store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
+        let Some(mut session) = self.open_if_readable()? else {
+            return Ok(Vec::new());
         };
-        let mut found: Vec<TokenCertificate> = session
-            .certificates()
-            .map_err(|error| token_error(&error))?
-            .into_iter()
-            .map(|certificate| in_the_store(store, &certificate.label, certificate.der))
-            .collect();
-        if with_the_intermediate {
-            let intermediate = session
-                .certificate(INTERMEDIATE_CA_LABEL)
-                .map_err(|error| token_error(&error))?;
-            found.extend(intermediate.map(|der| in_the_store(store, INTERMEDIATE_CA_LABEL, der)));
+        let holders = holders_of(store, &mut session)?;
+        let intermediate = session
+            .certificate(INTERMEDIATE_CA_LABEL)
+            .ok()
+            .flatten()
+            .map(|der| in_the_store(store, INTERMEDIATE_CA_LABEL, der));
+        self.login().last_read = intermediate.map(|intermediate| {
+            let mut every = holders.clone();
+            every.push(intermediate);
+            (store.clone(), every)
+        });
+        Ok(holders)
+    }
+
+    fn read_every_certificate(&self, store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
+        if let Some((kept, every)) = self.login().last_read.take() {
+            if &kept == store {
+                return Ok(every);
+            }
         }
+        let Some(mut session) = self.open_if_readable()? else {
+            return Ok(Vec::new());
+        };
+        let mut found = holders_of(store, &mut session)?;
+        let intermediate = session
+            .certificate(INTERMEDIATE_CA_LABEL)
+            .map_err(|error| token_error(&error))?;
+        found.extend(intermediate.map(|der| in_the_store(store, INTERMEDIATE_CA_LABEL, der)));
         Ok(found)
     }
+
+    fn open_if_readable(&self) -> Result<Option<Session<O::Card>>, TokenError> {
+        match self.opener.open() {
+            Ok(session) => Ok(Some(session)),
+            Err(error) if is_no_readable_dnie(&error) => Ok(None),
+            Err(error) => Err(token_error(&error)),
+        }
+    }
+}
+
+fn holders_of<T: Transport>(
+    store: &Store,
+    session: &mut Session<T>,
+) -> Result<Vec<TokenCertificate>, TokenError> {
+    Ok(session
+        .certificates()
+        .map_err(|error| token_error(&error))?
+        .into_iter()
+        .map(|certificate| in_the_store(store, &certificate.label, certificate.der))
+        .collect())
 }
 
 /// La versión de rdnie que fija `Cargo.lock`.
@@ -264,11 +296,11 @@ fn has_a_length_the_dnie_admits(secret: &ProtectedSecret) -> bool {
 
 impl<O: CardOpener> Token for DnieToken<O> {
     fn list(&self, store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
-        self.read(store, false)
+        self.read_holders(store)
     }
 
     fn every_certificate(&self, store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
-        self.read(store, true)
+        self.read_every_certificate(store)
     }
 
     fn list_authenticated(

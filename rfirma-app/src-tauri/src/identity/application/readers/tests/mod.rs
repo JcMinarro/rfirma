@@ -6,6 +6,7 @@ use crate::identity::application::certificates::listed_rows;
 use crate::identity::application::tests::{NoMemory, NoToken, TestAuthority};
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::CertificateRef;
+use crate::identity::domain::error::Situation;
 use crate::identity::domain::error::TokenError;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::StoreSecret;
@@ -550,3 +551,6 @@ fn another_card_on_macos_that_no_named_module_reads_is_unreadable() {
         vec![ReaderStatus::Reading, ReaderStatus::Unreadable]
     );
 }
+
+mod chosen;
+mod focus;

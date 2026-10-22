@@ -7,9 +7,11 @@ use std::thread::JoinHandle;
 use crate::desktop::domain::channel::Channel;
 use crate::desktop::domain::platform::Platform;
 use crate::identity::application::certificates::{
-    on_the_desktop, rows_keeping_handles, ListedCertificates,
+    listed_rows, on_the_desktop, rows_keeping_handles, usable_certificate, with_their_chains,
+    ListedCertificates,
 };
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
+use crate::identity::domain::error::TokenError;
 use crate::identity::domain::readers::{
     ready_card_among, status_of, Listing, Reader, ReaderStatus, ReadyCard,
 };
@@ -28,6 +30,32 @@ impl LastListing {
         *lock(&self.found) = Some(found.to_vec());
     }
 
+    /// El último listado completo, si ya hubo alguno.
+    pub fn found(&self) -> Option<Vec<TokenCertificate>> {
+        lock(&self.found).clone()
+    }
+
+    /// Saca del último listado el certificado que ya no está, sin abrir ningún almacén.
+    pub fn forget(&self, reference: &CertificateRef) {
+        if let Some(found) = lock(&self.found).as_mut() {
+            found.retain(|certificate| certificate.reference() != reference);
+        }
+    }
+
+    /// Guarda lo de los almacenes que no son de tarjeta junto con las tarjetas que tenga ahora, y lo devuelve.
+    fn replace_other_than_cards(
+        &self,
+        mut found: Vec<TokenCertificate>,
+        installed_dir: &Path,
+    ) -> Vec<TokenCertificate> {
+        let mut last = lock(&self.found);
+        if let Some(before) = last.as_deref() {
+            found.extend(only_on_a_card(before, installed_dir));
+        }
+        *last = Some(found.clone());
+        found
+    }
+
     /// Los certificados del último listado de los almacenes que no enseñan tarjetas, si ya hubo alguno.
     fn other_than_cards(&self, installed_dir: &Path) -> Option<Vec<TokenCertificate>> {
         lock(&self.found).as_ref().map(|found| {
@@ -38,6 +66,52 @@ impl LastListing {
                 .collect()
         })
     }
+}
+
+/// El certificado del asa, tomado del último listado; solo si no hay ninguno lista los almacenes y lo guarda (ADR-0011).
+pub fn chosen_from_the_last_listing(
+    token: &dyn Token,
+    stores: &[Store],
+    last: &LastListing,
+    listed: &ListedCertificates,
+    handle: &str,
+) -> Result<TokenCertificate, TokenError> {
+    let found = match last.found() {
+        Some(found) => found,
+        None => {
+            let found = with_their_chains(token, token.list_across(stores)?);
+            last.keep(&found);
+            found
+        }
+    };
+    usable_certificate(&found, handle, listed).cloned()
+}
+
+/// Las filas del escritorio de lo encontrado, con las asas conservadas y las instaladas marcadas.
+pub fn rows_marking_the_installed(
+    token: &dyn Token,
+    found: Vec<TokenCertificate>,
+    installed_dir: &Path,
+    listed: &ListedCertificates,
+    installed_copies: &ListedCertificates,
+    memory: &dyn CertificateMemory,
+) -> Vec<ListedCertificate> {
+    rows_keeping_handles(
+        on_the_desktop(found),
+        installed_dir,
+        listed,
+        installed_copies,
+        memory,
+    )
+    .into_iter()
+    .map(|mut row| {
+        row.installed = row.installed
+            || listed
+                .get(&row.id)
+                .is_some_and(|reference| token.installed_in_the_system(installed_dir, &reference));
+        row
+    })
+    .collect()
 }
 
 /// Si esta plataforma y este canal pueden vigilar lectores (ADR-0048).
@@ -100,6 +174,45 @@ pub struct CardListing<'a> {
     pub memory: &'a dyn CertificateMemory,
     /// El último listado completo.
     pub last: &'a LastListing,
+}
+
+impl CardListing<'_> {
+    /// Al recuperar el foco: abre solo los almacenes que no son de tarjeta y toma el resto del último listado.
+    pub fn relisted_other_than_cards(&self) -> Result<Vec<ListedCertificate>, TokenError> {
+        if self.last.found().is_none() {
+            return listed_rows(
+                self.token,
+                &self.stores,
+                self.installed_dir,
+                self.listed,
+                self.installed_copies,
+                self.memory,
+                self.last,
+            );
+        }
+        let others: Vec<Store> = self
+            .stores
+            .iter()
+            .filter(|store| store.class_under(self.installed_dir) != StoreClass::Card)
+            .cloned()
+            .collect();
+        let found = if others.is_empty() {
+            Vec::new()
+        } else {
+            with_their_chains(self.token, self.token.list_across(&others)?)
+        };
+        let found = self
+            .last
+            .replace_other_than_cards(found, self.installed_dir);
+        Ok(rows_marking_the_installed(
+            self.token,
+            found,
+            self.installed_dir,
+            self.listed,
+            self.installed_copies,
+            self.memory,
+        ))
+    }
 }
 
 impl Relisting for CardListing<'_> {
@@ -187,7 +300,7 @@ fn listed_in(token: &dyn Token, stores: &[Store]) -> Vec<TokenCertificate> {
     if stores.is_empty() {
         return Vec::new();
     }
-    token.list_across(stores).unwrap_or_default()
+    with_their_chains(token, token.list_across(stores).unwrap_or_default())
 }
 
 /// Si el almacén se vuelve a listar al cambiar los lectores: uno de tarjeta, o el de Windows o macOS, que copian las suyas.

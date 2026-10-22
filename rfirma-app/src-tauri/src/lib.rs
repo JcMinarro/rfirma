@@ -242,6 +242,7 @@ fn with_the_five_roots(
         })
         .invoke_handler(tauri::generate_handler![
             identity::adapters::tauri::list_certificates,
+            identity::adapters::tauri::list_certificates_other_than_cards,
             identity::adapters::tauri::read_card_readers,
             signing::adapters::tauri::begin_signing,
             signing::adapters::tauri::sign_with_pin,

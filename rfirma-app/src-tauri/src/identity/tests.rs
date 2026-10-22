@@ -8,10 +8,12 @@ use crate::identity::domain::keyring::KeyringError;
 use crate::identity::domain::secret::StoreSecret;
 use crate::signing::ports::Signer;
 
-/// Un token que solo recuerda con qué secreto se le pidió firmar o aceptar, y responde `reply` a `secret_of`.
+/// Un token que enseña `shows`, cuenta los listados, recuerda con qué secreto se le pidió firmar o aceptar y responde `reply` a `secret_of`.
 struct RecordingToken {
     reply: StoreSecret,
     received_secret: Mutex<Option<Vec<u8>>>,
+    shows: Vec<TokenCertificate>,
+    lists: Arc<AtomicUsize>,
 }
 
 impl RecordingToken {
@@ -19,6 +21,15 @@ impl RecordingToken {
         Self {
             reply,
             received_secret: Mutex::new(None),
+            shows: Vec::new(),
+            lists: Arc::new(AtomicUsize::new(0)),
+        }
+    }
+
+    fn showing(shows: Vec<TokenCertificate>) -> Self {
+        Self {
+            shows,
+            ..Self::replying(StoreSecret::TypedOnScreen)
         }
     }
 
@@ -29,7 +40,8 @@ impl RecordingToken {
 
 impl Token for RecordingToken {
     fn list(&self, _store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
-        Ok(Vec::new())
+        self.lists.fetch_add(1, Ordering::SeqCst);
+        Ok(self.shows.clone())
     }
 
     fn every_certificate(&self, _store: &Store) -> Result<Vec<TokenCertificate>, TokenError> {
@@ -315,4 +327,57 @@ fn accepting_the_secret_of_an_installed_certificate_also_uses_the_keyring_pin() 
 
     assert_eq!(token.received_secret(), Some(b"pin-del-llavero".to_vec()));
     assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+/// Un diálogo que ninguna de estas pruebas debería abrir.
+struct UnreachablePrompter;
+
+impl SecretPrompter for UnreachablePrompter {
+    fn prompt_secret(
+        &self,
+        _request: &ports::SecretPromptRequest,
+    ) -> Result<ProtectedSecret, ports::SecretPromptError> {
+        panic!("esta prueba no deberia pedir ningun secreto")
+    }
+}
+
+#[test]
+fn after_a_full_listing_the_chosen_certificate_opens_no_store() {
+    let installed = tempfile::tempdir().expect("directorio temporal");
+    let token = RecordingToken::showing(vec![crate::identity::application::tests::a_certificate(
+        "FIRMA",
+        &crate::identity::application::tests::TestAuthority::root("Firmante de pruebas").der(),
+    )]);
+    let lists = token.lists.clone();
+    let (keyring, _) = CountingKeyring::with_pin("pin");
+    let identity = IdentityRoot {
+        token: Box::new(token),
+        stores: vec![Store::module("/usr/lib/softhsm/libsofthsm2.so")],
+        installed_certificates: installed.path().to_path_buf(),
+        listed: ListedCertificates::new(),
+        installed_copies: ListedCertificates::new(),
+        last_listing: LastListing::default(),
+        reader_now: ReaderNow::default(),
+        memory: Arc::new(crate::identity::application::tests::NoMemory),
+        folder: Arc::new(adapters::folder::RealInstalledFolder),
+        prompter: Arc::new(UnreachablePrompter),
+        keyring: factory_of(keyring),
+    };
+    let handle = application::certificates::listed_rows(
+        identity.token.as_ref(),
+        &identity.all_stores(),
+        identity.installed_certificates(),
+        &identity.listed,
+        &identity.installed_copies,
+        identity.memory.as_ref(),
+        &identity.last_listing,
+    )
+    .expect("deberia listar")[0]
+        .id
+        .clone();
+    lists.store(0, Ordering::SeqCst);
+
+    identity.chosen(&handle).expect("esta en el ultimo listado");
+
+    assert_eq!(lists.load(Ordering::SeqCst), 0);
 }
