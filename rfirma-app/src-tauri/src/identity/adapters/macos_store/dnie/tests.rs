@@ -402,4 +402,5 @@ fn the_rdnie_version_is_the_one_in_the_lockfile() {
 mod failures;
 mod in_the_reader;
 mod prompting;
+mod removed_card;
 mod signing;
