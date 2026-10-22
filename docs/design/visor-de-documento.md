@@ -152,6 +152,12 @@ tiradores en las esquinas (`viewer.dragHandle`). **Firmando o firmado**: sin
 borde ni tiradores; ya no se mueve. Sin pastilla encima. Su nombre accesible es
 `viewer.signatureBox`.
 
+- **El asa solo se ve con el cursor sobre el recuadro**, sus tiradores o la
+  propia asa, y durante un arrastre o redimensionado aunque el cursor salga.
+  Oculta no es diana. El foco de teclado no la muestra; sin hover
+  (`@media (hover: none)`) se ve siempre. Aparece con un fundido corto, sin él
+  con `prefers-reduced-motion: reduce`. El recuadro recién nacido aparece sin
+  asa: el cursor de movimiento y los tiradores ya enseñan el gesto.
 - **Posición libre**, sin rejilla de nueve posiciones: la firma va donde lo dice
   el documento, normalmente bajo el nombre de la persona
   ([ADR-0006](../adr/0006-firma-visible-se-configura-sobre-el-documento.md)).

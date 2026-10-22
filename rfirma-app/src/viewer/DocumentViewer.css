@@ -164,6 +164,30 @@
   font-size: var(--thumbnail-size);
   font-weight: var(--rf-title-weight);
   white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--rf-duration-fast) var(--rf-easing);
+}
+
+/* Tiradores y asa son descendientes del recuadro; `:active` aguanta el gesto
+   aunque el cursor salga. El foco de teclado no la muestra. */
+.viewer__box:hover .viewer__handle,
+.viewer__box:active .viewer__handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .viewer__handle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer__handle {
+    transition: none;
+  }
 }
 
 /* Los cuatro tiradores de las esquinas (ID-103). El lado lo escribe el
