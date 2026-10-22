@@ -42,11 +42,18 @@ impl LastListing {
         }
     }
 
-    /// Los certificados del último listado que son de una tarjeta, si ya hubo alguno.
-    fn on_a_card(&self, installed_dir: &Path) -> Option<Vec<TokenCertificate>> {
-        lock(&self.found)
-            .as_ref()
-            .map(|found| only_on_a_card(found, installed_dir))
+    /// Guarda lo de los almacenes que no son de tarjeta junto con las tarjetas que tenga ahora, y lo devuelve.
+    fn replace_other_than_cards(
+        &self,
+        mut found: Vec<TokenCertificate>,
+        installed_dir: &Path,
+    ) -> Vec<TokenCertificate> {
+        let mut last = lock(&self.found);
+        if let Some(before) = last.as_deref() {
+            found.extend(only_on_a_card(before, installed_dir));
+        }
+        *last = Some(found.clone());
+        found
     }
 
     /// Los certificados del último listado de los almacenes que no enseñan tarjetas, si ya hubo alguno.
@@ -172,7 +179,7 @@ pub struct CardListing<'a> {
 impl CardListing<'_> {
     /// Al recuperar el foco: abre solo los almacenes que no son de tarjeta y toma el resto del último listado.
     pub fn relisted_other_than_cards(&self) -> Result<Vec<ListedCertificate>, TokenError> {
-        let Some(on_the_cards) = self.last.on_a_card(self.installed_dir) else {
+        if self.last.found().is_none() {
             return listed_rows(
                 self.token,
                 &self.stores,
@@ -182,20 +189,21 @@ impl CardListing<'_> {
                 self.memory,
                 self.last,
             );
-        };
+        }
         let others: Vec<Store> = self
             .stores
             .iter()
             .filter(|store| store.class_under(self.installed_dir) != StoreClass::Card)
             .cloned()
             .collect();
-        let mut found = if others.is_empty() {
+        let found = if others.is_empty() {
             Vec::new()
         } else {
             with_their_chains(self.token, self.token.list_across(&others)?)
         };
-        found.extend(on_the_cards);
-        self.last.keep(&found);
+        let found = self
+            .last
+            .replace_other_than_cards(found, self.installed_dir);
         Ok(rows_marking_the_installed(
             self.token,
             found,

@@ -22,15 +22,19 @@ export function useCertificateListing(store: CertificateStore) {
   const [listing, setListing] = useState<CertificateListing>({ kind: "loading" });
   const [reader, setReader] = useState<ReaderStatus>(UNAVAILABLE_READER);
   const latestListing = useRef(0);
+  const fullListingsUnderWay = useRef(0);
 
   const lookAgain = useCallback(async () => {
     const mine = ++latestListing.current;
+    fullListingsUnderWay.current++;
     setListing({ kind: "loading" });
     try {
       const certificates = await store.list();
       if (mine === latestListing.current) setListing({ kind: "listed", certificates });
     } catch (thrown) {
       if (mine === latestListing.current) setListing({ kind: "failed", failure: classify(thrown) });
+    } finally {
+      fullListingsUnderWay.current--;
     }
   }, [store]);
 
@@ -51,6 +55,7 @@ export function useCertificateListing(store: CertificateStore) {
 
   useEffect(() => {
     const onFocus = () => {
+      if (fullListingsUnderWay.current > 0) return;
       const mine = ++latestListing.current;
       store.listOtherThanCards().then(
         (certificates) => {
