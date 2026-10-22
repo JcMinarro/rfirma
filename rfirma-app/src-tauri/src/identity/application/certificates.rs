@@ -4,7 +4,9 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use crate::documents::domain::handles::Handles;
-use crate::identity::application::readers::{rows_marking_the_installed, LastListing};
+use crate::identity::application::readers::{
+    heard_across, rows_marking_the_installed, LastListing,
+};
 use crate::identity::domain::certificate::{CertificateRef, ListedCertificate, TokenCertificate};
 use crate::identity::domain::chain::issuers_of;
 use crate::identity::domain::copies::{copies_of_each_certificate, ChosenCopy};
@@ -13,6 +15,7 @@ use crate::identity::domain::holder::{
     common_name_of, given_name_and_surname, holder_of, is_pseudonym, is_representative,
 };
 use crate::identity::domain::keyring::KeyringError;
+use crate::identity::domain::listed::why_missing;
 use crate::identity::domain::protected_secret::ProtectedSecret;
 use crate::identity::domain::secret::{PinWarning, SecretName};
 use crate::identity::domain::store::{Store, StoreClass};
@@ -60,7 +63,7 @@ pub fn listed_rows(
     memory: &dyn CertificateMemory,
     last: &LastListing,
 ) -> Result<Vec<ListedCertificate>, TokenError> {
-    let found = with_their_chains(token, token.list_across(stores)?);
+    let found = with_their_chains(token, heard_across(token, stores, last)?);
     last.keep(&found);
     Ok(rows_marking_the_installed(
         token,
@@ -82,14 +85,15 @@ fn installed_by_rfirma(
         || token.installed_in_the_system(installed_dir, reference)
 }
 
-/// Los certificados de los almacenes, cada uno con los emisores que su propio almacén aporta.
+/// Los certificados de los almacenes, cada uno con los emisores que su propio almacén aporta; el error de los que no se abren queda en `last`.
 pub fn certificates_with_their_chains(
     token: &dyn Token,
     stores: &[Store],
+    last: &LastListing,
 ) -> Result<Vec<TokenCertificate>, TokenError> {
     Ok(with_their_chains(
         token,
-        holders_only(token.list_across(stores)?),
+        holders_only(heard_across(token, stores, last)?),
     ))
 }
 
@@ -494,9 +498,10 @@ pub fn forget_the_certificate(memory: &dyn CertificateMemory) {
     let _ = memory.forget_the_certificate();
 }
 
-/// Resuelve el certificado asociado a un asa en el listado actual.
+/// Resuelve el asa en el listado actual; si su certificado falta porque su almacén falló, da el error de ese almacén.
 pub fn certificate_behind<'a>(
     certificates: &'a [TokenCertificate],
+    failed: &[(Store, TokenError)],
     handle: &str,
     listed: &ListedCertificates,
 ) -> Result<&'a TokenCertificate, TokenError> {
@@ -504,21 +509,17 @@ pub fn certificate_behind<'a>(
     certificates
         .iter()
         .find(|certificate| certificate.reference() == &wanted)
-        .ok_or_else(|| {
-            TokenError::new(
-                Situation::CertificateNotFound,
-                format!("el token ya no tiene {}", wanted.label()),
-            )
-        })
+        .ok_or_else(|| why_missing(failed, &wanted))
 }
 
 /// Verifica la existencia y vigencia del certificado solicitado antes de firmar.
 pub fn usable_certificate<'a>(
     certificates: &'a [TokenCertificate],
+    failed: &[(Store, TokenError)],
     handle: &str,
     listed: &ListedCertificates,
 ) -> Result<&'a TokenCertificate, TokenError> {
-    let chosen = certificate_behind(certificates, handle, listed)?;
+    let chosen = certificate_behind(certificates, failed, handle, listed)?;
     let status = chosen.status();
     if !status.is_usable() {
         return Err(TokenError::new(

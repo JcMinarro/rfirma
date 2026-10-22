@@ -72,6 +72,7 @@ impl IdentityRoot {
         application::certificates::certificates_with_their_chains(
             self.token.as_ref(),
             &self.all_stores(),
+            &self.last_listing,
         )
     }
 
@@ -117,7 +118,12 @@ impl IdentityRoot {
         found: &'a [TokenCertificate],
         handle: &str,
     ) -> Result<&'a TokenCertificate, TokenError> {
-        application::certificates::usable_certificate(found, handle, &self.listed)
+        application::certificates::usable_certificate(
+            found,
+            &self.last_listing.failures(),
+            handle,
+            &self.listed,
+        )
     }
 
     /// El certificado del asa, tomado del último listado y comprobado antes de usarlo.

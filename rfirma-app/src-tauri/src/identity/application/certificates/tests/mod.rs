@@ -44,7 +44,7 @@ fn refuses_a_certificate_that_is_no_longer_in_the_token() {
     let certificates = [a_certificate("FIRMA", &[])];
     let (listed, handles) = listed_from(&certificates);
 
-    let failure = usable_certificate(&[], &handles[0], &listed).expect_err("ya no esta");
+    let failure = usable_certificate(&[], &[], &handles[0], &listed).expect_err("ya no esta");
 
     assert_eq!(failure.situation(), Situation::CertificateNotFound);
     assert!(failure.detail().contains("FIRMA"), "{}", failure.detail());
@@ -54,7 +54,7 @@ fn refuses_a_certificate_that_is_no_longer_in_the_token() {
 fn refuses_a_handle_that_is_not_from_the_last_listing() {
     let listed = ListedCertificates::new();
 
-    let failure = usable_certificate(&[], "00000000000000000000000000000000", &listed)
+    let failure = usable_certificate(&[], &[], "00000000000000000000000000000000", &listed)
         .expect_err("no es de la ultima busqueda");
 
     assert_eq!(failure.situation(), Situation::CertificateNotFound);
@@ -86,8 +86,8 @@ fn two_certificates_with_the_same_label_are_two_rows_chosen_apart() {
     );
 
     assert_eq!(rows.len(), 2);
-    let first = certificate_behind(&certificates, &rows[0].id, &listed).expect("el primero");
-    let second = certificate_behind(&certificates, &rows[1].id, &listed).expect("el segundo");
+    let first = certificate_behind(&certificates, &[], &rows[0].id, &listed).expect("el primero");
+    let second = certificate_behind(&certificates, &[], &rows[1].id, &listed).expect("el segundo");
     assert_eq!(first.reference().cka_id(), Some([0x04].as_slice()));
     assert_eq!(second.reference().cka_id(), Some([0x05].as_slice()));
 }
@@ -98,7 +98,7 @@ fn looks_at_the_status_again_between_listing_and_signing() {
     let (listed, handles) = listed_from(&certificates);
 
     let failure =
-        usable_certificate(&certificates, &handles[0], &listed).expect_err("no es legible");
+        usable_certificate(&certificates, &[], &handles[0], &listed).expect_err("no es legible");
 
     assert_eq!(failure.situation(), Situation::CertificateNotFound);
     assert!(
@@ -348,8 +348,9 @@ fn a_certificate_carries_the_issuer_that_its_own_store_has() {
         signable,
     );
 
-    let found = certificates_with_their_chains(&token, &[Store::module(CARD)])
-        .expect("el almacen deberia listarse");
+    let found =
+        certificates_with_their_chains(&token, &[Store::module(CARD)], &LastListing::default())
+            .expect("el almacen deberia listarse");
 
     assert_eq!(found[0].chain(), vec![signer.der(), authority.der()]);
 }
@@ -364,11 +365,12 @@ fn an_authority_is_never_offered_even_when_its_store_hands_it_over_as_signable()
     let token = StoresWith::holding(signable.clone(), signable);
     let stores = [Store::module(CARD)];
 
-    let offered: Vec<String> = certificates_with_their_chains(&token, &stores)
-        .expect("el almacen deberia listarse")
-        .iter()
-        .map(|certificate| certificate.reference().label().to_owned())
-        .collect();
+    let offered: Vec<String> =
+        certificates_with_their_chains(&token, &stores, &LastListing::default())
+            .expect("el almacen deberia listarse")
+            .iter()
+            .map(|certificate| certificate.reference().label().to_owned())
+            .collect();
     let rows: Vec<String> = listed_rows(
         &token,
         &stores,
@@ -395,8 +397,9 @@ fn a_certificate_alone_in_its_store_goes_with_nothing_behind() {
     let signable = vec![a_certificate_in(CARD, "FIRMA", &signer.der())];
     let token = StoresWith::holding(signable.clone(), signable);
 
-    let found = certificates_with_their_chains(&token, &[Store::module(CARD)])
-        .expect("el almacen deberia listarse");
+    let found =
+        certificates_with_their_chains(&token, &[Store::module(CARD)], &LastListing::default())
+            .expect("el almacen deberia listarse");
 
     assert_eq!(found[0].chain(), vec![signer.der()]);
 }
@@ -415,9 +418,12 @@ fn the_issuer_of_another_store_does_not_complete_the_chain() {
         signable,
     );
 
-    let found =
-        certificates_with_their_chains(&token, &[Store::module(CARD), Store::module(INSTALLED)])
-            .expect("los almacenes deberian listarse");
+    let found = certificates_with_their_chains(
+        &token,
+        &[Store::module(CARD), Store::module(INSTALLED)],
+        &LastListing::default(),
+    )
+    .expect("los almacenes deberian listarse");
 
     assert_eq!(found[0].chain(), vec![signer.der()]);
 }
@@ -437,8 +443,12 @@ fn an_installed_p12_signs_with_the_chain_that_came_inside_it() {
         signable,
     );
 
-    let found = certificates_with_their_chains(&token, &[Store::module(INSTALLED)])
-        .expect("el almacen instalado deberia listarse");
+    let found = certificates_with_their_chains(
+        &token,
+        &[Store::module(INSTALLED)],
+        &LastListing::default(),
+    )
+    .expect("el almacen instalado deberia listarse");
 
     assert_eq!(found[0].chain(), vec![signer.der(), authority.der()]);
 }
@@ -451,8 +461,9 @@ fn a_store_that_cannot_be_opened_leaves_the_signer_alone_instead_of_stopping_the
     let signable = vec![a_certificate_in(CARD, "FIRMA", &signer.der())];
     let token = StoresWith::a_store_that_cannot_be_opened(signable);
 
-    let found = certificates_with_their_chains(&token, &[Store::module(CARD)])
-        .expect("el listado sigue aunque no se puedan mirar las autoridades");
+    let found =
+        certificates_with_their_chains(&token, &[Store::module(CARD)], &LastListing::default())
+            .expect("el listado sigue aunque no se puedan mirar las autoridades");
 
     assert_eq!(found[0].chain(), vec![signer.der()]);
 }

@@ -343,6 +343,7 @@ pub(crate) fn an_installed_certificate(installed: &Path) -> TokenCertificate {
     certificates::certificates_with_their_chains(
         &pkcs11::RealToken,
         &pkcs11::stores::installed_stores(&softoken, installed),
+        &rfirma_lib::identity::application::readers::LastListing::default(),
     )
     .expect("el almacen del .p12 deberia listarse")
     .into_iter()

@@ -15,6 +15,7 @@ use rsa::traits::PublicKeyParts;
 use super::{dnie_store, seen_dnie, CardOpener, DnieToken};
 use crate::identity::adapters::macos_store::MacosToken;
 use crate::identity::application::certificates::{certificates_with_their_chains, on_the_desktop};
+use crate::identity::application::readers::LastListing;
 use crate::identity::application::tests::a_dnie_der;
 use crate::identity::domain::certificate::TokenCertificate;
 use crate::identity::domain::seen_dnie::DnieInTheReader;
@@ -235,8 +236,9 @@ fn the_intermediate_ca_completes_the_chain_of_both_certificates_for_a_site() {
         let police = OfThePolice::new();
         let dnie = police.clone().in_the(card);
 
-        let offered = certificates_with_their_chains(&dnie, &[dnie_store()])
-            .expect("el DNIe deberia listarse");
+        let offered =
+            certificates_with_their_chains(&dnie, &[dnie_store()], &LastListing::default())
+                .expect("el DNIe deberia listarse");
 
         assert_eq!(
             labels_of(&offered),
@@ -264,8 +266,9 @@ fn a_full_listing_with_holders_and_chain_opens_the_card_once() {
             police.on(card())
         });
 
-        let offered = certificates_with_their_chains(&dnie, &[dnie_store()])
-            .expect("el DNIe deberia listarse");
+        let offered =
+            certificates_with_their_chains(&dnie, &[dnie_store()], &LastListing::default())
+                .expect("el DNIe deberia listarse");
 
         assert_eq!(offered.len(), 2, "{version}");
         assert_eq!(opened.load(Ordering::SeqCst), 1, "{version}");
@@ -282,8 +285,10 @@ fn the_chain_of_a_later_listing_is_read_from_the_card_again() {
         police.on(EmulatedDnie::dnie_3())
     });
 
-    certificates_with_their_chains(&dnie, &[dnie_store()]).expect("el DNIe deberia listarse");
-    certificates_with_their_chains(&dnie, &[dnie_store()]).expect("el DNIe deberia listarse");
+    certificates_with_their_chains(&dnie, &[dnie_store()], &LastListing::default())
+        .expect("el DNIe deberia listarse");
+    certificates_with_their_chains(&dnie, &[dnie_store()], &LastListing::default())
+        .expect("el DNIe deberia listarse");
 
     assert_eq!(opened.load(Ordering::SeqCst), 2);
 }

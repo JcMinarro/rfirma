@@ -511,6 +511,7 @@ fn a_certificate_from_a_p12_carries_the_authority_that_came_inside_it() {
     let found = certificates::certificates_with_their_chains(
         &pkcs11::RealToken,
         &installed_stores(installed.path()),
+        &rfirma_lib::identity::application::readers::LastListing::default(),
     )
     .expect("el almacen del .p12 deberia listarse");
 

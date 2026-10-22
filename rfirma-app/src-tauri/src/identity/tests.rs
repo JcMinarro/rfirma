@@ -8,6 +8,8 @@ use crate::identity::domain::keyring::KeyringError;
 use crate::identity::domain::secret::StoreSecret;
 use crate::signing::ports::Signer;
 
+mod relisting;
+
 /// Un token que enseña `shows`, cuenta los listados, recuerda con qué secreto se le pidió firmar o aceptar y responde `reply` a `secret_of`.
 struct RecordingToken {
     reply: StoreSecret,

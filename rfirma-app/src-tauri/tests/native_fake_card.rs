@@ -12,6 +12,7 @@ use rfirma_lib::desktop::ports::CertificateFilter;
 use rfirma_lib::identity::adapters::pkcs11;
 use rfirma_lib::identity::adapters::pkcs11::RealToken;
 use rfirma_lib::identity::application::certificates::certificates_with_their_chains;
+use rfirma_lib::identity::application::readers::LastListing;
 use rfirma_lib::identity::domain::certificate::TokenCertificate;
 use rfirma_lib::identity::domain::store::Store;
 use rfirma_lib::signing::application::cycle::ALGORITHM;
@@ -34,8 +35,12 @@ fn signing_certificate_of(card: &FakeCard) -> TokenCertificate {
 
 /// Lo que el filtro del original deja de la tarjeta, el mismo motor para una sede y para la línea de órdenes.
 fn offered_under(card: &FakeCard, expression: &str) -> Vec<String> {
-    let candidates = certificates_with_their_chains(&RealToken, &[Store::module(card.module())])
-        .expect("la tarjeta falsa debería listarse");
+    let candidates = certificates_with_their_chains(
+        &RealToken,
+        &[Store::module(card.module())],
+        &LastListing::default(),
+    )
+    .expect("la tarjeta falsa debería listarse");
     let filter = site_filter(&[("filters".to_owned(), expression.to_owned())]);
     let mut labels: Vec<String> = NativeFilter
         .accepted(&filter, candidates)
@@ -102,6 +107,7 @@ mod the_site_window {
         certificates_with_their_chains, rows_keeping_handles, rows_of, usable_certificate,
         ListedCertificates,
     };
+    use rfirma_lib::identity::application::readers::LastListing;
     use rfirma_lib::identity::domain::certificate::{
         CertificateRef, ListedCertificate, TokenCertificate,
     };
@@ -168,7 +174,11 @@ mod the_site_window {
     // La selección de certificado no firma: el resto del puerto único no lo usa esta prueba.
     impl Neighbours for OnTheFakeCard {
         fn listed(&self) -> Result<Vec<TokenCertificate>, TokenError> {
-            certificates_with_their_chains(&RealToken, std::slice::from_ref(&self.store))
+            certificates_with_their_chains(
+                &RealToken,
+                std::slice::from_ref(&self.store),
+                &LastListing::default(),
+            )
         }
 
         fn rows_of(&self, found: Vec<TokenCertificate>) -> Vec<ListedCertificate> {
@@ -190,7 +200,7 @@ mod the_site_window {
             found: &'a [TokenCertificate],
             handle: &str,
         ) -> Result<&'a TokenCertificate, TokenError> {
-            usable_certificate(found, handle, &self.listed)
+            usable_certificate(found, &[], handle, &self.listed)
         }
 
         fn automatic_selection_honoured(&self) -> bool {
