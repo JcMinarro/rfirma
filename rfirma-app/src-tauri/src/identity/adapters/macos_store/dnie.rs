@@ -253,7 +253,8 @@ fn token_error(error: &rdnie::Error) -> TokenError {
         rdnie::Error::CardRemoved
         | rdnie::Error::CardReset
         | rdnie::Error::NoCard
-        | rdnie::Error::NoReader => Situation::TokenAbsent,
+        | rdnie::Error::NoReader
+        | rdnie::Error::Transport(_) => Situation::TokenAbsent,
         _ => Situation::Unknown,
     };
     TokenError::new(situation, error.to_string())

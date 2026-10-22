@@ -374,6 +374,19 @@ fn says_the_rdnie_error_of_a_dnie_that_fails_while_opening() {
 }
 
 #[test]
+fn a_card_that_does_not_respond_is_an_absent_token_with_the_message_of_rdnie() {
+    let message = "The smart card is not responding to a reset";
+
+    let error = super::token_error(&rdnie::Error::Transport(message.to_owned()));
+
+    assert_eq!(
+        error.situation(),
+        crate::identity::domain::error::Situation::TokenAbsent
+    );
+    assert!(error.detail().contains(message), "{error}");
+}
+
+#[test]
 fn the_rdnie_version_is_the_one_in_the_lockfile() {
     assert!(
         super::RDNIE_VERSION.starts_with("0."),
