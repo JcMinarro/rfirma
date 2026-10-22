@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use super::super::{remember_the_certificate, remove_installed, InstallError, ListedCertificates};
+use super::super::{
+    remember_the_certificate, remove_installed, InstallError, ListedCertificates, RemovalListing,
+};
 use crate::identity::application::tests::a_certificate;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -132,9 +134,11 @@ fn removing_refuses_a_handle_that_is_not_from_the_last_listing() {
         &a_memory(home.path()),
         &home.path().join("certificates"),
         "00000000000000000000000000000000",
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect_err("no es de la ultima busqueda");
 
@@ -157,9 +161,11 @@ fn removing_refuses_a_certificate_from_somewhere_else() {
         &a_memory(home.path()),
         &home.path().join("certificates"),
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect_err("no viene de un .p12 instalado");
 
@@ -183,9 +189,11 @@ fn removing_asks_the_keyring_for_the_pin_and_propagates_its_refusal() {
         &a_memory(home.path()),
         &installed,
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect_err("sin PIN todavia no hay nada que quitar");
 
@@ -210,9 +218,11 @@ fn removing_propagates_the_token_refusal() {
         &a_memory(home.path()),
         &installed,
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect_err("el token se ha negado");
 
@@ -238,9 +248,11 @@ fn removing_the_remembered_certificate_forgets_it() {
         &memory,
         &installed,
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect("deberia quitarse");
 
@@ -268,9 +280,11 @@ fn removing_a_different_certificate_leaves_the_remembered_one_alone() {
         &memory,
         &installed,
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect("deberia quitarse");
 
@@ -293,9 +307,11 @@ fn a_removed_p12_leaves_the_last_listing_at_once() {
         &a_memory(home.path()),
         &installed,
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &last,
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &last,
+        },
     )
     .expect("deberia quitarse");
 

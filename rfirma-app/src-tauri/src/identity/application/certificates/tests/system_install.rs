@@ -1,7 +1,9 @@
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use super::super::{install_pkcs12, remove_installed, InstallError, ListedCertificates};
+use super::super::{
+    install_pkcs12, remove_installed, InstallError, ListedCertificates, RemovalListing,
+};
 use crate::identity::application::tests::NoToken;
 use crate::identity::domain::algorithm::SignatureAlgorithm;
 use crate::identity::domain::certificate::{CertificateRef, TokenCertificate};
@@ -219,9 +221,11 @@ fn removing_a_macos_store_certificate_asks_the_system_and_forgets_it() {
         &memory,
         &home.path().join("certificates"),
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     );
 
     assert_eq!(removed, Ok(()));
@@ -242,9 +246,11 @@ fn a_macos_store_certificate_rfirma_did_not_install_is_not_removed() {
         &a_memory(home.path()),
         &home.path().join("certificates"),
         &handle,
-        &listed,
-        &ListedCertificates::new(),
-        &crate::identity::application::readers::LastListing::default(),
+        RemovalListing {
+            listed: &listed,
+            installed_copies: &ListedCertificates::new(),
+            last: &crate::identity::application::readers::LastListing::default(),
+        },
     )
     .expect_err("no lo instalo rFirma");
 

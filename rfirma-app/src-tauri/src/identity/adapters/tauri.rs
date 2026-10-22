@@ -129,9 +129,11 @@ pub fn remove_certificate(id: String, identity: State<'_, IdentityRoot>) -> Resu
             identity.memory.as_ref(),
             identity.installed_certificates(),
             &id,
-            &identity.listed,
-            &identity.installed_copies,
-            &identity.last_listing,
+            crate::identity::application::certificates::RemovalListing {
+                listed: &identity.listed,
+                installed_copies: &identity.installed_copies,
+                last: &identity.last_listing,
+            },
         )?,
     )
 }

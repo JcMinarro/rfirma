@@ -412,6 +412,16 @@ fn only_supported_keys(
     Ok(())
 }
 
+/// El último listado donde se busca el asa que se quita y del que se borra.
+pub struct RemovalListing<'a> {
+    /// Las filas del último listado.
+    pub listed: &'a ListedCertificates,
+    /// La copia instalada de cada fila que tenga una.
+    pub installed_copies: &'a ListedCertificates,
+    /// El último listado completo.
+    pub last: &'a LastListing,
+}
+
 /// Quita un certificado del Almacén de rFirma: lo borra, con su clave, de la base única (ADR-0034).
 pub fn remove_installed(
     token: &dyn Token,
@@ -419,13 +429,14 @@ pub fn remove_installed(
     memory: &dyn CertificateMemory,
     installed_dir: &Path,
     handle: &str,
-    listed: &ListedCertificates,
-    installed_copies: &ListedCertificates,
-    last: &LastListing,
+    listing: RemovalListing<'_>,
 ) -> Result<(), InstallError> {
-    let reference = match installed_copies.get(handle) {
+    let reference = match listing.installed_copies.get(handle) {
         Some(installed) => installed,
-        None => listed.get(handle).ok_or_else(not_from_the_last_listing)?,
+        None => listing
+            .listed
+            .get(handle)
+            .ok_or_else(not_from_the_last_listing)?,
     };
     if !installed_by_rfirma(token, installed_dir, &reference) {
         return Err(TokenError::new(
@@ -440,7 +451,7 @@ pub fn remove_installed(
         keyring.pin()?
     };
     token.remove_certificate(installed_dir, &reference, &pin)?;
-    last.forget(&reference);
+    listing.last.forget(&reference);
     if memory.remembered_certificate().as_ref() == Some(&reference) {
         let _ = memory.forget_the_certificate();
     }
