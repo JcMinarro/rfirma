@@ -4,7 +4,7 @@
 # solo si alguno le concierne. Sin ficheros, corren todos.
 #
 # Uso: ci-lanes.sh [--platform-files FICHERO] [--no-platforms] [--force windows|macos]...
-#   --platform-files  la salida de scripts/platform-files.sh: rutas exactas y prefijos con '/'
+#   --platform-files  la salida de scripts/platform-files.sh: `plataforma ruta`, exacta o prefijo con '/'
 #   --no-platforms    windows y macos no corren, sean cuales sean los ficheros (push a main)
 #   --force           el carril corre, sean cuales sean los ficheros (etiqueta del PR)
 set -euo pipefail
@@ -104,12 +104,14 @@ native_ignores() {
     return 1
 }
 
-only_one_platform_compiles() {
-    local entry
+has_cfg_of() {
+    local platform="$1" file="$2" entry
     for entry in "${platform_files[@]}"; do
+        [ "${entry%% *}" = "$platform" ] || continue
+        entry="${entry#* }"
         case "$entry" in
-            */) [[ "$1" == "$entry"* ]] && return 0 ;;
-            *) [ "$1" = "$entry" ] && return 0 ;;
+            */) [[ "$file" == "$entry"* ]] && return 0 ;;
+            *) [ "$file" = "$entry" ] && return 0 ;;
         esac
     done
     return 1
@@ -117,27 +119,25 @@ only_one_platform_compiles() {
 
 every_platform_needs() {
     case "$1" in
-        rfirma-app/src-tauri/Cargo.toml | rfirma-app/src-tauri/Cargo.lock | rfirma-app/src-tauri/build.rs) return 0 ;;
-        rfirma-app/src-tauri/tauri.conf.json | rfirma-app/src-tauri/clippy.toml) return 0 ;;
-        justfile | versions.env | .github/*) return 0 ;;
-        scripts/ci-lanes.sh | scripts/platform-files.sh) return 0 ;;
+        rfirma-app/src-tauri/Cargo.toml | rfirma-app/src-tauri/build.rs | versions.env) return 0 ;;
+        .github/workflows/platforms.yml | .github/actions/setup-runner/*) return 0 ;;
         scripts/bootstrap.sh | scripts/pinned-version.sh | scripts/install-tools.sh) return 0 ;;
     esac
-    only_one_platform_compiles "$1"
+    return 1
 }
 
 windows_needs() {
     case "$1" in
         packaging/windows/* | rfirma-app/src-tauri/windows-app-manifest.xml | rfirma-app/src-tauri/vcpkg.json) return 0 ;;
     esac
-    every_platform_needs "$1"
+    every_platform_needs "$1" || has_cfg_of windows "$1"
 }
 
 macos_needs() {
     case "$1" in
         packaging/macos/*) return 0 ;;
     esac
-    every_platform_needs "$1"
+    every_platform_needs "$1" || has_cfg_of macos "$1"
 }
 
 lanes=(java web rust native landing)
