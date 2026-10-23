@@ -41,7 +41,7 @@ DGP ni OpenSC son una vía fiable en Apple Silicon. Por eso:
 
 - **El DNIe 3.0 y 4.0 por contacto lo lee rFirma por PC/SC con rdnie**, el driver propio del
   proyecto: certificados sin PIN, intentos restantes antes de pedirlo y firma del resumen en la
-  tarjeta, todo en Rust (ADR-0001). Si un módulo PKCS#11 ve también el DNIe, gana rdnie.
+  tarjeta, todo en Rust (ADR-0001). Su convivencia con los módulos PKCS#11, en el ADR-0048.
 - **Cualquier otra tarjeta solo entra por PKCS#11 si `RFIRMA_PKCS11_MODULE` nombra su módulo.**
   Sin él, la línea del lector da el mensaje genérico de tarjeta ilegible, y la variable se
   explica en la documentación.

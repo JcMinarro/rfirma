@@ -77,3 +77,35 @@ los de clase tarjeta. Windows no retira esas copias al sacar la tarjeta
 el proveedor de tarjeta solo se lista si el KSP de tarjeta lo enseña en ese
 momento, leído sin abrir la clave ni pedir el PIN. «Ilegible» es una tarjeta
 presente que no aporta ningún certificado de clase tarjeta (ADR-0035).
+
+## Enmienda: en Linux y macOS, el DNIe 3.0 y 4.0 lo lee rdnie
+
+AutoFirma lee el DNIe con JMulticard antes que con cualquier módulo PKCS#11, en
+las tres plataformas. rFirma hace lo mismo en Linux y macOS con rdnie, el port
+de JMulticard a Rust. JMulticard no cabe en rFirma: `javax.smartcardio` exige una
+biblioteca nativa del JDK (ADR-0004), y firmar con él llevaría el PIN y la clave
+a Java (ADR-0001).
+
+1. **rdnie reclama el DNIe 3.0 y 4.0 por su ATR.** Las demás tarjetas siguen
+   por PKCS#11.
+2. **No se abre la ranura PKCS#11 del lector donde está un DNIe reclamado**, para
+   que OpenSC no abra su canal seguro con la tarjeta mientras lo usa rdnie. Si
+   aun así el mismo certificado llega por los dos caminos, se lista una vez y
+   se firma por rdnie.
+3. **Un DNIe en el lector no saca de la lista a las demás tarjetas.** AutoFirma,
+   al encontrar un DNIe, no carga ningún módulo PKCS#11. rFirma no hace eso,
+   porque cada almacén se abre por separado.
+4. **Un fallo de rdnie no se reintenta por OpenSC**: gastaría otro intento del
+   PIN (ADR-0047). El fallo se muestra tal cual.
+
+**El DNIe 1.0 y 2.0 no se soportan.** JMulticard los lee y rdnie no. Dejaron de
+expedirse en 2015, con la llegada del 3.0, y un DNIe caduca como mucho a los
+diez años: solo siguen vigentes los permanentes, cuyos certificados caducan de
+todos modos. Tampoco hay tarjeta con la que probarlos. Si OpenSC lee uno, entra
+por PKCS#11 como cualquier otra tarjeta, sin garantía de rFirma. **Esta parte se
+revisa** cuando alguien con un DNIe 1.0 o 2.0 pueda probarlo: rdnie le añadiría
+soporte experimental, y rFirma lo reclamaría como al 3.0 y al 4.0.
+
+Quedan dos diferencias con AutoFirma. En Windows, el DNIe sigue entrando por su
+minidriver (ADR-0035). Las tarjetas CERES de la FNMT, que AutoFirma también lee
+con JMulticard, van por PKCS#11.

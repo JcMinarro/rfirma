@@ -56,7 +56,7 @@ cancelado por la persona.
 
 ## El DNIe por rdnie da los intentos restantes exactos
 
-En macOS el DNIe no va por PKCS#11 sino por rdnie (ADR-0040), que lee los
+En Linux y macOS el DNIe 3.0 y 4.0 no va por PKCS#11 sino por rdnie (ADR-0048), que lee los
 intentos restantes con un VERIFY sin PIN, sin gastar ninguno. Ahí las reglas 1,
 3 y 4 se cumplen con el número exacto: con cero no hay diálogo y el caso de uso
 termina como PIN bloqueado; con más, el diálogo dice siempre cuántos quedan, y
@@ -67,10 +67,10 @@ PIN y no lo envía si han cambiado: eso corta el ciclo como cualquier otro fallo
 ## Por qué PKCS#11 no da un número exacto
 
 PKCS#11 no tiene contador de reintentos: solo las tres banderas de la regla 3 y
-la de bloqueo, y cada módulo enciende las que quiere. Con el DNIe por OpenSC
-ninguna existe antes de un fallo, y tras él solo en el proceso que falló
-(`docs/research/dnie-en-linux.md`): el primer PIN de cada trámite se pide
-siempre sin señales, y el bloqueo no se recuerda entre trámites. Un número de
+la de bloqueo, y cada módulo enciende las que quiere. OpenSC no enciende ninguna
+con el DNIe antes de un fallo, y tras él solo en el proceso que falló
+(`docs/research/dnie-en-linux.md`): el primer PIN de cada trámite se pediría
+sin señales. Por eso el DNIe va por rdnie y no por OpenSC. Un número de
 intentos inventado a partir de lo que rFirma ha visto sería falso en cuanto la
 tarjeta se usara con otro programa, así que no se da.
 
@@ -89,8 +89,6 @@ el camino feliz: nunca se teclea un PIN erróneo a propósito.
 
 - Una tarjeta que declara el PIN bloqueado nunca recibe un `C_Login` de rFirma,
   ni al pedir el PIN ni justo antes de enviarlo.
-- El DNIe por OpenSC no se beneficia de la regla 1 en el primer intento de un
-  trámite: no da la señal hasta fallar. Lo cubren las reglas 3 y 9.
 - Lo que el módulo falso imita es lo medido, no la tarjeta: si OpenSC o el DNIe
   cambian de conducta, el falso miente hasta que se vuelva a medir.
 
