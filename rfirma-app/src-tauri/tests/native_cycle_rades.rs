@@ -143,3 +143,36 @@ fn a_rades_cades_with_the_ec_certificate_validates_in_the_bridge_and_in_openssl(
     assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
     the_original_validator_accepts(&signature);
 }
+
+const THE_AGE_POLICY: [(&str, &str); 4] = [
+    ("policyIdentifier", "urn:oid:2.16.724.1.3.1.1.2.1.9"),
+    ("policyIdentifierHash", "G7roucf600+f03r/o0bAOQ6WAs0="),
+    (
+        "policyIdentifierHashAlgorithm",
+        "http://www.w3.org/2000/09/xmldsig#sha1",
+    ),
+    (
+        "policyQualifier",
+        "https://sede.administracion.gob.es/politica_de_firma_anexo_1.pdf",
+    ),
+];
+
+#[test]
+#[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
+fn a_rades_cades_under_the_age_policy_carries_the_policy_and_the_data_and_validates() {
+    let signed = a_rades_signed_by(
+        Format::Cades,
+        &signing_certificate(),
+        cycle::ALGORITHM,
+        &THE_AGE_POLICY,
+    );
+    let signature = write_to_target("rades-cades-politica-age.p7s", &signed);
+
+    let decoded = rades::cades::decode(&signed).expect("rades lee su CAdES");
+    assert_eq!(
+        decoded.signers()[0].signature_policy(),
+        Some(&rades::SignaturePolicy::age_v1_9())
+    );
+    assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
+    the_original_validator_accepts(&signature);
+}

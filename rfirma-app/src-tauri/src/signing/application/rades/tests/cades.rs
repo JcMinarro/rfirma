@@ -293,3 +293,135 @@ fn sha1_is_refused_in_a_cades_with_the_algorithm_name() {
 
     assert!(matches!(&refused, BridgeError::NotSupported(what) if what == "SHA1withRSA"));
 }
+
+const A_POLICY: &str = "policyIdentifier=urn:oid:1.2.3.4.5\n\
+    policyIdentifierHash=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8\\=\n\
+    policyIdentifierHashAlgorithm=http\\://www.w3.org/2001/04/xmlenc#sha256\n\
+    policyQualifier=https\\://policy.example/doc.pdf\n";
+
+fn policy_of(signature: &[u8]) -> ::rades::SignaturePolicy {
+    let decoded = ::rades::cades::decode(signature).expect("rades lee su CAdES");
+    decoded.signers()[0]
+        .signature_policy()
+        .cloned()
+        .expect("la firma lleva política")
+}
+
+#[test]
+fn the_four_policy_keys_are_the_signature_policy_identifier_of_the_signature() {
+    let chain = a_chain_with(an_rsa_key());
+
+    let signature = a_cades(&chain, A_POLICY);
+
+    let expected = ::rades::ExplicitPolicy::new(
+        ObjectIdentifier::new_unwrap("1.2.3.4.5"),
+        ::rades::PolicyHashAlgorithm::Digest(::rades::DigestAlgorithm::Sha256),
+        (0..32).collect(),
+    )
+    .qualifier(::rades::PolicyQualifier::Spuri(
+        "https://policy.example/doc.pdf".to_owned(),
+    ));
+    assert_eq!(policy_of(&signature), expected.into());
+    assert_eq!(openssl_verifies(&signature, None), A_DOCUMENT);
+}
+
+#[test]
+fn the_qualifier_is_optional() {
+    let chain = a_chain_with(an_rsa_key());
+    let without_qualifier: String = A_POLICY
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("policyQualifier"))
+        .map(|line| format!("{line}\n"))
+        .collect();
+
+    let signature = a_cades(&chain, &without_qualifier);
+
+    let ::rades::SignaturePolicy::Explicit(policy) = policy_of(&signature) else {
+        panic!("la política es explícita");
+    };
+    assert!(policy.qualifiers().is_empty());
+}
+
+#[test]
+fn the_age_policy_the_site_expands_is_the_age_v1_9_in_an_implicit_and_an_explicit_cades() {
+    let chain = a_chain_with(an_rsa_key());
+    let expanded = "policyIdentifier=urn:oid:2.16.724.1.3.1.1.2.1.9\n\
+        policyIdentifierHash=G7roucf600+f03r/o0bAOQ6WAs0\\=\n\
+        policyIdentifierHashAlgorithm=http\\://www.w3.org/2000/09/xmldsig#sha1\n\
+        policyQualifier=https\\://sede.administracion.gob.es/politica_de_firma_anexo_1.pdf\n";
+
+    for mode in ["implicit", "explicit"] {
+        let signature = a_cades(&chain, &format!("{expanded}mode={mode}\n"));
+
+        assert_eq!(
+            policy_of(&signature),
+            ::rades::SignaturePolicy::age_v1_9(),
+            "{mode}"
+        );
+    }
+}
+
+#[test]
+fn an_unexpanded_age_policy_gives_the_age_v1_9_too() {
+    let chain = a_chain_with(an_rsa_key());
+
+    let signature = a_cades(&chain, "expPolicy=FirmaAGE\n");
+
+    assert_eq!(policy_of(&signature), ::rades::SignaturePolicy::age_v1_9());
+}
+
+#[test]
+fn a_policy_that_is_not_the_age_one_is_refused_with_its_name() {
+    let refused = refused_with(SignatureOperation::Sign, ALGORITHM, "expPolicy=Otra\n");
+
+    assert!(
+        matches!(&refused, BridgeError::NotSupported(what) if what.contains("expPolicy=Otra")),
+        "{refused}"
+    );
+}
+
+#[test]
+fn an_incomplete_policy_is_refused_before_the_token_and_says_what_is_missing() {
+    for (declared, missing) in [
+        ("policyIdentifier=urn:oid:1.2.3\n", "policyIdentifierHash"),
+        (
+            "policyIdentifier=urn:oid:1.2.3\npolicyIdentifierHash=AAAA\n",
+            "policyIdentifierHashAlgorithm",
+        ),
+        ("policyQualifier=https\\://a.example\n", "policyIdentifier"),
+    ] {
+        let refused = refused_with(SignatureOperation::Sign, ALGORITHM, declared);
+
+        assert!(
+            matches!(&refused, BridgeError::NotSupported(what) if what.contains(missing)),
+            "{declared}: {refused}"
+        );
+    }
+}
+
+#[test]
+fn a_policy_hash_that_does_not_fit_its_algorithm_is_refused_before_the_token() {
+    let refused = refused_with(
+        SignatureOperation::Sign,
+        ALGORITHM,
+        "policyIdentifier=urn:oid:1.2.3\npolicyIdentifierHash=AAAA\n\
+         policyIdentifierHashAlgorithm=http\\://www.w3.org/2001/04/xmlenc#sha256\n",
+    );
+
+    assert!(matches!(refused, BridgeError::Failed(_)), "{refused}");
+}
+
+#[test]
+fn a_policy_identifier_that_is_not_an_oid_is_refused_with_its_value() {
+    let refused = refused_with(
+        SignatureOperation::Sign,
+        ALGORITHM,
+        "policyIdentifier=https\\://x.example/p\npolicyIdentifierHash=AAAA\n\
+         policyIdentifierHashAlgorithm=SHA1\n",
+    );
+
+    assert!(
+        matches!(&refused, BridgeError::NotSupported(what) if what.contains("x.example")),
+        "{refused}"
+    );
+}

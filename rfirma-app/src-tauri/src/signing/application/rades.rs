@@ -4,7 +4,10 @@ use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use ::rades::cades::{self, Certificates, Content, ContentHints, Options};
-use ::rades::{Certificate, DigestAlgorithm, ObjectIdentifier, SignatureValue, SigningTime};
+use ::rades::{
+    Certificate, DigestAlgorithm, ExplicitPolicy, ObjectIdentifier, PolicyHashAlgorithm,
+    PolicyQualifier, SignaturePolicy, SignatureValue, SigningTime,
+};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +31,18 @@ const MIME_TYPE: &str = "mimeType";
 const ALWAYS_TRUE: [&str; 2] = ["signingCertificateV2", "includeSigningTimeAttribute"];
 const PROTOCOL_ONLY: [&str; 3] = ["format", "headless", "mandatoryCertSelection"];
 const CMS_KEYS: [&str; 2] = [MODE, ONLY_THE_SIGNER];
-const CADES_KEYS: [&str; 5] = [
+const EXP_POLICY: &str = "expPolicy";
+const POLICY_IDENTIFIER: &str = "policyIdentifier";
+const POLICY_HASH: &str = "policyIdentifierHash";
+const POLICY_HASH_ALGORITHM: &str = "policyIdentifierHashAlgorithm";
+const POLICY_QUALIFIER: &str = "policyQualifier";
+const OID_URN: &str = "urn:oid:";
+const CADES_KEYS: [&str; 10] = [
+    EXP_POLICY,
+    POLICY_IDENTIFIER,
+    POLICY_HASH,
+    POLICY_HASH_ALGORITHM,
+    POLICY_QUALIFIER,
     PRECALCULATED_HASH,
     CONTENT_TYPE_OID,
     CONTENT_DESCRIPTION,
@@ -223,6 +237,9 @@ fn digest_algorithm(name: &str) -> Result<DigestAlgorithm, BridgeError> {
 
 fn options_of(parameters: &BTreeMap<String, String>) -> Result<Options, BridgeError> {
     let mut options = Options::default();
+    if let Some(policy) = policy_of(parameters)? {
+        options = options.signature_policy(policy);
+    }
     if let Some(oid) = parameters.get(CONTENT_TYPE_OID) {
         let content_type = ObjectIdentifier::new(oid)
             .map_err(|_| BridgeError::NotSupported(format!("{CONTENT_TYPE_OID}={oid}")))?;
@@ -236,6 +253,52 @@ fn options_of(parameters: &BTreeMap<String, String>) -> Result<Options, BridgeEr
         options = options.mime_type(mime_type);
     }
     Ok(options)
+}
+
+fn policy_of(
+    parameters: &BTreeMap<String, String>,
+) -> Result<Option<SignaturePolicy>, BridgeError> {
+    let Some(identifier) = parameters.get(POLICY_IDENTIFIER) else {
+        if let Some(qualifier) = parameters.get(POLICY_QUALIFIER) {
+            return Err(BridgeError::NotSupported(format!(
+                "{POLICY_QUALIFIER}={qualifier} sin {POLICY_IDENTIFIER}"
+            )));
+        }
+        return match parameters.get(EXP_POLICY).map(String::as_str) {
+            None => Ok(None),
+            Some("FirmaAGE" | "FirmaAGE19") => Ok(Some(SignaturePolicy::age_v1_9())),
+            Some(other) => Err(BridgeError::NotSupported(format!("{EXP_POLICY}={other}"))),
+        };
+    };
+    let missing = |key: &str| BridgeError::NotSupported(format!("{POLICY_IDENTIFIER} sin {key}"));
+    let oid = ObjectIdentifier::new(identifier.strip_prefix(OID_URN).unwrap_or(identifier))
+        .map_err(|_| BridgeError::NotSupported(format!("{POLICY_IDENTIFIER}={identifier}")))?;
+    let hash = parameters
+        .get(POLICY_HASH)
+        .ok_or_else(|| missing(POLICY_HASH))?;
+    let algorithm = parameters
+        .get(POLICY_HASH_ALGORITHM)
+        .ok_or_else(|| missing(POLICY_HASH_ALGORITHM))?;
+    let hash = decoded(hash, "el hash de la política")?;
+    let mut policy = ExplicitPolicy::new(oid, policy_hash_algorithm(algorithm)?, hash);
+    if let Some(url) = parameters.get(POLICY_QUALIFIER) {
+        policy = policy.qualifier(PolicyQualifier::Spuri(url.clone()));
+    }
+    Ok(Some(policy.into()))
+}
+
+fn policy_hash_algorithm(name: &str) -> Result<PolicyHashAlgorithm, BridgeError> {
+    let normalized = name.to_ascii_lowercase().replace('-', "");
+    let tail = normalized.rsplit(['#', '/']).next().unwrap_or_default();
+    match tail {
+        "sha1" => Ok(PolicyHashAlgorithm::Sha1),
+        "sha256" => Ok(PolicyHashAlgorithm::Digest(DigestAlgorithm::Sha256)),
+        "sha384" => Ok(PolicyHashAlgorithm::Digest(DigestAlgorithm::Sha384)),
+        "sha512" => Ok(PolicyHashAlgorithm::Digest(DigestAlgorithm::Sha512)),
+        _ => Err(BridgeError::NotSupported(format!(
+            "{POLICY_HASH_ALGORITHM}={name}"
+        ))),
+    }
 }
 
 fn admitted(format: Format, extra_params: &str) -> Result<BTreeMap<String, String>, BridgeError> {
