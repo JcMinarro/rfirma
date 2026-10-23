@@ -520,28 +520,28 @@ fn a_site_signature_begun_in(
 
 #[cfg(not(feature = "rades"))]
 #[test]
-fn without_rades_a_cms_for_the_site_goes_to_the_bridge() {
-    let refused = a_site_signature_begun_in(Format::Cms, &SigningSession::default())
-        .expect_err("sin rades el CMS lo prefirma el puente, que en grada A no está");
-
-    assert!(
-        format!("{refused:?}").contains("no hay libreria en grada A"),
-        "{refused:?}"
-    );
-}
-
-#[cfg(feature = "rades")]
-#[test]
-fn with_rades_cades_and_its_asic_s_still_go_to_the_bridge() {
-    for format in [Format::Cades, Format::CadesAsicS] {
+fn without_rades_a_cms_and_a_cades_for_the_site_go_to_the_bridge() {
+    for format in [Format::Cms, Format::Cades] {
         let refused = a_site_signature_begun_in(format, &SigningSession::default())
-            .expect_err("el puente no está en grada A");
+            .expect_err("sin rades los prefirma el puente, que en grada A no está");
 
         assert!(
             format!("{refused:?}").contains("no hay libreria en grada A"),
             "{format}: {refused:?}"
         );
     }
+}
+
+#[cfg(feature = "rades")]
+#[test]
+fn with_rades_the_cades_asic_s_still_goes_to_the_bridge() {
+    let refused = a_site_signature_begun_in(Format::CadesAsicS, &SigningSession::default())
+        .expect_err("el puente no está en grada A");
+
+    assert!(
+        format!("{refused:?}").contains("no hay libreria en grada A"),
+        "{refused:?}"
+    );
 }
 
 /// Un token que devuelve un `ECDSA-Sig-Value` con la forma debida, sin firmar nada.

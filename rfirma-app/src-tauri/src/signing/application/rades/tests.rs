@@ -187,10 +187,16 @@ fn contains(haystack: &[u8], needle: &[u8]) -> bool {
         .any(|window| window == needle)
 }
 
+mod cades;
+
 #[test]
-fn rades_signs_cms_and_nothing_else_yet() {
+fn rades_signs_cms_and_cades_and_nothing_else_yet() {
     for format in Format::ALL {
-        assert_eq!(Rades::signs(format), format == Format::Cms, "{format}");
+        assert_eq!(
+            Rades::signs(format),
+            matches!(format, Format::Cms | Format::Cades),
+            "{format}"
+        );
     }
 }
 

@@ -1,4 +1,4 @@
-//! Pruebas de integración del CMS firmado con rades contra el token, validado por el puente y por openssl (ADR-0001, ADR-0014).
+//! Pruebas de integración del CMS y el CAdES firmados con rades contra el token, validado por el puente y por openssl (ADR-0001, ADR-0014).
 #![cfg(feature = "rades")]
 
 #[path = "native_cycle/support.rs"]
@@ -21,7 +21,8 @@ use support::{
     ACTIVE_EC, CHALLENGE, PIN,
 };
 
-fn a_rades_cms_signed_by(
+fn a_rades_signed_by(
+    format: Format,
     certificate: &TokenCertificate,
     algorithm: SignatureAlgorithm,
     declared: &[(&str, &str)],
@@ -43,31 +44,31 @@ fn a_rades_cms_signed_by(
     let cycle = cycle::presign(
         &rades,
         SigningRequest {
-            format: Format::Cms,
+            format,
             algorithm,
             operation: SignatureOperation::Sign,
-            document: AdmissibleDocument::check_for(Format::Cms, CHALLENGE, Waivers::NONE)
-                .expect("un CMS firma cualquier byte"),
+            document: AdmissibleDocument::check_for(format, CHALLENGE, Waivers::NONE)
+                .expect("el formato admite el reto"),
             chain: &chain,
             config: &config,
             from_the_site: &from_the_site,
             certificate: &reference,
         },
     )
-    .expect("rades prefirma el CMS");
+    .expect("rades prefirma");
     let signature = cycle
         .sign_on_token(&pkcs11::RealToken, &ProtectedSecret::from_str(PIN))
         .expect("el token firma los atributos");
     cycle
         .postsign(&rades, signature, &cycle.seal_in_transit())
-        .expect("rades postfirma el CMS")
+        .expect("rades postfirma")
         .into_signed_document()
 }
 
 #[test]
 #[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
 fn an_implicit_rades_cms_with_the_rsa_certificate_validates_in_the_bridge_and_in_openssl() {
-    let signed = a_rades_cms_signed_by(&signing_certificate(), cycle::ALGORITHM, &[]);
+    let signed = a_rades_signed_by(Format::Cms, &signing_certificate(), cycle::ALGORITHM, &[]);
     let signature = write_to_target("rades-cms-implicito.p7s", &signed);
 
     assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
@@ -77,7 +78,8 @@ fn an_implicit_rades_cms_with_the_rsa_certificate_validates_in_the_bridge_and_in
 #[test]
 #[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
 fn an_explicit_rades_cms_is_detached_and_openssl_verifies_it_against_the_challenge() {
-    let signed = a_rades_cms_signed_by(
+    let signed = a_rades_signed_by(
+        Format::Cms,
         &signing_certificate(),
         cycle::ALGORITHM,
         &[("mode", "explicit")],
@@ -95,8 +97,48 @@ fn a_rades_cms_with_the_ec_certificate_validates_in_the_bridge_and_in_openssl() 
     let certificate = certificate_labelled(ACTIVE_EC);
     let algorithm = ecdsa_composed_for_the_ec_certificate(&certificate);
 
-    let signed = a_rades_cms_signed_by(&certificate, algorithm, &[]);
+    let signed = a_rades_signed_by(Format::Cms, &certificate, algorithm, &[]);
     let signature = write_to_target("rades-cms-ecdsa.p7s", &signed);
+
+    assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
+    the_original_validator_accepts(&signature);
+}
+
+#[test]
+#[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
+fn an_implicit_rades_cades_with_the_rsa_certificate_validates_in_the_bridge_and_in_openssl() {
+    let signed = a_rades_signed_by(Format::Cades, &signing_certificate(), cycle::ALGORITHM, &[]);
+    let signature = write_to_target("rades-cades-implicita.p7s", &signed);
+
+    assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
+    the_original_validator_accepts(&signature);
+}
+
+#[test]
+#[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
+fn an_explicit_rades_cades_is_detached_and_openssl_verifies_it_against_the_challenge() {
+    let signed = a_rades_signed_by(
+        Format::Cades,
+        &signing_certificate(),
+        cycle::ALGORITHM,
+        &[("mode", "explicit")],
+    );
+    let signature = write_to_target("rades-cades-explicita.p7s", &signed);
+    let challenge = write_to_target("rades-cades-reto.bin", CHALLENGE);
+
+    openssl_cms_finds_no_content_in(&signature);
+    assert_eq!(openssl_cms_verify(&signature, Some(&challenge)), CHALLENGE);
+    the_original_validator_accepts(&signature);
+}
+
+#[test]
+#[ignore = "grada C con la feature rades: necesita el token y librfirma_crypto.so"]
+fn a_rades_cades_with_the_ec_certificate_validates_in_the_bridge_and_in_openssl() {
+    let certificate = certificate_labelled(ACTIVE_EC);
+    let algorithm = ecdsa_composed_for_the_ec_certificate(&certificate);
+
+    let signed = a_rades_signed_by(Format::Cades, &certificate, algorithm, &[]);
+    let signature = write_to_target("rades-cades-ecdsa.p7s", &signed);
 
     assert_eq!(openssl_cms_verify(&signature, None), CHALLENGE);
     the_original_validator_accepts(&signature);

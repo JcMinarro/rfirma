@@ -1,10 +1,10 @@
-//! `Rades`, el `Bridge` de CMS hecho en Rust sobre rades: prefirma y postfirma sin puente, y lo que rades no hace rechazado antes del PIN (ADR-0001, ADR-0016).
+//! `Rades`, el `Bridge` de CMS y CAdES hecho en Rust sobre rades: prefirma y postfirma sin puente, y lo que rades no hace rechazado antes del PIN (ADR-0001, ADR-0016).
 
 use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use ::rades::cades::{self, Certificates, Content};
-use ::rades::{Certificate, DigestAlgorithm, SignatureValue, SigningTime};
+use ::rades::cades::{self, Certificates, Content, ContentHints, Options};
+use ::rades::{Certificate, DigestAlgorithm, ObjectIdentifier, SignatureValue, SigningTime};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
@@ -20,6 +20,21 @@ use crate::site::domain::protocol::pairs_of;
 const CHAIN_SEPARATOR: char = ';';
 const MODE: &str = "mode";
 const ONLY_THE_SIGNER: &str = "includeOnlySignningCertificate";
+const PRECALCULATED_HASH: &str = "precalculatedHashAlgorithm";
+const CONTENT_TYPE_OID: &str = "contentTypeOid";
+const CONTENT_DESCRIPTION: &str = "contentDescription";
+const INCLUDE_MIME_TYPE: &str = "includeMimeTypeAttribute";
+const MIME_TYPE: &str = "mimeType";
+const ALWAYS_TRUE: [&str; 2] = ["signingCertificateV2", "includeSigningTimeAttribute"];
+const PROTOCOL_ONLY: [&str; 3] = ["format", "headless", "mandatoryCertSelection"];
+const CMS_KEYS: [&str; 2] = [MODE, ONLY_THE_SIGNER];
+const CADES_KEYS: [&str; 5] = [
+    PRECALCULATED_HASH,
+    CONTENT_TYPE_OID,
+    CONTENT_DESCRIPTION,
+    INCLUDE_MIME_TYPE,
+    MIME_TYPE,
+];
 
 /// El `Bridge` de rades, con el reloj del que toma la hora de firma.
 pub struct Rades {
@@ -45,7 +60,7 @@ impl Rades {
 
     /// Si rades firma ese formato en lugar del puente.
     pub fn signs(format: Format) -> bool {
-        format == Format::Cms
+        matches!(format, Format::Cms | Format::Cades)
     }
 }
 
@@ -72,6 +87,7 @@ impl Bridge for Rades {
             extra_params: request.extra_params.to_owned(),
         };
         let data_to_sign = phase_one(
+            request.format,
             &session,
             request.document_b64,
             request.certificate_chain_b64,
@@ -98,6 +114,7 @@ impl Bridge for Rades {
         let session: Session = serde_json::from_str(sealed.session())
             .map_err(|error| BridgeError::MalformedResponse(error.to_string()))?;
         let pending = pending_of(
+            request.format,
             &session,
             request.document_b64,
             request.certificate_chain_b64,
@@ -126,40 +143,36 @@ impl Bridge for Rades {
 }
 
 fn phase_one(
+    format: Format,
     session: &Session,
     document_b64: &str,
     chain_b64: &str,
 ) -> Result<Vec<u8>, BridgeError> {
-    let pending = pending_of(session, document_b64, chain_b64)?;
+    let pending = pending_of(format, session, document_b64, chain_b64)?;
     match pending.data_to_sign() {
         [only] => Ok(only.bytes().to_vec()),
         blocks => Err(BridgeError::Failed(format!(
-            "rades pide {} bloques y el CMS firma uno",
+            "rades pide {} bloques y {format} firma uno",
             blocks.len()
         ))),
     }
 }
 
 fn pending_of(
+    format: Format,
     session: &Session,
     document_b64: &str,
     chain_b64: &str,
 ) -> Result<cades::PendingSignature, BridgeError> {
     let algorithm = rades_algorithm(&session.algorithm)?;
-    let parameters = admitted(&session.extra_params)?;
+    let parameters = admitted(format, &session.extra_params)?;
     let document = decoded(document_b64, "el documento")?;
     let mut chain = chain_of(chain_b64)?;
     if chain.is_empty() {
         return Err(BridgeError::InvalidArgument("la cadena de certificados"));
     }
     let signer = chain.remove(0);
-    let content = match parameters.get(MODE).map(String::as_str) {
-        None | Some("implicit") => Content::Attached(&document),
-        Some("explicit") => Content::Detached(&document),
-        Some(other) => {
-            return Err(BridgeError::NotSupported(format!("{MODE}={other}")));
-        }
-    };
+    let content = content_of(&parameters, &document)?;
     let certificates = if parameters
         .get(ONLY_THE_SIGNER)
         .is_some_and(|value| value.eq_ignore_ascii_case("true"))
@@ -170,18 +183,79 @@ fn pending_of(
     };
     let signing_time =
         SigningTime::from_unix_seconds(session.signing_time).map_err(rades_failed)?;
-    cades::sign_bare(content, &signer, algorithm, signing_time, &certificates).map_err(rades_failed)
+    match format {
+        Format::Cades => {
+            let options = options_of(&parameters)?.certificates(certificates);
+            cades::sign(content, &signer, algorithm, signing_time, &options)
+        }
+        _ => cades::sign_bare(content, &signer, algorithm, signing_time, &certificates),
+    }
+    .map_err(rades_failed)
 }
 
-fn admitted(extra_params: &str) -> Result<BTreeMap<String, String>, BridgeError> {
-    let parameters: BTreeMap<String, String> = pairs_of(extra_params).into_iter().collect();
-    match parameters
-        .keys()
-        .find(|key| ![MODE, ONLY_THE_SIGNER].contains(&key.as_str()))
-    {
-        Some(unknown) => Err(BridgeError::NotSupported(unknown.clone())),
-        None => Ok(parameters),
+fn content_of<'a>(
+    parameters: &BTreeMap<String, String>,
+    document: &'a [u8],
+) -> Result<Content<'a>, BridgeError> {
+    if let Some(name) = parameters.get(PRECALCULATED_HASH) {
+        return Ok(Content::Digest {
+            algorithm: digest_algorithm(name)?,
+            digest: document,
+        });
     }
+    match parameters.get(MODE).map(String::as_str) {
+        None | Some("implicit") => Ok(Content::Attached(document)),
+        Some("explicit") => Ok(Content::Detached(document)),
+        Some(other) => Err(BridgeError::NotSupported(format!("{MODE}={other}"))),
+    }
+}
+
+fn digest_algorithm(name: &str) -> Result<DigestAlgorithm, BridgeError> {
+    match name.replace('-', "").to_ascii_uppercase().as_str() {
+        "SHA256" => Ok(DigestAlgorithm::Sha256),
+        "SHA384" => Ok(DigestAlgorithm::Sha384),
+        "SHA512" => Ok(DigestAlgorithm::Sha512),
+        _ => Err(BridgeError::NotSupported(format!(
+            "{PRECALCULATED_HASH}={name}"
+        ))),
+    }
+}
+
+fn options_of(parameters: &BTreeMap<String, String>) -> Result<Options, BridgeError> {
+    let mut options = Options::default();
+    if let Some(oid) = parameters.get(CONTENT_TYPE_OID) {
+        let content_type = ObjectIdentifier::new(oid)
+            .map_err(|_| BridgeError::NotSupported(format!("{CONTENT_TYPE_OID}={oid}")))?;
+        let description = parameters.get(CONTENT_DESCRIPTION).cloned();
+        options = options.content_hints(ContentHints::new(description, content_type));
+    }
+    let wants_mime_type = parameters
+        .get(INCLUDE_MIME_TYPE)
+        .is_some_and(|value| value.eq_ignore_ascii_case("true"));
+    if let Some(mime_type) = parameters.get(MIME_TYPE).filter(|_| wants_mime_type) {
+        options = options.mime_type(mime_type);
+    }
+    Ok(options)
+}
+
+fn admitted(format: Format, extra_params: &str) -> Result<BTreeMap<String, String>, BridgeError> {
+    let parameters: BTreeMap<String, String> = pairs_of(extra_params).into_iter().collect();
+    let cades = format == Format::Cades;
+    for (key, value) in &parameters {
+        let key_str = key.as_str();
+        let known = CMS_KEYS.contains(&key_str)
+            || (cades
+                && (CADES_KEYS.contains(&key_str)
+                    || PROTOCOL_ONLY.contains(&key_str)
+                    || ALWAYS_TRUE.contains(&key_str)));
+        if !known {
+            return Err(BridgeError::NotSupported(key.clone()));
+        }
+        if ALWAYS_TRUE.contains(&key_str) && !value.eq_ignore_ascii_case("true") {
+            return Err(BridgeError::NotSupported(format!("{key}={value}")));
+        }
+    }
+    Ok(parameters)
 }
 
 fn rades_algorithm(name: &str) -> Result<::rades::SignatureAlgorithm, BridgeError> {
