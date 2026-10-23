@@ -709,10 +709,10 @@ build-storybook: po-import
 storybook-a11y: po-import
     cd {{ app }} && node tools/storybook-a11y.mjs
 
-# Abre la ventana con recarga en caliente; los argumentos van a la aplicacion.
+# Abre la ventana con recarga en caliente y la feature `rades`; los argumentos van a la aplicacion.
 [group('dev')]
 dev *args: vcpkg-libs check-native po-import
-    cd {{ app }} && RFIRMA_LIB_DIR="$(dirname "{{ native_lib }}")" pnpm exec tauri dev -- -- {{ args }}
+    cd {{ app }} && RFIRMA_LIB_DIR="$(dirname "{{ native_lib }}")" pnpm exec tauri dev --features rades -- -- {{ args }}
 
 # Como `dev`, con la tarjeta falsa de las pruebas como unico almacen: `tries` intentos (0, bloqueada)
 # y perfil `dnie` o `signals`. Cada arranque la restaura; su registro, en <target>/fake-card/calls.log.
